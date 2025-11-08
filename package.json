@@ -10,24 +10,30 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "pnpm --filter \"./apps/**\" dev",
-    "dev:api": "pnpm --filter @mularpay/mularpay-api dev",
-    "dev:mobile": "pnpm --filter @mularpay/mularpay-mobile dev",
-    "dev:web": "pnpm --filter @mularpay/mularpay-web dev",
-    "dev:admin": "pnpm --filter @mularpay/mularpay-admin dev",
-    "build": "pnpm --filter \"./apps/**\" build",
-    "build:api": "pnpm --filter @mularpay/mularpay-api build",
-    "build:web": "pnpm --filter @mularpay/mularpay-web build",
-    "build:admin": "pnpm --filter @mularpay/mularpay-admin build",
-    "lint": "pnpm --filter \"./apps/**\" lint",
-    "test": "pnpm --filter \"./apps/**\" test",
+    "dev": "turbo run dev",
+    "dev:api": "turbo run dev --filter=@mularpay/mularpay-api",
+    "dev:mobile": "turbo run dev --filter=@mularpay/mularpay-mobile",
+    "dev:web": "turbo run dev --filter=@mularpay/mularpay-web",
+    "dev:admin": "turbo run dev --filter=@mularpay/mularpay-admin",
+    "build": "turbo run build",
+    "build:api": "turbo run build --filter=@mularpay/mularpay-api",
+    "build:web": "turbo run build --filter=@mularpay/mularpay-web",
+    "build:admin": "turbo run build --filter=@mularpay/mularpay-admin",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "prisma:generate": "pnpm --filter @mularpay/mularpay-api prisma:generate",
     "prisma:migrate": "pnpm --filter @mularpay/mularpay-api prisma:migrate",
-    "prisma:studio": "pnpm --filter @mularpay/mularpay-api prisma:studio"
+    "prisma:studio": "pnpm --filter @mularpay/mularpay-api prisma:studio",
+    "prisma:seed": "pnpm --filter @mularpay/mularpay-api prisma:seed"
   },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "devDependencies": {
+    "turbo": "^2.6.0"
+  }
 }
