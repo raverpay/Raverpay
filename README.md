@@ -1,10 +1,10 @@
-# Mr Stephen Fintech App
+# MularPay Fintech App
 
 🇳🇬 Nigerian fintech super-app combining wallet system, VTU services, gift card trading, and crypto trading.
 
 ## 📋 Overview
 
-**Mr Stephen Fintech** is a comprehensive fintech platform designed for the Nigerian market, offering:
+**MularPay Fintech** is a comprehensive fintech platform designed for the Nigerian market, offering:
 
 - 💰 **Wallet System**: Fund wallet, withdraw, transfer
 - 📱 **VTU Services**: Airtime & Data purchase (MTN, Glo, Airtel, 9Mobile)
@@ -18,7 +18,7 @@
 This is a **monorepo** containing:
 
 ```
-mr-stephen-fintech/
+MularPay-fintech/
 ├── apps/
 │   ├── api/          # NestJS backend API
 │   ├── mobile/       # React Native (Expo) mobile app
@@ -33,6 +33,7 @@ mr-stephen-fintech/
 ## 🚀 Tech Stack
 
 ### Backend
+
 - **Framework**: NestJS + TypeScript
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: Prisma
@@ -42,6 +43,7 @@ mr-stephen-fintech/
 - **Hosting**: Railway
 
 ### Mobile
+
 - **Framework**: React Native + Expo
 - **Router**: Expo Router
 - **State**: Zustand + React Query
@@ -49,12 +51,14 @@ mr-stephen-fintech/
 - **Storage**: Expo Secure Store
 
 ### Web/Admin
+
 - **Framework**: Next.js 14 + TypeScript
 - **Styling**: Tailwind CSS
 - **State**: Zustand + React Query
 - **Hosting**: Vercel
 
 ### Third-Party Services
+
 - **Payments**: Paystack
 - **VTU**: VTPass
 - **Bank Verification**: Mono
@@ -73,12 +77,14 @@ mr-stephen-fintech/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
-   cd mr-stephen-fintech
+   cd -MularPay-fintech
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
@@ -86,12 +92,14 @@ mr-stephen-fintech/
 3. **Set up environment variables**
 
    Copy `.env.example` files in each app and fill in your credentials:
+
    - `apps/api/.env`
    - `apps/mobile/.env`
    - `apps/web/.env`
    - `apps/admin/.env`
 
 4. **Set up database**
+
    ```bash
    cd apps/api
    pnpm prisma:generate
@@ -102,6 +110,7 @@ mr-stephen-fintech/
 5. **Run development servers**
 
    In separate terminals:
+
    ```bash
    # API (Port 3001)
    pnpm dev:api
@@ -140,21 +149,25 @@ See the [docs/](./docs) folder for detailed documentation:
 ## 📱 Features by Phase
 
 ### Phase 0: Project Setup ✅
+
 - Monorepo structure
 - Database schema
 - Basic authentication
 
 ### Phase 1: Backend Core (In Progress)
+
 - User authentication
 - Wallet system
 - Transaction management
 
 ### Phase 2: Mobile MVP
+
 - User registration/login
 - Wallet UI
 - Airtime/Data purchase
 
 ### Phase 3: VTU Integration
+
 - Paystack integration
 - VTPass integration
 - Transaction processing
@@ -168,15 +181,16 @@ See the [docs/](./docs) folder for detailed documentation:
 pnpm test
 
 # Run API tests
-pnpm --filter @mr-stephen/api test
+pnpm --filter @MularPay/api test
 
 # Run with coverage
-pnpm --filter @mr-stephen/api test:cov
+pnpm --filter @MularPay/api test:cov
 ```
 
 ## 🚢 Deployment
 
 ### API (Railway)
+
 ```bash
 cd apps/api
 pnpm build
@@ -184,6 +198,7 @@ pnpm build
 ```
 
 ### Web/Admin (Vercel)
+
 ```bash
 cd apps/web
 pnpm build
@@ -197,6 +212,7 @@ See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions.
 The app uses **PostgreSQL** with **Prisma ORM**.
 
 Key models:
+
 - `User` - User accounts with KYC tiers
 - `Wallet` - User wallets with balance tracking
 - `Transaction` - Double-entry transaction logs
@@ -211,6 +227,7 @@ See [DATABASE.md](./docs/DATABASE.md) for full schema.
 See `.env.example` files in each app for required variables.
 
 Critical variables:
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `REDIS_URL` - Redis connection string
 - `JWT_SECRET` - JWT signing secret
@@ -227,7 +244,7 @@ UNLICENSED - Private project
 
 ## 👨‍💻 Author
 
-**Mr Stephen Fintech Team**
+** MularPay Fintech Team**
 
 ---
 
