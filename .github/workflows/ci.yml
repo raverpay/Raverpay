@@ -1,0 +1,51 @@
+name: CI - Lint & Test
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build shared packages
+        run: pnpm --filter @mularpay/shared build
+
+      - name: Type check
+        run: pnpm --filter @mularpay/mularpay-api exec tsc --noEmit
+
+      - name: Run tests (API)
+        run: pnpm --filter @mularpay/mularpay-api test
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Build all apps
+        run: pnpm build
