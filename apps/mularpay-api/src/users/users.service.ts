@@ -52,16 +52,7 @@ export class UsersService {
         twoFactorEnabled: true,
         createdAt: true,
         updatedAt: true,
-        wallet: {
-          select: {
-            id: true,
-            balance: true,
-            currency: true,
-            dailySpent: true,
-            monthlySpent: true,
-            isLocked: true,
-          },
-        },
+        wallet: true,
       },
     });
 
@@ -69,20 +60,47 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Convert Decimal fields to strings for JSON serialization
-    if (user.wallet) {
-      return {
-        ...user,
-        wallet: {
-          ...user.wallet,
-          balance: user.wallet.balance.toString(),
-          dailySpent: user.wallet.dailySpent.toString(),
-          monthlySpent: user.wallet.monthlySpent.toString(),
-        },
-      };
-    }
+    // Build response with Decimal fields converted to strings
+    const response: any = {
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      status: user.status,
+      kycTier: user.kycTier,
+      avatar: user.avatar,
+      dateOfBirth: user.dateOfBirth,
+      gender: user.gender,
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      country: user.country,
+      bvn: user.bvn,
+      bvnVerified: user.bvnVerified,
+      nin: user.nin,
+      ninVerified: user.ninVerified,
+      emailVerified: user.emailVerified,
+      emailVerifiedAt: user.emailVerifiedAt,
+      phoneVerified: user.phoneVerified,
+      phoneVerifiedAt: user.phoneVerifiedAt,
+      twoFactorEnabled: user.twoFactorEnabled,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      wallet: user.wallet
+        ? {
+            id: user.wallet.id,
+            balance: user.wallet.balance.toString(),
+            currency: user.wallet.currency,
+            dailySpent: user.wallet.dailySpent.toString(),
+            monthlySpent: user.wallet.monthlySpent.toString(),
+            isLocked: user.wallet.isLocked,
+          }
+        : null,
+    };
 
-    return user;
+    return response;
   }
 
   /**
