@@ -7,6 +7,17 @@ import {
 import { PrismaClient } from '@prisma/client';
 
 /**
+ * Prisma query event type
+ */
+interface QueryEvent {
+  timestamp: Date;
+  query: string;
+  params: string;
+  duration: number;
+  target: string;
+}
+
+/**
  * Prisma Service
  *
  * Provides a singleton instance of PrismaClient throughout the application.
@@ -34,19 +45,19 @@ export class PrismaService
     });
 
     // Log slow queries (> 1 second)
-    this.$on('query' as never, (e: any) => {
+    this.$on('query' as never, (e: QueryEvent) => {
       if (e.duration > 1000) {
         this.logger.warn(`Slow query detected: ${e.query} (${e.duration}ms)`);
       }
     });
 
     // Log all errors
-    this.$on('error' as never, (e: any) => {
+    this.$on('error' as never, (e: unknown) => {
       this.logger.error('Database error:', e);
     });
 
     // Log warnings
-    this.$on('warn' as never, (e: any) => {
+    this.$on('warn' as never, (e: unknown) => {
       this.logger.warn('Database warning:', e);
     });
   }

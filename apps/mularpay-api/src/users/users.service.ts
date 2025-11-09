@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { KYCTier } from '@prisma/client';
 import * as argon2 from 'argon2';
 import {
   UpdateProfileDto,
@@ -12,6 +13,46 @@ import {
   VerifyNinDto,
   ChangePasswordDto,
 } from './dto';
+
+/**
+ * User profile response type with wallet
+ */
+interface UserProfileResponse {
+  id: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  status: string;
+  kycTier: string;
+  avatar: string | null;
+  dateOfBirth: Date | null;
+  gender: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string;
+  bvn: string | null;
+  bvnVerified: boolean;
+  nin: string | null;
+  ninVerified: boolean;
+  emailVerified: boolean;
+  emailVerifiedAt: Date | null;
+  phoneVerified: boolean;
+  phoneVerifiedAt: Date | null;
+  twoFactorEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  wallet: {
+    id: string;
+    balance: string;
+    currency: string;
+    dailySpent: string;
+    monthlySpent: string;
+    isLocked: boolean;
+  } | null;
+}
 
 @Injectable()
 export class UsersService {
@@ -70,7 +111,7 @@ export class UsersService {
     }
 
     // Build response with Decimal fields converted to strings
-    const response: any = {
+    const response: UserProfileResponse = {
       id: user.id,
       email: user.email,
       phone: user.phone,
@@ -318,11 +359,11 @@ export class UsersService {
     }
 
     // Determine new KYC tier
-    let newKycTier = user.kycTier;
+    let newKycTier: KYCTier = user.kycTier;
     if (user.bvnVerified && !user.ninVerified) {
-      newKycTier = 'TIER_3' as any; // Both BVN and NIN verified = Tier 3
+      newKycTier = KYCTier.TIER_3; // Both BVN and NIN verified = Tier 3
     } else if (!user.bvnVerified) {
-      newKycTier = 'TIER_2' as any; // Only NIN verified = Tier 2
+      newKycTier = KYCTier.TIER_2; // Only NIN verified = Tier 2
     }
 
     // Update user with verified NIN
@@ -445,10 +486,10 @@ export class UsersService {
     }
 
     // Determine KYC tier upgrade
-    let newKycTier = user.kycTier;
-    if (user.phoneVerified && user.kycTier === 'TIER_0') {
+    let newKycTier: KYCTier = user.kycTier;
+    if (user.phoneVerified && user.kycTier === KYCTier.TIER_0) {
       // Both email and phone verified = TIER_1
-      newKycTier = 'TIER_1' as any;
+      newKycTier = KYCTier.TIER_1;
     }
 
     // Update user
@@ -565,10 +606,10 @@ export class UsersService {
     }
 
     // Determine KYC tier upgrade
-    let newKycTier = user.kycTier;
-    if (user.emailVerified && user.kycTier === 'TIER_0') {
+    let newKycTier: KYCTier = user.kycTier;
+    if (user.emailVerified && user.kycTier === KYCTier.TIER_0) {
       // Both email and phone verified = TIER_1
-      newKycTier = 'TIER_1' as any;
+      newKycTier = KYCTier.TIER_1;
     }
 
     // Update user
