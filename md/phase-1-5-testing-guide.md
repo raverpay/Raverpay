@@ -1,6 +1,7 @@
 # Phase 1.5 Testing Guide - Funding & Withdrawals
 
-**Prerequisites:** 
+**Prerequisites:**
+
 - Paystack test keys configured in `.env`
 - Server running on `http://localhost:3001/api`
 - User registered and logged in (access token ready)
@@ -10,6 +11,7 @@
 ## Test Data
 
 ### Test Cards (Paystack)
+
 ```
 Success Card: 4084084084084081
 CVV: 408
@@ -23,6 +25,7 @@ PIN: 1234
 ```
 
 ### Test Bank Account
+
 ```
 Bank: GTBank (058)
 Account: 0123456789
@@ -41,6 +44,7 @@ curl -X GET {{URL}}/transactions/banks \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "banks": [
@@ -67,6 +71,7 @@ curl -X GET {{URL}}/transactions/virtual-account \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "accountNumber": "1234567890",
@@ -79,6 +84,7 @@ curl -X GET {{URL}}/transactions/virtual-account \
 ```
 
 **Instructions:**
+
 - Transfer to this account number using your bank app
 - Funds will be credited automatically via webhook
 - No fees for bank transfer funding
@@ -100,6 +106,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "reference": "TXN_DEP_17627123451234",
@@ -109,6 +116,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 ```
 
 **Next Steps:**
+
 1. Open the `authorizationUrl` in a browser
 2. Enter test card details
 3. Complete payment
@@ -127,6 +135,7 @@ curl -X GET {{URL}}/transactions/verify/TXN_DEP_17627123451234 \
 ```
 
 **Expected Response (Success):**
+
 ```json
 {
   "status": "success",
@@ -141,6 +150,7 @@ curl -X GET {{URL}}/transactions/verify/TXN_DEP_17627123451234 \
 ```
 
 **Expected Response (Failed):**
+
 ```json
 {
   "status": "failed",
@@ -164,6 +174,7 @@ curl -X GET {{URL}}/wallet \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "id": "wallet-id",
@@ -191,6 +202,7 @@ curl -X POST {{URL}}/transactions/resolve-account \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "accountNumber": "0123456789",
@@ -221,6 +233,7 @@ curl -X POST {{URL}}/transactions/withdraw \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "reference": "TXN_WD_17627124561234",
@@ -233,6 +246,7 @@ curl -X POST {{URL}}/transactions/withdraw \
 ```
 
 **Fee Breakdown:**
+
 - Amount < ₦5,000: ₦10 fee
 - ₦5,000 - ₦50,000: ₦25 fee
 - Amount > ₦50,000: ₦50 fee
@@ -249,6 +263,7 @@ curl -X GET {{URL}}/wallet/transactions/TXN_WD_17627124561234 \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "id": "transaction-id",
@@ -264,6 +279,7 @@ curl -X GET {{URL}}/wallet/transactions/TXN_WD_17627124561234 \
 ```
 
 **Possible Statuses:**
+
 - `PENDING`: Just created
 - `PROCESSING`: Sent to Paystack
 - `COMPLETED`: Money sent successfully
@@ -281,12 +297,14 @@ curl -X GET {{URL}}/wallet/transactions \
 ```
 
 **With Filters:**
+
 ```bash
 curl -X GET "{{URL}}/wallet/transactions?type=DEPOSIT&status=COMPLETED&page=1&limit=10" \
   -H "Authorization: Bearer {{ACCESSTOKEN}}"
 ```
 
 **Expected Response:**
+
 ```json
 {
   "data": [
@@ -337,6 +355,7 @@ Test that transaction limits are enforced based on KYC tier.
 ### TIER_0 User (Default)
 
 **Maximum Deposit: ₦10,000**
+
 ```bash
 curl -X POST {{URL}}/transactions/fund/card \
   -H "Authorization: Bearer {{ACCESSTOKEN}}" \
@@ -349,6 +368,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 **Expected:** Error (amount exceeds limit)
 
 **Maximum Withdrawal: ₦5,000**
+
 ```bash
 curl -X POST {{URL}}/transactions/withdraw \
   -H "Authorization: Bearer {{ACCESSTOKEN}}" \
@@ -370,6 +390,7 @@ curl -X POST {{URL}}/transactions/withdraw \
 Locked wallets cannot fund or withdraw.
 
 **Lock Wallet:**
+
 ```bash
 curl -X POST {{URL}}/wallet/lock \
   -H "Authorization: Bearer {{ACCESSTOKEN}}" \
@@ -380,6 +401,7 @@ curl -X POST {{URL}}/wallet/lock \
 ```
 
 **Try to Fund:**
+
 ```bash
 curl -X POST {{URL}}/transactions/fund/card \
   -H "Authorization: Bearer {{ACCESSTOKEN}}" \
@@ -392,6 +414,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 **Expected:** Error (wallet is locked)
 
 **Unlock:**
+
 ```bash
 curl -X POST {{URL}}/wallet/unlock \
   -H "Authorization: Bearer {{ACCESSTOKEN}}" \
@@ -429,6 +452,7 @@ curl -X POST {{URL}}/transactions/withdraw \
 ## Webhook Testing (Advanced)
 
 ### Setup ngrok
+
 ```bash
 # Terminal 1: Start server
 cd apps/mularpay-api
@@ -439,11 +463,13 @@ ngrok http 3001
 ```
 
 ### Configure Paystack
+
 1. Copy ngrok URL (e.g., `https://abc123.ngrok.io`)
 2. Go to Paystack Dashboard → Settings → Webhooks
 3. Add webhook: `https://abc123.ngrok.io/api/payments/webhooks/paystack`
 
 ### Test Webhook
+
 1. Make a test payment
 2. Watch server logs for webhook events
 3. Verify wallet is credited automatically
@@ -453,26 +479,31 @@ ngrok http 3001
 ## Troubleshooting
 
 ### "PAYSTACK_SECRET_KEY not configured"
+
 - Add to `.env`: `PAYSTACK_SECRET_KEY="sk_test_xxx"`
 - Restart server
 
 ### "Virtual account not found"
+
 - Check user just registered
 - Virtual account creation is async
 - Check server logs for errors
 - May take a few seconds
 
 ### "Failed to initialize payment"
+
 - Check Paystack test keys
 - Verify API key is active
 - Check Paystack dashboard
 
 ### "Withdrawal failed. Amount refunded to wallet"
+
 - Insufficient Paystack balance (test mode)
 - Invalid account details
 - Check Paystack transfer logs
 
 ### "Invalid signature" (webhooks)
+
 - Webhook URL mismatch
 - Incorrect secret key
 - Check Paystack webhook logs
@@ -501,4 +532,3 @@ ngrok http 3001
 **Testing Date:** November 9, 2025  
 **Status:** Ready for Testing ✅  
 **Next:** Add Paystack keys and test!
-
