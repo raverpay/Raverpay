@@ -1,18 +1,26 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 /**
  * Prisma Service
- * 
+ *
  * Provides a singleton instance of PrismaClient throughout the application.
  * Handles connection lifecycle (connect on init, disconnect on destroy).
- * 
+ *
  * Usage:
  *   constructor(private prisma: PrismaService) {}
  *   const users = await this.prisma.user.findMany();
  */
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
@@ -96,4 +104,3 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     this.logger.log('🧹 Database cleaned');
   }
 }
-
