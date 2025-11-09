@@ -17,7 +17,7 @@ import {
 /**
  * User profile response type with wallet
  */
-interface UserProfileResponse {
+export interface UserProfileResponse {
   id: string;
   email: string;
   phone: string;

@@ -4,7 +4,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { KYCTier } from '@prisma/client';
+import {
+  KYCTier,
+  TransactionType as PrismaTransactionType,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import {
   WalletBalanceResponse,
@@ -305,8 +308,8 @@ export class WalletService {
         balanceAfter: tx.balanceAfter.toString(),
         status: tx.status,
         description: tx.description,
-        category: tx.category,
-        metadata: tx.metadata as unknown, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        category: null,
+        metadata: tx.metadata as unknown,
         createdAt: tx.createdAt,
         completedAt: tx.completedAt,
       };
@@ -350,8 +353,8 @@ export class WalletService {
       balanceAfter: transaction.balanceAfter.toString(),
       status: transaction.status,
       description: transaction.description,
-      category: transaction.category, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-      metadata: transaction.metadata as unknown, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      category: null,
+      metadata: transaction.metadata as unknown,
       createdAt: transaction.createdAt,
       completedAt: transaction.completedAt,
     };
@@ -406,11 +409,20 @@ export class WalletService {
     let totalDebits = new Decimal(0);
     let totalCredits = new Decimal(0);
 
+    // Credit transactions: money coming in
+    const creditTypes: PrismaTransactionType[] = [
+      PrismaTransactionType.DEPOSIT,
+      PrismaTransactionType.GIFTCARD_SELL,
+      PrismaTransactionType.CRYPTO_SELL,
+      PrismaTransactionType.REFUND,
+    ];
+
     transactions.forEach((tx) => {
-      if (tx.type === 'DEBIT') {
-        totalDebits = totalDebits.plus(tx.amount);
-      } else if (tx.type === 'CREDIT') {
+      if (creditTypes.includes(tx.type)) {
         totalCredits = totalCredits.plus(tx.amount);
+      } else {
+        // All other types are debits (money going out)
+        totalDebits = totalDebits.plus(tx.amount);
       }
     });
 
