@@ -52,7 +52,16 @@ export class UsersService {
         twoFactorEnabled: true,
         createdAt: true,
         updatedAt: true,
-        wallet: true,
+        wallet: {
+          select: {
+            id: true,
+            balance: true,
+            currency: true,
+            dailySpent: true,
+            monthlySpent: true,
+            isLocked: true,
+          },
+        },
       },
     });
 
@@ -435,12 +444,20 @@ export class UsersService {
       throw new BadRequestException('Invalid or expired verification code');
     }
 
+    // Determine KYC tier upgrade
+    let newKycTier = user.kycTier;
+    if (user.phoneVerified && user.kycTier === 'TIER_0') {
+      // Both email and phone verified = TIER_1
+      newKycTier = 'TIER_1' as any;
+    }
+
     // Update user
     await this.prisma.user.update({
       where: { id: userId },
       data: {
         emailVerified: true,
         emailVerifiedAt: new Date(),
+        kycTier: newKycTier,
         status:
           user.phoneVerified &&
           (user.bvnVerified || user.ninVerified || user.kycTier === 'TIER_0')
@@ -547,12 +564,20 @@ export class UsersService {
       throw new BadRequestException('Invalid or expired verification code');
     }
 
+    // Determine KYC tier upgrade
+    let newKycTier = user.kycTier;
+    if (user.emailVerified && user.kycTier === 'TIER_0') {
+      // Both email and phone verified = TIER_1
+      newKycTier = 'TIER_1' as any;
+    }
+
     // Update user
     await this.prisma.user.update({
       where: { id: userId },
       data: {
         phoneVerified: true,
         phoneVerifiedAt: new Date(),
+        kycTier: newKycTier,
         status:
           user.emailVerified &&
           (user.bvnVerified || user.ninVerified || user.kycTier === 'TIER_0')
