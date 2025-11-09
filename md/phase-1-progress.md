@@ -17,6 +17,7 @@ This document tracks the progress of MularPay fintech application development, i
 ### Phase 0: Project Setup ✅ **COMPLETE**
 
 **What We Built:**
+
 - ✅ Monorepo structure with pnpm + Turborepo
 - ✅ NestJS API initialized
 - ✅ React Native Mobile app (Expo)
@@ -30,6 +31,7 @@ This document tracks the progress of MularPay fintech application development, i
 - ✅ Documentation (README, SETUP, API, SECURITY, DEPLOYMENT)
 
 **Database Models:**
+
 - User (with KYC tiers)
 - Wallet
 - Transaction
@@ -47,6 +49,7 @@ This document tracks the progress of MularPay fintech application development, i
 ### Phase 1.1: Prisma Service ✅ **COMPLETE**
 
 **What We Built:**
+
 - ✅ Prisma service module for NestJS
 - ✅ Database connection pooling
 - ✅ Slow query logging (>1 second)
@@ -55,10 +58,12 @@ This document tracks the progress of MularPay fintech application development, i
 - ✅ Clean database utility (for testing)
 
 **Files Created:**
+
 - `apps/mularpay-api/src/prisma/prisma.service.ts`
 - `apps/mularpay-api/src/prisma/prisma.module.ts`
 
 **API Endpoints:**
+
 - `GET /` - Welcome message
 - `GET /health` - Health check with database status
 
@@ -67,6 +72,7 @@ This document tracks the progress of MularPay fintech application development, i
 ### Phase 1.2: Authentication Module ✅ **COMPLETE**
 
 **What We Built:**
+
 - ✅ User registration with validation
 - ✅ Login (email or phone)
 - ✅ JWT access tokens (15 minutes)
@@ -78,6 +84,7 @@ This document tracks the progress of MularPay fintech application development, i
 - ✅ Account status checks (banned/suspended)
 
 **Security Features:**
+
 - Argon2 password hashing (more secure than bcrypt)
 - JWT-based authentication
 - Nigerian phone number validation
@@ -86,6 +93,7 @@ This document tracks the progress of MularPay fintech application development, i
 - Token-based session management
 
 **Files Created:**
+
 ```
 src/auth/
 ├── auth.service.ts          # Core authentication logic
@@ -106,12 +114,12 @@ src/auth/
 
 **API Endpoints:**
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register new user | ❌ Public |
-| POST | `/api/auth/login` | Login (email or phone) | ❌ Public |
-| POST | `/api/auth/refresh` | Refresh access token | ❌ Public |
-| GET | `/api/auth/me` | Get current user | ✅ JWT Required |
+| Method | Endpoint             | Description            | Auth Required   |
+| ------ | -------------------- | ---------------------- | --------------- |
+| POST   | `/api/auth/register` | Register new user      | ❌ Public       |
+| POST   | `/api/auth/login`    | Login (email or phone) | ❌ Public       |
+| POST   | `/api/auth/refresh`  | Refresh access token   | ❌ Public       |
+| GET    | `/api/auth/me`       | Get current user       | ✅ JWT Required |
 
 ---
 
@@ -120,6 +128,7 @@ src/auth/
 ### Prerequisites
 
 1. **Start the API:**
+
 ```bash
 cd /Users/joseph/Desktop/mularpay
 pnpm dev:api
@@ -128,6 +137,7 @@ pnpm dev:api
 The API will run on `http://localhost:3001`
 
 2. **Open Prisma Studio (optional):**
+
 ```bash
 pnpm prisma:studio
 ```
@@ -145,6 +155,7 @@ curl http://localhost:3001/api/health | python3 -m json.tool
 ```
 
 **Expected Response:**
+
 ```json
 {
   "status": "ok",
@@ -177,6 +188,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "user": {
@@ -201,6 +213,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 ```
 
 ✅ **Pass Criteria:**
+
 - User object returned
 - `accessToken` and `refreshToken` present
 - Password NOT in response
@@ -209,6 +222,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 **Test Validation:**
 
 Try invalid data:
+
 ```bash
 # Invalid phone number
 curl -X POST http://localhost:3001/api/auth/register \
@@ -255,6 +269,7 @@ curl -X POST http://localhost:3001/api/auth/login \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "user": {
@@ -268,7 +283,8 @@ curl -X POST http://localhost:3001/api/auth/login \
 }
 ```
 
-✅ **Pass Criteria:** 
+✅ **Pass Criteria:**
+
 - User object returned
 - New tokens issued
 - `lastLoginAt` updated
@@ -306,6 +322,7 @@ curl -X GET http://localhost:3001/api/auth/me \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "user": {
@@ -345,6 +362,7 @@ curl -X POST http://localhost:3001/api/auth/refresh \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -362,6 +380,7 @@ curl -X POST http://localhost:3001/api/auth/refresh \
 **Check that wallet was auto-created:**
 
 1. Open Prisma Studio:
+
 ```bash
 pnpm prisma:studio
 ```
@@ -519,18 +538,21 @@ PORT=3001
 ## 🎯 Next Steps
 
 **Phase 1.3: User Module** (Pending)
+
 - User profile management
 - KYC verification (BVN, NIN)
 - Email/phone verification
 - Profile updates
 
 **Phase 1.4: Wallet Module** (Pending)
+
 - View wallet balance
 - Transaction limits
 - Wallet locking/unlocking
 - Balance history
 
 **Phase 1.5: Transaction Module** (Pending)
+
 - Double-entry bookkeeping
 - Fund wallet
 - Withdraw funds
@@ -538,12 +560,14 @@ PORT=3001
 - Transaction history
 
 **Phase 1.6: Security** (Pending)
+
 - Rate limiting
 - Request validation
 - Encryption utilities
 - Audit logging
 
 **Phase 1.7: API Documentation** (Pending)
+
 - Swagger/OpenAPI setup
 - API documentation
 - Endpoint examples
@@ -553,6 +577,7 @@ PORT=3001
 ## 📦 Commit History
 
 **Latest Commits:**
+
 1. `feat: Phase 1 - Add Prisma service and convert to proper monorepo`
 2. `feat: Complete Authentication Module (Phase 1.2)`
 
@@ -564,22 +589,26 @@ https://github.com/joestackss/MularPay-Fintech/commits/main
 ## 💡 Quick Reference
 
 **Start API:**
+
 ```bash
 pnpm dev:api
 ```
 
 **View Database:**
+
 ```bash
 pnpm prisma:studio
 ```
 
 **Run Tests:**
+
 ```bash
 # Copy the curl commands from this document
 # Replace placeholders with actual values
 ```
 
 **Check Logs:**
+
 ```bash
 # API logs are shown in the terminal where you ran pnpm dev:api
 ```
@@ -602,4 +631,3 @@ Before moving to Phase 1.3, verify:
 
 **Document Last Updated:** November 9, 2025  
 **Phase Status:** Ready for Phase 1.3 ✅
-
