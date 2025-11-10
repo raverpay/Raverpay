@@ -16,6 +16,7 @@ import {
   PurchaseAirtimeDto,
   PurchaseDataDto,
   PayCableTVDto,
+  PayShowmaxDto,
   PayElectricityDto,
   VerifySmartcardDto,
   VerifyMeterDto,
@@ -140,6 +141,15 @@ export class VTUController {
     @Body() dto: PayCableTVDto,
   ) {
     return this.vtuService.payCableTVSubscription(userId, dto);
+  }
+
+  @Post('showmax/pay')
+  @HttpCode(HttpStatus.CREATED)
+  payShowmaxSubscription(
+    @GetUser('id') userId: string,
+    @Body() dto: PayShowmaxDto,
+  ) {
+    return this.vtuService.payShowmaxSubscription(userId, dto);
   }
 
   @Post('electricity/pay')

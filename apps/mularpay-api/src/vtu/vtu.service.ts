@@ -12,6 +12,7 @@ import {
   PurchaseAirtimeDto,
   PurchaseDataDto,
   PayCableTVDto,
+  PayShowmaxDto,
   PayElectricityDto,
   GetOrdersDto,
   PurchaseInternationalAirtimeDto,
@@ -567,19 +568,54 @@ export class VTUService {
   // ==================== Cable TV Payment ====================
 
   async payCableTVSubscription(userId: string, dto: PayCableTVDto) {
+    const subscriptionLabel =
+      String(dto.subscriptionType) === 'renew'
+        ? 'Renewal'
+        : 'New/Change Subscription';
     this.logger.log(
-      `[Cable TV] Payment request: ${dto.provider} - ${dto.smartcardNumber} - ${dto.productCode}`,
+      `[Cable TV] ${subscriptionLabel}: ${dto.provider} - ${dto.smartcardNumber}`,
     );
 
-    // 1. Get product details
-    const plans = await this.getCableTVPlans(dto.provider);
-    const product = plans.find((p) => p.variation_code === dto.productCode);
+    // 1. Determine amount based on subscription type
+    let amount: number;
+    let productName: string;
 
-    if (!product) {
-      throw new BadRequestException('Invalid product code');
+    if (String(dto.subscriptionType) === 'change') {
+      // For "change": Get product details from variation code
+      if (!dto.productCode) {
+        throw new BadRequestException(
+          'Product code is required for subscription type "change"',
+        );
+      }
+
+      const plans = await this.getCableTVPlans(dto.provider);
+      const product = plans.find((p) => p.variation_code === dto.productCode);
+
+      if (!product) {
+        throw new BadRequestException('Invalid product code');
+      }
+
+      amount = Number(product.variation_amount);
+      productName = product.name;
+    } else {
+      // For "renew": Amount should come from verification (ideally)
+      // For now, we'll use productCode if provided, otherwise fail
+      if (!dto.productCode) {
+        throw new BadRequestException(
+          'Product code is required. Please verify smartcard first to get renewal amount.',
+        );
+      }
+
+      const plans = await this.getCableTVPlans(dto.provider);
+      const product = plans.find((p) => p.variation_code === dto.productCode);
+
+      if (!product) {
+        throw new BadRequestException('Invalid product code');
+      }
+
+      amount = Number(product.variation_amount);
+      productName = product.name;
     }
-
-    const amount = Number(product.variation_amount);
 
     // 2. Calculate total
     const fee = this.calculateFee(amount, 'CABLE_TV');
@@ -612,7 +648,7 @@ export class VTUService {
           provider: dto.provider.toUpperCase(),
           recipient: dto.smartcardNumber,
           productCode: dto.productCode,
-          productName: product.name,
+          productName,
           amount: new Decimal(amount),
           status: 'PENDING',
         },
@@ -645,13 +681,15 @@ export class VTUService {
             balanceBefore,
             balanceAfter,
             status: 'COMPLETED',
-            description: `${dto.provider.toUpperCase()} - ${product.name}`,
+            description: `${dto.provider.toUpperCase()} - ${productName}`,
             metadata: {
               serviceType: 'CABLE_TV',
               provider: dto.provider.toUpperCase(),
               recipient: dto.smartcardNumber,
               productCode: dto.productCode,
-              productName: product.name,
+              productName,
+              subscriptionType: dto.subscriptionType,
+              quantity: dto.quantity,
               orderId: order.id,
             },
           },
@@ -665,6 +703,8 @@ export class VTUService {
           provider: dto.provider,
           smartcard: dto.smartcardNumber,
           productCode: dto.productCode,
+          subscriptionType: dto.subscriptionType,
+          quantity: dto.quantity,
           amount,
           phone: dto.phone,
           reference,
@@ -714,11 +754,166 @@ export class VTUService {
         totalAmount: total,
         provider: dto.provider.toUpperCase(),
         recipient: dto.smartcardNumber,
-        productName: product.name,
+        productName,
         message:
           vtpassResult.status === 'success'
             ? 'Cable TV subscription successful'
             : 'Cable TV payment failed. Wallet refunded.',
+      };
+    } finally {
+      await this.unlockWalletForTransaction(userId);
+    }
+  }
+
+  // ==================== Showmax Payment ====================
+
+  async payShowmaxSubscription(userId: string, dto: PayShowmaxDto) {
+    this.logger.log(
+      `[Showmax] Payment request: ${dto.phoneNumber} - ${dto.productCode}`,
+    );
+
+    // 1. Get product details
+    const plans = await this.vtpassService.getServiceVariations('showmax');
+    const product = plans.find((p) => p.variation_code === dto.productCode);
+
+    if (!product) {
+      throw new BadRequestException('Invalid product code');
+    }
+
+    const amount = Number(product.variation_amount);
+
+    // 2. Calculate total (Showmax has convenience fee)
+    const fee = this.calculateFee(amount, 'CABLE_TV');
+    const total = amount + fee;
+
+    // 3. Check balance
+    await this.checkWalletBalance(userId, total);
+
+    // 4. Check duplicate
+    await this.checkDuplicateOrder(userId, 'CABLE_TV', dto.phoneNumber, amount);
+
+    // 5. Lock wallet
+    await this.lockWalletForTransaction(userId);
+
+    try {
+      // 6. Generate reference
+      const reference = this.generateReference('CABLE_TV');
+
+      // 7. Create order
+      const order = await this.prisma.vTUOrder.create({
+        data: {
+          reference,
+          userId,
+          serviceType: 'CABLE_TV',
+          provider: 'SHOWMAX',
+          recipient: dto.phoneNumber,
+          productCode: dto.productCode,
+          productName: product.name,
+          amount: new Decimal(amount),
+          status: 'PENDING',
+        },
+      });
+
+      // 8. Get wallet balance before transaction
+      const wallet = await this.prisma.wallet.findUnique({
+        where: { userId },
+      });
+      const balanceBefore = wallet!.balance;
+      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+
+      // 9. Debit wallet and create transaction
+      await this.prisma.$transaction([
+        this.prisma.wallet.update({
+          where: { userId },
+          data: {
+            balance: { decrement: new Decimal(total) },
+            ledgerBalance: { decrement: new Decimal(total) },
+          },
+        }),
+        this.prisma.transaction.create({
+          data: {
+            reference,
+            userId,
+            type: 'VTU_CABLE',
+            amount: new Decimal(amount),
+            fee: new Decimal(fee),
+            totalAmount: new Decimal(total),
+            balanceBefore,
+            balanceAfter,
+            status: 'COMPLETED',
+            description: `Showmax - ${product.name}`,
+            metadata: {
+              serviceType: 'CABLE_TV',
+              provider: 'SHOWMAX',
+              recipient: dto.phoneNumber,
+              productCode: dto.productCode,
+              productName: product.name,
+              orderId: order.id,
+            },
+          },
+        }),
+      ]);
+
+      // 10. Call VTPass API
+      let vtpassResult: VTPassPurchaseResult & { voucher?: string };
+      try {
+        vtpassResult = await this.vtpassService.payShowmax({
+          phoneNumber: dto.phoneNumber,
+          productCode: dto.productCode,
+          amount,
+          reference,
+        });
+      } catch (error) {
+        this.logger.error('[Showmax] VTPass API failed:', error);
+        await this.prisma.vTUOrder.update({
+          where: { id: order.id },
+          data: {
+            status: 'FAILED',
+            providerResponse: { error: 'VTPass API error' },
+          },
+        });
+
+        await this.refundFailedOrder(order.id);
+
+        throw new BadRequestException(
+          'Failed to process Showmax subscription. Your wallet has been refunded.',
+        );
+      }
+
+      // 11. Update order
+      await this.prisma.vTUOrder.update({
+        where: { id: order.id },
+        data: {
+          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+          providerRef: vtpassResult.transactionId,
+          providerToken: vtpassResult.voucher, // Showmax returns voucher code
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          providerResponse: JSON.parse(JSON.stringify(vtpassResult)),
+          completedAt:
+            vtpassResult.status === 'success' ? new Date() : undefined,
+        },
+      });
+
+      // 12. If failed, refund
+      if (vtpassResult.status !== 'success') {
+        await this.refundFailedOrder(order.id);
+      }
+
+      return {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount,
+        fee,
+        totalAmount: total,
+        provider: 'SHOWMAX',
+        recipient: dto.phoneNumber,
+        productName: product.name,
+        voucher: vtpassResult.voucher,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Showmax subscription successful'
+            : 'Showmax payment failed. Wallet refunded.',
       };
     } finally {
       await this.unlockWalletForTransaction(userId);

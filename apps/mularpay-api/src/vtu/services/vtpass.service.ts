@@ -324,9 +324,77 @@ export class VTPassService {
   async payCableTV(data: {
     provider: string;
     smartcard: string;
-    productCode: string;
+    productCode?: string;
+    subscriptionType: 'change' | 'renew';
+    quantity?: number;
     amount: number;
     phone: string;
+    reference: string;
+  }) {
+    // Build payload based on provider and subscription type
+    const payload: Record<string, unknown> = {
+      request_id: data.reference,
+      serviceID: data.provider.toLowerCase(),
+      billersCode: data.smartcard,
+      phone: data.phone,
+    };
+
+    // For DSTV and GOTV: add subscription_type and optional quantity
+    if (
+      data.provider.toLowerCase() === 'dstv' ||
+      data.provider.toLowerCase() === 'gotv'
+    ) {
+      payload.subscription_type = data.subscriptionType;
+
+      if (data.subscriptionType === 'change') {
+        // For "change": variation_code is required, amount is optional
+        if (!data.productCode) {
+          throw new Error(
+            'Product code is required for subscription type "change"',
+          );
+        }
+        payload.variation_code = data.productCode;
+        if (data.amount) {
+          payload.amount = data.amount;
+        }
+        if (data.quantity) {
+          payload.quantity = data.quantity;
+        }
+      } else {
+        // For "renew": amount is typically required (from verification), no variation_code
+        payload.amount = data.amount;
+      }
+    } else {
+      // For Startimes: no subscription_type, variation_code required
+      payload.variation_code = data.productCode;
+      if (data.amount) {
+        payload.amount = data.amount;
+      }
+    }
+
+    const response = await this.makeRequest<TransactionContent>(
+      '/pay',
+      'POST',
+      payload,
+    );
+
+    return {
+      status:
+        response.content.transactions.status === 'delivered'
+          ? 'success'
+          : 'failed',
+      transactionId: response.content.transactions.transactionId,
+      token: data.reference,
+      productName: response.content.transactions.product_name,
+      amount: response.content.transactions.amount,
+      commission: response.content.transactions.commission,
+    };
+  }
+
+  async payShowmax(data: {
+    phoneNumber: string;
+    productCode: string;
+    amount: number;
     reference: string;
   }) {
     const response = await this.makeRequest<TransactionContent>(
@@ -334,12 +402,10 @@ export class VTPassService {
       'POST',
       {
         request_id: data.reference,
-        serviceID: data.provider.toLowerCase(),
-        billersCode: data.smartcard,
+        serviceID: 'showmax',
+        billersCode: data.phoneNumber, // Showmax uses phone number
         variation_code: data.productCode,
         amount: data.amount,
-        phone: data.phone,
-        subscription_type: 'renew',
       },
     );
 
@@ -353,6 +419,7 @@ export class VTPassService {
       productName: response.content.transactions.product_name,
       amount: response.content.transactions.amount,
       commission: response.content.transactions.commission,
+      voucher: response.purchased_code, // Showmax returns voucher code
     };
   }
 

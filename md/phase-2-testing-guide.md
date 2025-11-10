@@ -227,14 +227,192 @@ curl -X GET http://localhost:3001/api/vtu/data/plans/9MOBILE \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
+### GLO SME Data Plans
+
+```bash
+# Get GLO SME data plans
+curl -X GET http://localhost:3001/api/vtu/data/sme-plans/glo \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+[
+  {
+    "variation_code": "glo-dg-50",
+    "name": "Glo Data (SME) N50 - 200MB - 14 days",
+    "variation_amount": "50.00",
+    "fixedPrice": "Yes"
+  },
+  {
+    "variation_code": "glo-dg-125-14",
+    "name": "Glo Data (SME) N125 - 500MB 14 days",
+    "variation_amount": "125.00",
+    "fixedPrice": "Yes"
+  }
+]
+```
+
+### Purchase GLO SME Data
+
+```bash
+curl -X POST http://localhost:3001/api/vtu/data/purchase \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "network": "GLO",
+    "phone": "08011111111",
+    "productCode": "glo-dg-125-14",
+    "isSME": true
+  }' | python3 -m json.tool
+```
+
+**Note:** Set `isSME: true` to purchase SME data bundles (currently only available for GLO).
+
 ---
 
-## 📺 Test 3: Cable TV Subscription
+## 🌍 Test 3: International Airtime/Data
+
+### Get International Countries
+
+```bash
+curl -X GET http://localhost:3001/api/vtu/international/countries \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+[
+  {
+    "code": "GH",
+    "name": "Ghana",
+    "currency": "GHS",
+    "prefix": "233",
+    "flag": "https://sandbox.vtpass.com/resources/images/flags/GH.png"
+  },
+  {
+    "code": "NG",
+    "name": "Nigeria",
+    "currency": "NGN",
+    "prefix": "234",
+    "flag": "https://sandbox.vtpass.com/resources/images/flags/NG.png"
+  }
+]
+```
+
+### Get Product Types for Country
+
+```bash
+curl -X GET "http://localhost:3001/api/vtu/international/product-types/GH" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+[
+  {
+    "product_type_id": 1,
+    "name": "Mobile Top Up"
+  },
+  {
+    "product_type_id": 4,
+    "name": "Mobile Data"
+  }
+]
+```
+
+### Get Operators for Country and Product Type
+
+```bash
+curl -X GET "http://localhost:3001/api/vtu/international/operators/GH/4" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+[
+  {
+    "operator_id": "5",
+    "name": "Ghana MTN",
+    "operator_image": "https://sandbox.vtpass.com/resources/images/operators/80.png"
+  }
+]
+```
+
+### Get Variations for Operator
+
+```bash
+curl -X GET "http://localhost:3001/api/vtu/international/variations/5/1" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+[
+  {
+    "variation_code": "13076",
+    "name": "900 MTN & 100 Local Mins, 1000 SMS, 1GB, & 1GB WTF Mobile Bundle",
+    "variation_amount": "0.00",
+    "fixedPrice": "Yes"
+  }
+]
+```
+
+### Purchase International Airtime/Data
+
+```bash
+curl -X POST http://localhost:3001/api/vtu/international/purchase \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "billersCode": "08011111111",
+    "variationCode": "13076",
+    "operatorId": "5",
+    "countryCode": "GH",
+    "productTypeId": "1",
+    "phone": "08011111111"
+  }' | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+{
+  "reference": "VTU_INTL_1731234567890XYZ",
+  "orderId": "uuid-here",
+  "status": "COMPLETED",
+  "amount": 2,
+  "fee": 50,
+  "totalAmount": 52,
+  "provider": "INTERNATIONAL",
+  "recipient": "08011111111",
+  "productName": "International Airtime",
+  "message": "International airtime purchased successfully"
+}
+```
+
+**Important Notes:**
+
+- `billersCode`: The recipient's phone number in international format
+- `operatorId`: The operator ID from the Get Operators endpoint
+- `countryCode`: The country code (e.g., GH, NG)
+- `productTypeId`: 1 for Mobile Top Up, 4 for Mobile Data
+- `phone`: Your phone number (user's phone)
+- `email`: Optional - will use user's email if not provided
+
+---
+
+## 📺 Test 4: Cable TV Subscription
 
 ### Get DSTV Plans
 
 ```bash
-curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/DSTV \
+curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/dstv \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
@@ -244,20 +422,14 @@ curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/DSTV \
 [
   {
     "variation_code": "dstv-padi",
-    "name": "DStv Padi",
-    "variation_amount": "2500",
+    "name": "DStv Padi N1,850",
+    "variation_amount": "1850.00",
     "fixedPrice": "Yes"
   },
   {
     "variation_code": "dstv-yanga",
-    "name": "DStv Yanga",
-    "variation_amount": "3500",
-    "fixedPrice": "Yes"
-  },
-  {
-    "variation_code": "dstv-compact",
-    "name": "DStv Compact",
-    "variation_amount": "10500",
+    "name": "DStv Yanga N2,565",
+    "variation_amount": "2565.00",
     "fixedPrice": "Yes"
   }
 ]
@@ -271,7 +443,7 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/verify \
   -H "Content-Type: application/json" \
   -d '{
     "provider": "DSTV",
-    "smartcardNumber": "1234567890"
+    "smartcardNumber": "1212121212"
   }' | python3 -m json.tool
 ```
 
@@ -280,15 +452,15 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/verify \
 ```json
 {
   "valid": true,
-  "customerName": "JOHN DOE",
+  "customerName": "TEST METER",
   "status": "ACTIVE",
-  "dueDate": "2024-12-31"
+  "dueDate": "2025-02-06T00:00:00"
 }
 ```
 
-**Note:** In sandbox mode, this might return an error. Use any 10-digit number and proceed.
+**Note:** In sandbox, use `1212121212` as the smartcard number for successful verification.
 
-### Pay DSTV Subscription
+### Pay DSTV Subscription (Change Bouquet)
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
@@ -296,9 +468,10 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
   -H "Content-Type: application/json" \
   -d '{
     "provider": "DSTV",
-    "smartcardNumber": "1234567890",
+    "smartcardNumber": "1212121212",
+    "subscriptionType": "change",
     "productCode": "dstv-padi",
-    "phone": "08012345678"
+    "phone": "08011111111"
   }' | python3 -m json.tool
 ```
 
@@ -309,45 +482,131 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
   "reference": "VTU_CABLE_1731234567890DEF",
   "orderId": "uuid-here",
   "status": "COMPLETED",
-  "amount": 2500,
+  "amount": 1850,
   "fee": 50,
-  "totalAmount": 2550,
+  "totalAmount": 1900,
   "provider": "DSTV",
-  "recipient": "1234567890",
-  "productName": "DStv Padi",
+  "recipient": "1212121212",
+  "productName": "DStv Padi N1,850",
   "message": "Cable TV subscription successful"
 }
 ```
+
+### Pay DSTV Subscription (Renew Current Bouquet)
+
+```bash
+curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "DSTV",
+    "smartcardNumber": "1212121212",
+    "subscriptionType": "renew",
+    "productCode": "dstv-padi",
+    "phone": "08011111111"
+  }' | python3 -m json.tool
+```
+
+### Pay Multi-Month DSTV Subscription
+
+```bash
+curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "DSTV",
+    "smartcardNumber": "1212121212",
+    "subscriptionType": "change",
+    "productCode": "dstv-padi",
+    "quantity": 3,
+    "phone": "08011111111"
+  }' | python3 -m json.tool
+```
+
+**Note:** `quantity` parameter allows multi-month subscriptions (DSTV/GOTV only).
 
 ### Test GOtv
 
 ```bash
 # Get GOtv plans
-curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/GOTV \
+curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/gotv \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 
-# Pay GOtv
+# Pay GOtv (Change subscription)
 curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "provider": "GOTV",
-    "smartcardNumber": "1234567890",
-    "productCode": "gotv-smallie",
-    "phone": "08012345678"
+    "smartcardNumber": "1212121212",
+    "subscriptionType": "change",
+    "productCode": "gotv-lite",
+    "phone": "08011111111"
   }' | python3 -m json.tool
 ```
 
 ### Test Startimes
 
 ```bash
-curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/STARTIMES \
+# Get Startimes plans
+curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/startimes \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
+
+# Pay Startimes (Always use 'renew')
+curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "STARTIMES",
+    "smartcardNumber": "1212121212",
+    "subscriptionType": "renew",
+    "productCode": "nova",
+    "phone": "08011111111"
+  }' | python3 -m json.tool
 ```
+
+### Test Showmax
+
+```bash
+# Pay Showmax (uses phone number as billersCode)
+curl -X POST http://localhost:3001/api/vtu/showmax/pay \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phoneNumber": "08011111111",
+    "productCode": "full_3"
+  }' | python3 -m json.tool
+```
+
+**Expected response:**
+
+```json
+{
+  "reference": "VTU_SHOWMAX_1731234567890ABC",
+  "orderId": "uuid-here",
+  "status": "COMPLETED",
+  "amount": 8400,
+  "fee": 50,
+  "totalAmount": 8450,
+  "provider": "SHOWMAX",
+  "recipient": "08011111111",
+  "productName": "Full - N8,400 - 3 Months",
+  "voucher": "SHMVHXQ9L3RXGPU",
+  "message": "Showmax subscription successful"
+}
+```
+
+**Important Notes:**
+
+- **Subscription Types:**
+  - `change`: For new subscription or changing bouquet (requires `productCode`)
+  - `renew`: For renewing current subscription (requires `productCode` for verification)
+- **Provider Names:** Must be UPPERCASE (DSTV, GOTV, STARTIMES)
+- **Sandbox Testing:** Use `1212121212` as smartcard number and `08011111111` as phone number
 
 ---
 
-## ⚡ Test 4: Electricity Payment
+## ⚡ Test 5: Electricity Payment
 
 ### Get Electricity Providers (DISCOs)
 
@@ -443,7 +702,7 @@ curl -X POST http://localhost:3001/api/vtu/electricity/pay \
 
 ---
 
-## 📊 Test 5: Order Management
+## 📊 Test 6: Order Management
 
 ### Get All Orders
 
@@ -573,7 +832,7 @@ curl -X GET http://localhost:3001/api/vtu/orders/reference/$AIRTIME_REF \
 
 ---
 
-## 🧪 Test 6: Error Handling
+## 🧪 Test 7: Error Handling
 
 ### Test Insufficient Balance
 
@@ -764,7 +1023,7 @@ curl -X POST http://localhost:3001/api/vtu/data/purchase \
 
 ---
 
-## 📈 Test 7: Transaction History
+## 📈 Test 8: Transaction History
 
 ### Check Wallet Transactions
 
@@ -809,6 +1068,11 @@ curl -X GET http://localhost:3001/api/wallet/transactions \
 - [ ] Get GLO data plans ✅
 - [ ] Get AIRTEL data plans ✅
 - [ ] Get 9MOBILE data plans ✅
+- [ ] Get GLO SME data plans ✅
+- [ ] Get international countries ✅
+- [ ] Get international product types ✅
+- [ ] Get international operators ✅
+- [ ] Get international variations ✅
 - [ ] Get DSTV plans ✅
 - [ ] Get GOtv plans ✅
 - [ ] Get Startimes plans ✅
@@ -829,8 +1093,14 @@ curl -X GET http://localhost:3001/api/wallet/transactions \
 - [ ] Buy 9MOBILE airtime ✅
 - [ ] Buy MTN data ✅
 - [ ] Buy GLO data ✅
-- [ ] Pay DSTV subscription ✅
+- [ ] Buy GLO SME data ✅
+- [ ] Buy international airtime/data ✅
+- [ ] Pay DSTV subscription (change) ✅
+- [ ] Pay DSTV subscription (renew) ✅
+- [ ] Pay DSTV multi-month subscription ✅
 - [ ] Pay GOtv subscription ✅
+- [ ] Pay Startimes subscription ✅
+- [ ] Pay Showmax subscription ✅
 - [ ] Pay IKEDC electricity ✅
 - [ ] Pay EKEDC electricity ✅
 
