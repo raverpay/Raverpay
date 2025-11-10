@@ -8,6 +8,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { PaymentsModule } from './payments/payments.module';
 import { VirtualAccountsModule } from './virtual-accounts/virtual-accounts.module';
+import { VTUModule } from './vtu/vtu.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { VirtualAccountsModule } from './virtual-accounts/virtual-accounts.modul
     TransactionsModule,
     PaymentsModule,
     VirtualAccountsModule,
+    VTUModule,
   ],
   controllers: [AppController],
   providers: [AppService],

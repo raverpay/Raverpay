@@ -1,0 +1,1076 @@
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { VTPassService } from './services/vtpass.service';
+import { WalletService } from '../wallet/wallet.service';
+import {
+  PurchaseAirtimeDto,
+  PurchaseDataDto,
+  PayCableTVDto,
+  PayElectricityDto,
+  GetOrdersDto,
+} from './dto';
+import { VTUServiceType, TransactionStatus } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+
+interface VTPassPurchaseResult {
+  status: string;
+  transactionId: string;
+  token?: string;
+  productName?: string;
+  amount?: number;
+  commission?: number;
+  meterToken?: string;
+}
+
+@Injectable()
+export class VTUService {
+  private readonly logger = new Logger(VTUService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly vtpassService: VTPassService,
+    private readonly walletService: WalletService,
+  ) {}
+
+  // ==================== Product Catalog ====================
+
+  getAirtimeProviders() {
+    return this.vtpassService.getAirtimeProducts();
+  }
+
+  async getDataPlans(network: string) {
+    return this.vtpassService.getDataProducts(network);
+  }
+
+  async getCableTVPlans(provider: string) {
+    return this.vtpassService.getCableTVProducts(provider);
+  }
+
+  getElectricityProviders() {
+    return this.vtpassService.getElectricityDISCOs();
+  }
+
+  // ==================== Validation ====================
+
+  validatePhone(phone: string): boolean {
+    const regex = /^0[7-9][0-1]\d{8}$/;
+    if (!regex.test(phone)) {
+      throw new BadRequestException('Invalid Nigerian phone number');
+    }
+    return true;
+  }
+
+  async validateSmartcard(smartcard: string, provider: string) {
+    try {
+      const result = await this.vtpassService.verifySmartcard(
+        smartcard,
+        provider,
+      );
+      return {
+        valid: true,
+        customerName: result.Customer_Name,
+        status: result.Status,
+        dueDate: result.Due_Date,
+      };
+    } catch {
+      throw new BadRequestException(
+        'Invalid smartcard number or customer not found',
+      );
+    }
+  }
+
+  async validateMeterNumber(
+    meterNumber: string,
+    disco: string,
+    meterType: 'prepaid' | 'postpaid',
+  ) {
+    try {
+      const result = await this.vtpassService.verifyMeterNumber(
+        meterNumber,
+        disco,
+        meterType,
+      );
+      return {
+        valid: true,
+        customerName: result.Customer_Name,
+        address: result.Address,
+        customerType: result.Customer_Type,
+        minimumAmount: result.Minimum_Purchase_Amount,
+      };
+    } catch {
+      throw new BadRequestException(
+        'Invalid meter number or customer not found',
+      );
+    }
+  }
+
+  async checkWalletBalance(userId: string, requiredAmount: number) {
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { userId },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found');
+    }
+
+    if (wallet.isLocked) {
+      throw new ConflictException(
+        'Wallet is locked. Cannot perform transaction',
+      );
+    }
+
+    const balance = Number(wallet.balance);
+    if (balance < requiredAmount) {
+      throw new BadRequestException(
+        `Insufficient wallet balance. Available: ₦${balance.toLocaleString()}, Required: ₦${requiredAmount.toLocaleString()}`,
+      );
+    }
+
+    return wallet;
+  }
+
+  // ==================== Fee Calculation ====================
+
+  calculateFee(amount: number, serviceType: VTUServiceType): number {
+    switch (serviceType) {
+      case 'AIRTIME':
+      case 'DATA':
+        // 2% with max of ₦100
+        return Math.min(amount * 0.02, 100);
+
+      case 'CABLE_TV':
+      case 'ELECTRICITY':
+        // Flat ₦50
+        return 50;
+
+      default:
+        return 0;
+    }
+  }
+
+  // ==================== Generate Reference ====================
+
+  generateReference(serviceType: VTUServiceType): string {
+    const prefix = {
+      AIRTIME: 'VTU_AIR',
+      DATA: 'VTU_DATA',
+      CABLE_TV: 'VTU_CABLE',
+      ELECTRICITY: 'VTU_ELEC',
+    }[serviceType];
+
+    return `${prefix}_${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  }
+
+  // ==================== Check Duplicate ====================
+
+  async checkDuplicateOrder(
+    userId: string,
+    serviceType: VTUServiceType,
+    recipient: string,
+    amount: number,
+  ) {
+    const existingOrder = await this.prisma.vTUOrder.findFirst({
+      where: {
+        userId,
+        serviceType,
+        recipient,
+        amount: new Decimal(amount),
+        status: { in: ['PENDING', 'COMPLETED'] },
+        createdAt: { gte: new Date(Date.now() - 60000) }, // Last 1 minute
+      },
+    });
+
+    if (existingOrder) {
+      throw new ConflictException(
+        'Duplicate order detected. Please wait before retrying.',
+      );
+    }
+  }
+
+  // ==================== Lock/Unlock Wallet ====================
+
+  async lockWalletForTransaction(userId: string) {
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { userId },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found');
+    }
+
+    if (wallet.isLocked) {
+      throw new ConflictException(
+        'Another transaction is in progress. Please wait.',
+      );
+    }
+
+    await this.prisma.wallet.update({
+      where: { userId },
+      data: { isLocked: true },
+    });
+
+    return wallet;
+  }
+
+  async unlockWalletForTransaction(userId: string) {
+    await this.prisma.wallet.update({
+      where: { userId },
+      data: { isLocked: false },
+    });
+  }
+
+  // ==================== Airtime Purchase ====================
+
+  async purchaseAirtime(userId: string, dto: PurchaseAirtimeDto) {
+    this.logger.log(
+      `[Airtime] Purchase request: ${dto.network} - ${dto.phone} - ₦${dto.amount}`,
+    );
+
+    // 1. Validate phone
+    this.validatePhone(dto.phone);
+
+    // 2. Calculate total
+    const fee = this.calculateFee(dto.amount, 'AIRTIME');
+    const total = dto.amount + fee;
+
+    // 3. Check balance
+    await this.checkWalletBalance(userId, total);
+
+    // 4. Check duplicate
+    await this.checkDuplicateOrder(userId, 'AIRTIME', dto.phone, dto.amount);
+
+    // 5. Lock wallet
+    await this.lockWalletForTransaction(userId);
+
+    try {
+      // 6. Generate reference
+      const reference = this.generateReference('AIRTIME');
+
+      // 7. Create order
+      const order = await this.prisma.vTUOrder.create({
+        data: {
+          reference,
+          userId,
+          serviceType: 'AIRTIME',
+          provider: dto.network.toUpperCase(),
+          recipient: dto.phone,
+          productCode: dto.network.toLowerCase(),
+          productName: `${dto.network.toUpperCase()} Airtime`,
+          amount: new Decimal(dto.amount),
+          status: 'PENDING',
+        },
+      });
+
+      // 8. Get wallet balance before transaction
+      const wallet = await this.prisma.wallet.findUnique({
+        where: { userId },
+      });
+      const balanceBefore = wallet!.balance;
+      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+
+      // 9. Debit wallet and create transaction
+      await this.prisma.$transaction([
+        this.prisma.wallet.update({
+          where: { userId },
+          data: {
+            balance: { decrement: new Decimal(total) },
+            ledgerBalance: { decrement: new Decimal(total) },
+          },
+        }),
+        this.prisma.transaction.create({
+          data: {
+            reference,
+            userId,
+            type: 'VTU_AIRTIME',
+            amount: new Decimal(dto.amount),
+            fee: new Decimal(fee),
+            totalAmount: new Decimal(total),
+            balanceBefore,
+            balanceAfter,
+            status: 'COMPLETED',
+            description: `${dto.network.toUpperCase()} Airtime - ${dto.phone}`,
+            metadata: {
+              serviceType: 'AIRTIME',
+              provider: dto.network.toUpperCase(),
+              recipient: dto.phone,
+              orderId: order.id,
+            },
+          },
+        }),
+      ]);
+
+      // 9. Call VTPass API
+      let vtpassResult: VTPassPurchaseResult;
+      try {
+        vtpassResult = await this.vtpassService.purchaseAirtime({
+          network: dto.network,
+          phone: dto.phone,
+          amount: dto.amount,
+          reference,
+        });
+      } catch (error) {
+        this.logger.error('[Airtime] VTPass API failed:', error);
+        // Update order as failed
+        await this.prisma.vTUOrder.update({
+          where: { id: order.id },
+          data: {
+            status: 'FAILED',
+            providerResponse: { error: 'VTPass API error' },
+          },
+        });
+
+        // Refund immediately
+        await this.refundFailedOrder(order.id);
+
+        throw new BadRequestException(
+          'Failed to process airtime purchase. Your wallet has been refunded.',
+        );
+      }
+
+      // 10. Update order
+      await this.prisma.vTUOrder.update({
+        where: { id: order.id },
+        data: {
+          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+          providerRef: vtpassResult.transactionId,
+          providerToken: vtpassResult.token,
+          providerResponse: vtpassResult,
+          completedAt:
+            vtpassResult.status === 'success' ? new Date() : undefined,
+        },
+      });
+
+      // 11. If failed, refund
+      if (vtpassResult.status !== 'success') {
+        await this.refundFailedOrder(order.id);
+      }
+
+      return {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount: dto.amount,
+        fee,
+        totalAmount: total,
+        provider: dto.network.toUpperCase(),
+        recipient: dto.phone,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Airtime purchased successfully'
+            : 'Airtime purchase failed. Wallet refunded.',
+      };
+    } finally {
+      // 13. Always unlock wallet
+      await this.unlockWalletForTransaction(userId);
+    }
+  }
+
+  // ==================== Data Purchase ====================
+
+  async purchaseDataBundle(userId: string, dto: PurchaseDataDto) {
+    this.logger.log(
+      `[Data] Purchase request: ${dto.network} - ${dto.phone} - ${dto.productCode}`,
+    );
+
+    // 1. Validate phone
+    this.validatePhone(dto.phone);
+
+    // 2. Get product details from VTPass
+    const dataPlans = await this.getDataPlans(dto.network);
+    const product = dataPlans.find((p) => p.variation_code === dto.productCode);
+
+    if (!product) {
+      throw new BadRequestException('Invalid product code');
+    }
+
+    const amount = Number(product.variation_amount);
+
+    // 3. Calculate total
+    const fee = this.calculateFee(amount, 'DATA');
+    const total = amount + fee;
+
+    // 4. Check balance
+    await this.checkWalletBalance(userId, total);
+
+    // 5. Check duplicate
+    await this.checkDuplicateOrder(userId, 'DATA', dto.phone, amount);
+
+    // 6. Lock wallet
+    await this.lockWalletForTransaction(userId);
+
+    try {
+      // 7. Generate reference
+      const reference = this.generateReference('DATA');
+
+      // 8. Create order
+      const order = await this.prisma.vTUOrder.create({
+        data: {
+          reference,
+          userId,
+          serviceType: 'DATA',
+          provider: dto.network.toUpperCase(),
+          recipient: dto.phone,
+          productCode: dto.productCode,
+          productName: product.name,
+          amount: new Decimal(amount),
+          status: 'PENDING',
+        },
+      });
+
+      // 9. Get wallet balance before transaction
+      const walletData = await this.prisma.wallet.findUnique({
+        where: { userId },
+      });
+      const balanceBefore = walletData!.balance;
+      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+
+      // 10. Debit wallet and create transaction
+      await this.prisma.$transaction([
+        this.prisma.wallet.update({
+          where: { userId },
+          data: {
+            balance: { decrement: new Decimal(total) },
+            ledgerBalance: { decrement: new Decimal(total) },
+          },
+        }),
+        this.prisma.transaction.create({
+          data: {
+            reference,
+            userId,
+            type: 'VTU_DATA',
+            amount: new Decimal(amount),
+            fee: new Decimal(fee),
+            totalAmount: new Decimal(total),
+            balanceBefore,
+            balanceAfter,
+            status: 'COMPLETED',
+            description: `${dto.network.toUpperCase()} Data - ${product.name}`,
+            metadata: {
+              serviceType: 'DATA',
+              provider: dto.network.toUpperCase(),
+              recipient: dto.phone,
+              productCode: dto.productCode,
+              productName: product.name,
+              orderId: order.id,
+            },
+          },
+        }),
+      ]);
+
+      // 11. Call VTPass API
+      let vtpassResult: VTPassPurchaseResult;
+      try {
+        vtpassResult = await this.vtpassService.purchaseData({
+          network: dto.network,
+          phone: dto.phone,
+          productCode: dto.productCode,
+          amount,
+          reference,
+        });
+      } catch (error) {
+        this.logger.error('[Data] VTPass API failed:', error);
+        await this.prisma.vTUOrder.update({
+          where: { id: order.id },
+          data: {
+            status: 'FAILED',
+            providerResponse: { error: 'VTPass API error' },
+          },
+        });
+
+        await this.refundFailedOrder(order.id);
+
+        throw new BadRequestException(
+          'Failed to process data purchase. Your wallet has been refunded.',
+        );
+      }
+
+      // 11. Update order
+      await this.prisma.vTUOrder.update({
+        where: { id: order.id },
+        data: {
+          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+          providerRef: vtpassResult.transactionId,
+          providerToken: vtpassResult.token,
+          providerResponse: vtpassResult,
+          completedAt:
+            vtpassResult.status === 'success' ? new Date() : undefined,
+        },
+      });
+
+      // 12. If failed, refund
+      if (vtpassResult.status !== 'success') {
+        await this.refundFailedOrder(order.id);
+      }
+
+      return {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount,
+        fee,
+        totalAmount: total,
+        provider: dto.network.toUpperCase(),
+        recipient: dto.phone,
+        productName: product.name,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Data bundle purchased successfully'
+            : 'Data purchase failed. Wallet refunded.',
+      };
+    } finally {
+      await this.unlockWalletForTransaction(userId);
+    }
+  }
+
+  // ==================== Cable TV Payment ====================
+
+  async payCableTVSubscription(userId: string, dto: PayCableTVDto) {
+    this.logger.log(
+      `[Cable TV] Payment request: ${dto.provider} - ${dto.smartcardNumber} - ${dto.productCode}`,
+    );
+
+    // 1. Get product details
+    const plans = await this.getCableTVPlans(dto.provider);
+    const product = plans.find((p) => p.variation_code === dto.productCode);
+
+    if (!product) {
+      throw new BadRequestException('Invalid product code');
+    }
+
+    const amount = Number(product.variation_amount);
+
+    // 2. Calculate total
+    const fee = this.calculateFee(amount, 'CABLE_TV');
+    const total = amount + fee;
+
+    // 3. Check balance
+    await this.checkWalletBalance(userId, total);
+
+    // 4. Check duplicate
+    await this.checkDuplicateOrder(
+      userId,
+      'CABLE_TV',
+      dto.smartcardNumber,
+      amount,
+    );
+
+    // 5. Lock wallet
+    await this.lockWalletForTransaction(userId);
+
+    try {
+      // 6. Generate reference
+      const reference = this.generateReference('CABLE_TV');
+
+      // 7. Create order
+      const order = await this.prisma.vTUOrder.create({
+        data: {
+          reference,
+          userId,
+          serviceType: 'CABLE_TV',
+          provider: dto.provider.toUpperCase(),
+          recipient: dto.smartcardNumber,
+          productCode: dto.productCode,
+          productName: product.name,
+          amount: new Decimal(amount),
+          status: 'PENDING',
+        },
+      });
+
+      // 8. Get wallet balance before transaction
+      const walletCable = await this.prisma.wallet.findUnique({
+        where: { userId },
+      });
+      const balanceBefore = walletCable!.balance;
+      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+
+      // 9. Debit wallet and create transaction
+      await this.prisma.$transaction([
+        this.prisma.wallet.update({
+          where: { userId },
+          data: {
+            balance: { decrement: new Decimal(total) },
+            ledgerBalance: { decrement: new Decimal(total) },
+          },
+        }),
+        this.prisma.transaction.create({
+          data: {
+            reference,
+            userId,
+            type: 'VTU_CABLE',
+            amount: new Decimal(amount),
+            fee: new Decimal(fee),
+            totalAmount: new Decimal(total),
+            balanceBefore,
+            balanceAfter,
+            status: 'COMPLETED',
+            description: `${dto.provider.toUpperCase()} - ${product.name}`,
+            metadata: {
+              serviceType: 'CABLE_TV',
+              provider: dto.provider.toUpperCase(),
+              recipient: dto.smartcardNumber,
+              productCode: dto.productCode,
+              productName: product.name,
+              orderId: order.id,
+            },
+          },
+        }),
+      ]);
+
+      // 10. Call VTPass API
+      let vtpassResult: VTPassPurchaseResult;
+      try {
+        vtpassResult = await this.vtpassService.payCableTV({
+          provider: dto.provider,
+          smartcard: dto.smartcardNumber,
+          productCode: dto.productCode,
+          amount,
+          phone: dto.phone,
+          reference,
+        });
+      } catch (error) {
+        this.logger.error('[Cable TV] VTPass API failed:', error);
+        await this.prisma.vTUOrder.update({
+          where: { id: order.id },
+          data: {
+            status: 'FAILED',
+            providerResponse: { error: 'VTPass API error' },
+          },
+        });
+
+        await this.refundFailedOrder(order.id);
+
+        throw new BadRequestException(
+          'Failed to process cable TV payment. Your wallet has been refunded.',
+        );
+      }
+
+      // 10. Update order
+      await this.prisma.vTUOrder.update({
+        where: { id: order.id },
+        data: {
+          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+          providerRef: vtpassResult.transactionId,
+          providerToken: vtpassResult.token,
+          providerResponse: vtpassResult,
+          completedAt:
+            vtpassResult.status === 'success' ? new Date() : undefined,
+        },
+      });
+
+      // 11. If failed, refund
+      if (vtpassResult.status !== 'success') {
+        await this.refundFailedOrder(order.id);
+      }
+
+      return {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount,
+        fee,
+        totalAmount: total,
+        provider: dto.provider.toUpperCase(),
+        recipient: dto.smartcardNumber,
+        productName: product.name,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Cable TV subscription successful'
+            : 'Cable TV payment failed. Wallet refunded.',
+      };
+    } finally {
+      await this.unlockWalletForTransaction(userId);
+    }
+  }
+
+  // ==================== Electricity Payment ====================
+
+  async payElectricityBill(userId: string, dto: PayElectricityDto) {
+    this.logger.log(
+      `[Electricity] Payment request: ${dto.disco} - ${dto.meterNumber} - ₦${dto.amount}`,
+    );
+
+    // 1. Calculate total
+    const fee = this.calculateFee(dto.amount, 'ELECTRICITY');
+    const total = dto.amount + fee;
+
+    // 2. Check balance
+    await this.checkWalletBalance(userId, total);
+
+    // 3. Check duplicate
+    await this.checkDuplicateOrder(
+      userId,
+      'ELECTRICITY',
+      dto.meterNumber,
+      dto.amount,
+    );
+
+    // 4. Lock wallet
+    await this.lockWalletForTransaction(userId);
+
+    try {
+      // 5. Generate reference
+      const reference = this.generateReference('ELECTRICITY');
+
+      // 6. Create order
+      const order = await this.prisma.vTUOrder.create({
+        data: {
+          reference,
+          userId,
+          serviceType: 'ELECTRICITY',
+          provider: dto.disco.toUpperCase(),
+          recipient: dto.meterNumber,
+          productCode: dto.meterType,
+          productName: `${dto.disco.toUpperCase()} - ${dto.meterType.toUpperCase()}`,
+          amount: new Decimal(dto.amount),
+          status: 'PENDING',
+        },
+      });
+
+      // 7. Get wallet balance before transaction
+      const walletElec = await this.prisma.wallet.findUnique({
+        where: { userId },
+      });
+      const balanceBefore = walletElec!.balance;
+      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+
+      // 8. Debit wallet and create transaction
+      await this.prisma.$transaction([
+        this.prisma.wallet.update({
+          where: { userId },
+          data: {
+            balance: { decrement: new Decimal(total) },
+            ledgerBalance: { decrement: new Decimal(total) },
+          },
+        }),
+        this.prisma.transaction.create({
+          data: {
+            reference,
+            userId,
+            type: 'VTU_ELECTRICITY',
+            amount: new Decimal(dto.amount),
+            fee: new Decimal(fee),
+            totalAmount: new Decimal(total),
+            balanceBefore,
+            balanceAfter,
+            status: 'COMPLETED',
+            description: `${dto.disco.toUpperCase()} Electricity - ${dto.meterNumber}`,
+            metadata: {
+              serviceType: 'ELECTRICITY',
+              provider: dto.disco.toUpperCase(),
+              recipient: dto.meterNumber,
+              meterType: dto.meterType,
+              orderId: order.id,
+            },
+          },
+        }),
+      ]);
+
+      // 9. Call VTPass API
+      let vtpassResult: VTPassPurchaseResult;
+      try {
+        vtpassResult = await this.vtpassService.payElectricity({
+          disco: dto.disco,
+          meterNumber: dto.meterNumber,
+          meterType: dto.meterType,
+          amount: dto.amount,
+          phone: dto.phone,
+          reference,
+        });
+      } catch (error) {
+        this.logger.error('[Electricity] VTPass API failed:', error);
+        await this.prisma.vTUOrder.update({
+          where: { id: order.id },
+          data: {
+            status: 'FAILED',
+            providerResponse: { error: 'VTPass API error' },
+          },
+        });
+
+        await this.refundFailedOrder(order.id);
+
+        throw new BadRequestException(
+          'Failed to process electricity payment. Your wallet has been refunded.',
+        );
+      }
+
+      // 9. Update order
+      await this.prisma.vTUOrder.update({
+        where: { id: order.id },
+        data: {
+          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+          providerRef: vtpassResult.transactionId,
+          providerToken: vtpassResult.token || vtpassResult.meterToken,
+          providerResponse: vtpassResult,
+          completedAt:
+            vtpassResult.status === 'success' ? new Date() : undefined,
+        },
+      });
+
+      // 10. If failed, refund
+      if (vtpassResult.status !== 'success') {
+        await this.refundFailedOrder(order.id);
+      }
+
+      return {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount: dto.amount,
+        fee,
+        totalAmount: total,
+        provider: dto.disco.toUpperCase(),
+        recipient: dto.meterNumber,
+        meterToken: vtpassResult.meterToken,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Electricity payment successful'
+            : 'Electricity payment failed. Wallet refunded.',
+      };
+    } finally {
+      await this.unlockWalletForTransaction(userId);
+    }
+  }
+
+  // ==================== Refund Failed Order ====================
+
+  async refundFailedOrder(orderId: string) {
+    this.logger.log(`[Refund] Processing refund for order: ${orderId}`);
+
+    const order = await this.prisma.vTUOrder.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Get the original transaction
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { reference: order.reference },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    // Get wallet balance before refund
+    const walletBeforeRefund = await this.prisma.wallet.findUnique({
+      where: { userId: order.userId },
+    });
+    const balanceBefore = walletBeforeRefund!.balance;
+    const balanceAfter = new Decimal(balanceBefore).plus(
+      transaction.totalAmount,
+    );
+
+    // Refund to wallet
+    await this.prisma.$transaction([
+      this.prisma.wallet.update({
+        where: { userId: order.userId },
+        data: {
+          balance: { increment: transaction.totalAmount },
+          ledgerBalance: { increment: transaction.totalAmount },
+        },
+      }),
+      this.prisma.transaction.create({
+        data: {
+          reference: `REFUND_${order.reference}`,
+          userId: order.userId,
+          type: 'REFUND',
+          amount: transaction.totalAmount,
+          fee: new Decimal(0),
+          totalAmount: transaction.totalAmount,
+          balanceBefore,
+          balanceAfter,
+          status: 'COMPLETED',
+          description: `Refund for failed ${order.serviceType} order`,
+          metadata: {
+            originalReference: order.reference,
+            orderId: order.id,
+          },
+        },
+      }),
+    ]);
+
+    this.logger.log(`[Refund] Refund successful for order: ${orderId}`);
+  }
+
+  // ==================== Order Management ====================
+
+  async getOrders(userId: string, filters: GetOrdersDto) {
+    const {
+      serviceType,
+      status,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+    } = filters;
+
+    const where: {
+      userId: string;
+      serviceType?: VTUServiceType;
+      status?: TransactionStatus;
+      createdAt?: {
+        gte?: Date;
+        lte?: Date;
+      };
+    } = {
+      userId,
+    };
+
+    if (serviceType) {
+      where.serviceType = serviceType;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(endDate);
+      }
+    }
+
+    const [orders, total] = await Promise.all([
+      this.prisma.vTUOrder.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.vTUOrder.count({ where }),
+    ]);
+
+    // Calculate summary
+    const allOrders = await this.prisma.vTUOrder.findMany({
+      where: { userId },
+    });
+
+    const summary = {
+      totalSpent: allOrders
+        .filter((o) => o.status === 'COMPLETED')
+        .reduce((sum, o) => sum + Number(o.amount), 0)
+        .toFixed(2),
+      completedOrders: allOrders.filter((o) => o.status === 'COMPLETED').length,
+      pendingOrders: allOrders.filter((o) => o.status === 'PENDING').length,
+      failedOrders: allOrders.filter((o) => o.status === 'FAILED').length,
+    };
+
+    return {
+      data: orders.map((order) => ({
+        id: order.id,
+        reference: order.reference,
+        serviceType: order.serviceType,
+        provider: order.provider,
+        recipient: order.recipient,
+        productCode: order.productCode,
+        productName: order.productName,
+        amount: order.amount.toString(),
+        status: order.status,
+        providerRef: order.providerRef,
+        createdAt: order.createdAt.toISOString(),
+        completedAt: order.completedAt?.toISOString(),
+      })),
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+      summary,
+    };
+  }
+
+  async getOrderById(orderId: string, userId: string) {
+    const order = await this.prisma.vTUOrder.findFirst({
+      where: { id: orderId, userId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return {
+      id: order.id,
+      reference: order.reference,
+      serviceType: order.serviceType,
+      provider: order.provider,
+      recipient: order.recipient,
+      productCode: order.productCode,
+      productName: order.productName,
+      amount: order.amount.toString(),
+      status: order.status,
+      providerRef: order.providerRef,
+      providerToken: order.providerToken,
+      providerResponse: order.providerResponse,
+      createdAt: order.createdAt.toISOString(),
+      completedAt: order.completedAt?.toISOString(),
+    };
+  }
+
+  async getOrderByReference(reference: string, userId: string) {
+    const order = await this.prisma.vTUOrder.findFirst({
+      where: { reference, userId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return this.getOrderById(order.id, userId);
+  }
+
+  async retryFailedOrder(orderId: string, userId: string) {
+    const order = await this.prisma.vTUOrder.findFirst({
+      where: { id: orderId, userId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.status !== 'FAILED') {
+      throw new BadRequestException('Only failed orders can be retried');
+    }
+
+    throw new BadRequestException(
+      'Retry functionality is not yet implemented. Please create a new order instead.',
+    );
+  }
+
+  // ==================== Update Transaction Status (from Webhook) ====================
+
+  async updateTransactionStatus(reference: string, status: TransactionStatus) {
+    const order = await this.prisma.vTUOrder.findUnique({
+      where: { reference },
+    });
+
+    if (!order) {
+      this.logger.warn(`[Webhook] Order not found: ${reference}`);
+      return;
+    }
+
+    await this.prisma.vTUOrder.update({
+      where: { reference },
+      data: {
+        status,
+        completedAt: status === 'COMPLETED' ? new Date() : undefined,
+      },
+    });
+
+    this.logger.log(
+      `[Webhook] Order status updated: ${reference} -> ${status}`,
+    );
+  }
+}
