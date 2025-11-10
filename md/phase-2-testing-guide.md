@@ -8,7 +8,7 @@
 
 - ✅ Server running on `http://localhost:3001/api`
 - ✅ User account created and logged in
-- ✅ Access token exported as `$TOKEN`
+- ✅ Access token exported as `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U`
 - ✅ Wallet funded with at least ₦10,000
 - ✅ VTPass API keys configured in `.env`
 
@@ -30,22 +30,23 @@ pnpm run start:dev
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "identifier": "your@email.com",
-    "password": "yourpassword"
+    "identifier": "ngrok.test@mularpay.com",
+    "password": "Test@12345"
   }'
 
 # Export token
-export TOKEN="your_access_token_here"
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg2NjU0LCJleHAiOjE3NjI3ODc1NTR9.KZH1-gLJjnwFT3vVH1khVYbaemQ4RUp118I9qrRylSc"
 ```
 
 ### 3. Check Wallet Balance
 
 ```bash
 curl -X GET http://localhost:3001/api/wallet \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Expected:**
+
 ```json
 {
   "id": "...",
@@ -62,10 +63,11 @@ curl -X GET http://localhost:3001/api/wallet \
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/airtime/providers \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Expected response:**
+
 ```json
 [
   { "code": "mtn", "name": "MTN", "logo": "🟡" },
@@ -79,16 +81,17 @@ curl -X GET http://localhost:3001/api/vtu/airtime/providers \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg2NjU0LCJleHAiOjE3NjI3ODc1NTR9.KZH1-gLJjnwFT3vVH1khVYbaemQ4RUp118I9qrRylSc" \
   -H "Content-Type: application/json" \
   -d '{
-    "network": "MTN",
-    "phone": "08012345678",
+    "network": "mtn",
+    "phone": "08011111111",
     "amount": 500
   }' | python3 -m json.tool
 ```
 
 **Expected response:**
+
 ```json
 {
   "reference": "VTU_AIR_1731234567890ABC",
@@ -113,13 +116,14 @@ export AIRTIME_REF="VTU_AIR_1731234567890ABC"
 
 ```bash
 curl -X GET http://localhost:3001/api/wallet \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg2NjU0LCJleHAiOjE3NjI3ODc1NTR9.KZH1-gLJjnwFT3vVH1khVYbaemQ4RUp118I9qrRylSc" | python3 -m json.tool
 ```
 
 **Expected:**
+
 ```json
 {
-  "balance": "9490"  // 10000 - 510
+  "balance": "5490" // 5000 - 510
 }
 ```
 
@@ -131,10 +135,11 @@ curl -X GET http://localhost:3001/api/wallet \
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/data/plans/MTN \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg2NjU0LCJleHAiOjE3NjI3ODc1NTR9.KZH1-gLJjnwFT3vVH1khVYbaemQ4RUp118I9qrRylSc" | python3 -m json.tool
 ```
 
 **Expected response:**
+
 ```json
 [
   {
@@ -162,7 +167,7 @@ curl -X GET http://localhost:3001/api/vtu/data/plans/MTN \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/data/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -172,6 +177,7 @@ curl -X POST http://localhost:3001/api/vtu/data/purchase \
 ```
 
 **Expected response:**
+
 ```json
 {
   "reference": "VTU_DATA_1731234567890XYZ",
@@ -190,14 +196,15 @@ curl -X POST http://localhost:3001/api/vtu/data/purchase \
 ### Test Other Networks
 
 **GLO Data:**
+
 ```bash
 # Get GLO plans
 curl -X GET http://localhost:3001/api/vtu/data/plans/GLO \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 
 # Purchase GLO data
 curl -X POST http://localhost:3001/api/vtu/data/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "GLO",
@@ -207,15 +214,17 @@ curl -X POST http://localhost:3001/api/vtu/data/purchase \
 ```
 
 **AIRTEL Data:**
+
 ```bash
 curl -X GET http://localhost:3001/api/vtu/data/plans/AIRTEL \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **9MOBILE Data:**
+
 ```bash
 curl -X GET http://localhost:3001/api/vtu/data/plans/9MOBILE \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ---
@@ -226,10 +235,11 @@ curl -X GET http://localhost:3001/api/vtu/data/plans/9MOBILE \
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/DSTV \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Expected response:**
+
 ```json
 [
   {
@@ -257,7 +267,7 @@ curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/DSTV \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/cable-tv/verify \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "provider": "DSTV",
@@ -266,6 +276,7 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/verify \
 ```
 
 **Expected response:**
+
 ```json
 {
   "valid": true,
@@ -281,7 +292,7 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/verify \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "provider": "DSTV",
@@ -292,6 +303,7 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
 ```
 
 **Expected response:**
+
 ```json
 {
   "reference": "VTU_CABLE_1731234567890DEF",
@@ -312,11 +324,11 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
 ```bash
 # Get GOtv plans
 curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/GOTV \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 
 # Pay GOtv
 curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "provider": "GOTV",
@@ -330,7 +342,7 @@ curl -X POST http://localhost:3001/api/vtu/cable-tv/pay \
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/STARTIMES \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ---
@@ -341,10 +353,11 @@ curl -X GET http://localhost:3001/api/vtu/cable-tv/plans/STARTIMES \
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/electricity/providers \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Expected response:**
+
 ```json
 [
   { "code": "ikeja-electric", "name": "Ikeja Electric (IKEDC)", "region": "Lagos" },
@@ -358,7 +371,7 @@ curl -X GET http://localhost:3001/api/vtu/electricity/providers \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/electricity/verify \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "disco": "ikeja-electric",
@@ -368,6 +381,7 @@ curl -X POST http://localhost:3001/api/vtu/electricity/verify \
 ```
 
 **Expected response:**
+
 ```json
 {
   "valid": true,
@@ -384,7 +398,7 @@ curl -X POST http://localhost:3001/api/vtu/electricity/verify \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/electricity/pay \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "disco": "ikeja-electric",
@@ -396,6 +410,7 @@ curl -X POST http://localhost:3001/api/vtu/electricity/pay \
 ```
 
 **Expected response:**
+
 ```json
 {
   "reference": "VTU_ELEC_1731234567890GHI",
@@ -415,7 +430,7 @@ curl -X POST http://localhost:3001/api/vtu/electricity/pay \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/electricity/pay \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "disco": "eko-electric",
@@ -434,10 +449,11 @@ curl -X POST http://localhost:3001/api/vtu/electricity/pay \
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/orders \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Expected response:**
+
 ```json
 {
   "data": [
@@ -474,54 +490,61 @@ curl -X GET http://localhost:3001/api/vtu/orders \
 ### Filter by Service Type
 
 **Airtime only:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?serviceType=AIRTIME" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Data only:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?serviceType=DATA" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Cable TV only:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?serviceType=CABLE_TV" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Electricity only:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?serviceType=ELECTRICITY" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ### Filter by Status
 
 **Completed:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?status=COMPLETED" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Pending:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?status=PENDING" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Failed:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?status=FAILED" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ### Filter by Date Range
 
 ```bash
 curl -X GET "http://localhost:3001/api/vtu/orders?startDate=2025-11-01&endDate=2025-11-30" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ### Pagination
@@ -529,7 +552,7 @@ curl -X GET "http://localhost:3001/api/vtu/orders?startDate=2025-11-01&endDate=2
 ```bash
 # Page 2, 10 items per page
 curl -X GET "http://localhost:3001/api/vtu/orders?page=2&limit=10" \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ### Get Order by ID
@@ -538,14 +561,14 @@ curl -X GET "http://localhost:3001/api/vtu/orders?page=2&limit=10" \
 export ORDER_ID="your-order-uuid"
 
 curl -X GET http://localhost:3001/api/vtu/orders/$ORDER_ID \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ### Get Order by Reference
 
 ```bash
 curl -X GET http://localhost:3001/api/vtu/orders/reference/$AIRTIME_REF \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 ---
@@ -557,7 +580,7 @@ curl -X GET http://localhost:3001/api/vtu/orders/reference/$AIRTIME_REF \
 ```bash
 # Try to buy ₦100,000 airtime (more than wallet balance)
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -567,6 +590,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected:**
+
 ```json
 {
   "statusCode": 400,
@@ -579,7 +603,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -589,6 +613,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected:**
+
 ```json
 {
   "statusCode": 400,
@@ -601,7 +626,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "INVALID",
@@ -611,6 +636,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected:**
+
 ```json
 {
   "statusCode": 400,
@@ -622,9 +648,10 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ### Test Amount Limits
 
 **Below minimum:**
+
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -634,6 +661,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected:**
+
 ```json
 {
   "statusCode": 400,
@@ -643,9 +671,10 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Above maximum:**
+
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -655,6 +684,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected:**
+
 ```json
 {
   "statusCode": 400,
@@ -668,7 +698,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```bash
 # Purchase same airtime twice within 1 minute
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -678,7 +708,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 
 # Immediately retry
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -688,6 +718,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected on second request:**
+
 ```json
 {
   "statusCode": 409,
@@ -702,7 +733,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 # Run two purchases at the same time (in different terminals)
 # Terminal 1:
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -712,7 +743,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 
 # Terminal 2 (immediately):
 curl -X POST http://localhost:3001/api/vtu/data/purchase \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" \
   -H "Content-Type: application/json" \
   -d '{
     "network": "MTN",
@@ -722,6 +753,7 @@ curl -X POST http://localhost:3001/api/vtu/data/purchase \
 ```
 
 **Expected on second request:**
+
 ```json
 {
   "statusCode": 409,
@@ -738,10 +770,11 @@ curl -X POST http://localhost:3001/api/vtu/data/purchase \
 
 ```bash
 curl -X GET http://localhost:3001/api/wallet/transactions \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzg1MDI0LCJleHAiOjE3NjI3ODU5MjR9.jhT2dJmXsneRpTU6KyDgUZGsRIvmL3wuAdq417FH19U" | python3 -m json.tool
 ```
 
 **Should show VTU purchases:**
+
 ```json
 {
   "data": [
@@ -833,6 +866,7 @@ curl -X GET http://localhost:3001/api/wallet/transactions \
 ## 🎯 Success Criteria
 
 All tests should pass with:
+
 - ✅ Correct status codes
 - ✅ Wallet balance updates
 - ✅ Transaction records created
@@ -880,4 +914,3 @@ All tests should pass with:
 **Happy Testing! 🎉**
 
 All endpoints are now functional and ready for production deployment after successful local testing.
-
