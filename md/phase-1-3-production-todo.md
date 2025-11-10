@@ -127,7 +127,7 @@ npm install axios # For API calls
 - **Cost:** ₦100-150 per lookup
 
 ```bash
-npm install @mono.co/connect-node
+npm install @mono.co/connect.js
 ```
 
 **Option B: Okra**
@@ -179,14 +179,14 @@ npm install @mono.co/connect-node
 
 **Production Implementation:**
 
-**Option A: Mono**
+**Option A: Mono** USE THIS
 
 - ✅ Also supports NIN verification
 - ✅ Same API as BVN
 - ✅ Bundle pricing available
 - **Cost:** ₦200-250 per lookup
 
-**Option B: Dojah (Recommended for NIN)**
+**Option B: Dojah**
 
 - ✅ Specializes in identity verification
 - ✅ Fast NIN lookups
@@ -203,7 +203,7 @@ npm install @mono.co/connect-node
 
 **Implementation Tasks:**
 
-- [ ] Choose NIN verification provider
+- [ ] Choose NIN verification provider. MONO
 - [ ] Sign up for sandbox/test environment
 - [ ] Get API keys (test + production)
 - [ ] Add API keys to environment variables
@@ -378,7 +378,7 @@ npm install @mono.co/connect-node
 
 ### Phase 3: Enhancement (Week 4)
 
-1. ⚪ NIN Integration (Dojah)
+1. ⚪ NIN Integration (Mono)
 2. ⚪ Email Templates
 3. ⚪ SMS Templates
 4. ⚪ Monitoring Dashboard
@@ -404,14 +404,9 @@ RESEND_API_KEY=re_xxxxxxxxxxxxx
 TERMII_API_KEY=TL_xxxxxxxxxxxxx
 TERMII_SENDER_ID=MularPay
 
-# BVN Verification (Mono)
+# BVN and NIN Verification (Mono)
 MONO_SECRET_KEY=sk_test_xxxxxxxxxxxxx
 MONO_PUBLIC_KEY=pk_test_xxxxxxxxxxxxx
-
-# NIN Verification (Dojah)
-DOJAH_APP_ID=xxxxxxxxxxxxx
-DOJAH_SECRET_KEY=xxxxxxxxxxxxx
-DOJAH_PUBLIC_KEY=xxxxxxxxxxxxx
 
 # Feature Flags
 ENABLE_EMAIL_VERIFICATION=true
@@ -450,7 +445,6 @@ apps/mularpay-api/src/
 │   ├── identity/
 │   │   ├── identity.service.ts       # Abstract interface
 │   │   ├── mono.service.ts           # Mono implementation
-│   │   ├── dojah.service.ts          # Dojah implementation
 │   │   └── identity.types.ts         # Shared types
 │   └── verification/
 │       ├── verification.service.ts   # Main verification logic
@@ -475,7 +469,6 @@ apps/mularpay-api/src/
 ### Identity Verification
 
 - **Mono:** https://docs.mono.co
-- **Dojah:** https://docs.dojah.io
 - **Okra:** https://docs.okra.ng
 - **Youverify:** https://docs.youverify.co
 

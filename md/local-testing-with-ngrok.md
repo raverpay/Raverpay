@@ -25,6 +25,7 @@ pnpm run start:dev
 ```
 
 **Expected output:**
+
 ```
 [Nest] 12345  - 11/09/2025, 4:00:00 PM     LOG [NestFactory] Starting Nest application...
 [Nest] 12345  - 11/09/2025, 4:00:00 PM     LOG [InstanceLoader] AppModule dependencies initialized
@@ -42,6 +43,7 @@ curl http://localhost:3001/api
 ```
 
 **Expected response:**
+
 ```
 Welcome to MularPay API 🇳🇬
 ```
@@ -60,8 +62,9 @@ ngrok http 3001
 ```
 
 **Expected output:**
+
 ```
-ngrok                                                                              
+ngrok
 
 Session Status                online
 Account                       Your Name (Plan: Free)
@@ -101,9 +104,11 @@ Don't close Terminal 2! ngrok needs to stay running to forward requests.
 2. **Scroll to "Webhook URL" section**
 
 3. **Paste your webhook URL:**
+
    ```
    https://abc123xyz.ngrok-free.app/api/payments/webhooks/paystack
    ```
+
    (Replace `abc123xyz` with your actual ngrok URL)
 
 4. **Click "Save"**
@@ -117,6 +122,7 @@ After saving, Paystack should show a "Test Webhook URL" button.
 2. **Check Terminal 1 (API Server)**
 
 **You should see:**
+
 ```
 [PaymentsController] Webhook event received: charge.success
 [PaymentsController] Unhandled event: charge.success (or similar)
@@ -160,6 +166,7 @@ curl -X POST http://localhost:3001/api/auth/login \
 ```
 
 **Response:**
+
 ```json
 {
   "user": { ... },
@@ -173,7 +180,7 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 ```bash
 # Copy the accessToken from response and export it
-export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzYyNzQ1LCJleHAiOjE3NjI3NjM2NDV9.43TjL7z7Eclour3YAc7aPjKDjgTlU5PXXyiKf9OBvd4"
 ```
 
 **Verify token works:**
@@ -184,6 +191,7 @@ curl -X GET http://localhost:3001/api/wallet \
 ```
 
 **Expected:**
+
 ```json
 {
   "id": "...",
@@ -218,6 +226,7 @@ curl -X POST http://localhost:3001/api/transactions/fund/card \
 ```
 
 **Response:**
+
 ```json
 {
   "reference": "TXN_DEP_1762703...",
@@ -229,7 +238,7 @@ curl -X POST http://localhost:3001/api/transactions/fund/card \
 ### Save the Reference
 
 ```bash
-export REFERENCE="TXN_DEP_1762703..."
+export REFERENCE="TXN_DEP_1762703..." -> TXN_DEP_17627628955732150
 ```
 
 ### Complete Payment on Paystack
@@ -237,11 +246,13 @@ export REFERENCE="TXN_DEP_1762703..."
 1. **Copy the `authorizationUrl`** from the response
 
 2. **Open URL in browser:**
+
    ```
    https://checkout.paystack.com/abc123xyz
    ```
 
 3. **Enter Paystack test card:**
+
    ```
    Card Number: 4084 0840 8408 4081
    CVV: 408
@@ -265,6 +276,7 @@ export REFERENCE="TXN_DEP_1762703..."
 1. **Paystack processes payment** ✅
 
 2. **Paystack sends webhook to ngrok:**
+
    ```
    POST https://abc123xyz.ngrok-free.app/api/payments/webhooks/paystack
    ```
@@ -278,6 +290,7 @@ export REFERENCE="TXN_DEP_1762703..."
 ### Monitor in Real-Time
 
 **Terminal 1 (API Server) will show:**
+
 ```
 [PaymentsController] Webhook event received: charge.success
 [PaystackService] Verifying payment: TXN_DEP_1762703...
@@ -286,6 +299,7 @@ export REFERENCE="TXN_DEP_1762703..."
 ```
 
 **ngrok Dashboard (http://127.0.0.1:4040) will show:**
+
 - POST request to `/api/payments/webhooks/paystack`
 - Status: 200 OK
 - Request headers (including `x-paystack-signature`)
@@ -293,6 +307,7 @@ export REFERENCE="TXN_DEP_1762703..."
 - Response: `{"status": "success"}`
 
 **Paystack Dashboard will show:**
+
 - Transaction status: Success
 - Webhook delivery: Delivered ✅
 
@@ -308,6 +323,7 @@ curl -X GET http://localhost:3001/api/transactions/verify/$REFERENCE \
 ```
 
 **Expected response:**
+
 ```json
 {
   "status": "success",
@@ -329,6 +345,7 @@ curl -X GET http://localhost:3001/api/wallet \
 ```
 
 **Expected:**
+
 ```json
 {
   "balance": "5000",
@@ -347,6 +364,7 @@ curl -X GET http://localhost:3001/api/wallet/transactions \
 ```
 
 **Expected:**
+
 ```json
 {
   "data": [
@@ -408,6 +426,7 @@ curl -X POST http://localhost:3001/api/transactions/withdraw \
 ```
 
 **Expected response:**
+
 ```json
 {
   "reference": "TXN_WD_1762703...",
@@ -426,6 +445,7 @@ curl -X POST http://localhost:3001/api/transactions/withdraw \
 If withdrawal succeeds, Paystack will send `transfer.success` webhook.
 
 **Terminal 1 will show:**
+
 ```
 [PaymentsController] Webhook event received: transfer.success
 [PaymentsController] Transfer completed: TXN_WD_1762703...
@@ -440,6 +460,7 @@ If withdrawal succeeds, Paystack will send `transfer.success` webhook.
 **Open:** http://127.0.0.1:4040
 
 **Features:**
+
 - 📊 See all HTTP requests in real-time
 - 🔍 Inspect request/response headers
 - 📝 View full request/response bodies
@@ -447,6 +468,7 @@ If withdrawal succeeds, Paystack will send `transfer.success` webhook.
 - ⏱️ See request timing
 
 **Click on any request to see:**
+
 - HTTP method, path, status code
 - Request headers (including `x-paystack-signature`)
 - Request body (webhook payload)
@@ -456,6 +478,7 @@ If withdrawal succeeds, Paystack will send `transfer.success` webhook.
 ### Server Logs (Terminal 1)
 
 Watch for:
+
 ```
 ✅ Good signs:
 [PaymentsController] Webhook event received: charge.success
@@ -471,12 +494,14 @@ Watch for:
 ### Paystack Dashboard
 
 **Check webhook delivery:**
+
 1. Go to: https://dashboard.paystack.com/#/transactions
 2. Click on your transaction
 3. Scroll to "Webhooks" section
 4. See delivery status and response
 
 **Webhook logs show:**
+
 - Delivery attempt time
 - HTTP status code
 - Response body
@@ -489,6 +514,7 @@ Watch for:
 ### Issue 1: "Webhook not received"
 
 **Symptoms:**
+
 - Payment successful on Paystack
 - No logs in Terminal 1
 - No request in ngrok dashboard
@@ -496,6 +522,7 @@ Watch for:
 **Solutions:**
 
 1. **Check ngrok is running:**
+
    ```bash
    curl http://localhost:4040/api/tunnels
    ```
@@ -509,6 +536,7 @@ Watch for:
 ### Issue 2: "Invalid signature" error
 
 **Symptoms:**
+
 ```
 [PaymentsController] Invalid webhook signature
 ```
@@ -516,6 +544,7 @@ Watch for:
 **Solutions:**
 
 1. **Check `PAYSTACK_SECRET_KEY` in `.env`:**
+
    ```bash
    cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
    grep PAYSTACK_SECRET_KEY .env
@@ -532,6 +561,7 @@ Watch for:
 ### Issue 3: "Wallet not credited"
 
 **Symptoms:**
+
 - Webhook received
 - No errors in logs
 - Balance still ₦0
@@ -539,16 +569,19 @@ Watch for:
 **Solutions:**
 
 1. **Check transaction status:**
+
    ```bash
    curl -X GET http://localhost:3001/api/transactions/verify/$REFERENCE \
      -H "Authorization: Bearer $TOKEN"
    ```
 
 2. **Check database directly** (use Prisma Studio):
+
    ```bash
    cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
    pnpm prisma studio
    ```
+
    - Open: http://localhost:5555
    - Check `transactions` table
    - Check `wallets` table
@@ -558,6 +591,7 @@ Watch for:
 ### Issue 4: "Payment successful but webhook failed"
 
 **Symptoms:**
+
 - Payment completed on Paystack
 - Paystack dashboard shows "Webhook failed"
 - Error 500 or timeout
@@ -567,6 +601,7 @@ Watch for:
 1. **Check server is running** (Terminal 1)
 
 2. **Check if code has syntax errors:**
+
    ```bash
    cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
    pnpm run build
@@ -604,6 +639,7 @@ Watch for:
 Use this checklist for each test session:
 
 ### Setup
+
 - [ ] Terminal 1: API server running (`pnpm run start:dev`)
 - [ ] Terminal 2: ngrok running (`ngrok http 3001`)
 - [ ] Terminal 3: Ready for curl commands
@@ -612,6 +648,7 @@ Use this checklist for each test session:
 - [ ] Test webhook button clicked (success)
 
 ### Payment Flow
+
 - [ ] User registered/logged in
 - [ ] Access token exported (`export TOKEN="..."`)
 - [ ] Initial balance checked (₦0)
@@ -625,6 +662,7 @@ Use this checklist for each test session:
 - [ ] Transaction status: COMPLETED
 
 ### Monitoring
+
 - [ ] Server logs show webhook received
 - [ ] ngrok dashboard shows 200 OK
 - [ ] Paystack dashboard shows webhook delivered
@@ -736,4 +774,3 @@ After successful local testing:
 **Happy Testing! 🎉**
 
 If you encounter issues, check the troubleshooting section or review the ngrok dashboard for request details.
-
