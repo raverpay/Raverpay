@@ -96,6 +96,9 @@ export class AuthService {
         });
 
       // Send email verification code (async, don't wait)
+      this.logger.log(
+        `Triggering email verification for userId=${user.id}, email=${user.email}`,
+      );
       this.usersService.sendEmailVerification(user.id).catch((error) => {
         this.logger.warn(
           `Failed to send email verification for ${user.email}`,

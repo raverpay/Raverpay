@@ -423,6 +423,9 @@ export class UsersService {
    * @returns Success message
    */
   async sendEmailVerification(userId: string) {
+    this.logger.log(
+      `[EmailVerify] Start sendEmailVerification userId=${userId}`,
+    );
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -441,6 +444,9 @@ export class UsersService {
     ).toString();
 
     // Send email with verification code
+    this.logger.log(
+      `[EmailVerify] Generated code for ${user.email}. Attempting email send...`,
+    );
     const emailSent = await this.emailService.sendVerificationCode(
       user.email,
       verificationCode,
@@ -450,6 +456,10 @@ export class UsersService {
     if (!emailSent) {
       this.logger.warn(
         `Failed to send verification email to ${user.email}, but code is stored`,
+      );
+    } else {
+      this.logger.log(
+        `[EmailVerify] Email send reported success for ${user.email}`,
       );
     }
 

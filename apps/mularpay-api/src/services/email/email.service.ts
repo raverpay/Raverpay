@@ -30,6 +30,9 @@ export class EmailService {
         '⚠️ RESEND_API_KEY not found - Email service will run in MOCK mode',
       );
     }
+    this.logger.log(
+      `EmailService config -> enabled=${this.enabled}, resendInitialized=${!!this.resend}, from="${this.fromName} <${this.fromEmail}>"`,
+    );
   }
 
   /**
@@ -40,6 +43,9 @@ export class EmailService {
     code: string,
     firstName: string,
   ): Promise<boolean> {
+    this.logger.log(
+      `sendVerificationCode called -> to=${email}, enabled=${this.enabled}, resendInitialized=${!!this.resend}`,
+    );
     if (!this.enabled) {
       this.logger.log(`📧 [MOCK] Verification code email to ${email}: ${code}`);
       return true;
