@@ -180,7 +180,7 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 ```bash
 # Copy the accessToken from response and export it
-export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmJhYTM1Mi02ZmIxLTQzOWYtODgxMS01ZmNmZDQyYzZiNjEiLCJlbWFpbCI6Im5ncm9rLnRlc3RAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwODAxMTIyMzM0NCIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyNzYyNzQ1LCJleHAiOjE3NjI3NjM2NDV9.43TjL7z7Eclour3YAc7aPjKDjgTlU5PXXyiKf9OBvd4"
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NWIyYzFmOS05NDU3LTRlOTItOGIxOS03YmU2Y2YyYWVlYjIiLCJlbWFpbCI6ImVsZWMubm92MTFAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwNzA0NDU1NjY3NyIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyODUwMjU1LCJleHAiOjE3NjI4NTExNTV9.KZ_lNWo8hxLkJnB6zFHy5q3ho9_TTCELtH_9ssr5QPY"
 ```
 
 **Verify token works:**
@@ -209,7 +209,7 @@ curl -X GET http://localhost:3001/api/wallet \
 
 ```bash
 curl -X GET http://localhost:3001/api/wallet \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NWIyYzFmOS05NDU3LTRlOTItOGIxOS03YmU2Y2YyYWVlYjIiLCJlbWFpbCI6ImVsZWMubm92MTFAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwNzA0NDU1NjY3NyIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyODUwMjU1LCJleHAiOjE3NjI4NTExNTV9.KZ_lNWo8hxLkJnB6zFHy5q3ho9_TTCELtH_9ssr5QPY" | python3 -m json.tool
 ```
 
 **Expected:** `"balance": "0"`
@@ -218,10 +218,10 @@ curl -X GET http://localhost:3001/api/wallet \
 
 ```bash
 curl -X POST http://localhost:3001/api/transactions/fund/card \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NWIyYzFmOS05NDU3LTRlOTItOGIxOS03YmU2Y2YyYWVlYjIiLCJlbWFpbCI6ImVsZWMubm92MTFAbXVsYXJwYXkuY29tIiwicGhvbmUiOiIwNzA0NDU1NjY3NyIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzYyODUwMjU1LCJleHAiOjE3NjI4NTExNTV9.KZ_lNWo8hxLkJnB6zFHy5q3ho9_TTCELtH_9ssr5QPY" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 5000
+    "amount": 45000
   }' | python3 -m json.tool
 ```
 
