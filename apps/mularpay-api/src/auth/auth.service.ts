@@ -11,6 +11,7 @@ import { VirtualAccountsService } from '../virtual-accounts/virtual-accounts.ser
 import { RegisterDto, LoginDto } from './dto';
 import * as argon2 from 'argon2';
 import { User, UserStatus } from '@prisma/client';
+import { UsersService } from '../users/users.service';
 
 /**
  * Authentication Service
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly virtualAccountsService: VirtualAccountsService,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -92,6 +94,14 @@ export class AuthService {
             error,
           );
         });
+
+      // Send email verification code (async, don't wait)
+      this.usersService.sendEmailVerification(user.id).catch((error) => {
+        this.logger.warn(
+          `Failed to send email verification for ${user.email}`,
+          error,
+        );
+      });
 
       // Generate tokens
       const tokens = await this.generateTokens(user);

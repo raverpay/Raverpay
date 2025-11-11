@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
 import { VirtualAccountsModule } from '../virtual-accounts/virtual-accounts.module';
+import { UsersModule } from '../users/users.module';
 
 /**
  * Authentication Module
@@ -21,6 +22,7 @@ import { VirtualAccountsModule } from '../virtual-accounts/virtual-accounts.modu
       signOptions: { expiresIn: '15m' },
     }),
     VirtualAccountsModule,
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
