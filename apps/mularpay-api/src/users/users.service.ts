@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { KYCTier } from '@prisma/client';
@@ -13,6 +14,8 @@ import {
   VerifyNinDto,
   ChangePasswordDto,
 } from './dto';
+import { EmailService } from '../services/email/email.service';
+import { SmsService } from '../services/sms/sms.service';
 
 /**
  * User profile response type with wallet
@@ -56,7 +59,13 @@ export interface UserProfileResponse {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(UsersService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+    private readonly smsService: SmsService,
+  ) {}
 
   /**
    * Get user profile by ID
@@ -431,23 +440,39 @@ export class UsersService {
       100000 + Math.random() * 900000,
     ).toString();
 
-    // TODO: Send email with verification code
-    // For now, we'll log it (in production, use a service like SendGrid, AWS SES)
-    console.log(
-      `Email verification code for ${user.email}: ${verificationCode}`,
+    // Send email with verification code
+    const emailSent = await this.emailService.sendVerificationCode(
+      user.email,
+      verificationCode,
+      user.firstName,
     );
 
-    // Store verification code in database (expires in 10 minutes)
-    // TODO: Create a VerificationCode model or use Redis for better performance
-    // For now, we'll use SystemConfig as a temporary storage
+    if (!emailSent) {
+      this.logger.warn(
+        `Failed to send verification email to ${user.email}, but code is stored`,
+      );
+    }
+
+    // Store verification code with expiry timestamp
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
+
     await this.prisma.systemConfig.upsert({
       where: { key: `email_verification_${userId}` },
       create: {
         key: `email_verification_${userId}`,
-        value: verificationCode,
+        value: JSON.stringify({
+          code: verificationCode,
+          expiresAt: expiresAt.toISOString(),
+          attempts: 0,
+        }),
       },
       update: {
-        value: verificationCode,
+        value: JSON.stringify({
+          code: verificationCode,
+          expiresAt: expiresAt.toISOString(),
+          attempts: 0,
+        }),
       },
     });
 
@@ -477,12 +502,72 @@ export class UsersService {
     }
 
     // Get stored verification code
-    const storedCode = await this.prisma.systemConfig.findUnique({
+    const storedData = await this.prisma.systemConfig.findUnique({
       where: { key: `email_verification_${userId}` },
     });
 
-    if (!storedCode || storedCode.value !== code) {
-      throw new BadRequestException('Invalid or expired verification code');
+    if (!storedData) {
+      throw new BadRequestException(
+        'No verification code found. Please request a new one.',
+      );
+    }
+
+    // Parse stored data
+    let verificationData: {
+      code: string;
+      expiresAt: string;
+      attempts: number;
+    };
+
+    try {
+      verificationData = JSON.parse(storedData.value as string) as {
+        code: string;
+        expiresAt: string;
+        attempts: number;
+      };
+    } catch {
+      // Fallback for old format (plain string)
+      verificationData = {
+        code: storedData.value as string,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        attempts: 0,
+      };
+    }
+
+    // Check expiration
+    if (new Date() > new Date(verificationData.expiresAt)) {
+      await this.prisma.systemConfig.delete({
+        where: { key: `email_verification_${userId}` },
+      });
+      throw new BadRequestException(
+        'Verification code has expired. Please request a new one.',
+      );
+    }
+
+    // Check attempts (max 5)
+    if (verificationData.attempts >= 5) {
+      await this.prisma.systemConfig.delete({
+        where: { key: `email_verification_${userId}` },
+      });
+      throw new BadRequestException(
+        'Too many failed attempts. Please request a new code.',
+      );
+    }
+
+    // Verify code
+    if (verificationData.code !== code) {
+      // Increment attempts
+      verificationData.attempts++;
+      await this.prisma.systemConfig.update({
+        where: { key: `email_verification_${userId}` },
+        data: {
+          value: JSON.stringify(verificationData),
+        },
+      });
+
+      throw new BadRequestException(
+        `Invalid verification code. ${5 - verificationData.attempts} attempts remaining.`,
+      );
     }
 
     // Determine KYC tier upgrade
@@ -512,6 +597,9 @@ export class UsersService {
       where: { key: `email_verification_${userId}` },
     });
 
+    // Send welcome email
+    await this.emailService.sendWelcomeEmail(user.email, user.firstName);
+
     // Create audit log
     await this.prisma.auditLog.create({
       data: {
@@ -527,6 +615,7 @@ export class UsersService {
     return {
       message: 'Email verified successfully',
       emailVerified: true,
+      kycTier: newKycTier,
     };
   }
 
@@ -553,21 +642,39 @@ export class UsersService {
       100000 + Math.random() * 900000,
     ).toString();
 
-    // TODO: Send SMS with verification code
-    // For now, we'll log it (in production, use Twilio, Termii, or similar)
-    console.log(
-      `Phone verification code for ${user.phone}: ${verificationCode}`,
+    // Send SMS with verification code
+    const smsSent = await this.smsService.sendVerificationCode(
+      user.phone,
+      verificationCode,
+      user.firstName,
     );
 
-    // Store verification code in database
+    if (!smsSent) {
+      this.logger.warn(
+        `Failed to send verification SMS to ${user.phone}, but code is stored`,
+      );
+    }
+
+    // Store verification code with expiry timestamp
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
+
     await this.prisma.systemConfig.upsert({
       where: { key: `phone_verification_${userId}` },
       create: {
         key: `phone_verification_${userId}`,
-        value: verificationCode,
+        value: JSON.stringify({
+          code: verificationCode,
+          expiresAt: expiresAt.toISOString(),
+          attempts: 0,
+        }),
       },
       update: {
-        value: verificationCode,
+        value: JSON.stringify({
+          code: verificationCode,
+          expiresAt: expiresAt.toISOString(),
+          attempts: 0,
+        }),
       },
     });
 
@@ -597,12 +704,72 @@ export class UsersService {
     }
 
     // Get stored verification code
-    const storedCode = await this.prisma.systemConfig.findUnique({
+    const storedData = await this.prisma.systemConfig.findUnique({
       where: { key: `phone_verification_${userId}` },
     });
 
-    if (!storedCode || storedCode.value !== code) {
-      throw new BadRequestException('Invalid or expired verification code');
+    if (!storedData) {
+      throw new BadRequestException(
+        'No verification code found. Please request a new one.',
+      );
+    }
+
+    // Parse stored data
+    let verificationData: {
+      code: string;
+      expiresAt: string;
+      attempts: number;
+    };
+
+    try {
+      verificationData = JSON.parse(storedData.value as string) as {
+        code: string;
+        expiresAt: string;
+        attempts: number;
+      };
+    } catch {
+      // Fallback for old format (plain string)
+      verificationData = {
+        code: storedData.value as string,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        attempts: 0,
+      };
+    }
+
+    // Check expiration
+    if (new Date() > new Date(verificationData.expiresAt)) {
+      await this.prisma.systemConfig.delete({
+        where: { key: `phone_verification_${userId}` },
+      });
+      throw new BadRequestException(
+        'Verification code has expired. Please request a new one.',
+      );
+    }
+
+    // Check attempts (max 5)
+    if (verificationData.attempts >= 5) {
+      await this.prisma.systemConfig.delete({
+        where: { key: `phone_verification_${userId}` },
+      });
+      throw new BadRequestException(
+        'Too many failed attempts. Please request a new code.',
+      );
+    }
+
+    // Verify code
+    if (verificationData.code !== code) {
+      // Increment attempts
+      verificationData.attempts++;
+      await this.prisma.systemConfig.update({
+        where: { key: `phone_verification_${userId}` },
+        data: {
+          value: JSON.stringify(verificationData),
+        },
+      });
+
+      throw new BadRequestException(
+        `Invalid verification code. ${5 - verificationData.attempts} attempts remaining.`,
+      );
     }
 
     // Determine KYC tier upgrade
@@ -647,6 +814,7 @@ export class UsersService {
     return {
       message: 'Phone number verified successfully',
       phoneVerified: true,
+      kycTier: newKycTier,
     };
   }
 
