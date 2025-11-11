@@ -1617,13 +1617,12 @@ GET /api/health
 
 ---
 
-## Missing Endpoints
+## Transaction PIN Management
 
-These endpoints are **required** for the mobile app but **do not exist yet** in the API:
+**Base Path:** `/api/users`
+**Authentication:** All endpoints require JWT
 
-### 1. Transaction PIN System (HIGH PRIORITY)
-
-#### Set Transaction PIN
+### Set Transaction PIN
 ```http
 POST /api/users/set-pin
 ```
@@ -1641,17 +1640,18 @@ POST /api/users/set-pin
 - PINs must match
 - Cannot be 0000, 1234, 1111, etc.
 
-**Response (201):**
+**Response (200):**
 ```json
 {
+  "success": true,
   "message": "Transaction PIN set successfully",
-  "pinSet": true
+  "pinSetAt": "2025-11-11T10:30:00.000Z"
 }
 ```
 
 ---
 
-#### Verify Transaction PIN
+### Verify Transaction PIN
 ```http
 POST /api/users/verify-pin
 ```
@@ -1670,13 +1670,14 @@ POST /api/users/verify-pin
 }
 ```
 
-**Errors:**
-- 400: Invalid PIN
-- 429: Too many attempts (locked)
+**Error Responses:**
+- `400 Bad Request` - "Invalid PIN. X attempts remaining"
+- `400 Bad Request` - "Too many failed attempts. Try again in 30 minutes"
+- `400 Bad Request` - "PIN not set. Please set a PIN first"
 
 ---
 
-#### Change Transaction PIN
+### Change Transaction PIN
 ```http
 POST /api/users/change-pin
 ```
@@ -1693,20 +1694,24 @@ POST /api/users/change-pin
 **Response (200):**
 ```json
 {
-  "message": "Transaction PIN changed successfully"
+  "success": true,
+  "message": "PIN changed successfully"
 }
 ```
 
 **Notes:**
-- All withdrawal and VTU purchase endpoints should accept `pin` parameter
-- Verify PIN before processing transaction
-- Lock after 5 failed attempts (15 min lockout)
+- PIN must be different from current PIN
+- Weak PINs (0000, 1111, 1234, etc.) are rejected
+- Current PIN is verified before change
 
 ---
 
-### 2. Password Reset Flow
+## Password Reset Flow
 
-#### Request Password Reset
+**Base Path:** `/api/auth`
+**Authentication:** None (Public endpoints)
+
+### Request Password Reset (Forgot Password)
 ```http
 POST /api/auth/forgot-password
 ```
@@ -1767,15 +1772,24 @@ POST /api/auth/reset-password
 **Response (200):**
 ```json
 {
+  "success": true,
   "message": "Password reset successfully"
 }
 ```
 
+**Notes:**
+- Password must meet strength requirements (8+ chars, uppercase, lowercase, number/special char)
+- Reset token expires in 15 minutes
+- User is notified via email after successful reset
+
 ---
 
-### 3. Profile Picture Upload
+## Profile Picture Management
 
-#### Upload Avatar
+**Base Path:** `/api/users`
+**Authentication:** All endpoints require JWT
+
+### Upload Avatar
 ```http
 POST /api/users/upload-avatar
 ```
@@ -1790,20 +1804,26 @@ file: <image file>
 **Response (200):**
 ```json
 {
-  "message": "Avatar uploaded successfully",
-  "avatarUrl": "https://storage.mularpay.com/avatars/user123.jpg"
+  "success": true,
+  "avatarUrl": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/avatars/xyz.jpg"
 }
 ```
 
 **Notes:**
-- Accept: JPG, PNG, WebP
-- Max size: 5MB
-- Auto-resize to 512x512
-- Store in cloud storage (S3, Cloudinary, etc.)
+- Uses Cloudinary for image storage
+- Accepted formats: JPG, JPEG, PNG, WebP
+- Max file size: 5MB
+- Auto-resized to 500x500 pixels
+- Old avatar automatically deleted when uploading new one
+
+**Validation Errors:**
+- `400 Bad Request` - "Only image files are allowed (JPEG, JPG, PNG, WebP)"
+- `400 Bad Request` - "File size must not exceed 5MB"
+- `400 Bad Request` - "No file uploaded"
 
 ---
 
-#### Delete Avatar
+### Delete Avatar
 ```http
 DELETE /api/users/avatar
 ```
@@ -1811,15 +1831,24 @@ DELETE /api/users/avatar
 **Response (200):**
 ```json
 {
+  "success": true,
   "message": "Avatar deleted successfully"
 }
 ```
 
+**Notes:**
+- Deletes avatar from Cloudinary
+- Sets user.avatar to null in database
+- Returns error if no avatar exists
+
 ---
 
-### 4. Notifications System
+## Notifications System
 
-#### Get Notifications
+**Base Path:** `/api/notifications`
+**Authentication:** All endpoints require JWT
+
+### Get Notifications
 ```http
 GET /api/notifications?page=1&limit=20&type=TRANSACTION
 ```
@@ -1957,9 +1986,9 @@ X-RateLimit-Reset: 1699876543
 
 ## Summary
 
-### Existing Endpoints: ✅
+### Total Endpoints: ✅
 
-**Total: 52 endpoints**
+**Total: 65 endpoints** (52 existing + 13 new)
 
 - Authentication: 4 endpoints
 - Users: 8 endpoints
@@ -1979,12 +2008,21 @@ X-RateLimit-Reset: 1699876543
 3. Profile Picture: 2 endpoints (upload, delete)
 4. Notifications: 5 endpoints (list, mark read, mark all read, delete, get unread count)
 
-### Priority Implementation Order:
+1. ✅ **Transaction PIN System** - 3 endpoints (set, verify, change)
+2. ✅ **Password Reset Flow** - 3 endpoints (forgot, verify-code, reset)
+3. ✅ **Profile Picture Upload** - 2 endpoints (upload, delete) with Cloudinary
+4. ✅ **Notifications System** - 5 endpoints (list, mark read, mark all read, delete, triggers)
 
-1. **Transaction PIN System** (Blocks withdrawals and VTU)
-2. **Password Reset Flow** (Essential UX)
-3. **Profile Picture Upload** (User engagement)
-4. **Notifications System** (Can be delayed to Phase 2)
+### Additional Security Features
+
+All withdrawal and VTU purchase endpoints now require PIN verification:
+- `POST /api/transactions/withdraw` - Requires `pin` field
+- `POST /api/vtu/airtime/purchase` - Requires `pin` field
+- `POST /api/vtu/data/purchase` - Requires `pin` field
+- `POST /api/vtu/cable-tv/pay` - Requires `pin` field
+- `POST /api/vtu/electricity/pay` - Requires `pin` field
+- `POST /api/vtu/showmax/pay` - Requires `pin` field
+- `POST /api/vtu/international/purchase` - Requires `pin` field
 
 ---
 
