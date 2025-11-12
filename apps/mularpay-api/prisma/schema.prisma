@@ -41,6 +41,9 @@ model User {
   nin       String? @unique
   ninVerified Boolean @default(false)
 
+  // Paystack Integration
+  paystackCustomerCode String? @unique // Paystack customer code for DVA
+
   // Security
   pin       String? // Encrypted 4-digit transaction PIN
   pinSetAt  DateTime?
@@ -185,6 +188,7 @@ model Transaction {
   provider        String? // e.g., "paystack", "vtpass"
   providerRef     String?
   providerStatus  String?
+  channel         String? // e.g., "BANK_TRANSFER", "CARD", "USSD"
 
   // Descriptions
   description     String

@@ -141,6 +141,38 @@ interface PaystackBankResponse {
   }>;
 }
 
+interface PaystackCreateCustomerResponse {
+  status: boolean;
+  message: string;
+  data: {
+    email: string;
+    integration: number;
+    domain: string;
+    customer_code: string;
+    id: number;
+    identified: boolean;
+    identifications: unknown;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+interface PaystackValidateCustomerResponse {
+  status: boolean;
+  message: string;
+}
+
+interface PaystackDVAProvidersResponse {
+  status: boolean;
+  message: string;
+  data: Array<{
+    provider_slug: string;
+    bank_id: number;
+    bank_name: string;
+    id: number;
+  }>;
+}
+
 @Injectable()
 export class PaystackService {
   private readonly logger = new Logger(PaystackService.name);
@@ -381,17 +413,16 @@ export class PaystackService {
   }
 
   /**
-   * Create virtual account for a customer
+   * Create a customer on Paystack
    */
-  async createVirtualAccount(
+  async createCustomer(
     email: string,
     firstName: string,
     lastName: string,
     phone: string,
-  ): Promise<PaystackVirtualAccountResponse['data']> {
+  ): Promise<{ customer_code: string; customer_id: number }> {
     try {
-      // First, create or get customer
-      const customerResponse = await fetch(`${this.baseUrl}/customer`, {
+      const response = await fetch(`${this.baseUrl}/customer`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.secretKey}`,
@@ -405,13 +436,82 @@ export class PaystackService {
         }),
       });
 
-      const customerData = (await customerResponse.json()) as {
-        status: boolean;
-        data: { customer_code: string };
-      };
-      const customerCode = customerData.data.customer_code;
+      const data = (await response.json()) as PaystackCreateCustomerResponse;
 
-      // Create dedicated virtual account
+      if (!data.status) {
+        throw new BadRequestException(data.message);
+      }
+
+      return {
+        customer_code: data.data.customer_code,
+        customer_id: data.data.id,
+      };
+    } catch (error) {
+      this.logger.error('Failed to create customer', error);
+      throw new BadRequestException('Failed to create customer');
+    }
+  }
+
+  /**
+   * Validate customer identity (BVN validation for Financial Services)
+   * This is required for Nigerian Financial Services businesses
+   */
+  async validateCustomer(
+    customerCode: string,
+    firstName: string,
+    lastName: string,
+    accountNumber: string,
+    bvn: string,
+    bankCode: string,
+  ): Promise<void> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/customer/${customerCode}/identification`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            country: 'NG',
+            type: 'bank_account',
+            account_number: accountNumber,
+            bvn: bvn,
+            bank_code: bankCode,
+            first_name: firstName,
+            last_name: lastName,
+          }),
+        },
+      );
+
+      const data = (await response.json()) as PaystackValidateCustomerResponse;
+
+      if (!data.status) {
+        throw new BadRequestException(data.message);
+      }
+
+      // Returns 202 Accepted - validation happens asynchronously
+      // Must listen to customeridentification.success/failed webhook
+      this.logger.log(
+        `Customer validation initiated for customer: ${customerCode}`,
+      );
+    } catch (error) {
+      this.logger.error('Failed to validate customer', error);
+      throw new BadRequestException('Failed to validate customer');
+    }
+  }
+
+  /**
+   * Create dedicated virtual account for a customer
+   * Customer must be created first using createCustomer()
+   * For Financial Services, customer must be validated first using validateCustomer()
+   */
+  async createDedicatedVirtualAccount(
+    customerCode: string,
+    preferredBank: string = 'wema-bank',
+  ): Promise<PaystackVirtualAccountResponse['data']> {
+    try {
       const response = await fetch(`${this.baseUrl}/dedicated_account`, {
         method: 'POST',
         headers: {
@@ -420,7 +520,7 @@ export class PaystackService {
         },
         body: JSON.stringify({
           customer: customerCode,
-          preferred_bank: 'wema-bank',
+          preferred_bank: preferredBank,
         }),
       });
 
@@ -432,8 +532,81 @@ export class PaystackService {
 
       return data.data;
     } catch (error) {
-      this.logger.error('Failed to create virtual account', error);
-      throw new BadRequestException('Failed to create virtual account');
+      this.logger.error('Failed to create dedicated virtual account', error);
+      throw new BadRequestException(
+        'Failed to create dedicated virtual account',
+      );
+    }
+  }
+
+  /**
+   * Get available bank providers for dedicated virtual accounts
+   */
+  async getDedicatedAccountProviders(): Promise<
+    PaystackDVAProvidersResponse['data']
+  > {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/dedicated_account/available_providers`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`,
+          },
+        },
+      );
+
+      const data = (await response.json()) as PaystackDVAProvidersResponse;
+
+      if (!data.status) {
+        throw new BadRequestException(data.message);
+      }
+
+      return data.data;
+    } catch (error) {
+      this.logger.error('Failed to get DVA providers', error);
+      throw new BadRequestException('Failed to get DVA providers');
+    }
+  }
+
+  /**
+   * Requery dedicated virtual account for pending transactions
+   * Rate limit: Once every 10 minutes per account
+   */
+  async requeryDedicatedAccount(
+    accountNumber: string,
+    providerSlug: string,
+    date?: string,
+  ): Promise<void> {
+    try {
+      const queryParams = new URLSearchParams({
+        account_number: accountNumber,
+        provider_slug: providerSlug,
+        ...(date && { date }),
+      });
+
+      const response = await fetch(
+        `${this.baseUrl}/dedicated_account/requery?${queryParams}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`,
+          },
+        },
+      );
+
+      const data = (await response.json()) as { status: boolean; message: string };
+
+      if (!data.status) {
+        throw new BadRequestException(data.message);
+      }
+
+      this.logger.log(
+        `Requery initiated for account: ${accountNumber}. Will send webhook if transactions found.`,
+      );
+    } catch (error) {
+      this.logger.error('Failed to requery dedicated account', error);
+      throw new BadRequestException('Failed to requery dedicated account');
     }
   }
 

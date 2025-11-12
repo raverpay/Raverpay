@@ -85,16 +85,6 @@ export class AuthService {
 
       this.logger.log(`New user registered: ${user.email}`);
 
-      // Create virtual account for the user (async, don't wait)
-      this.virtualAccountsService
-        .createVirtualAccount(user.id)
-        .catch((error) => {
-          this.logger.error(
-            `Failed to create virtual account for ${user.id}`,
-            error,
-          );
-        });
-
       // Send email verification code (async, don't wait)
       this.logger.log(
         `Triggering email verification for userId=${user.id}, email=${user.email}`,

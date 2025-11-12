@@ -8,6 +8,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { PaymentsModule } from './payments/payments.module';
 import { VirtualAccountsModule } from './virtual-accounts/virtual-accounts.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 import { VTUModule } from './vtu/vtu.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -21,6 +22,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     TransactionsModule,
     PaymentsModule,
     VirtualAccountsModule,
+    WebhooksModule,
     VTUModule,
     CloudinaryModule,
     NotificationsModule,
