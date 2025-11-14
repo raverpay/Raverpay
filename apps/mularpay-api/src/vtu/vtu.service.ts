@@ -790,6 +790,12 @@ export class VTUService {
     }
   }
 
+  // ==================== Showmax ====================
+
+  async getShowmaxPlans() {
+    return this.vtpassService.getServiceVariations('showmax');
+  }
+
   // ==================== Showmax Payment ====================
 
   async payShowmaxSubscription(userId: string, dto: PayShowmaxDto) {

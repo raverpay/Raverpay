@@ -143,6 +143,12 @@ export class VTUController {
     return this.vtuService.payCableTVSubscription(userId, dto);
   }
 
+  @Get('showmax/plans')
+  @HttpCode(HttpStatus.OK)
+  getShowmaxPlans() {
+    return this.vtuService.getShowmaxPlans();
+  }
+
   @Post('showmax/pay')
   @HttpCode(HttpStatus.CREATED)
   payShowmaxSubscription(
