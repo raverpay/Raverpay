@@ -1,9 +1,11 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class RedisService {
+  private readonly logger = new Logger(RedisService.name);
+
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   /**
@@ -12,9 +14,14 @@ export class RedisService {
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.cacheManager.get<T>(key);
+      if (value !== undefined && value !== null) {
+        this.logger.debug(`✅ Cache HIT: ${key}`);
+      } else {
+        this.logger.debug(`❌ Cache MISS: ${key}`);
+      }
       return value ?? null;
     } catch (error) {
-      console.error(`Cache GET error for key ${key}:`, error);
+      this.logger.error(`Cache GET error for key ${key}:`, error);
       return null;
     }
   }
@@ -26,8 +33,9 @@ export class RedisService {
     try {
       const ttlMs = ttl ? ttl * 1000 : undefined;
       await this.cacheManager.set(key, value, ttlMs);
+      this.logger.debug(`💾 Cache SET: ${key} (TTL: ${ttl || 'default'}s)`);
     } catch (error) {
-      console.error(`Cache SET error for key ${key}:`, error);
+      this.logger.error(`Cache SET error for key ${key}:`, error);
     }
   }
 
@@ -37,8 +45,9 @@ export class RedisService {
   async del(key: string): Promise<void> {
     try {
       await this.cacheManager.del(key);
+      this.logger.debug(`🗑️  Cache DEL: ${key}`);
     } catch (error) {
-      console.error(`Cache DEL error for key ${key}:`, error);
+      this.logger.error(`Cache DEL error for key ${key}:`, error);
     }
   }
 
@@ -51,11 +60,16 @@ export class RedisService {
     try {
       // For now, we'll just log the pattern
       // In production, you'd need direct Redis access for pattern matching
-      console.log(`Cache pattern delete requested for: ${pattern}`);
+      this.logger.debug(
+        `🗑️  Cache DEL PATTERN requested: ${pattern} (relying on TTL expiration)`,
+      );
       // Since we can't efficiently delete by pattern without direct Redis access,
       // we'll rely on TTL to expire old cache entries
     } catch (error) {
-      console.error(`Cache DEL PATTERN error for pattern ${pattern}:`, error);
+      this.logger.error(
+        `Cache DEL PATTERN error for pattern ${pattern}:`,
+        error,
+      );
     }
   }
 
@@ -70,7 +84,7 @@ export class RedisService {
       await this.set(key, newValue);
       return newValue;
     } catch (error) {
-      console.error(`Cache INCR error for key ${key}:`, error);
+      this.logger.error(`Cache INCR error for key ${key}:`, error);
       return 0;
     }
   }

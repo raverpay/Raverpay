@@ -12,18 +12,23 @@ import type { RedisOptions } from 'ioredis';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const redisUrl = configService.get<string>('UPSTASH_REDIS_URL');
+        // Try multiple environment variable names for Redis URL
+        const redisUrl =
+          configService.get<string>('UPSTASH_REDIS_URL') ||
+          configService.get<string>('REDIS_URL');
 
         if (!redisUrl) {
           // Fallback to in-memory cache if Redis is not configured
           console.warn(
-            '⚠️  UPSTASH_REDIS_URL not found. Using in-memory cache.',
+            '⚠️  REDIS_URL or UPSTASH_REDIS_URL not found. Using in-memory cache.',
           );
           return {
             ttl: 60000, // 60 seconds default TTL
             max: 100, // Max items in cache
           };
         }
+
+        console.log('✅ Redis cache enabled with URL:', redisUrl.replace(/:[^:@]*@/, ':****@'));
 
         // Parse Redis URL
         const url = new URL(redisUrl);

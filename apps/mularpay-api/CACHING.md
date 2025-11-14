@@ -100,12 +100,46 @@ CREATE INDEX idx_audit_logs_user ON audit_logs(userId, createdAt DESC);
 
 ## Monitoring
 
-The cache service includes built-in error logging. Monitor these in production:
+### Application Logs
 
-- Cache GET errors
-- Cache SET errors
-- Cache DEL errors
-- Cache hit/miss rates (add custom metrics)
+The cache service includes built-in detailed logging:
+
+**On Startup:**
+```
+✅ Redis cache enabled with URL: rediss://****@select-malamute-29128.upstash.io:6379
+```
+
+**Cache Operations (DEBUG level):**
+```
+✅ Cache HIT: wallet:user123
+❌ Cache MISS: wallet:user456
+💾 Cache SET: wallet:user456 (TTL: 60s)
+🗑️  Cache DEL: wallet:user789
+```
+
+**To see debug logs in Railway:**
+1. Go to Railway project → Deployments
+2. Click on latest deployment → Logs
+3. Search for "Cache HIT" or "Cache MISS"
+
+### Upstash Dashboard
+
+Monitor real-time Redis usage:
+
+1. Go to https://console.upstash.com
+2. Select your Redis database
+3. View metrics:
+   - **Commands/sec**: Number of cache operations
+   - **Storage**: Memory used by cached data
+   - **Daily Requests**: Total cache operations (free tier: 10K/day)
+   - **Latency**: Average Redis response time
+
+### What to Monitor
+
+- **Cache hit rate**: Should be >80% for wallet queries after warm-up
+- **Request count**: Should see spikes matching API traffic
+- **Storage size**: Should stay under 10MB for typical usage
+- **Latency**: Should be <10ms for Upstash (Europe region)
 
 ## Fallback Behavior
 
@@ -125,9 +159,41 @@ If Redis is unavailable:
 - **Cost**: $5-10/month flat rate
 - **Better for**: >1M requests/day
 
+## Testing Cache Locally
+
+To verify caching is working:
+
+1. **Add Redis URL to `.env`:**
+   ```env
+   REDIS_URL="rediss://default:AXHIAAIncDIxYjkzYTY3Mzg5OGU0MDBlYWE1YzBiYWZjNmI5NzAzMnAyMjkxMjg@select-malamute-29128.upstash.io:6379"
+   ```
+
+2. **Start the API:**
+   ```bash
+   pnpm run start:dev
+   ```
+
+3. **Check startup logs for:**
+   ```
+   ✅ Redis cache enabled with URL: rediss://****@select-malamute-29128.upstash.io:6379
+   ```
+
+4. **Make API requests:**
+   ```bash
+   # First request - should see "Cache MISS"
+   curl http://localhost:3000/api/wallet
+
+   # Second request within 60s - should see "Cache HIT"
+   curl http://localhost:3000/api/wallet
+   ```
+
+5. **Check Upstash dashboard:**
+   - You should see command count increase
+   - Check "Recent Commands" tab to see GET/SET operations
+
 ## Deployment Notes
 
-1. **Railway**: Redis URL is available via environment variable
+1. **Railway**: Add `REDIS_URL` environment variable
 2. **Supabase**: Use Supabase pooler for database (already configured)
 3. **Same Region**: Ensure Redis and API are in the same region for lowest latency
 
