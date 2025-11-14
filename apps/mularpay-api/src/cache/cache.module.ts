@@ -28,21 +28,86 @@ import type { RedisOptions } from 'ioredis';
           };
         }
 
-        console.log('✅ Redis cache enabled with URL:', redisUrl.replace(/:[^:@]*@/, ':****@'));
+        console.log(
+          '✅ Redis cache enabled with URL:',
+          redisUrl.replace(/:[^:@]*@/, ':****@'),
+        );
 
         // Parse Redis URL
         const url = new URL(redisUrl);
+
+        // For Upstash, extract the full auth token (everything between :// and @)
+        // Format: rediss://default:TOKEN@host:port or rediss://TOKEN@host:port
+        let password: string | undefined;
+        if (url.username && url.password) {
+          // If username is 'default', use the password as-is
+          password = url.password;
+        } else if (url.username) {
+          // If only username exists (no :password), username IS the password
+          password = url.username;
+        }
+
         const redisOptions: RedisOptions = {
           host: url.hostname,
           port: parseInt(url.port || '6379'),
-          password: url.password || undefined,
+          password,
           tls: url.protocol === 'rediss:' ? {} : undefined,
+          retryStrategy: (times) => {
+            // Retry up to 3 times with exponential backoff
+            if (times > 3) {
+              console.error('❌ Redis connection failed after 3 retries');
+              return null; // Stop retrying
+            }
+            const delay = Math.min(times * 100, 1000);
+            return delay;
+          },
+          connectTimeout: 10000,
+          lazyConnect: false,
+          enableReadyCheck: true,
+          maxRetriesPerRequest: 3,
+          enableOfflineQueue: false,
+          showFriendlyErrorStack: false,
         };
 
-        return {
-          store: await redisStore(redisOptions),
-          ttl: 60000, // 60 seconds default TTL
-        };
+        console.log('🔌 Connecting to Redis...', {
+          host: redisOptions.host,
+          port: redisOptions.port,
+          tls: !!redisOptions.tls,
+        });
+
+        try {
+          const store = await redisStore(redisOptions);
+
+          // Add error handler to suppress unhandled error events
+          // The store.client may be an ioredis instance
+          if (store && typeof store === 'object' && 'client' in store) {
+            const client = (store as any).client;
+            if (client && typeof client.on === 'function') {
+              client.on('error', (err: Error) => {
+                // Only log if it's not a WRONGPASS retry error
+                if (!err.message.includes('WRONGPASS')) {
+                  console.error('Redis client error:', err.message);
+                }
+              });
+              client.on('ready', () => {
+                console.log('✅ Redis client ready and authenticated');
+              });
+            }
+          }
+
+          console.log('✅ Redis store created successfully');
+          return {
+            store,
+            ttl: 60000, // 60 seconds default TTL
+          };
+        } catch (error) {
+          console.error('❌ Failed to create Redis store:', error);
+          console.warn('⚠️  Falling back to in-memory cache');
+          return {
+            ttl: 60000,
+            max: 100,
+          };
+        }
       },
     }),
   ],
