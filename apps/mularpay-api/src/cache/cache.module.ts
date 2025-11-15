@@ -4,10 +4,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisService } from './redis.service';
 import { redisStore } from 'cache-manager-ioredis-yet';
 import type { RedisOptions } from 'ioredis';
+import { setRedisClient } from './redis-client';
 
 @Global()
 @Module({
   imports: [
+    ConfigModule,
     NestCacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -81,17 +83,24 @@ import type { RedisOptions } from 'ioredis';
           // Add error handler to suppress unhandled error events
           // The store.client may be an ioredis instance
           if (store && typeof store === 'object' && 'client' in store) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const client = (store as any).client;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (client && typeof client.on === 'function') {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               client.on('error', (err: Error) => {
                 // Only log if it's not a WRONGPASS retry error
                 if (!err.message.includes('WRONGPASS')) {
                   console.error('Redis client error:', err.message);
                 }
               });
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               client.on('ready', () => {
                 console.log('✅ Redis client ready and authenticated');
               });
+
+              // Store client reference for RedisService
+              setRedisClient(client);
             }
           }
 

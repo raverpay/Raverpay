@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { redisClient } from './redis-client';
 
 @Injectable()
 export class RedisService {
@@ -52,19 +53,58 @@ export class RedisService {
   }
 
   /**
-   * Delete multiple keys matching pattern
-   * Note: This is a simplified implementation that doesn't actually support patterns
-   * For production use with pattern matching, consider using a direct Redis client
+   * Delete multiple keys matching pattern using Redis SCAN
+   * Works with ioredis client for efficient pattern-based deletion
    */
   async delPattern(pattern: string): Promise<void> {
     try {
-      // For now, we'll just log the pattern
-      // In production, you'd need direct Redis access for pattern matching
-      this.logger.debug(
-        `🗑️  Cache DEL PATTERN requested: ${pattern} (relying on TTL expiration)`,
-      );
-      // Since we can't efficiently delete by pattern without direct Redis access,
-      // we'll rely on TTL to expire old cache entries
+      // Use the module-exported Redis client
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const client = redisClient;
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (!client || typeof client.scanStream !== 'function') {
+        this.logger.warn(
+          `🗑️  Cache DEL PATTERN skipped: ${pattern} (no Redis client available, relying on TTL)`,
+        );
+        return;
+      }
+
+      // Use SCAN to find all matching keys and delete them
+      let deletedCount = 0;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const stream = client.scanStream({
+        match: pattern,
+        count: 100,
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      stream.on('data', async (keys: string[]) => {
+        if (keys.length > 0) {
+          // Delete keys in pipeline for better performance
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          const pipeline = client.pipeline();
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          keys.forEach((key: string) => pipeline.del(key));
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          await pipeline.exec();
+          deletedCount += keys.length;
+        }
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        stream.on('end', () => {
+          this.logger.debug(
+            `🗑️  Cache DEL PATTERN: ${pattern} (deleted ${deletedCount} keys)`,
+          );
+          resolve();
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
     } catch (error) {
       this.logger.error(
         `Cache DEL PATTERN error for pattern ${pattern}:`,
