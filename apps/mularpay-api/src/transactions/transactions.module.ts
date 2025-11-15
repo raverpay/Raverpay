@@ -5,12 +5,14 @@ import { TransactionsService } from './transactions.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { UsersModule } from '../users/users.module';
+import { WalletModule } from '../wallet/wallet.module';
 
 @Module({
   imports: [
     ConfigModule,
     PrismaModule,
     forwardRef(() => PaymentsModule),
+    forwardRef(() => WalletModule),
     UsersModule,
   ],
   controllers: [TransactionsController],

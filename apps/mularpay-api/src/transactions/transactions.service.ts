@@ -3,10 +3,13 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../payments/paystack.service';
 import { UsersService } from '../users/users.service';
+import { WalletService } from '../wallet/wallet.service';
 import { TransactionType, TransactionStatus, KYCTier } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import {
@@ -26,6 +29,8 @@ export class TransactionsService {
     private prisma: PrismaService,
     private paystackService: PaystackService,
     private usersService: UsersService,
+    @Inject(forwardRef(() => WalletService))
+    private walletService: WalletService,
   ) {}
 
   /**
@@ -301,6 +306,10 @@ export class TransactionsService {
         },
       }),
     ]);
+
+    // Invalidate wallet and transaction caches
+    await this.walletService.invalidateWalletCache(userId);
+    await this.walletService.invalidateTransactionCache(userId);
 
     return {
       status: 'success',
