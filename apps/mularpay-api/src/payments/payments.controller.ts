@@ -11,8 +11,7 @@ import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
 import { PaystackService } from './paystack.service';
 import { TransactionsService } from '../transactions/transactions.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '@prisma/client';
+import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 
 interface PaystackWebhookPayload {
   event: string;
@@ -47,7 +46,7 @@ export class PaymentsController {
   constructor(
     private readonly paystackService: PaystackService,
     private readonly transactionsService: TransactionsService,
-    private readonly notificationsService: NotificationsService,
+    private readonly notificationDispatcher: NotificationDispatcherService,
   ) {}
 
   /**
@@ -148,22 +147,66 @@ export class PaymentsController {
         });
 
         if (transaction) {
-          // Create notification for wallet funding
-          await this.notificationsService.createNotification({
-            userId: transaction.userId,
-            type: NotificationType.TRANSACTION,
-            title: 'Wallet Credited',
-            message: `Your wallet has been credited with ₦${amountInNaira.toLocaleString()}`,
-            data: {
-              transactionId: transaction.id,
-              amount: amountInNaira,
-              type: 'DEPOSIT',
-            },
-          });
+          // Send multi-channel notification for wallet funding
+          try {
+            await this.notificationDispatcher.sendNotification({
+              userId: transaction.userId,
+              eventType: 'deposit_success',
+              category: 'TRANSACTION',
+              channels: ['EMAIL', 'SMS', 'IN_APP'],
+              title: 'Wallet Funded Successfully',
+              message: `Your wallet has been credited with ₦${amountInNaira.toLocaleString()} via bank transfer.`,
+              data: {
+                transactionId: transaction.id,
+                amount: amountInNaira,
+                reference,
+                channel: 'BANK_TRANSFER',
+              },
+            });
+            this.logger.log(`📬 Deposit notification sent for user ${transaction.userId}`);
+          } catch (notifError) {
+            this.logger.error(
+              `Failed to send deposit notification to user ${transaction.userId}`,
+              notifError,
+            );
+            // Don't fail the webhook if notification fails
+          }
         }
       } else {
         // Regular card payment - will be verified by user calling /verify endpoint
         this.logger.log(`Card payment successful: ${reference}`);
+
+        // Still send notification for card payments
+        const transaction = await this.transactionsService[
+          'prisma'
+        ].transaction.findUnique({
+          where: { reference },
+        });
+
+        if (transaction) {
+          try {
+            await this.notificationDispatcher.sendNotification({
+              userId: transaction.userId,
+              eventType: 'deposit_success',
+              category: 'TRANSACTION',
+              channels: ['EMAIL', 'SMS', 'IN_APP'],
+              title: 'Wallet Funded Successfully',
+              message: `Your wallet has been credited with ₦${amountInNaira.toLocaleString()} via card payment.`,
+              data: {
+                transactionId: transaction.id,
+                amount: amountInNaira,
+                reference,
+                channel: 'CARD',
+              },
+            });
+            this.logger.log(`📬 Card deposit notification sent for user ${transaction.userId}`);
+          } catch (notifError) {
+            this.logger.error(
+              `Failed to send card deposit notification to user ${transaction.userId}`,
+              notifError,
+            );
+          }
+        }
       }
     } catch (error) {
       this.logger.error(`Failed to process charge: ${reference}`, error);

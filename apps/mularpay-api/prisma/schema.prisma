@@ -510,25 +510,25 @@ model NotificationPreference {
 
   // Channel preferences
   emailEnabled Boolean @default(true)
-  smsEnabled   Boolean @default(true)
+  smsEnabled   Boolean @default(false) // SMS costs money - opt-in only
   pushEnabled  Boolean @default(true)
   inAppEnabled Boolean @default(true)
 
   // Event type preferences
   transactionEmails Boolean @default(true)
-  transactionSms    Boolean @default(true)
+  transactionSms    Boolean @default(false) // SMS costs money - opt-in only
   transactionPush   Boolean @default(true)
 
   securityEmails Boolean @default(true)
-  securitySms    Boolean @default(true)
+  securitySms    Boolean @default(false) // SMS costs money - opt-in only
   securityPush   Boolean @default(true)
 
   kycEmails Boolean @default(true)
-  kycSms    Boolean @default(true)
+  kycSms    Boolean @default(false) // SMS costs money - opt-in only
   kycPush   Boolean @default(true)
 
   promotionalEmails Boolean @default(false)
-  promotionalSms    Boolean @default(false)
+  promotionalSms    Boolean @default(false) // SMS costs money - opt-in only
   promotionalPush   Boolean @default(false)
 
   // Frequency controls
