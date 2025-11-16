@@ -355,6 +355,10 @@ export class TransactionsService {
     amount: number,
     accountNumber: string,
   ): Promise<void> {
+    console.log(
+      `🔍 [processVirtualAccountCredit] START - Reference: ${reference}, Amount: ₦${amount}, Account: ${accountNumber}`,
+    );
+
     // Find virtual account
     const virtualAccount = await this.prisma.virtualAccount.findUnique({
       where: { accountNumber },
@@ -362,15 +366,29 @@ export class TransactionsService {
     });
 
     if (!virtualAccount) {
+      console.error(
+        `❌ [processVirtualAccountCredit] Virtual account not found: ${accountNumber}`,
+      );
       throw new NotFoundException('Virtual account not found');
     }
+
+    console.log(
+      `✅ [processVirtualAccountCredit] Virtual account found for user: ${virtualAccount.userId}`,
+    );
 
     const user = virtualAccount.user;
     const wallet = user.wallet;
 
     if (!wallet) {
+      console.error(
+        `❌ [processVirtualAccountCredit] Wallet not found for user: ${virtualAccount.userId}`,
+      );
       throw new NotFoundException('Wallet not found');
     }
+
+    console.log(
+      `✅ [processVirtualAccountCredit] Wallet found - Current balance: ₦${wallet.balance.toString()}`,
+    );
 
     // Check if transaction already exists
     const existing = await this.prisma.transaction.findUnique({
@@ -378,12 +396,18 @@ export class TransactionsService {
     });
 
     if (existing) {
+      console.log(
+        `⚠️ [processVirtualAccountCredit] Transaction already processed: ${reference}`,
+      );
       // Already processed
       return;
     }
 
     // Create transaction and credit wallet atomically
     const newBalance = wallet.balance.plus(amount);
+    console.log(
+      `💰 [processVirtualAccountCredit] Crediting wallet - Old balance: ₦${wallet.balance.toString()}, New balance: ₦${newBalance.toString()}`,
+    );
 
     await this.prisma.$transaction([
       // Credit wallet
@@ -417,6 +441,10 @@ export class TransactionsService {
         },
       }),
     ]);
+
+    console.log(
+      `✅ [processVirtualAccountCredit] SUCCESS - Wallet credited with ₦${amount}`,
+    );
   }
 
   /**

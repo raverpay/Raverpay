@@ -19,15 +19,24 @@ interface PaystackWebhookPayload {
     reference: string;
     amount: number;
     status: string;
+    channel?: string; // e.g., "dedicated_nuban", "card"
     paid_at?: string;
     customer?: {
       email: string;
       customer_code: string;
     };
     authorization?: {
-      channel: string;
+      channel?: string;
+      receiver_bank_account_number?: string;
+      sender_bank?: string;
+      sender_name?: string;
+      [key: string]: any;
     };
-    metadata?: unknown;
+    metadata?: {
+      receiver_account_number?: string;
+      receiver_bank?: string;
+      [key: string]: any;
+    };
     dedicated_account?: {
       account_number: string;
       account_name: string;
@@ -120,6 +129,11 @@ export class PaymentsController {
   private async handleChargeSuccess(payload: PaystackWebhookPayload) {
     const { reference, amount, status } = payload.data;
 
+    // DEBUG: Log full payload to understand structure
+    this.logger.log(
+      `🔍 Charge payload: ${JSON.stringify(payload.data, null, 2)}`,
+    );
+
     if (status !== 'success') {
       this.logger.warn(`Charge not successful: ${reference} - ${status}`);
       return;
@@ -130,14 +144,50 @@ export class PaymentsController {
 
     try {
       // Check if it's a virtual account payment
-      if (payload.data.dedicated_account) {
-        const accountNumber = payload.data.dedicated_account.account_number;
+      // Paystack sends virtual account info in different ways depending on API version
+      const isVirtualAccountPayment =
+        payload.data.channel === 'dedicated_nuban' ||
+        payload.data.dedicated_account ||
+        (payload.data.metadata &&
+          payload.data.metadata['receiver_account_number']);
+
+      if (isVirtualAccountPayment) {
+        // Get account number from different possible locations
+        let accountNumber: string | undefined;
+
+        if (payload.data.dedicated_account) {
+          accountNumber = payload.data.dedicated_account.account_number;
+        } else if (
+          payload.data.metadata &&
+          payload.data.metadata['receiver_account_number']
+        ) {
+          accountNumber = payload.data.metadata['receiver_account_number'];
+        } else if (
+          payload.data.authorization?.['receiver_bank_account_number']
+        ) {
+          accountNumber =
+            payload.data.authorization['receiver_bank_account_number'];
+        }
+
+        if (!accountNumber) {
+          this.logger.error(
+            `Virtual account payment but no account number found in payload`,
+          );
+          throw new BadRequestException(
+            'Account number not found in webhook payload',
+          );
+        }
+
+        this.logger.log(
+          `💰 Processing virtual account deposit: ₦${amountInNaira} to account ${accountNumber}`,
+        );
+
         await this.transactionsService.processVirtualAccountCredit(
           reference,
           amountInNaira,
           accountNumber,
         );
-        this.logger.log(`Virtual account credited: ${reference}`);
+        this.logger.log(`✅ Virtual account credited: ${reference}`);
 
         // Get transaction to retrieve userId
         const transaction = await this.transactionsService[
