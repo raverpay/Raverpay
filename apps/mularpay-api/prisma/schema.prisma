@@ -16,62 +16,65 @@ datasource db {
 // ============================================
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  phone     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
+  phone     String     @unique
   password  String // Argon2 hashed
   firstName String
   lastName  String
-  role      UserRole @default(USER)
+  role      UserRole   @default(USER)
   status    UserStatus @default(PENDING_VERIFICATION)
-  kycTier   KYCTier  @default(TIER_0)
+  kycTier   KYCTier    @default(TIER_0)
 
   // Profile
-  avatar    String?
+  avatar      String?
   dateOfBirth DateTime?
-  gender    Gender?
-  address   String?
-  city      String?
-  state     String?
-  country   String @default("Nigeria")
+  gender      Gender?
+  address     String?
+  city        String?
+  state       String?
+  country     String    @default("Nigeria")
 
   // KYC Data
-  bvn       String? @unique
+  bvn         String? @unique
   bvnVerified Boolean @default(false)
-  nin       String? @unique
+  nin         String? @unique
   ninVerified Boolean @default(false)
 
   // Paystack Integration
   paystackCustomerCode String? @unique // Paystack customer code for DVA
 
   // Security
-  pin       String? // Encrypted 4-digit transaction PIN
-  pinSetAt  DateTime?
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?
-  passwordResetAt  DateTime? // Track when password was last reset
+  pin                String? // Encrypted 4-digit transaction PIN
+  pinSetAt           DateTime?
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorSecret    String?
+  passwordResetAt    DateTime? // Track when password was last reset
   lastPasswordChange DateTime? // Track when password was last changed
 
   // Timestamps
-  emailVerified Boolean @default(false)
+  emailVerified   Boolean   @default(false)
   emailVerifiedAt DateTime?
-  phoneVerified Boolean @default(false)
+  phoneVerified   Boolean   @default(false)
   phoneVerifiedAt DateTime?
-  lastLoginAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relations
-  wallet          Wallet?
-  transactions    Transaction[]
-  vtuOrders       VTUOrder[]
-  giftCardOrders  GiftCardOrder[]
-  cryptoOrders    CryptoOrder[]
-  bankAccounts    BankAccount[]
-  virtualAccounts VirtualAccount[]
-  notifications   Notification[]
-  auditLogs       AuditLog[]
-  refreshTokens   RefreshToken[]
+  wallet                 Wallet?
+  transactions           Transaction[]
+  vtuOrders              VTUOrder[]
+  giftCardOrders         GiftCardOrder[]
+  cryptoOrders           CryptoOrder[]
+  bankAccounts           BankAccount[]
+  virtualAccounts        VirtualAccount[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+  notificationLogs       NotificationLog[]
+  notificationQueue      NotificationQueue[]
+  auditLogs              AuditLog[]
+  refreshTokens          RefreshToken[]
 
   @@index([email])
   @@index([phone])
@@ -110,9 +113,9 @@ enum Gender {
 // ============================================
 
 model RefreshToken {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   token     String   @unique
   isRevoked Boolean  @default(false)
@@ -131,24 +134,24 @@ model RefreshToken {
 // ============================================
 
 model Wallet {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  balance       Decimal  @default(0) @db.Decimal(15, 2)
-  ledgerBalance Decimal  @default(0) @db.Decimal(15, 2) // Balance including pending transactions
-  currency      String   @default("NGN")
+  balance       Decimal @default(0) @db.Decimal(15, 2)
+  ledgerBalance Decimal @default(0) @db.Decimal(15, 2) // Balance including pending transactions
+  currency      String  @default("NGN")
 
   // Limits tracking (reset daily/monthly)
-  dailySpent    Decimal  @default(0) @db.Decimal(15, 2)
-  monthlySpent  Decimal  @default(0) @db.Decimal(15, 2)
-  lastResetAt   DateTime @default(now())
+  dailySpent   Decimal  @default(0) @db.Decimal(15, 2)
+  monthlySpent Decimal  @default(0) @db.Decimal(15, 2)
+  lastResetAt  DateTime @default(now())
 
-  isLocked      Boolean  @default(false)
-  lockedReason  String?
+  isLocked     Boolean @default(false)
+  lockedReason String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("wallets")
@@ -159,46 +162,46 @@ model Wallet {
 // ============================================
 
 model Transaction {
-  id              String   @id @default(uuid())
-  reference       String   @unique // e.g., TXN_1234567890
+  id        String @id @default(uuid())
+  reference String @unique // e.g., TXN_1234567890
 
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  type            TransactionType
-  status          TransactionStatus @default(PENDING)
+  type   TransactionType
+  status TransactionStatus @default(PENDING)
 
-  amount          Decimal  @db.Decimal(15, 2)
-  fee             Decimal  @default(0) @db.Decimal(15, 2)
-  totalAmount     Decimal  @db.Decimal(15, 2) // amount + fee
+  amount      Decimal @db.Decimal(15, 2)
+  fee         Decimal @default(0) @db.Decimal(15, 2)
+  totalAmount Decimal @db.Decimal(15, 2) // amount + fee
 
-  balanceBefore   Decimal  @db.Decimal(15, 2)
-  balanceAfter    Decimal  @db.Decimal(15, 2)
+  balanceBefore Decimal @db.Decimal(15, 2)
+  balanceAfter  Decimal @db.Decimal(15, 2)
 
-  currency        String   @default("NGN")
+  currency String @default("NGN")
 
   // Additional data (JSON for flexibility)
-  metadata        Json?
+  metadata Json?
 
   // Related entities
-  relatedType     String? // e.g., "vtu_order", "giftcard_order"
-  relatedId       String?
+  relatedType String? // e.g., "vtu_order", "giftcard_order"
+  relatedId   String?
 
   // Provider info (for external transactions)
-  provider        String? // e.g., "paystack", "vtpass"
-  providerRef     String?
-  providerStatus  String?
-  channel         String? // e.g., "BANK_TRANSFER", "CARD", "USSD"
+  provider       String? // e.g., "paystack", "vtpass"
+  providerRef    String?
+  providerStatus String?
+  channel        String? // e.g., "BANK_TRANSFER", "CARD", "USSD"
 
   // Descriptions
-  description     String
-  narration       String?
+  description String
+  narration   String?
 
   // Timestamps
-  completedAt     DateTime?
-  failedAt        DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  completedAt DateTime?
+  failedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([userId])
   @@index([reference])
@@ -238,20 +241,20 @@ enum TransactionStatus {
 // ============================================
 
 model BankAccount {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   bankName      String
   bankCode      String
   accountNumber String
   accountName   String
 
-  isVerified    Boolean  @default(false)
-  isPrimary     Boolean  @default(false)
+  isVerified Boolean @default(false)
+  isPrimary  Boolean @default(false)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, accountNumber])
   @@index([userId])
@@ -259,21 +262,21 @@ model BankAccount {
 }
 
 model VirtualAccount {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  provider      String   // e.g., "paystack"
+  provider      String // e.g., "paystack"
   bankName      String
   bankCode      String
-  accountNumber String   @unique
+  accountNumber String @unique
   accountName   String
 
-  providerRef   String?
-  isActive      Boolean  @default(true)
+  providerRef String?
+  isActive    Boolean @default(true)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([accountNumber])
@@ -285,37 +288,37 @@ model VirtualAccount {
 // ============================================
 
 model VTUOrder {
-  id            String   @id @default(uuid())
-  reference     String   @unique
+  id        String @id @default(uuid())
+  reference String @unique
 
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  serviceType   VTUServiceType
-  provider      String   // MTN, GLO, AIRTEL, 9MOBILE, DSTV, etc.
+  serviceType VTUServiceType
+  provider    String // MTN, GLO, AIRTEL, 9MOBILE, DSTV, etc.
 
   // Recipient details
-  recipient     String   // Phone number or smartcard number
+  recipient String // Phone number or smartcard number
 
   // Product details
-  productCode   String
-  productName   String
-  amount        Decimal  @db.Decimal(15, 2)
+  productCode String
+  productName String
+  amount      Decimal @db.Decimal(15, 2)
 
   // Status
-  status        TransactionStatus @default(PENDING)
+  status TransactionStatus @default(PENDING)
 
   // Provider response
-  providerRef   String?
-  providerToken String?
+  providerRef      String?
+  providerToken    String?
   providerResponse Json?
 
   // Transaction reference
   transactionId String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  completedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
 
   @@index([userId])
   @@index([reference])
@@ -335,39 +338,39 @@ enum VTUServiceType {
 // ============================================
 
 model GiftCardOrder {
-  id            String   @id @default(uuid())
-  reference     String   @unique
+  id        String @id @default(uuid())
+  reference String @unique
 
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  type          GiftCardType // BUY or SELL
-  brand         String   // AMAZON, APPLE, STEAM, etc.
-  country       String   // US, UK, CA, etc.
+  type    GiftCardType // BUY or SELL
+  brand   String // AMAZON, APPLE, STEAM, etc.
+  country String // US, UK, CA, etc.
 
   // Card details (for selling)
-  cardNumber    String?  // Encrypted
-  cardPin       String?  // Encrypted
-  cardImages    Json?    // Array of image URLs
+  cardNumber String? // Encrypted
+  cardPin    String? // Encrypted
+  cardImages Json? // Array of image URLs
 
   // Pricing
-  faceValue     Decimal  @db.Decimal(15, 2)
-  rate          Decimal  @db.Decimal(5, 2) // Exchange rate
-  amount        Decimal  @db.Decimal(15, 2) // Amount in Naira
+  faceValue Decimal @db.Decimal(15, 2)
+  rate      Decimal @db.Decimal(5, 2) // Exchange rate
+  amount    Decimal @db.Decimal(15, 2) // Amount in Naira
 
-  status        TransactionStatus @default(PENDING)
+  status TransactionStatus @default(PENDING)
 
   // Admin review
-  reviewedBy    String?
-  reviewedAt    DateTime?
-  reviewNotes   String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNotes String?
 
   // Transaction reference
   transactionId String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  completedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
 
   @@index([userId])
   @@index([reference])
@@ -385,39 +388,39 @@ enum GiftCardType {
 // ============================================
 
 model CryptoOrder {
-  id            String   @id @default(uuid())
-  reference     String   @unique
+  id        String @id @default(uuid())
+  reference String @unique
 
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  type          CryptoOrderType // BUY or SELL
-  asset         String   // BTC, ETH, USDT
-  network       String   // BTC, ETH, TRC20, BEP20
+  type    CryptoOrderType // BUY or SELL
+  asset   String // BTC, ETH, USDT
+  network String // BTC, ETH, TRC20, BEP20
 
   // Amounts
-  cryptoAmount  Decimal  @db.Decimal(18, 8)
-  nairaAmount   Decimal  @db.Decimal(15, 2)
-  rate          Decimal  @db.Decimal(15, 2) // Exchange rate per unit
+  cryptoAmount Decimal @db.Decimal(18, 8)
+  nairaAmount  Decimal @db.Decimal(15, 2)
+  rate         Decimal @db.Decimal(15, 2) // Exchange rate per unit
 
   // Wallet address (for selling)
   walletAddress String?
 
   // Transaction hash (for verification)
-  txHash        String?
+  txHash String?
 
-  status        TransactionStatus @default(PENDING)
+  status TransactionStatus @default(PENDING)
 
   // Provider info
-  provider      String?  // e.g., "binance", "crypto.com"
-  providerRef   String?
+  provider    String? // e.g., "binance", "crypto.com"
+  providerRef String?
 
   // Transaction reference
   transactionId String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  completedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
 
   @@index([userId])
   @@index([reference])
@@ -435,22 +438,47 @@ enum CryptoOrderType {
 // ============================================
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Notification classification
   type      NotificationType
-  title     String
-  message   String
-  data      Json?
+  eventType String // "deposit", "withdrawal", "bvn_verified", etc.
+  category  NotificationCategory @default(SYSTEM)
 
-  isRead    Boolean  @default(false)
-  readAt    DateTime?
+  // Content
+  title   String
+  message String
+  data    Json?
 
-  createdAt DateTime @default(now())
+  // Multi-channel support
+  channels String[] @default(["in-app"]) // ["email", "sms", "in-app", "push"]
+
+  // Delivery tracking
+  deliveryStatus Json? // { "email": "sent", "sms": "failed", "push": "pending" }
+
+  // Template reference
+  templateId String?
+  variables  Json? // Variables used to render template
+
+  // Read status
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
+  // Lifecycle
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expiresAt DateTime? // Auto-cleanup old notifications
+
+  // Relations
+  logs NotificationLog[]
 
   @@index([userId])
   @@index([isRead])
+  @@index([eventType])
+  @@index([category])
+  @@index([createdAt])
   @@map("notifications")
 }
 
@@ -462,23 +490,232 @@ enum NotificationType {
   SYSTEM
 }
 
+enum NotificationCategory {
+  TRANSACTION
+  SECURITY
+  KYC
+  PROMOTIONAL
+  SYSTEM
+  ACCOUNT
+}
+
+// ============================================
+// NOTIFICATION PREFERENCES
+// ============================================
+
+model NotificationPreference {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Channel preferences
+  emailEnabled Boolean @default(true)
+  smsEnabled   Boolean @default(true)
+  pushEnabled  Boolean @default(true)
+  inAppEnabled Boolean @default(true)
+
+  // Event type preferences
+  transactionEmails Boolean @default(true)
+  transactionSms    Boolean @default(true)
+  transactionPush   Boolean @default(true)
+
+  securityEmails Boolean @default(true)
+  securitySms    Boolean @default(true)
+  securityPush   Boolean @default(true)
+
+  kycEmails Boolean @default(true)
+  kycSms    Boolean @default(true)
+  kycPush   Boolean @default(true)
+
+  promotionalEmails Boolean @default(false)
+  promotionalSms    Boolean @default(false)
+  promotionalPush   Boolean @default(false)
+
+  // Frequency controls
+  emailFrequency NotificationFrequency @default(IMMEDIATE)
+  smsFrequency   NotificationFrequency @default(IMMEDIATE)
+  pushFrequency  NotificationFrequency @default(IMMEDIATE)
+
+  // Do not disturb
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart   String? // "22:00"
+  quietHoursEnd     String? // "06:00"
+  timeZone          String  @default("Africa/Lagos")
+
+  // Opt-outs
+  optOutCategories String[] @default([]) // Categories user opted out of
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+enum NotificationFrequency {
+  IMMEDIATE
+  DAILY
+  WEEKLY
+  NEVER
+}
+
+// ============================================
+// NOTIFICATION LOGS (Delivery Tracking)
+// ============================================
+
+model NotificationLog {
+  id             String       @id @default(uuid())
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Channel info
+  channel NotificationChannel
+  status  NotificationStatus  @default(PENDING)
+
+  // Delivery tracking
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  failureReason String?
+  retryCount    Int       @default(0)
+  lastRetryAt   DateTime?
+
+  // Analytics
+  openedAt  DateTime?
+  clickedAt DateTime?
+  clickUrl  String?
+
+  // Provider info
+  provider          String? // "resend", "termii", "vtpass", "onesignal"
+  providerMessageId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([channel])
+  @@index([status])
+  @@index([notificationId])
+  @@map("notification_logs")
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  OPENED
+  CLICKED
+}
+
+// ============================================
+// NOTIFICATION TEMPLATES
+// ============================================
+
+model NotificationTemplate {
+  id String @id @default(uuid())
+
+  // Template identification
+  name      String              @unique
+  eventType String // "deposit", "withdrawal", "bvn_verified", etc.
+  channel   NotificationChannel
+
+  // Content
+  subject      String? // For email/push
+  bodyTemplate String // Can use {{variable}} syntax
+
+  // Metadata
+  isActive  Boolean  @default(true)
+  version   Int      @default(1)
+  variables String[] // ["firstName", "amount", "reference"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventType, channel, version])
+  @@index([eventType])
+  @@index([isActive])
+  @@map("notification_templates")
+}
+
+// ============================================
+// NOTIFICATION QUEUE (Async Processing)
+// ============================================
+
+model NotificationQueue {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Notification details
+  channel   NotificationChannel
+  eventType String
+
+  // Template data
+  templateId String?
+  variables  Json? // { "firstName": "John", "amount": "1000" }
+
+  // Status
+  status   QueueStatus @default(QUEUED)
+  priority Int         @default(0)
+
+  // Retry logic
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(3)
+  nextRetryAt DateTime?
+  lastError   String?
+
+  // Execution
+  scheduledFor DateTime?
+  sentAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([channel])
+  @@index([scheduledFor])
+  @@index([priority])
+  @@map("notification_queue")
+}
+
+enum QueueStatus {
+  QUEUED
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+}
+
 // ============================================
 // AUDIT LOGS
 // ============================================
 
 model AuditLog {
-  id        String   @id @default(uuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id     String  @id @default(uuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  action    String
-  resource  String
+  action     String
+  resource   String
   resourceId String?
 
   ipAddress String?
   userAgent String?
 
-  metadata  Json?
+  metadata Json?
 
   createdAt DateTime @default(now())
 
@@ -493,9 +730,9 @@ model AuditLog {
 // ============================================
 
 model SystemConfig {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  value     Json
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
 
   updatedBy String?
   updatedAt DateTime @updatedAt
