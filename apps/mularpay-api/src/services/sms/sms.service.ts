@@ -103,9 +103,8 @@ export class SmsService {
     }
 
     // Truncate message to 160 characters for SMS
-    const truncatedMessage = message.length > 160
-      ? message.substring(0, 157) + '...'
-      : message;
+    const truncatedMessage =
+      message.length > 160 ? message.substring(0, 157) + '...' : message;
 
     // Format: "Hi {name}! {message} - MularPay"
     const smsText = `Hi ${firstName}! ${truncatedMessage} - MularPay`;

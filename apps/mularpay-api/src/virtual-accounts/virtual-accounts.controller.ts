@@ -44,10 +44,7 @@ export class VirtualAccountsController {
     @Request() req,
     @Body() dto: RequestVirtualAccountDto,
   ) {
-    return this.virtualAccountsService.requestVirtualAccount(
-      req.user.id,
-      dto,
-    );
+    return this.virtualAccountsService.requestVirtualAccount(req.user.id, dto);
   }
 
   /**

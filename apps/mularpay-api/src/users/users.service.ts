@@ -19,6 +19,7 @@ import {
 import { EmailService } from '../services/email/email.service';
 import { SmsService } from '../services/sms/sms.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { BVNEncryptionService } from '../utils/bvn-encryption.service';
 
 /**
  * User profile response type with wallet
@@ -70,6 +71,7 @@ export class UsersService {
     private readonly smsService: SmsService,
     @Inject(forwardRef(() => CloudinaryService))
     private readonly cloudinaryService: CloudinaryService,
+    private readonly bvnEncryptionService: BVNEncryptionService,
   ) {}
 
   /**
@@ -301,11 +303,18 @@ export class UsersService {
       );
     }
 
-    // Update user with verified BVN
+    // Encrypt BVN before storing in database
+    const encryptedBvn = this.bvnEncryptionService.encrypt(verifyBvnDto.bvn);
+
+    this.logger.log(
+      `BVN verified for user ${userId} - BVN: ${this.bvnEncryptionService.maskForLogging(verifyBvnDto.bvn)}`,
+    );
+
+    // Update user with encrypted BVN
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        bvn: verifyBvnDto.bvn,
+        bvn: encryptedBvn,
         bvnVerified: true,
         dateOfBirth: new Date(verifyBvnDto.dateOfBirth),
         kycTier: 'TIER_2', // Upgrade to Tier 2 after BVN verification

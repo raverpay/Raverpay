@@ -163,7 +163,9 @@ export class PaymentsController {
                 channel: 'BANK_TRANSFER',
               },
             });
-            this.logger.log(`📬 Deposit notification sent for user ${transaction.userId}`);
+            this.logger.log(
+              `📬 Deposit notification sent for user ${transaction.userId}`,
+            );
           } catch (notifError) {
             this.logger.error(
               `Failed to send deposit notification to user ${transaction.userId}`,
@@ -199,7 +201,9 @@ export class PaymentsController {
                 channel: 'CARD',
               },
             });
-            this.logger.log(`📬 Card deposit notification sent for user ${transaction.userId}`);
+            this.logger.log(
+              `📬 Card deposit notification sent for user ${transaction.userId}`,
+            );
           } catch (notifError) {
             this.logger.error(
               `Failed to send card deposit notification to user ${transaction.userId}`,

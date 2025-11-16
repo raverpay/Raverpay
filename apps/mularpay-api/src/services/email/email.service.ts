@@ -322,11 +322,19 @@ export class EmailService {
 
               <p>${message}</p>
 
-              ${data ? `<div style="background: #f7f7f7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                ${Object.entries(data).map(([key, value]) => `
+              ${
+                data
+                  ? `<div style="background: #f7f7f7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                ${Object.entries(data)
+                  .map(
+                    ([key, value]) => `
                   <p style="margin: 5px 0;"><strong>${key}:</strong> ${value}</p>
-                `).join('')}
-              </div>` : ''}
+                `,
+                  )
+                  .join('')}
+              </div>`
+                  : ''
+              }
 
               <p style="color: #666; font-size: 14px;">If you have any questions, please contact our support team.</p>
 

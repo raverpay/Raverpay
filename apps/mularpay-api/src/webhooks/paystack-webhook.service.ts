@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { WalletService } from '../wallet/wallet.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { BVNEncryptionService } from '../utils/bvn-encryption.service';
+import { WalletService } from '../wallet/wallet.service';
 
 /**
  * Paystack Webhook Service
@@ -19,6 +20,7 @@ export class PaystackWebhookService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     private readonly notificationDispatcher: NotificationDispatcherService,
+    private readonly bvnEncryptionService: BVNEncryptionService,
   ) {}
 
   /**
@@ -151,7 +153,9 @@ export class PaystackWebhookService {
             accountNumber,
           },
         });
-        this.logger.log(`📬 Deposit notification sent for user ${virtualAccount.userId}`);
+        this.logger.log(
+          `📬 Deposit notification sent for user ${virtualAccount.userId}`,
+        );
       } catch (notifError) {
         this.logger.error(
           `Failed to send deposit notification to user ${virtualAccount.userId}`,
@@ -202,15 +206,25 @@ export class PaystackWebhookService {
       // Extract BVN from identification data
       const bvn = identification?.bvn;
 
-      // Update user with verified BVN and upgrade to TIER_2
-      const updatedUser = await this.prisma.user.update({
+      // Encrypt BVN if provided from webhook, otherwise keep existing encrypted BVN
+      let encryptedBvn = user.bvn;
+      if (bvn) {
+        encryptedBvn = this.bvnEncryptionService.encrypt(bvn);
+        this.logger.log(
+          `BVN received from webhook for user ${user.id} - BVN: ${this.bvnEncryptionService.maskForLogging(bvn)}`,
+        );
+      }
+
+      // Update user with encrypted BVN and upgrade to TIER_2
+      await this.prisma.user.update({
         where: { id: user.id },
         data: {
           bvnVerified: true,
-          bvn: bvn || user.bvn, // Use BVN from webhook or keep existing
+          bvn: encryptedBvn, // Store encrypted BVN
           kycTier: 'TIER_2', // Auto-upgrade to TIER_2
           paystackCustomerCode: customer_code,
-          status: user.emailVerified && user.phoneVerified ? 'ACTIVE' : user.status,
+          status:
+            user.emailVerified && user.phoneVerified ? 'ACTIVE' : user.status,
         },
       });
 
@@ -251,7 +265,9 @@ export class PaystackWebhookService {
             verificationMethod: 'DVA_BVN_VALIDATION',
           },
         });
-        this.logger.log(`📬 Notification sent for BVN verification: ${user.id}`);
+        this.logger.log(
+          `📬 Notification sent for BVN verification: ${user.id}`,
+        );
       } catch (notifError) {
         this.logger.error(
           `Failed to send BVN verification notification to user ${user.id}`,
@@ -352,7 +368,9 @@ export class PaystackWebhookService {
               bankName: bank?.name,
             },
           });
-          this.logger.log(`📬 DVA creation notification sent for user ${virtualAccount.userId}`);
+          this.logger.log(
+            `📬 DVA creation notification sent for user ${virtualAccount.userId}`,
+          );
         } catch (notifError) {
           this.logger.error(
             `Failed to send DVA creation notification to user ${virtualAccount.userId}`,

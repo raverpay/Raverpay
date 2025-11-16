@@ -12,7 +12,13 @@ import { SmsService } from '../services/sms/sms.service';
 export interface NotificationEvent {
   userId: string;
   eventType: string; // "deposit", "withdrawal", "bvn_verified", etc.
-  category: 'TRANSACTION' | 'SECURITY' | 'KYC' | 'PROMOTIONAL' | 'SYSTEM' | 'ACCOUNT';
+  category:
+    | 'TRANSACTION'
+    | 'SECURITY'
+    | 'KYC'
+    | 'PROMOTIONAL'
+    | 'SYSTEM'
+    | 'ACCOUNT';
   channels: Array<'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP'>;
   title: string;
   message: string;
@@ -73,7 +79,10 @@ export class NotificationDispatcherService {
       }
 
       // 2. Create in-app notification (always create if IN_APP is allowed)
-      const notification = await this.createInAppNotification(event, allowedChannels);
+      const notification = await this.createInAppNotification(
+        event,
+        allowedChannels,
+      );
 
       // 3. Send via other channels (email, SMS, push)
       await this.sendToChannels(notification.id, event, allowedChannels);
@@ -243,7 +252,10 @@ export class NotificationDispatcherService {
         provider: 'resend',
       });
 
-      this.logger.error(`Failed to send email for notification ${notificationId}`, error);
+      this.logger.error(
+        `Failed to send email for notification ${notificationId}`,
+        error,
+      );
     }
   }
 
@@ -299,7 +311,10 @@ export class NotificationDispatcherService {
         provider: this.smsService.getProviderName(),
       });
 
-      this.logger.error(`Failed to send SMS for notification ${notificationId}`, error);
+      this.logger.error(
+        `Failed to send SMS for notification ${notificationId}`,
+        error,
+      );
     }
   }
 
@@ -367,7 +382,10 @@ export class NotificationDispatcherService {
    * @param event - Notification event (same for all users)
    * @returns Array of created notifications
    */
-  async sendBulkNotifications(userIds: string[], event: Omit<NotificationEvent, 'userId'>) {
+  async sendBulkNotifications(
+    userIds: string[],
+    event: Omit<NotificationEvent, 'userId'>,
+  ) {
     const results: any[] = [];
 
     // Process in batches to avoid overwhelming the system

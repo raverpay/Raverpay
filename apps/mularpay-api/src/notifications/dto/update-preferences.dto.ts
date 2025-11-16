@@ -1,4 +1,10 @@
-import { IsBoolean, IsOptional, IsString, IsIn, IsArray } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  IsIn,
+  IsArray,
+} from 'class-validator';
 
 /**
  * DTO for updating user notification preferences

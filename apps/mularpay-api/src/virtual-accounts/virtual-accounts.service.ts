@@ -1,6 +1,7 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PaystackService } from '../payments/paystack.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { BVNEncryptionService } from '../utils/bvn-encryption.service';
 import { RequestVirtualAccountDto } from './dto';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class VirtualAccountsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly paystackService: PaystackService,
+    private readonly bvnEncryptionService: BVNEncryptionService,
   ) {}
 
   /**
@@ -99,27 +101,41 @@ export class VirtualAccountsService {
       // This triggers an async webhook: customeridentification.success/failed
       // The webhook handler will automatically upgrade user to TIER_2 on success
       if (dto.bvn && dto.account_number && dto.bank_code) {
+        // Encrypt BVN before storing in database
+        const encryptedBvn = this.bvnEncryptionService.encrypt(dto.bvn);
+
         this.logger.log(
-          `Initiating BVN validation for user ${userId} (customer: ${customerCode})`,
+          `Initiating BVN validation for user ${userId} (customer: ${customerCode}) - BVN: ${this.bvnEncryptionService.maskForLogging(dto.bvn)}`,
         );
 
-        // Store BVN temporarily for webhook processing
+        // Store encrypted BVN in database
         await this.prisma.user.update({
           where: { id: userId },
           data: {
-            bvn: dto.bvn,
+            bvn: encryptedBvn,
             dateOfBirth: dto.date_of_birth
               ? new Date(dto.date_of_birth)
               : user.dateOfBirth,
           },
         });
 
+        // Use plain BVN for Paystack API call (decrypt if user already has encrypted BVN)
+        let plainBvn = dto.bvn;
+        if (user.bvn && this.bvnEncryptionService.isEncrypted(user.bvn)) {
+          try {
+            plainBvn = this.bvnEncryptionService.decrypt(user.bvn);
+          } catch {
+            // If decryption fails, use the new BVN from DTO
+            plainBvn = dto.bvn;
+          }
+        }
+
         await this.paystackService.validateCustomer(
           customerCode,
           dto.first_name || user.firstName,
           dto.last_name || user.lastName,
           dto.account_number,
-          dto.bvn,
+          plainBvn,
           dto.bank_code,
         );
 

@@ -35,7 +35,10 @@ export class NotificationLogService {
         status: data.status,
         provider: data.provider,
         providerMessageId: data.providerMessageId,
-        sentAt: data.status === 'SENT' || data.status === 'DELIVERED' ? new Date() : null,
+        sentAt:
+          data.status === 'SENT' || data.status === 'DELIVERED'
+            ? new Date()
+            : null,
         deliveredAt: data.status === 'DELIVERED' ? new Date() : null,
       },
     });
@@ -164,7 +167,8 @@ export class NotificationLogService {
 
     const stats = {
       total: logs.length,
-      sent: logs.filter((l) => l.status === 'SENT' || l.status === 'DELIVERED').length,
+      sent: logs.filter((l) => l.status === 'SENT' || l.status === 'DELIVERED')
+        .length,
       delivered: logs.filter((l) => l.status === 'DELIVERED').length,
       failed: logs.filter((l) => l.status === 'FAILED').length,
       opened: logs.filter((l) => l.status === 'OPENED').length,
