@@ -7,3 +7,4 @@ export * from './verify-smartcard.dto';
 export * from './verify-meter.dto';
 export * from './get-orders.dto';
 export * from './purchase-international-airtime.dto';
+export * from './saved-recipient.dto';

@@ -402,7 +402,17 @@ export class VTUService {
         await this.refundFailedOrder(order.id);
       }
 
-      // 12. Invalidate wallet and transaction caches
+      // 12. Auto-save recipient if successful
+      if (vtpassResult.status === 'success') {
+        await this.upsertSavedRecipient(
+          userId,
+          'AIRTIME',
+          dto.network.toUpperCase(),
+          dto.phone,
+        );
+      }
+
+      // 13. Invalidate wallet and transaction caches
       await this.walletService.invalidateWalletCache(userId);
       await this.walletService.invalidateTransactionCache(userId);
 
@@ -421,7 +431,7 @@ export class VTUService {
             : 'Airtime purchase failed. Wallet refunded.',
       };
     } finally {
-      // 13. Always unlock wallet
+      // 14. Always unlock wallet
       await this.unlockWalletForTransaction(userId);
     }
   }
@@ -571,7 +581,17 @@ export class VTUService {
         await this.refundFailedOrder(order.id);
       }
 
-      // 13. Invalidate wallet and transaction caches
+      // 13. Auto-save recipient if successful
+      if (vtpassResult.status === 'success') {
+        await this.upsertSavedRecipient(
+          userId,
+          'DATA',
+          dto.network.toUpperCase(),
+          dto.phone,
+        );
+      }
+
+      // 14. Invalidate wallet and transaction caches
       await this.walletService.invalidateWalletCache(userId);
       await this.walletService.invalidateTransactionCache(userId);
 
@@ -1580,5 +1600,123 @@ export class VTUService {
     this.logger.log(
       `[Webhook] Order status updated: ${reference} -> ${status}`,
     );
+  }
+
+  // ==================== Saved Recipients Management ====================
+
+  /**
+   * Auto-save or update recipient after successful VTU transaction
+   * Called internally after each successful purchase
+   */
+  async upsertSavedRecipient(
+    userId: string,
+    serviceType: VTUServiceType,
+    provider: string,
+    recipient: string,
+    recipientName?: string,
+  ) {
+    try {
+      await this.prisma.savedRecipient.upsert({
+        where: {
+          userId_serviceType_recipient: {
+            userId,
+            serviceType,
+            recipient,
+          },
+        },
+        update: {
+          provider,
+          lastUsedAt: new Date(),
+          usageCount: { increment: 1 },
+          ...(recipientName && { recipientName }),
+        },
+        create: {
+          userId,
+          serviceType,
+          provider,
+          recipient,
+          recipientName,
+          lastUsedAt: new Date(),
+          usageCount: 1,
+        },
+      });
+
+      this.logger.log(
+        `[SavedRecipient] Upserted: ${serviceType} - ${recipient}`,
+      );
+    } catch (error) {
+      // Don't fail the transaction if saving recipient fails
+      this.logger.error(
+        `[SavedRecipient] Failed to save recipient:`,
+        error,
+      );
+    }
+  }
+
+  /**
+   * Get saved recipients for a user, optionally filtered by service type
+   * Returns most recently used recipients first
+   */
+  async getSavedRecipients(userId: string, serviceType?: VTUServiceType) {
+    const where = serviceType
+      ? { userId, serviceType }
+      : { userId };
+
+    const recipients = await this.prisma.savedRecipient.findMany({
+      where,
+      orderBy: { lastUsedAt: 'desc' },
+      take: 10, // Limit to 10 most recent
+    });
+
+    return recipients.map((recipient) => ({
+      id: recipient.id,
+      serviceType: recipient.serviceType,
+      provider: recipient.provider,
+      recipient: recipient.recipient,
+      recipientName: recipient.recipientName,
+      lastUsedAt: recipient.lastUsedAt.toISOString(),
+      usageCount: recipient.usageCount,
+    }));
+  }
+
+  /**
+   * Update recipient name
+   */
+  async updateSavedRecipient(
+    recipientId: string,
+    userId: string,
+    recipientName: string,
+  ) {
+    const recipient = await this.prisma.savedRecipient.findFirst({
+      where: { id: recipientId, userId },
+    });
+
+    if (!recipient) {
+      throw new NotFoundException('Saved recipient not found');
+    }
+
+    return this.prisma.savedRecipient.update({
+      where: { id: recipientId },
+      data: { recipientName },
+    });
+  }
+
+  /**
+   * Delete a saved recipient
+   */
+  async deleteSavedRecipient(recipientId: string, userId: string) {
+    const recipient = await this.prisma.savedRecipient.findFirst({
+      where: { id: recipientId, userId },
+    });
+
+    if (!recipient) {
+      throw new NotFoundException('Saved recipient not found');
+    }
+
+    await this.prisma.savedRecipient.delete({
+      where: { id: recipientId },
+    });
+
+    return { message: 'Saved recipient deleted successfully' };
   }
 }

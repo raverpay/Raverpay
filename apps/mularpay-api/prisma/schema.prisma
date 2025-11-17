@@ -75,6 +75,7 @@ model User {
   notificationQueue      NotificationQueue[]
   auditLogs              AuditLog[]
   refreshTokens          RefreshToken[]
+  savedRecipients        SavedRecipient[]
 
   @@index([email])
   @@index([phone])
@@ -723,6 +724,37 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============================================
+// SAVED RECIPIENTS (FOR VTU SERVICES)
+// ============================================
+
+model SavedRecipient {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Service details
+  serviceType VTUServiceType // AIRTIME, DATA, CABLE_TV, ELECTRICITY
+  provider    String // MTN, GLO, DSTV, IKEDC, etc.
+
+  // Recipient details
+  recipient     String // Phone number, smartcard, meter number
+  recipientName String? // Optional friendly name (e.g., "Mom", "Office")
+
+  // Usage tracking
+  lastUsedAt DateTime @default(now())
+  usageCount Int      @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, serviceType, recipient]) // Prevent duplicates
+  @@index([userId])
+  @@index([userId, serviceType])
+  @@index([lastUsedAt])
+  @@map("saved_recipients")
 }
 
 // ============================================

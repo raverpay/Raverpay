@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
@@ -22,6 +23,8 @@ import {
   VerifyMeterDto,
   GetOrdersDto,
   PurchaseInternationalAirtimeDto,
+  GetSavedRecipientsDto,
+  UpdateSavedRecipientDto,
 } from './dto';
 
 @Controller('vtu')
@@ -209,5 +212,42 @@ export class VTUController {
     @Param('orderId') orderId: string,
   ) {
     return this.vtuService.retryFailedOrder(orderId, userId);
+  }
+
+  // ==================== Saved Recipients ====================
+
+  @Get('saved-recipients')
+  @HttpCode(HttpStatus.OK)
+  getSavedRecipients(
+    @GetUser('id') userId: string,
+    @Query() dto: GetSavedRecipientsDto,
+  ) {
+    return this.vtuService.getSavedRecipients(userId, dto.serviceType);
+  }
+
+  @Post('saved-recipients/:recipientId')
+  @HttpCode(HttpStatus.OK)
+  updateSavedRecipient(
+    @GetUser('id') userId: string,
+    @Param('recipientId') recipientId: string,
+    @Body() dto: UpdateSavedRecipientDto,
+  ) {
+    if (!dto.recipientName) {
+      throw new BadRequestException('Recipient name is required');
+    }
+    return this.vtuService.updateSavedRecipient(
+      recipientId,
+      userId,
+      dto.recipientName,
+    );
+  }
+
+  @Post('saved-recipients/:recipientId/delete')
+  @HttpCode(HttpStatus.OK)
+  deleteSavedRecipient(
+    @GetUser('id') userId: string,
+    @Param('recipientId') recipientId: string,
+  ) {
+    return this.vtuService.deleteSavedRecipient(recipientId, userId);
   }
 }
