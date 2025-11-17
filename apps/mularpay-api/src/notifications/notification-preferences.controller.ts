@@ -12,6 +12,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { UpdateNotificationPreferencesDto } from './dto';
+import { UpdateOneSignalDto } from './dto/update-onesignal.dto';
 
 /**
  * Notification Preferences Controller
@@ -89,5 +90,25 @@ export class NotificationPreferencesController {
   @Delete('opt-out/:category')
   async optInCategory(@Request() req, @Param('category') category: string) {
     return this.preferencesService.optInCategory(req.user.id, category);
+  }
+
+  /**
+   * Update OneSignal push notification token
+   * POST /notification-preferences/onesignal
+   *
+   * @param req - Request with authenticated user
+   * @param dto - OneSignal player ID and external ID
+   * @returns Updated preferences with OneSignal token
+   */
+  @Post('onesignal')
+  async updateOneSignalToken(
+    @Request() req,
+    @Body() dto: UpdateOneSignalDto,
+  ) {
+    return this.preferencesService.updateOneSignalToken(
+      req.user.id,
+      dto.oneSignalPlayerId,
+      dto.oneSignalExternalId,
+    );
   }
 }

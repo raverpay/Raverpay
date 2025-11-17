@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from './notifications.service';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { NotificationLogService } from './notification-log.service';
+import { OneSignalService } from './onesignal.service';
 import { EmailService } from '../services/email/email.service';
 import { SmsService } from '../services/sms/sms.service';
 
@@ -48,8 +49,7 @@ export class NotificationDispatcherService {
     private readonly logService: NotificationLogService,
     private readonly emailService: EmailService,
     private readonly smsService: SmsService,
-    // TODO: Inject PushNotificationService when implemented
-    // private readonly pushService: PushNotificationService,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   /**
@@ -325,17 +325,47 @@ export class NotificationDispatcherService {
    * @param event - Notification event
    */
   private async sendPush(notificationId: string, event: NotificationEvent) {
-    // TODO: Implement when PushNotificationService is ready
-    this.logger.log(
-      `Push notification not yet implemented for notification ${notificationId}`,
-    );
+    try {
+      // Send push notification via OneSignal using external user ID
+      // No need to fetch player ID from database - OneSignal handles routing
+      await this.oneSignalService.sendToUser(event.userId, {
+        headings: { en: event.title },
+        contents: { en: event.message },
+        data: {
+          notificationId,
+          category: event.category,
+          eventType: event.eventType,
+          ...event.data,
+        },
+        ios_badgeType: 'Increase',
+        ios_badgeCount: 1,
+      });
 
-    await this.logService.logFailure({
-      notificationId,
-      userId: event.userId,
-      channel: 'PUSH',
-      failureReason: 'Push notifications not implemented yet',
-    });
+      await this.logService.logDelivery({
+        notificationId,
+        userId: event.userId,
+        channel: 'PUSH',
+        status: 'SENT',
+        provider: 'onesignal',
+      });
+
+      this.logger.log(
+        `Push notification sent for notification ${notificationId}`,
+      );
+    } catch (error) {
+      await this.logService.logFailure({
+        notificationId,
+        userId: event.userId,
+        channel: 'PUSH',
+        failureReason: error.message,
+        provider: 'onesignal',
+      });
+
+      this.logger.error(
+        `Failed to send push notification for notification ${notificationId}`,
+        error,
+      );
+    }
   }
 
   /**

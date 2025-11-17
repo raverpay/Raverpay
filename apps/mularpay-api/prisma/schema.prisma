@@ -546,6 +546,11 @@ model NotificationPreference {
   // Opt-outs
   optOutCategories String[] @default([]) // Categories user opted out of
 
+  // OneSignal Push Notification Tokens
+  oneSignalPlayerId     String?   // OneSignal subscription/player ID
+  oneSignalExternalId   String?   // External user ID (should match userId)
+  lastPushTokenUpdate   DateTime? // Last time push token was updated
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

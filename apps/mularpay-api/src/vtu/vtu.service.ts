@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { VTPassService } from './services/vtpass.service';
 import { WalletService } from '../wallet/wallet.service';
 import { UsersService } from '../users/users.service';
+import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import {
   PurchaseAirtimeDto,
   PurchaseDataDto,
@@ -51,6 +52,7 @@ export class VTUService {
     private readonly vtpassService: VTPassService,
     private readonly walletService: WalletService,
     private readonly usersService: UsersService,
+    private readonly notificationDispatcher: NotificationDispatcherService,
   ) {}
 
   // ==================== Product Catalog ====================
@@ -412,9 +414,34 @@ export class VTUService {
         );
       }
 
-      // 13. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
+      // 13. Invalidate wallet and transaction caches (non-critical, don't fail if Redis is down)
+      try {
+        await this.walletService.invalidateWalletCache(userId);
+        await this.walletService.invalidateTransactionCache(userId);
+      } catch (error) {
+        this.logger.warn('Failed to invalidate cache (non-critical)', error.message);
+      }
+
+      // 14. Send notification asynchronously (don't block response)
+      if (vtpassResult.status === 'success') {
+        // Fire and forget - don't await
+        this.notificationDispatcher.sendNotification({
+          userId,
+          eventType: 'airtime_purchase_success',
+          category: 'TRANSACTION',
+          channels: ['PUSH', 'IN_APP'],
+          title: 'Airtime Purchase Successful',
+          message: `₦${dto.amount.toLocaleString()} ${dto.network.toUpperCase()} airtime sent to ${dto.phone}`,
+          data: {
+            amount: dto.amount,
+            provider: dto.network.toUpperCase(),
+            recipient: dto.phone,
+            reference,
+          },
+        }).catch(error => {
+          this.logger.error('Failed to send airtime purchase notification', error);
+        });
+      }
 
       return {
         reference,
@@ -591,9 +618,35 @@ export class VTUService {
         );
       }
 
-      // 14. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
+      // 14. Invalidate wallet and transaction caches (non-critical, don't fail if Redis is down)
+      try {
+        await this.walletService.invalidateWalletCache(userId);
+        await this.walletService.invalidateTransactionCache(userId);
+      } catch (error) {
+        this.logger.warn('Failed to invalidate cache (non-critical)', error.message);
+      }
+
+      // 15. Send notification asynchronously (don't block response)
+      if (vtpassResult.status === 'success') {
+        // Fire and forget - don't await
+        this.notificationDispatcher.sendNotification({
+          userId,
+          eventType: 'data_purchase_success',
+          category: 'TRANSACTION',
+          channels: ['PUSH', 'IN_APP'],
+          title: 'Data Purchase Successful',
+          message: `${product.name} sent to ${dto.phone}`,
+          data: {
+            amount,
+            provider: dto.network.toUpperCase(),
+            recipient: dto.phone,
+            productName: product.name,
+            reference,
+          },
+        }).catch(error => {
+          this.logger.error('Failed to send data purchase notification', error);
+        });
+      }
 
       return {
         reference,

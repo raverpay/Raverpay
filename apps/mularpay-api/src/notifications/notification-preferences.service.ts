@@ -245,4 +245,36 @@ export class NotificationPreferencesService {
       data: { optOutCategories },
     });
   }
+
+  /**
+   * Update OneSignal push notification token
+   *
+   * @param userId - User ID
+   * @param oneSignalPlayerId - OneSignal subscription/player ID
+   * @param oneSignalExternalId - External user ID (optional)
+   * @returns Updated preferences
+   */
+  async updateOneSignalToken(
+    userId: string,
+    oneSignalPlayerId: string,
+    oneSignalExternalId?: string,
+  ) {
+    // Ensure preferences exist
+    await this.getPreferences(userId);
+
+    const updated = await this.prisma.notificationPreference.update({
+      where: { userId },
+      data: {
+        oneSignalPlayerId,
+        oneSignalExternalId: oneSignalExternalId || userId,
+        lastPushTokenUpdate: new Date(),
+      },
+    });
+
+    this.logger.log(
+      `OneSignal player ID updated for user ${userId}: ${oneSignalPlayerId}`,
+    );
+
+    return updated;
+  }
 }
