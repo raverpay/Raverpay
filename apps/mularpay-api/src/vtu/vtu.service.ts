@@ -385,49 +385,79 @@ export class VTUService {
         );
       }
 
-      // 10. Update order
-      await this.prisma.vTUOrder.update({
-        where: { id: order.id },
-        data: {
-          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
-          providerRef: vtpassResult.transactionId,
-          providerToken: vtpassResult.token,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          providerResponse: JSON.parse(JSON.stringify(vtpassResult)),
-          completedAt:
-            vtpassResult.status === 'success' ? new Date() : undefined,
-        },
-      });
+      // 10. Prepare response data FIRST (before async operations)
+      const response = {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount: dto.amount,
+        fee,
+        totalAmount: total,
+        provider: dto.network.toUpperCase(),
+        recipient: dto.phone,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Airtime purchased successfully'
+            : 'Airtime purchase failed. Wallet refunded.',
+      };
 
-      // 11. If failed, refund
+      // 11. Update order asynchronously (fire-and-forget)
+      this.prisma.vTUOrder
+        .update({
+          where: { id: order.id },
+          data: {
+            status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+            providerRef: vtpassResult.transactionId,
+            providerToken: vtpassResult.token,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            providerResponse: JSON.parse(JSON.stringify(vtpassResult)),
+            completedAt:
+              vtpassResult.status === 'success' ? new Date() : undefined,
+          },
+        })
+        .catch((error) =>
+          this.logger.error('Failed to update order status', error),
+        );
+
+      // 12. If failed, refund asynchronously
       if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
       }
 
-      // 12. Auto-save recipient if successful
+      // 13. Auto-save recipient asynchronously (fire-and-forget)
       if (vtpassResult.status === 'success') {
-        await this.upsertSavedRecipient(
+        this.upsertSavedRecipient(
           userId,
           'AIRTIME',
           dto.network.toUpperCase(),
           dto.phone,
+        ).catch((error) =>
+          this.logger.warn('Failed to save recipient (non-critical)', error),
         );
       }
 
-      // 13. Invalidate wallet and transaction caches (non-critical, don't fail if Redis is down)
-      try {
-        await this.walletService.invalidateWalletCache(userId);
-        await this.walletService.invalidateTransactionCache(userId);
-      } catch (error) {
-        this.logger.warn(
-          'Failed to invalidate cache (non-critical)',
-          error.message,
+      // 14. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
         );
-      }
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
 
-      // 14. Send notification asynchronously (don't block response)
+      // 15. Send notification asynchronously (fire-and-forget)
       if (vtpassResult.status === 'success') {
-        // Fire and forget - don't await
         this.notificationDispatcher
           .sendNotification({
             userId,
@@ -451,20 +481,8 @@ export class VTUService {
           });
       }
 
-      return {
-        reference,
-        orderId: order.id,
-        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
-        amount: dto.amount,
-        fee,
-        totalAmount: total,
-        provider: dto.network.toUpperCase(),
-        recipient: dto.phone,
-        message:
-          vtpassResult.status === 'success'
-            ? 'Airtime purchased successfully'
-            : 'Airtime purchase failed. Wallet refunded.',
-      };
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return response;
     } finally {
       // 14. Always unlock wallet
       await this.unlockWalletForTransaction(userId);
@@ -597,49 +615,80 @@ export class VTUService {
         );
       }
 
-      // 11. Update order
-      await this.prisma.vTUOrder.update({
-        where: { id: order.id },
-        data: {
-          status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
-          providerRef: vtpassResult.transactionId,
-          providerToken: vtpassResult.token,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          providerResponse: JSON.parse(JSON.stringify(vtpassResult)),
-          completedAt:
-            vtpassResult.status === 'success' ? new Date() : undefined,
-        },
-      });
+      // 11. Prepare response data FIRST (before async operations)
+      const response = {
+        reference,
+        orderId: order.id,
+        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+        amount,
+        fee,
+        totalAmount: total,
+        provider: dto.network.toUpperCase(),
+        recipient: dto.phone,
+        productName: product.name,
+        message:
+          vtpassResult.status === 'success'
+            ? 'Data bundle purchased successfully'
+            : 'Data purchase failed. Wallet refunded.',
+      };
 
-      // 12. If failed, refund
+      // 12. Update order asynchronously (fire-and-forget)
+      this.prisma.vTUOrder
+        .update({
+          where: { id: order.id },
+          data: {
+            status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
+            providerRef: vtpassResult.transactionId,
+            providerToken: vtpassResult.token,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            providerResponse: JSON.parse(JSON.stringify(vtpassResult)),
+            completedAt:
+              vtpassResult.status === 'success' ? new Date() : undefined,
+          },
+        })
+        .catch((error) =>
+          this.logger.error('Failed to update order status', error),
+        );
+
+      // 13. If failed, refund asynchronously
       if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
       }
 
-      // 13. Auto-save recipient if successful
+      // 14. Auto-save recipient asynchronously (fire-and-forget)
       if (vtpassResult.status === 'success') {
-        await this.upsertSavedRecipient(
+        this.upsertSavedRecipient(
           userId,
           'DATA',
           dto.network.toUpperCase(),
           dto.phone,
+        ).catch((error) =>
+          this.logger.warn('Failed to save recipient (non-critical)', error),
         );
       }
 
-      // 14. Invalidate wallet and transaction caches (non-critical, don't fail if Redis is down)
-      try {
-        await this.walletService.invalidateWalletCache(userId);
-        await this.walletService.invalidateTransactionCache(userId);
-      } catch (error) {
-        this.logger.warn(
-          'Failed to invalidate cache (non-critical)',
-          error.message,
+      // 15. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
         );
-      }
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
 
-      // 15. Send notification asynchronously (don't block response)
+      // 16. Send notification asynchronously (fire-and-forget)
       if (vtpassResult.status === 'success') {
-        // Fire and forget - don't await
         this.notificationDispatcher
           .sendNotification({
             userId,
@@ -664,21 +713,8 @@ export class VTUService {
           });
       }
 
-      return {
-        reference,
-        orderId: order.id,
-        status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
-        amount,
-        fee,
-        totalAmount: total,
-        provider: dto.network.toUpperCase(),
-        recipient: dto.phone,
-        productName: product.name,
-        message:
-          vtpassResult.status === 'success'
-            ? 'Data bundle purchased successfully'
-            : 'Data purchase failed. Wallet refunded.',
-      };
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return response;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
