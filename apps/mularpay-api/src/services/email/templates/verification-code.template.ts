@@ -33,12 +33,12 @@ export function verificationCodeTemplate(
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+                  <td style="background: #5b55f6; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
                       RaverPay
                     </h1>
                     <p style="margin: 10px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">
-                      🇳🇬 Your Trusted Fintech Partner
+                    Your Trusted Fintech Partner
                     </p>
                   </td>
                 </tr>
@@ -55,7 +55,7 @@ export function verificationCodeTemplate(
                     </p>
                     
                     <!-- Verification Code Box -->
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 30px; text-align: center; margin: 30px 0;">
+                    <div style="background: #5b55f6; border-radius: 10px; padding: 30px; text-align: center; margin: 30px 0;">
                       <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
                         Your Verification Code
                       </p>
@@ -69,7 +69,7 @@ export function verificationCodeTemplate(
                     <!-- Instructions -->
                     <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; border-radius: 6px; margin: 30px 0;">
                       <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666; line-height: 1.5;">
-                        <strong>⏱️ This code expires in 10 minutes</strong>
+                        <strong>⏱This code expires in 10 minutes</strong>
                       </p>
                       <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">
                         If you didn't request this code, please ignore this email or contact our support team.
@@ -78,7 +78,7 @@ export function verificationCodeTemplate(
                     
                     <!-- Security Notice -->
                     <p style="margin: 30px 0 0 0; font-size: 13px; color: #999999; line-height: 1.5; border-top: 1px solid #e0e0e0; padding-top: 20px;">
-                      🔒 <strong>Security Tip:</strong> Never share your verification code with anyone. RaverPay will never ask for your code via phone, email, or social media.
+                      <strong>Security Tip:</strong> Never share your verification code with anyone. RaverPay will never ask for your code via phone, email, or social media.
                     </p>
                   </td>
                 </tr>
@@ -90,7 +90,7 @@ export function verificationCodeTemplate(
                       <strong>RaverPay</strong> - Making Payments Easy
                     </p>
                     <p style="margin: 0 0 15px 0; color: #999999; font-size: 12px;">
-                      Lagos, Nigeria 🇳🇬
+                      Lagos, Nigeria 
                     </p>
                     <p style="margin: 0; color: #cccccc; font-size: 11px;">
                       This is an automated email. Please do not reply to this message.

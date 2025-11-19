@@ -25,10 +25,7 @@ export function welcomeEmailTemplate(firstName: string): {
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">
-                      🎉
-                    </h1>
+                  <td style="background: #5b55f6; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
                     <h2 style="margin: 15px 0 0 0; color: #ffffff; font-size: 24px; font-weight: 700;">
                       Welcome to RaverPay!
                     </h2>
@@ -42,7 +39,7 @@ export function welcomeEmailTemplate(firstName: string): {
                 <tr>
                   <td style="padding: 40px 30px;">
                     <p style="margin: 0 0 20px 0; font-size: 18px; color: #333333; line-height: 1.6;">
-                      Hi <strong>${firstName}</strong>! 👋
+                      Hi <strong>${firstName}</strong>! 
                     </p>
                     
                     <p style="margin: 0 0 25px 0; font-size: 16px; color: #666666; line-height: 1.6;">
