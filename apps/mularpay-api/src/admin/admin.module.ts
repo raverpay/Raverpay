@@ -15,6 +15,12 @@ import { AdminVirtualAccountsController } from './virtual-accounts/admin-virtual
 import { AdminVirtualAccountsService } from './virtual-accounts/admin-virtual-accounts.service';
 import { AdminDeletionsController } from './deletions/admin-deletions.controller';
 import { AdminDeletionsService } from './deletions/admin-deletions.service';
+import { AdminGiftCardsController } from './giftcards/admin-giftcards.controller';
+import { AdminGiftCardsService } from './giftcards/admin-giftcards.service';
+import { AdminCryptoController } from './crypto/admin-crypto.controller';
+import { AdminCryptoService } from './crypto/admin-crypto.service';
+import { AdminNotificationsController } from './notifications/admin-notifications.controller';
+import { AdminNotificationsService } from './notifications/admin-notifications.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
@@ -29,6 +35,9 @@ import { PrismaModule } from '../prisma/prisma.module';
     AdminWalletsController,
     AdminVirtualAccountsController,
     AdminDeletionsController,
+    AdminGiftCardsController,
+    AdminCryptoController,
+    AdminNotificationsController,
   ],
   providers: [
     AdminUsersService,
@@ -39,6 +48,9 @@ import { PrismaModule } from '../prisma/prisma.module';
     AdminWalletsService,
     AdminVirtualAccountsService,
     AdminDeletionsService,
+    AdminGiftCardsService,
+    AdminCryptoService,
+    AdminNotificationsService,
     HierarchyService,
   ],
   exports: [HierarchyService],

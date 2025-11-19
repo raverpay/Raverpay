@@ -8,3 +8,6 @@ export * from './approve-bvn.dto';
 export * from './reject-bvn.dto';
 export * from './refund-vtu.dto';
 export * from './adjust-wallet.dto';
+export * from './review-giftcard.dto';
+export * from './review-crypto.dto';
+export * from './notification.dto';
