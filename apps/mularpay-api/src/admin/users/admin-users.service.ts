@@ -20,7 +20,7 @@ export class AdminUsersService {
    * Get paginated list of users with filters
    */
   async getUsers(query: QueryUsersDto) {
-    const { page, limit, search, role, status, kycTier, sortBy, sortOrder } =
+    const { page = 1, limit = 20, search, role, status, kycTier, sortBy = 'createdAt', sortOrder = 'desc' } =
       query;
 
     const skip = (page - 1) * limit;
@@ -47,7 +47,7 @@ export class AdminUsersService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: { [sortBy as string]: sortOrder },
         select: {
           id: true,
           email: true,
@@ -220,6 +220,10 @@ export class AdminUsersService {
     const targetUser = await this.prisma.user.findUnique({
       where: { id: targetUserId },
     });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
 
     if (
       targetUser.role === UserRole.SUPER_ADMIN &&
