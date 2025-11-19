@@ -1294,44 +1294,559 @@ curl -X POST "${API_URL}/admin/deletions/${DELETION_ID}/reject" \
 ✅ `POST /admin/deletions/:requestId/approve` - Approve deletion
 ✅ `POST /admin/deletions/:requestId/reject` - Reject deletion
 
-**Total: 49 Admin Endpoints Implemented**
+**Total Phase 1 & 2: 49 Admin Endpoints**
 
 ---
 
-## 🚀 Still To Be Implemented (from the plan)
+## 🎁 GIFT CARD ORDER MANAGEMENT
 
-Based on ADMIN_ENDPOINTS_PLAN.md, there are ~130+ more endpoints to implement:
+### Get All Gift Card Orders
 
-### Phase 2 (Next Priority)
-- KYC Verification endpoints (8 endpoints)
-- VTU Order Management (8 endpoints)
-- Wallet Management (8 endpoints)
-- Virtual Account Management (8 endpoints)
-- Account Deletion Review (5 endpoints)
+```bash
+curl -X GET "${API_URL}/admin/giftcards/orders?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
 
-### Phase 3
-- Gift Card Management (7 endpoints)
-- Crypto Order Management (7 endpoints)
-- Notification Management (8 endpoints)
-- Advanced Analytics (12 endpoints)
-- System Configuration (12 endpoints)
+**Query Parameters:**
+- `page`, `limit` - Pagination
+- `type` - BUY or SELL
+- `status` - PENDING, COMPLETED, FAILED
+- `userId` - Filter by user
+- `brand` - Filter by brand (e.g., "iTunes", "Amazon")
+- `startDate`, `endDate` - Date range
 
-### Phase 4
-- Admin User Management (5 endpoints)
-- Provider Management (8 endpoints)
-- Audit Logs (5 endpoints)
-- Export Features
+---
+
+### Get Pending Review Orders (SELL Orders)
+
+```bash
+curl -X GET "${API_URL}/admin/giftcards/pending-review" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Returns:**
+- All pending SELL orders
+- Days pending calculation
+- Ordered by oldest first
+
+---
+
+### Get Gift Card Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/giftcards/stats?startDate=2025-01-01&endDate=2025-01-31" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Returns:**
+- Total count and volume
+- Average amount and rate
+- Approval rate
+- Breakdown by type (BUY/SELL)
+- Breakdown by brand
+- Breakdown by status
+
+---
+
+### Get Single Gift Card Order
+
+```bash
+# Save an order ID from the list
+export GIFTCARD_ORDER_ID="order-uuid-here"
+
+curl -X GET "${API_URL}/admin/giftcards/${GIFTCARD_ORDER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Approve Gift Card Sell Order
+
+```bash
+curl -X POST "${API_URL}/admin/giftcards/${GIFTCARD_ORDER_ID}/approve" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notes": "Card images verified manually"
+  }'
+```
+
+**What happens:**
+- Order status → COMPLETED
+- User wallet credited with order amount
+- Transaction record created
+- reviewedBy and reviewedAt fields updated
+- Audit log created
+- User notified (TODO in code)
+
+---
+
+### Reject Gift Card Sell Order
+
+```bash
+curl -X POST "${API_URL}/admin/giftcards/${GIFTCARD_ORDER_ID}/reject" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Invalid card code",
+    "notes": "Card already redeemed"
+  }'
+```
+
+**What happens:**
+- Order status → FAILED
+- reviewedBy and reviewedAt fields updated
+- Audit log created with rejection reason
+- User notified with reason (TODO in code)
+
+---
+
+### Adjust Gift Card Payout Amount
+
+```bash
+curl -X PATCH "${API_URL}/admin/giftcards/${GIFTCARD_ORDER_ID}/adjust-amount" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 45000,
+    "reason": "Card denomination mismatch - adjusted to $50 rate"
+  }'
+```
+
+**Use case:** Adjust payout before approval (e.g., wrong denomination, rate change)
+
+---
+
+## ₿ CRYPTO ORDER MANAGEMENT
+
+### Get All Crypto Orders
+
+```bash
+curl -X GET "${API_URL}/admin/crypto/orders?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Query Parameters:**
+- `page`, `limit` - Pagination
+- `type` - BUY or SELL
+- `status` - PENDING, COMPLETED, FAILED
+- `userId` - Filter by user
+- `asset` - BTC, ETH, USDT, etc.
+- `startDate`, `endDate` - Date range
+
+---
+
+### Get Pending Review Orders (SELL Orders)
+
+```bash
+curl -X GET "${API_URL}/admin/crypto/pending-review" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Returns:**
+- All pending SELL orders
+- Days pending calculation
+- Blockchain verification data (txHash, walletAddress)
+
+---
+
+### Get Crypto Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/crypto/stats?startDate=2025-01-01" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Returns:**
+- Total volume in NGN and crypto
+- Average amounts and rates
+- Approval rate
+- Breakdown by type (BUY/SELL)
+- Breakdown by asset (BTC, ETH, USDT)
+- Breakdown by status
+
+---
+
+### Get Single Crypto Order
+
+```bash
+export CRYPTO_ORDER_ID="crypto-order-uuid"
+
+curl -X GET "${API_URL}/admin/crypto/${CRYPTO_ORDER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Returns:**
+- Full order details
+- Blockchain data (txHash, walletAddress, network)
+- Crypto and Naira amounts
+- Exchange rate
+
+---
+
+### Approve Crypto Sell Order
+
+```bash
+curl -X POST "${API_URL}/admin/crypto/${CRYPTO_ORDER_ID}/approve" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notes": "Blockchain transaction verified on etherscan"
+  }'
+```
+
+**What happens:**
+- Order status → COMPLETED
+- User wallet credited with nairaAmount
+- Transaction record created
+- Audit log created with crypto metadata
+- User notified (TODO in code)
+
+---
+
+### Reject Crypto Sell Order
+
+```bash
+curl -X POST "${API_URL}/admin/crypto/${CRYPTO_ORDER_ID}/reject" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Invalid transaction hash",
+    "notes": "Transaction not found on blockchain"
+  }'
+```
+
+---
+
+### Adjust Crypto Payout Amount
+
+```bash
+curl -X PATCH "${API_URL}/admin/crypto/${CRYPTO_ORDER_ID}/adjust-amount" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nairaAmount": 950000,
+    "reason": "Market rate adjustment - BTC price dropped"
+  }'
+```
+
+**Use case:** Adjust naira payout based on current market rates before approval
+
+---
+
+## 🔔 NOTIFICATION MANAGEMENT
+
+### Get All Notifications
+
+```bash
+curl -X GET "${API_URL}/admin/notifications?page=1&limit=20&isRead=false" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Query Parameters:**
+- `page`, `limit` - Pagination
+- `type` - Notification type
+- `isRead` - true or false (boolean)
+- `userId` - Filter by user
+- `startDate`, `endDate` - Date range
+
+---
+
+### Get Notification Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/notifications/stats" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Returns:**
+- Total count
+- Read/unread counts
+- Read rate percentage
+- Breakdown by notification type
+
+---
+
+### Get User Notifications
+
+```bash
+curl -X GET "${API_URL}/admin/notifications/user/${NORMAL_USER_ID}?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Use case:** View a specific user's notification history
+
+---
+
+### Get Single Notification
+
+```bash
+export NOTIFICATION_ID="notification-uuid"
+
+curl -X GET "${API_URL}/admin/notifications/${NOTIFICATION_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Send Broadcast Notification
+
+```bash
+curl -X POST "${API_URL}/admin/notifications/broadcast" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "SYSTEM",
+    "title": "Scheduled Maintenance",
+    "message": "The platform will undergo scheduled maintenance on Jan 20, 2025 from 2:00 AM to 4:00 AM. Services will be temporarily unavailable."
+  }'
+```
+
+**What happens:**
+- Notification sent to ALL active users
+- Returns recipient count
+- Audit log created
+- Each user receives notification in-app
+
+**Response:**
+```json
+{
+  "success": true,
+  "recipientCount": 1523,
+  "message": "Broadcast sent to 1523 users"
+}
+```
+
+---
+
+### Send Notification to Specific User
+
+```bash
+curl -X POST "${API_URL}/admin/notifications/user/${NORMAL_USER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "SYSTEM",
+    "title": "Account Review",
+    "message": "Your account is under review. Please contact support for more information."
+  }'
+```
+
+**Use case:** Send custom notification to a specific user
+
+---
+
+### Mark Notification as Read
+
+```bash
+curl -X PATCH "${API_URL}/admin/notifications/${NOTIFICATION_ID}/read" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Use case:** Troubleshooting - mark notification as read for testing
+
+---
+
+### Delete Notification
+
+```bash
+curl -X DELETE "${API_URL}/admin/notifications/${NOTIFICATION_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**What happens:**
+- Notification deleted from database
+- Audit log created
+
+---
+
+### Bulk Delete Notifications
+
+```bash
+# Delete all read notifications older than 30 days
+curl -X POST "${API_URL}/admin/notifications/bulk-delete?isRead=true&beforeDate=2024-12-20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Query Parameters:**
+- `userId` - Delete for specific user
+- `type` - Delete specific type
+- `isRead` - true or false
+- `beforeDate` - Delete notifications before this date
+
+**Response:**
+```json
+{
+  "success": true,
+  "deletedCount": 453,
+  "message": "Deleted 453 notifications"
+}
+```
+
+---
+
+## 📝 Summary of All Implemented Endpoints
+
+### Phase 1 - Core Admin (18 endpoints)
+
+**User Management (7 endpoints)**
+✅ `GET /admin/users` - List users
+✅ `GET /admin/users/stats` - User statistics
+✅ `GET /admin/users/:userId` - User details
+✅ `PATCH /admin/users/:userId/role` - Update role
+✅ `PATCH /admin/users/:userId/status` - Update status
+✅ `PATCH /admin/users/:userId/kyc-tier` - Update KYC tier
+✅ `GET /admin/users/:userId/audit-logs` - Audit logs
+
+**Transaction Management (7 endpoints)**
+✅ `GET /admin/transactions` - List transactions
+✅ `GET /admin/transactions/stats` - Transaction statistics
+✅ `GET /admin/transactions/pending` - Pending transactions
+✅ `GET /admin/transactions/failed` - Failed transactions
+✅ `GET /admin/transactions/:id` - Transaction details
+✅ `GET /admin/transactions/reference/:ref` - Get by reference
+✅ `POST /admin/transactions/:id/reverse` - Reverse transaction
+
+**Analytics (4 endpoints)**
+✅ `GET /admin/analytics/dashboard` - Dashboard overview
+✅ `GET /admin/analytics/revenue` - Revenue analytics
+✅ `GET /admin/analytics/users` - User growth
+✅ `GET /admin/analytics/transactions` - Transaction trends
+
+### Phase 2 - Business Operations (31 endpoints)
+
+**KYC Verification (8 endpoints)**
+✅ `GET /admin/kyc/pending` - Pending KYC
+✅ `GET /admin/kyc/rejected` - Rejected KYC
+✅ `GET /admin/kyc/stats` - KYC statistics
+✅ `GET /admin/kyc/:userId` - User KYC details
+✅ `POST /admin/kyc/:userId/approve-bvn` - Approve BVN
+✅ `POST /admin/kyc/:userId/reject-bvn` - Reject BVN
+✅ `POST /admin/kyc/:userId/approve-nin` - Approve NIN
+✅ `POST /admin/kyc/:userId/reject-nin` - Reject NIN
+
+**VTU Orders (7 endpoints)**
+✅ `GET /admin/vtu/orders` - List VTU orders
+✅ `GET /admin/vtu/stats` - VTU statistics
+✅ `GET /admin/vtu/failed` - Failed orders
+✅ `GET /admin/vtu/orders/:orderId` - Order details
+✅ `POST /admin/vtu/orders/:orderId/refund` - Refund order
+✅ `POST /admin/vtu/orders/:orderId/retry` - Retry order
+✅ `POST /admin/vtu/orders/:orderId/mark-completed` - Mark completed
+
+**Wallet Management (5 endpoints)**
+✅ `GET /admin/wallets` - List wallets
+✅ `GET /admin/wallets/stats` - Wallet statistics
+✅ `GET /admin/wallets/:userId` - Wallet details
+✅ `POST /admin/wallets/:userId/adjust` - Adjust balance
+✅ `POST /admin/wallets/:userId/reset-limits` - Reset limits
+
+**Virtual Accounts (6 endpoints)**
+✅ `GET /admin/virtual-accounts` - List VAs
+✅ `GET /admin/virtual-accounts/stats` - VA statistics
+✅ `GET /admin/virtual-accounts/unassigned` - Unassigned users
+✅ `GET /admin/virtual-accounts/:userId` - User VAs
+✅ `PATCH /admin/virtual-accounts/:accountId/deactivate` - Deactivate
+✅ `PATCH /admin/virtual-accounts/:accountId/reactivate` - Reactivate
+
+**Account Deletions (5 endpoints)**
+✅ `GET /admin/deletions` - List deletion requests
+✅ `GET /admin/deletions/pending` - Pending deletions
+✅ `GET /admin/deletions/:requestId` - Request details
+✅ `POST /admin/deletions/:requestId/approve` - Approve deletion
+✅ `POST /admin/deletions/:requestId/reject` - Reject deletion
+
+### Phase 3 - Order & Notification Management (21 endpoints)
+
+**Gift Card Orders (7 endpoints)**
+✅ `GET /admin/giftcards/orders` - List gift card orders
+✅ `GET /admin/giftcards/pending-review` - Pending sell orders
+✅ `GET /admin/giftcards/stats` - Gift card statistics
+✅ `GET /admin/giftcards/:orderId` - Order details
+✅ `POST /admin/giftcards/:orderId/approve` - Approve sell order
+✅ `POST /admin/giftcards/:orderId/reject` - Reject sell order
+✅ `PATCH /admin/giftcards/:orderId/adjust-amount` - Adjust payout
+
+**Crypto Orders (7 endpoints)**
+✅ `GET /admin/crypto/orders` - List crypto orders
+✅ `GET /admin/crypto/pending-review` - Pending sell orders
+✅ `GET /admin/crypto/stats` - Crypto statistics
+✅ `GET /admin/crypto/:orderId` - Order details
+✅ `POST /admin/crypto/:orderId/approve` - Approve sell order
+✅ `POST /admin/crypto/:orderId/reject` - Reject sell order
+✅ `PATCH /admin/crypto/:orderId/adjust-amount` - Adjust payout
+
+**Notifications (7 endpoints)**
+✅ `GET /admin/notifications` - List notifications
+✅ `GET /admin/notifications/stats` - Notification statistics
+✅ `GET /admin/notifications/user/:userId` - User notifications
+✅ `GET /admin/notifications/:notificationId` - Notification details
+✅ `POST /admin/notifications/broadcast` - Broadcast to all users
+✅ `POST /admin/notifications/user/:userId` - Send to specific user
+✅ `PATCH /admin/notifications/:notificationId/read` - Mark as read
+✅ `DELETE /admin/notifications/:notificationId` - Delete notification
+✅ `POST /admin/notifications/bulk-delete` - Bulk delete
+
+**Total: 70 Admin Endpoints Implemented** ✅
+
+---
+
+## 🚀 Still To Be Implemented (Phase 4)
+
+Based on ADMIN_ENDPOINTS_PLAN.md, there are ~64+ more endpoints to implement:
+
+### Advanced Analytics & Reporting
+- Time-series analytics (revenue, transactions, users)
+- Cohort analysis
+- Provider performance metrics
+- Custom date ranges and aggregations
+- Export to CSV/Excel
+
+### System Configuration
+- Platform settings management
+- Feature flags
+- Rate configuration (gift cards, crypto, VTU)
+- Commission/fee management
+- Maintenance mode
+
+### Provider Management
+- VTU provider configuration
+- Payment gateway settings
+- Virtual account provider settings
+- Provider health monitoring
+- API key management
+
+### Admin User Management
+- Create/manage admin accounts
+- Role assignment
+- Permission management
+- Activity monitoring
+- Session management
+
+### Audit Logs & Compliance
+- View audit log history
+- Filter by action type, resource, admin
+- Export audit logs
+- Compliance reports
+- Data retention policies
+
+### Advanced Features
+- Bulk operations (user updates, notifications)
+- Scheduled tasks
+- Webhook management
+- API documentation generator
+- System health monitoring
 
 ---
 
 ## 💡 Next Steps
 
-1. **Test all endpoints above** to verify they work
+1. **Test all 70 endpoints** to verify they work correctly
 2. **Fix any bugs** found during testing
-3. **Implement Phase 2 endpoints** (KYC, VTU, Wallets, etc.)
-4. **Build Next.js dashboard** to consume these APIs
-5. **Add notification triggers** for admin actions
-6. **Implement advanced features** (exports, webhooks, etc.)
+3. **Implement Phase 4 endpoints** (Analytics, Configuration, Providers)
+4. **Build Next.js admin dashboard** to consume these APIs
+5. **Add notification triggers** for admin actions (TODOs in code)
+6. **Implement advanced features** (exports, webhooks, monitoring)
 
 ---
 
