@@ -748,9 +748,486 @@ curl -X GET "${API_URL}/admin/analytics/transactions?type=WITHDRAWAL&startDate=2
 
 ---
 
+---
+
+## 🔬 KYC VERIFICATION ENDPOINTS
+
+### Get Pending KYC Verifications
+
+```bash
+curl -X GET "${API_URL}/admin/kyc/pending" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Expected Response:**
+```json
+{
+  "pendingBVN": [
+    {
+      "id": "user-uuid",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "bvn": "22222222222",
+      "kycTier": "TIER_0",
+      "daysPending": 3
+    }
+  ],
+  "pendingNIN": [...]
+}
+```
+
+---
+
+### Get KYC Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/kyc/stats" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get User KYC Details
+
+```bash
+curl -X GET "${API_URL}/admin/kyc/${NORMAL_USER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Approve BVN Verification
+
+```bash
+curl -X POST "${API_URL}/admin/kyc/${NORMAL_USER_ID}/approve-bvn" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notes": "BVN verified manually - documents checked"
+  }'
+```
+
+**What happens:**
+- User's `bvnVerified` set to `true`
+- KYC tier upgraded to `TIER_2` (if was TIER_0)
+- Audit log created
+- User notified (TODO in code)
+
+---
+
+### Reject BVN Verification
+
+```bash
+curl -X POST "${API_URL}/admin/kyc/${NORMAL_USER_ID}/reject-bvn" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "BVN does not match provided information"
+  }'
+```
+
+**What happens:**
+- User's `bvn` field cleared (set to null)
+- `bvnVerified` remains `false`
+- Audit log created
+- User notified with reason (TODO in code)
+
+---
+
+### Approve NIN Verification
+
+```bash
+curl -X POST "${API_URL}/admin/kyc/${NORMAL_USER_ID}/approve-nin" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notes": "NIN verified successfully"
+  }'
+```
+
+---
+
+### Reject NIN Verification
+
+```bash
+curl -X POST "${API_URL}/admin/kyc/${NORMAL_USER_ID}/reject-nin" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "NIN number format invalid"
+  }'
+```
+
+---
+
+## 📱 VTU ORDER MANAGEMENT ENDPOINTS
+
+### Get VTU Orders
+
+```bash
+curl -X GET "${API_URL}/admin/vtu/orders?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**With Filters:**
+```bash
+curl -X GET "${API_URL}/admin/vtu/orders?serviceType=AIRTIME&status=FAILED&startDate=2025-01-01" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Service Types:** `AIRTIME`, `DATA`, `CABLE_TV`, `ELECTRICITY`
+
+---
+
+### Get VTU Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/vtu/stats" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**With Date Range:**
+```bash
+curl -X GET "${API_URL}/admin/vtu/stats?startDate=2025-01-01&endDate=2025-01-31" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get Failed VTU Orders
+
+```bash
+curl -X GET "${API_URL}/admin/vtu/failed?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get Single VTU Order
+
+```bash
+export VTU_ORDER_ID="vtu-order-uuid"
+
+curl -X GET "${API_URL}/admin/vtu/orders/${VTU_ORDER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Refund Failed VTU Order
+
+**⚠️ WARNING: This credits money back to user's wallet!**
+
+```bash
+curl -X POST "${API_URL}/admin/vtu/orders/${VTU_ORDER_ID}/refund" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Service provider error - transaction failed"
+  }'
+```
+
+**What happens:**
+1. Validates order status is FAILED
+2. Credits user wallet with order amount
+3. Creates refund transaction (`REFUND_${reference}`)
+4. Creates audit log
+5. User notified (TODO in code)
+
+---
+
+### Retry Failed VTU Order
+
+```bash
+curl -X POST "${API_URL}/admin/vtu/orders/${VTU_ORDER_ID}/retry" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**What happens:**
+- Order status changed to PENDING
+- Audit log created
+- VTU provider retry triggered (TODO in code)
+
+---
+
+### Mark VTU Order as Completed (Manual)
+
+```bash
+curl -X POST "${API_URL}/admin/vtu/orders/${VTU_ORDER_ID}/mark-completed" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notes": "Manually verified - provider confirmed delivery"
+  }'
+```
+
+---
+
+## 💰 WALLET MANAGEMENT ENDPOINTS
+
+### Get All Wallets
+
+```bash
+curl -X GET "${API_URL}/admin/wallets?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**With Filters:**
+```bash
+curl -X GET "${API_URL}/admin/wallets?minBalance=100000&isLocked=true" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get Wallet Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/wallets/stats" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Expected Response:**
+```json
+{
+  "totalWallets": 1000,
+  "totalBalance": "50000000.00",
+  "averageBalance": "50000.00",
+  "maxBalance": "5000000.00",
+  "lockedWallets": 5,
+  "topWallets": [...]
+}
+```
+
+---
+
+### Get Wallet by User ID
+
+```bash
+curl -X GET "${API_URL}/admin/wallets/${NORMAL_USER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Adjust Wallet Balance
+
+**Credit Wallet:**
+```bash
+curl -X POST "${API_URL}/admin/wallets/${NORMAL_USER_ID}/adjust" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 10000,
+    "type": "credit",
+    "reason": "Compensation for service downtime"
+  }'
+```
+
+**Debit Wallet:**
+```bash
+curl -X POST "${API_URL}/admin/wallets/${NORMAL_USER_ID}/adjust" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 5000,
+    "type": "debit",
+    "reason": "Correction for duplicate credit"
+  }'
+```
+
+**What happens:**
+1. Validates sufficient balance for debit
+2. Updates wallet balance
+3. Creates transaction record with admin metadata
+4. Creates audit log
+5. User notified (TODO in code)
+
+---
+
+### Reset Wallet Spending Limits
+
+```bash
+curl -X POST "${API_URL}/admin/wallets/${NORMAL_USER_ID}/reset-limits" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**What happens:**
+- `dailySpent` reset to 0
+- `monthlySpent` reset to 0
+- `lastResetAt` updated to now
+- Audit log created
+
+---
+
+## 🏦 VIRTUAL ACCOUNT MANAGEMENT ENDPOINTS
+
+### Get All Virtual Accounts
+
+```bash
+curl -X GET "${API_URL}/admin/virtual-accounts?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**With Filters:**
+```bash
+curl -X GET "${API_URL}/admin/virtual-accounts?provider=paystack&isActive=true" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get Virtual Account Statistics
+
+```bash
+curl -X GET "${API_URL}/admin/virtual-accounts/stats" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Expected Response:**
+```json
+{
+  "total": 500,
+  "active": 480,
+  "inactive": 20,
+  "byProvider": {
+    "paystack": 500
+  }
+}
+```
+
+---
+
+### Get Users Without Virtual Accounts
+
+```bash
+curl -X GET "${API_URL}/admin/virtual-accounts/unassigned" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get User's Virtual Accounts
+
+```bash
+curl -X GET "${API_URL}/admin/virtual-accounts/${NORMAL_USER_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Deactivate Virtual Account
+
+```bash
+export VA_ID="virtual-account-uuid"
+
+curl -X PATCH "${API_URL}/admin/virtual-accounts/${VA_ID}/deactivate" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Suspicious activity detected"
+  }'
+```
+
+---
+
+### Reactivate Virtual Account
+
+```bash
+curl -X PATCH "${API_URL}/admin/virtual-accounts/${VA_ID}/reactivate" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+## 🗑️ ACCOUNT DELETION REQUEST ENDPOINTS
+
+### Get All Deletion Requests
+
+```bash
+curl -X GET "${API_URL}/admin/deletions?page=1&limit=20" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**With Filters:**
+```bash
+curl -X GET "${API_URL}/admin/deletions?status=PENDING&startDate=2025-01-01" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Statuses:** `PENDING`, `APPROVED`, `REJECTED`, `COMPLETED`, `CANCELLED`
+
+---
+
+### Get Pending Deletion Requests
+
+```bash
+curl -X GET "${API_URL}/admin/deletions/pending" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+---
+
+### Get Single Deletion Request
+
+```bash
+export DELETION_ID="deletion-request-uuid"
+
+curl -X GET "${API_URL}/admin/deletions/${DELETION_ID}" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}"
+```
+
+**Response includes:**
+- User details
+- Wallet balance (⚠️ warning if > 0)
+- Transaction count
+- VTU order count
+- Deletion reason
+
+---
+
+### Approve Deletion Request
+
+```bash
+curl -X POST "${API_URL}/admin/deletions/${DELETION_ID}/approve" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scheduledFor": "2025-02-15T00:00:00Z",
+    "notes": "Approved - wallet balance cleared"
+  }'
+```
+
+**Default scheduled date:** 7 days from now if not specified
+
+---
+
+### Reject Deletion Request
+
+```bash
+curl -X POST "${API_URL}/admin/deletions/${DELETION_ID}/reject" \
+  -H "Authorization: Bearer ${SUPER_ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Active wallet balance - user needs to withdraw funds first",
+    "notes": "Notified user to clear balance"
+  }'
+```
+
+**What happens:**
+- Request status → REJECTED
+- User's `deletionRequested` flag cleared
+- Audit log created
+- User notified with reason (TODO in code)
+
+---
+
 ## 📝 Summary of Implemented Endpoints
 
-### User Management (7 endpoints)
+### Phase 1 - Core Admin (18 endpoints)
+
+**User Management (7 endpoints)**
 ✅ `GET /admin/users` - List users
 ✅ `GET /admin/users/stats` - User statistics
 ✅ `GET /admin/users/:userId` - User details
@@ -759,7 +1236,7 @@ curl -X GET "${API_URL}/admin/analytics/transactions?type=WITHDRAWAL&startDate=2
 ✅ `PATCH /admin/users/:userId/kyc-tier` - Update KYC tier
 ✅ `GET /admin/users/:userId/audit-logs` - Audit logs
 
-### Transaction Management (7 endpoints)
+**Transaction Management (7 endpoints)**
 ✅ `GET /admin/transactions` - List transactions
 ✅ `GET /admin/transactions/stats` - Transaction statistics
 ✅ `GET /admin/transactions/pending` - Pending transactions
@@ -768,13 +1245,56 @@ curl -X GET "${API_URL}/admin/analytics/transactions?type=WITHDRAWAL&startDate=2
 ✅ `GET /admin/transactions/reference/:ref` - Get by reference
 ✅ `POST /admin/transactions/:id/reverse` - Reverse transaction
 
-### Analytics (4 endpoints)
+**Analytics (4 endpoints)**
 ✅ `GET /admin/analytics/dashboard` - Dashboard overview
 ✅ `GET /admin/analytics/revenue` - Revenue analytics
 ✅ `GET /admin/analytics/users` - User growth
 ✅ `GET /admin/analytics/transactions` - Transaction trends
 
-**Total: 18 Admin Endpoints Implemented**
+### Phase 2 - Business Operations (31 endpoints)
+
+**KYC Verification (8 endpoints)**
+✅ `GET /admin/kyc/pending` - Pending KYC
+✅ `GET /admin/kyc/rejected` - Rejected KYC
+✅ `GET /admin/kyc/stats` - KYC statistics
+✅ `GET /admin/kyc/:userId` - User KYC details
+✅ `POST /admin/kyc/:userId/approve-bvn` - Approve BVN
+✅ `POST /admin/kyc/:userId/reject-bvn` - Reject BVN
+✅ `POST /admin/kyc/:userId/approve-nin` - Approve NIN
+✅ `POST /admin/kyc/:userId/reject-nin` - Reject NIN
+
+**VTU Orders (7 endpoints)**
+✅ `GET /admin/vtu/orders` - List VTU orders
+✅ `GET /admin/vtu/stats` - VTU statistics
+✅ `GET /admin/vtu/failed` - Failed orders
+✅ `GET /admin/vtu/orders/:orderId` - Order details
+✅ `POST /admin/vtu/orders/:orderId/refund` - Refund order
+✅ `POST /admin/vtu/orders/:orderId/retry` - Retry order
+✅ `POST /admin/vtu/orders/:orderId/mark-completed` - Mark completed
+
+**Wallet Management (5 endpoints)**
+✅ `GET /admin/wallets` - List wallets
+✅ `GET /admin/wallets/stats` - Wallet statistics
+✅ `GET /admin/wallets/:userId` - Wallet details
+✅ `POST /admin/wallets/:userId/adjust` - Adjust balance
+✅ `POST /admin/wallets/:userId/reset-limits` - Reset limits
+
+**Virtual Accounts (6 endpoints)**
+✅ `GET /admin/virtual-accounts` - List VAs
+✅ `GET /admin/virtual-accounts/stats` - VA statistics
+✅ `GET /admin/virtual-accounts/unassigned` - Unassigned users
+✅ `GET /admin/virtual-accounts/:userId` - User VAs
+✅ `PATCH /admin/virtual-accounts/:accountId/deactivate` - Deactivate
+✅ `PATCH /admin/virtual-accounts/:accountId/reactivate` - Reactivate
+
+**Account Deletions (5 endpoints)**
+✅ `GET /admin/deletions` - List deletion requests
+✅ `GET /admin/deletions/pending` - Pending deletions
+✅ `GET /admin/deletions/:requestId` - Request details
+✅ `POST /admin/deletions/:requestId/approve` - Approve deletion
+✅ `POST /admin/deletions/:requestId/reject` - Reject deletion
+
+**Total: 49 Admin Endpoints Implemented**
 
 ---
 
