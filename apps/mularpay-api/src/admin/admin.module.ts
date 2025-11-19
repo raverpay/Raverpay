@@ -21,6 +21,10 @@ import { AdminCryptoController } from './crypto/admin-crypto.controller';
 import { AdminCryptoService } from './crypto/admin-crypto.service';
 import { AdminNotificationsController } from './notifications/admin-notifications.controller';
 import { AdminNotificationsService } from './notifications/admin-notifications.service';
+import { AdminAdvancedAnalyticsController } from './advanced-analytics/admin-advanced-analytics.controller';
+import { AdminAdvancedAnalyticsService } from './advanced-analytics/admin-advanced-analytics.service';
+import { AdminAuditLogsController } from './audit-logs/admin-audit-logs.controller';
+import { AdminAuditLogsService } from './audit-logs/admin-audit-logs.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
@@ -38,6 +42,8 @@ import { PrismaModule } from '../prisma/prisma.module';
     AdminGiftCardsController,
     AdminCryptoController,
     AdminNotificationsController,
+    AdminAdvancedAnalyticsController,
+    AdminAuditLogsController,
   ],
   providers: [
     AdminUsersService,
@@ -51,6 +57,8 @@ import { PrismaModule } from '../prisma/prisma.module';
     AdminGiftCardsService,
     AdminCryptoService,
     AdminNotificationsService,
+    AdminAdvancedAnalyticsService,
+    AdminAuditLogsService,
     HierarchyService,
   ],
   exports: [HierarchyService],
