@@ -463,7 +463,7 @@ export class VTUService {
             userId,
             eventType: 'airtime_purchase_success',
             category: 'TRANSACTION',
-            channels: ['PUSH', 'IN_APP'],
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
             title: 'Airtime Purchase Successful',
             message: `₦${dto.amount.toLocaleString()} ${dto.network.toUpperCase()} airtime sent to ${dto.phone}`,
             data: {
@@ -694,7 +694,7 @@ export class VTUService {
             userId,
             eventType: 'data_purchase_success',
             category: 'TRANSACTION',
-            channels: ['PUSH', 'IN_APP'],
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
             title: 'Data Purchase Successful',
             message: `${product.name} sent to ${dto.phone}`,
             data: {
@@ -898,16 +898,8 @@ export class VTUService {
         },
       });
 
-      // 11. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 12. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 11. Prepare response data FIRST (before async operations)
+      const response = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -922,6 +914,60 @@ export class VTUService {
             ? 'Cable TV subscription successful'
             : 'Cable TV payment failed. Wallet refunded.',
       };
+
+      // 12. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 13. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 14. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'cable_tv_payment_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'Cable TV Payment Successful',
+            message: `${dto.provider.toUpperCase()} subscription (${productName}) for ${dto.smartcardNumber}`,
+            data: {
+              amount,
+              provider: dto.provider.toUpperCase(),
+              recipient: dto.smartcardNumber,
+              productName,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send cable TV payment notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return response;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
@@ -1065,16 +1111,8 @@ export class VTUService {
         },
       });
 
-      // 12. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 13. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 12. Prepare response data FIRST (before async operations)
+      const responseShowmax = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -1090,6 +1128,61 @@ export class VTUService {
             ? 'Showmax subscription successful'
             : 'Showmax payment failed. Wallet refunded.',
       };
+
+      // 13. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 14. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 15. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'showmax_payment_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'Showmax Subscription Successful',
+            message: `Showmax subscription (${product.name}) activated for ${dto.phoneNumber}`,
+            data: {
+              amount,
+              provider: 'SHOWMAX',
+              recipient: dto.phoneNumber,
+              productName: product.name,
+              voucher: vtpassResult.voucher,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send Showmax payment notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return responseShowmax;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
@@ -1249,16 +1342,8 @@ export class VTUService {
         });
       }
 
-      // 11. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 12. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 11. Prepare response data FIRST (before async operations)
+      const responseElec = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -1284,6 +1369,61 @@ export class VTUService {
             ? 'Electricity payment successful'
             : 'Electricity payment failed. Wallet refunded.',
       };
+
+      // 12. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 13. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 14. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'electricity_payment_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'Electricity Payment Successful',
+            message: `₦${dto.amount.toLocaleString()} ${dto.disco.toUpperCase()} electricity for ${dto.meterNumber}${vtpassResult.units ? ` - ${vtpassResult.units}` : ''}`,
+            data: {
+              amount: dto.amount,
+              provider: dto.disco.toUpperCase(),
+              recipient: dto.meterNumber,
+              meterToken: vtpassResult.meterToken,
+              units: vtpassResult.units,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send electricity payment notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return responseElec;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
@@ -1442,16 +1582,8 @@ export class VTUService {
         },
       });
 
-      // 12. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 13. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 12. Prepare response data FIRST (before async operations)
+      const responseIntl = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -1465,6 +1597,59 @@ export class VTUService {
             ? 'International airtime purchased successfully'
             : 'International airtime purchase failed. Wallet refunded.',
       };
+
+      // 13. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 14. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 15. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'international_airtime_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'International Airtime Purchase Successful',
+            message: `International airtime sent to ${dto.billersCode} (${dto.countryCode})`,
+            data: {
+              amount,
+              countryCode: dto.countryCode,
+              recipient: dto.billersCode,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send international airtime notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return responseIntl;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
