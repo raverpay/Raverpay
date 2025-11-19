@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from './cache/cache.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -30,6 +31,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     VTUModule,
     CloudinaryModule,
     NotificationsModule,
+    AdminModule, // Admin module for dashboard
   ],
   controllers: [AppController],
   providers: [AppService],
