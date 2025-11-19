@@ -4,3 +4,7 @@ export * from './update-user-status.dto';
 export * from './update-kyc-tier.dto';
 export * from './query-transactions.dto';
 export * from './reverse-transaction.dto';
+export * from './approve-bvn.dto';
+export * from './reject-bvn.dto';
+export * from './refund-vtu.dto';
+export * from './adjust-wallet.dto';
