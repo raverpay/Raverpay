@@ -205,16 +205,45 @@ export class VTUService {
 
   // ==================== Generate Reference ====================
 
-  generateReference(serviceType: VTUServiceType): string {
-    const prefix = {
-      AIRTIME: 'VTU_AIR',
-      DATA: 'VTU_DATA',
-      CABLE_TV: 'VTU_CABLE',
-      ELECTRICITY: 'VTU_ELEC',
-    }[serviceType];
+  // generateReference(serviceType: VTUServiceType): string {
+  //   const prefix = {
+  //     AIRTIME: 'VTU_AIR',
+  //     DATA: 'VTU_DATA',
+  //     CABLE_TV: 'VTU_CABLE',
+  //     ELECTRICITY: 'VTU_ELEC',
+  //   }[serviceType];
 
-    return `${prefix}_${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-  }
+  //   return `${prefix}_${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  // }
+
+  generateReference(serviceType: VTUServiceType): string {
+  const prefix = {
+    AIRTIME: 'VTU_AIR',
+    DATA: 'VTU_DATA',
+    CABLE_TV: 'VTU_CABLE',
+    ELECTRICITY: 'VTU_ELEC',
+  }[serviceType];
+
+  const now = new Date();
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  const year = now.getFullYear();
+  const month = pad(now.getMonth() + 1);
+  const day = pad(now.getDate());
+  const hour = pad(now.getHours());
+  const minute = pad(now.getMinutes());
+
+  // FIRST 12 CHARACTERS (REQUIRED BY VTPASS)
+  const datePart = `${year}${month}${day}${hour}${minute}`;
+
+  // Extra randomness
+  const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+  // prefix added AFTER mandatory numeric block
+  return `${datePart}${prefix}${randomPart}`;
+}
+
 
   // ==================== Check Duplicate ====================
 
