@@ -216,7 +216,7 @@ export class VTUService {
   //   return `${prefix}_${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   // }
 
-  generateReference(serviceType: VTUServiceType): string {
+generateReference(serviceType: VTUServiceType): string {
   const prefix = {
     AIRTIME: 'VTU_AIR',
     DATA: 'VTU_DATA',
@@ -224,23 +224,23 @@ export class VTUService {
     ELECTRICITY: 'VTU_ELEC',
   }[serviceType];
 
+  // Force Africa/Lagos timezone (+1 hour)
   const now = new Date();
+  const lagosOffsetMs = 60 * 60 * 1000; 
+  const lagosTime = new Date(now.getTime() + lagosOffsetMs);
 
   const pad = (n: number) => n.toString().padStart(2, "0");
 
-  const year = now.getFullYear();
-  const month = pad(now.getMonth() + 1);
-  const day = pad(now.getDate());
-  const hour = pad(now.getHours());
-  const minute = pad(now.getMinutes());
+  const year = lagosTime.getFullYear();
+  const month = pad(lagosTime.getMonth() + 1);
+  const day = pad(lagosTime.getDate());
+  const hour = pad(lagosTime.getHours());
+  const minute = pad(lagosTime.getMinutes());
 
-  // FIRST 12 CHARACTERS (REQUIRED BY VTPASS)
   const datePart = `${year}${month}${day}${hour}${minute}`;
 
-  // Extra randomness
   const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-  // prefix added AFTER mandatory numeric block
   return `${datePart}${prefix}${randomPart}`;
 }
 
