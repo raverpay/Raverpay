@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { verificationCodeTemplate } from './templates/verification-code.template';
 import { welcomeEmailTemplate } from './templates/welcome.template';
+import { vtuTransactionEmailTemplate } from './templates/vtu-transaction.template';
 
 @Injectable()
 export class EmailService {
@@ -211,7 +212,7 @@ export class EmailService {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <div style="background: #5B55F6; color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
               <h1 style="margin: 0; font-size: 24px;">RaverPay</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Transaction Receipt</p>
             </div>
@@ -312,7 +313,7 @@ export class EmailService {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <div style="background: #5B55F6; color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
               <h1 style="margin: 0; font-size: 24px;">RaverPay</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">${title}</p>
             </div>
@@ -368,6 +369,68 @@ export class EmailService {
       return true;
     } catch (error) {
       this.logger.error(`Error sending notification to ${email}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send VTU transaction email with professional template
+   */
+  async sendVTUTransactionEmail(
+    email: string,
+    details: {
+      firstName: string;
+      serviceType: string;
+      serviceName: string;
+      amount: string;
+      recipient: string;
+      reference: string;
+      status: 'success' | 'failed';
+      date: string;
+      additionalInfo?: { label: string; value: string }[];
+    },
+  ): Promise<boolean> {
+    if (!this.enabled) {
+      this.logger.log(
+        `📧 [MOCK] VTU transaction email to ${email}: ${details.serviceType}`,
+      );
+      return true;
+    }
+
+    if (!this.resend) {
+      this.logger.warn(
+        `📧 [MOCK] Would send VTU transaction email to ${email}: ${details.serviceType}`,
+      );
+      return true;
+    }
+
+    try {
+      const { html, subject } = vtuTransactionEmailTemplate(details);
+
+      const result = await this.resend.emails.send({
+        from: `${this.fromName} <${this.fromEmail}>`,
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (result.error) {
+        this.logger.error(
+          `Failed to send VTU transaction email to ${email}:`,
+          result.error,
+        );
+        return false;
+      }
+
+      this.logger.log(
+        `✅ VTU transaction email sent to ${email} (ID: ${result.data?.id})`,
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Error sending VTU transaction email to ${email}:`,
+        error,
+      );
       return false;
     }
   }

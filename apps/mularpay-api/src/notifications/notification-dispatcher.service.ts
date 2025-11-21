@@ -229,15 +229,31 @@ export class NotificationDispatcherService {
         throw new Error('User not found');
       }
 
-      // For now, send simple transactional email
-      // TODO: Use templates when template service is implemented
-      const emailSent = await this.emailService.sendGenericNotification(
-        user.email,
-        user.firstName,
-        event.title,
-        event.message,
-        event.data,
-      );
+      let emailSent = false;
+
+      // Check if this is a VTU transaction event
+      const vtuEventTypes = [
+        'airtime_purchase_success',
+        'data_purchase_success',
+        'cable_tv_payment_success',
+        'showmax_payment_success',
+        'electricity_payment_success',
+        'international_airtime_success',
+      ];
+
+      if (vtuEventTypes.includes(event.eventType)) {
+        // Use VTU-specific template
+        emailSent = await this.sendVTUTransactionEmail(user, event);
+      } else {
+        // Use generic template for other notifications
+        emailSent = await this.emailService.sendGenericNotification(
+          user.email,
+          user.firstName,
+          event.title,
+          event.message,
+          event.data,
+        );
+      }
 
       if (emailSent) {
         await this.logService.logDelivery({
@@ -270,6 +286,81 @@ export class NotificationDispatcherService {
         error,
       );
     }
+  }
+
+  /**
+   * Send VTU transaction email with proper template
+   *
+   * @param user - User data
+   * @param event - Notification event
+   * @returns Whether email was sent successfully
+   */
+  private async sendVTUTransactionEmail(
+    user: { email: string; firstName: string },
+    event: NotificationEvent,
+  ): Promise<boolean> {
+    // Map event type to service details
+    const serviceTypeMap = {
+      airtime_purchase_success: 'Airtime',
+      data_purchase_success: 'Data',
+      cable_tv_payment_success: 'Cable TV',
+      showmax_payment_success: 'Showmax',
+      electricity_payment_success: 'Electricity',
+      international_airtime_success: 'International Airtime',
+    };
+
+    const serviceType = serviceTypeMap[event.eventType] || 'VTU Service';
+
+    // Extract additional info based on service type
+    const additionalInfo: { label: string; value: string }[] = [];
+
+    if (event.data) {
+      // Add service-specific details
+      if (event.eventType === 'cable_tv_payment_success') {
+        if (event.data.productName)
+          additionalInfo.push({ label: 'Package', value: event.data.productName });
+        if (event.data.provider)
+          additionalInfo.push({ label: 'Provider', value: event.data.provider });
+      } else if (event.eventType === 'showmax_payment_success') {
+        if (event.data.productName)
+          additionalInfo.push({ label: 'Plan', value: event.data.productName });
+        if (event.data.voucher)
+          additionalInfo.push({ label: 'Voucher Code', value: event.data.voucher });
+      } else if (event.eventType === 'electricity_payment_success') {
+        if (event.data.provider)
+          additionalInfo.push({ label: 'DISCO', value: event.data.provider });
+        if (event.data.meterToken)
+          additionalInfo.push({ label: 'Token', value: event.data.meterToken });
+        if (event.data.units)
+          additionalInfo.push({ label: 'Units', value: event.data.units });
+      } else if (event.eventType === 'data_purchase_success') {
+        if (event.data.plan)
+          additionalInfo.push({ label: 'Plan', value: event.data.plan });
+        if (event.data.network)
+          additionalInfo.push({ label: 'Network', value: event.data.network });
+      } else if (event.eventType === 'airtime_purchase_success') {
+        if (event.data.network)
+          additionalInfo.push({ label: 'Network', value: event.data.network });
+      } else if (event.eventType === 'international_airtime_success') {
+        if (event.data.countryCode)
+          additionalInfo.push({ label: 'Country', value: event.data.countryCode });
+      }
+    }
+
+    return await this.emailService.sendVTUTransactionEmail(user.email, {
+      firstName: user.firstName,
+      serviceType,
+      serviceName: event.data?.productName || event.data?.plan || event.data?.network || serviceType,
+      amount: event.data?.amount?.toLocaleString() || '0',
+      recipient: event.data?.recipient || event.data?.phoneNumber || 'N/A',
+      reference: event.data?.reference || 'N/A',
+      status: 'success',
+      date: new Date().toLocaleString('en-NG', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }),
+      additionalInfo: additionalInfo.length > 0 ? additionalInfo : undefined,
+    });
   }
 
   /**

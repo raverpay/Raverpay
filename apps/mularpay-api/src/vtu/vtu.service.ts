@@ -117,6 +117,7 @@ export class VTUService {
         smartcard,
         provider,
       );
+
       return {
         valid: true,
         customerName: result.Customer_Name,
@@ -141,6 +142,8 @@ export class VTUService {
         disco,
         meterType,
       );
+
+      // console.log({ result });
       return {
         valid: true,
         customerName: result.Customer_Name,
@@ -216,34 +219,36 @@ export class VTUService {
   //   return `${prefix}_${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   // }
 
-generateReference(serviceType: VTUServiceType): string {
-  const prefix = {
-    AIRTIME: 'VTU_AIR',
-    DATA: 'VTU_DATA',
-    CABLE_TV: 'VTU_CABLE',
-    ELECTRICITY: 'VTU_ELEC',
-  }[serviceType];
+  generateReference(serviceType: VTUServiceType): string {
+    const prefix = {
+      AIRTIME: 'VTU_AIR',
+      DATA: 'VTU_DATA',
+      CABLE_TV: 'VTU_CABLE',
+      ELECTRICITY: 'VTU_ELEC',
+    }[serviceType];
 
-  // Force Africa/Lagos timezone (+1 hour)
-  const now = new Date();
-  const lagosOffsetMs = 60 * 60 * 1000; 
-  const lagosTime = new Date(now.getTime() + lagosOffsetMs);
+    // Force Africa/Lagos timezone (+1 hour)
+    const now = new Date();
+    const lagosOffsetMs = 60 * 60 * 1000;
+    const lagosTime = new Date(now.getTime() + lagosOffsetMs);
 
-  const pad = (n: number) => n.toString().padStart(2, "0");
+    const pad = (n: number) => n.toString().padStart(2, '0');
 
-  const year = lagosTime.getFullYear();
-  const month = pad(lagosTime.getMonth() + 1);
-  const day = pad(lagosTime.getDate());
-  const hour = pad(lagosTime.getHours());
-  const minute = pad(lagosTime.getMinutes());
+    const year = lagosTime.getFullYear();
+    const month = pad(lagosTime.getMonth() + 1);
+    const day = pad(lagosTime.getDate());
+    const hour = pad(lagosTime.getHours());
+    const minute = pad(lagosTime.getMinutes());
 
-  const datePart = `${year}${month}${day}${hour}${minute}`;
+    const datePart = `${year}${month}${day}${hour}${minute}`;
 
-  const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const randomPart = Math.random()
+      .toString(36)
+      .substring(2, 10)
+      .toUpperCase();
 
-  return `${datePart}${prefix}${randomPart}`;
-}
-
+    return `${datePart}${prefix}${randomPart}`;
+  }
 
   // ==================== Check Duplicate ====================
 
@@ -492,7 +497,7 @@ generateReference(serviceType: VTUServiceType): string {
             userId,
             eventType: 'airtime_purchase_success',
             category: 'TRANSACTION',
-            channels: ['PUSH', 'IN_APP'],
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
             title: 'Airtime Purchase Successful',
             message: `₦${dto.amount.toLocaleString()} ${dto.network.toUpperCase()} airtime sent to ${dto.phone}`,
             data: {
@@ -723,7 +728,7 @@ generateReference(serviceType: VTUServiceType): string {
             userId,
             eventType: 'data_purchase_success',
             category: 'TRANSACTION',
-            channels: ['PUSH', 'IN_APP'],
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
             title: 'Data Purchase Successful',
             message: `${product.name} sent to ${dto.phone}`,
             data: {
@@ -927,16 +932,8 @@ generateReference(serviceType: VTUServiceType): string {
         },
       });
 
-      // 11. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 12. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 11. Prepare response data FIRST (before async operations)
+      const response = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -951,6 +948,60 @@ generateReference(serviceType: VTUServiceType): string {
             ? 'Cable TV subscription successful'
             : 'Cable TV payment failed. Wallet refunded.',
       };
+
+      // 12. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 13. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 14. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'cable_tv_payment_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'Cable TV Payment Successful',
+            message: `${dto.provider.toUpperCase()} subscription (${productName}) for ${dto.smartcardNumber}`,
+            data: {
+              amount,
+              provider: dto.provider.toUpperCase(),
+              recipient: dto.smartcardNumber,
+              productName,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send cable TV payment notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return response;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
@@ -1094,16 +1145,8 @@ generateReference(serviceType: VTUServiceType): string {
         },
       });
 
-      // 12. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 13. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 12. Prepare response data FIRST (before async operations)
+      const responseShowmax = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -1119,6 +1162,61 @@ generateReference(serviceType: VTUServiceType): string {
             ? 'Showmax subscription successful'
             : 'Showmax payment failed. Wallet refunded.',
       };
+
+      // 13. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 14. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 15. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'showmax_payment_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'Showmax Subscription Successful',
+            message: `Showmax subscription (${product.name}) activated for ${dto.phoneNumber}`,
+            data: {
+              amount,
+              provider: 'SHOWMAX',
+              recipient: dto.phoneNumber,
+              productName: product.name,
+              voucher: vtpassResult.voucher,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send Showmax payment notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return responseShowmax;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
@@ -1278,16 +1376,8 @@ generateReference(serviceType: VTUServiceType): string {
         });
       }
 
-      // 11. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 12. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 11. Prepare response data FIRST (before async operations)
+      const responseElec = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -1313,6 +1403,61 @@ generateReference(serviceType: VTUServiceType): string {
             ? 'Electricity payment successful'
             : 'Electricity payment failed. Wallet refunded.',
       };
+
+      // 12. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 13. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 14. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'electricity_payment_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'Electricity Payment Successful',
+            message: `₦${dto.amount.toLocaleString()} ${dto.disco.toUpperCase()} electricity for ${dto.meterNumber}${vtpassResult.units ? ` - ${vtpassResult.units}` : ''}`,
+            data: {
+              amount: dto.amount,
+              provider: dto.disco.toUpperCase(),
+              recipient: dto.meterNumber,
+              meterToken: vtpassResult.meterToken,
+              units: vtpassResult.units,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send electricity payment notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return responseElec;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
@@ -1471,16 +1616,8 @@ generateReference(serviceType: VTUServiceType): string {
         },
       });
 
-      // 12. If failed, refund
-      if (vtpassResult.status !== 'success') {
-        await this.refundFailedOrder(order.id);
-      }
-
-      // 13. Invalidate wallet and transaction caches
-      await this.walletService.invalidateWalletCache(userId);
-      await this.walletService.invalidateTransactionCache(userId);
-
-      return {
+      // 12. Prepare response data FIRST (before async operations)
+      const responseIntl = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
@@ -1494,6 +1631,59 @@ generateReference(serviceType: VTUServiceType): string {
             ? 'International airtime purchased successfully'
             : 'International airtime purchase failed. Wallet refunded.',
       };
+
+      // 13. If failed, refund asynchronously
+      if (vtpassResult.status !== 'success') {
+        this.refundFailedOrder(order.id).catch((error) =>
+          this.logger.error('Failed to refund order', error),
+        );
+      }
+
+      // 14. Invalidate wallet and transaction caches (fire-and-forget)
+      this.walletService
+        .invalidateWalletCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate wallet cache (non-critical)',
+            error.message,
+          ),
+        );
+      this.walletService
+        .invalidateTransactionCache(userId)
+        .catch((error) =>
+          this.logger.warn(
+            'Failed to invalidate transaction cache (non-critical)',
+            error.message,
+          ),
+        );
+
+      // 15. Send notification asynchronously (fire-and-forget)
+      if (vtpassResult.status === 'success') {
+        this.notificationDispatcher
+          .sendNotification({
+            userId,
+            eventType: 'international_airtime_success',
+            category: 'TRANSACTION',
+            channels: ['PUSH', 'IN_APP', 'EMAIL'],
+            title: 'International Airtime Purchase Successful',
+            message: `International airtime sent to ${dto.billersCode} (${dto.countryCode})`,
+            data: {
+              amount,
+              countryCode: dto.countryCode,
+              recipient: dto.billersCode,
+              reference,
+            },
+          })
+          .catch((error) => {
+            this.logger.error(
+              'Failed to send international airtime notification',
+              error,
+            );
+          });
+      }
+
+      // RETURN IMMEDIATELY - don't wait for async operations above
+      return responseIntl;
     } finally {
       await this.unlockWalletForTransaction(userId);
     }
