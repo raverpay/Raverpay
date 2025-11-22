@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import {
   Search,
   Trash2,
@@ -117,6 +118,7 @@ const getTypeBadgeVariant = (type: NotificationType) => {
 export default function NotificationsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [broadcastDialogOpen, setBroadcastDialogOpen] = useState(false);
   const [broadcastStep, setBroadcastStep] = useState<1 | 2>(1);
@@ -142,12 +144,12 @@ export default function NotificationsPage() {
   const { canBroadcastNotifications, canDeleteNotifications } = usePermissions();
 
   const { data: notificationsData, isLoading } = useQuery({
-    queryKey: ['notifications', page, search, typeFilter],
+    queryKey: ['notifications', page, debouncedSearch, typeFilter],
     queryFn: () =>
       notificationsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(typeFilter !== 'all' && { type: typeFilter }),
       }),
   });
@@ -693,10 +695,10 @@ export default function NotificationsPage() {
 
               {notificationsData.meta && (
                 <Pagination
-                  currentPage={notificationsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={notificationsData.meta.totalPages}
-                  totalItems={notificationsData.meta.totalItems}
-                  itemsPerPage={notificationsData.meta.perPage}
+                  totalItems={notificationsData.meta.total}
+                  itemsPerPage={notificationsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

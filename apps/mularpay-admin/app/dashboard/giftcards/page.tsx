@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, Gift, TrendingUp, Clock } from 'lucide-react';
 
@@ -32,16 +33,17 @@ import { formatDate, formatCurrency } from '@/lib/utils';
 export default function GiftCardsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: giftcardsData, isLoading } = useQuery({
-    queryKey: ['giftcards', page, search, typeFilter, statusFilter],
+    queryKey: ['giftcards', page, debouncedSearch, typeFilter, statusFilter],
     queryFn: () =>
       giftcardsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(typeFilter !== 'all' && { type: typeFilter }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         sortBy: 'createdAt',
@@ -250,10 +252,10 @@ export default function GiftCardsPage() {
 
               {giftcardsData.meta && (
                 <Pagination
-                  currentPage={giftcardsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={giftcardsData.meta.totalPages}
-                  totalItems={giftcardsData.meta.totalItems}
-                  itemsPerPage={giftcardsData.meta.perPage}
+                  totalItems={giftcardsData.meta.total}
+                  itemsPerPage={giftcardsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

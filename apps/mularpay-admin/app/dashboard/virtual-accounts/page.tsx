@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, CreditCard, Activity, Snowflake } from 'lucide-react';
 
@@ -32,16 +33,17 @@ import { formatDate } from '@/lib/utils';
 export default function VirtualAccountsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [providerFilter, setProviderFilter] = useState<string>('all');
 
   const { data: accountsData, isPending: isLoading } = useQuery({
-    queryKey: ['virtual-accounts', page, search, statusFilter, providerFilter],
+    queryKey: ['virtual-accounts', page, debouncedSearch, statusFilter, providerFilter],
     queryFn: () =>
       virtualAccountsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         ...(providerFilter !== 'all' && { provider: providerFilter }),
         sortBy: 'createdAt',
@@ -250,10 +252,10 @@ export default function VirtualAccountsPage() {
 
               {accountsData.meta && (
                 <Pagination
-                  currentPage={accountsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={accountsData.meta.totalPages}
-                  totalItems={accountsData.meta.totalItems}
-                  itemsPerPage={accountsData.meta.perPage}
+                  totalItems={accountsData.meta.total}
+                  itemsPerPage={accountsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

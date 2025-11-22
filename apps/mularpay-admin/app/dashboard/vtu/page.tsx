@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, Smartphone, Wifi, TrendingUp } from 'lucide-react';
 
@@ -32,16 +33,17 @@ import { formatDate, formatCurrency } from '@/lib/utils';
 export default function VTUPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: vtuData, isLoading } = useQuery({
-    queryKey: ['vtu', page, search, typeFilter, statusFilter],
+    queryKey: ['vtu', page, debouncedSearch, typeFilter, statusFilter],
     queryFn: () =>
       vtuApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(typeFilter !== 'all' && { type: typeFilter }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         sortBy: 'createdAt',
@@ -245,10 +247,10 @@ export default function VTUPage() {
 
               {vtuData.meta && (
                 <Pagination
-                  currentPage={vtuData.meta.currentPage}
+                  currentPage={page}
                   totalPages={vtuData.meta.totalPages}
-                  totalItems={vtuData.meta.totalItems}
-                  itemsPerPage={vtuData.meta.perPage}
+                  totalItems={vtuData.meta.total}
+                  itemsPerPage={vtuData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

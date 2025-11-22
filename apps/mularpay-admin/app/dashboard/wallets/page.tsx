@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, Wallet as WalletIcon, Lock, Unlock } from 'lucide-react';
 
@@ -32,15 +33,16 @@ import { formatCurrency } from '@/lib/utils';
 export default function WalletsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [lockFilter, setLockFilter] = useState<string>('all');
 
   const { data: walletsData, isPending: isLoading } = useQuery({
-    queryKey: ['wallets', page, search, lockFilter],
+    queryKey: ['wallets', page, debouncedSearch, lockFilter],
     queryFn: () =>
       walletsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(lockFilter !== 'all' && { isLocked: lockFilter === 'locked' }),
         sortBy: 'balance',
         sortOrder: 'desc',
@@ -228,10 +230,10 @@ export default function WalletsPage() {
 
               {walletsData.meta && (
                 <Pagination
-                  currentPage={walletsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={walletsData.meta.totalPages}
-                  totalItems={walletsData.meta.totalItems}
-                  itemsPerPage={walletsData.meta.perPage}
+                  totalItems={walletsData.meta.total}
+                  itemsPerPage={walletsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

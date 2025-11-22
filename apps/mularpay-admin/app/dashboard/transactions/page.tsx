@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search, Download, Eye, TrendingUp, Activity } from 'lucide-react';
 
 import { transactionsApi } from '@/lib/api/transactions';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,16 +33,17 @@ import { formatDate, formatCurrency } from '@/lib/utils';
 export default function TransactionsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: transactionsData, isLoading } = useQuery({
-    queryKey: ['transactions', page, search, typeFilter, statusFilter],
+    queryKey: ['transactions', page, debouncedSearch, typeFilter, statusFilter],
     queryFn: () =>
       transactionsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(typeFilter !== 'all' && { type: typeFilter }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         sortBy: 'createdAt',
@@ -258,10 +260,10 @@ export default function TransactionsPage() {
 
               {transactionsData.meta && (
                 <Pagination
-                  currentPage={transactionsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={transactionsData.meta.totalPages}
-                  totalItems={transactionsData.meta.totalItems}
-                  itemsPerPage={transactionsData.meta.perPage}
+                  totalItems={transactionsData.meta.total}
+                  itemsPerPage={transactionsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

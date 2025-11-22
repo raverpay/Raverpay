@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
@@ -48,17 +49,18 @@ const getStatusBadgeVariant = (status: string) => {
 export default function DeletionsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const queryClient = useQueryClient();
   const { canApproveDeletions } = usePermissions();
 
   const { data: deletionsData, isLoading } = useQuery({
-    queryKey: ['deletions', page, search, statusFilter],
+    queryKey: ['deletions', page, debouncedSearch, statusFilter],
     queryFn: () =>
       deletionsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
       }),
   });
@@ -275,10 +277,10 @@ export default function DeletionsPage() {
 
               {deletionsData.meta && (
                 <Pagination
-                  currentPage={deletionsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={deletionsData.meta.totalPages}
-                  totalItems={deletionsData.meta.totalItems}
-                  itemsPerPage={deletionsData.meta.perPage}
+                  totalItems={deletionsData.meta.total}
+                  itemsPerPage={deletionsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

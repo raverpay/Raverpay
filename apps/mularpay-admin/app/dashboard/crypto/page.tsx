@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, Bitcoin, TrendingUp, Clock } from 'lucide-react';
 
@@ -32,16 +33,17 @@ import { formatDate, formatCurrency } from '@/lib/utils';
 export default function CryptoPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: cryptoData, isLoading } = useQuery({
-    queryKey: ['crypto', page, search, typeFilter, statusFilter],
+    queryKey: ['crypto', page, debouncedSearch, typeFilter, statusFilter],
     queryFn: () =>
       cryptoApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(typeFilter !== 'all' && { type: typeFilter }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         sortBy: 'createdAt',
@@ -257,10 +259,10 @@ export default function CryptoPage() {
 
               {cryptoData.meta && (
                 <Pagination
-                  currentPage={cryptoData.meta.currentPage}
+                  currentPage={page}
                   totalPages={cryptoData.meta.totalPages}
-                  totalItems={cryptoData.meta.totalItems}
-                  itemsPerPage={cryptoData.meta.perPage}
+                  totalItems={cryptoData.meta.total}
+                  itemsPerPage={cryptoData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

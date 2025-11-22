@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search, Download, Eye } from 'lucide-react';
 
 import { usersApi } from '@/lib/api/users';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,17 +33,18 @@ import { formatDate } from '@/lib/utils';
 export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [kycFilter, setKYCFilter] = useState<string>('all');
 
   const { data: usersData, isLoading } = useQuery({
-    queryKey: ['users', page, search, roleFilter, statusFilter, kycFilter],
+    queryKey: ['users', page, debouncedSearch, roleFilter, statusFilter, kycFilter],
     queryFn: () =>
       usersApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(roleFilter !== 'all' && { role: roleFilter }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
         ...(kycFilter !== 'all' && { kycTier: kycFilter }),
@@ -225,10 +227,10 @@ export default function UsersPage() {
 
               {usersData.meta && (
                 <Pagination
-                  currentPage={usersData.meta.currentPage}
+                  currentPage={page}
                   totalPages={usersData.meta.totalPages}
-                  totalItems={usersData.meta.totalItems}
-                  itemsPerPage={usersData.meta.perPage}
+                  totalItems={usersData.meta.total}
+                  itemsPerPage={usersData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { Search, UserPlus, Trash2, Edit, Shield, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
@@ -47,6 +48,7 @@ const adminRoles: UserRole[] = ['ADMIN', 'SUPER_ADMIN', 'SUPPORT'];
 export default function AdminsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -69,12 +71,12 @@ export default function AdminsPage() {
   const { canManageAdmins } = usePermissions();
 
   const { data: adminsData, isLoading } = useQuery({
-    queryKey: ['admins', page, search, roleFilter],
+    queryKey: ['admins', page, debouncedSearch, roleFilter],
     queryFn: () =>
       adminsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(roleFilter !== 'all' && { role: roleFilter }),
       }),
   });
@@ -436,10 +438,10 @@ export default function AdminsPage() {
 
               {adminsData.meta && (
                 <Pagination
-                  currentPage={adminsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={adminsData.meta.totalPages}
-                  totalItems={adminsData.meta.totalItems}
-                  itemsPerPage={adminsData.meta.perPage}
+                  totalItems={adminsData.meta.total}
+                  itemsPerPage={adminsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}

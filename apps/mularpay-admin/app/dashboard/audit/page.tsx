@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, Eye, Activity } from 'lucide-react';
 
@@ -67,16 +68,17 @@ const actionTypes = [
 export default function AuditLogsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [resourceFilter, setResourceFilter] = useState<string>('all');
   const [actionFilter, setActionFilter] = useState<string>('all');
 
   const { data: logsData, isPending: isLoading } = useQuery({
-    queryKey: ['audit-logs', page, search, resourceFilter, actionFilter],
+    queryKey: ['audit-logs', page, debouncedSearch, resourceFilter, actionFilter],
     queryFn: () =>
       auditLogsApi.getAll({
         page,
         limit: 20,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(resourceFilter !== 'all' && { resource: resourceFilter }),
         ...(actionFilter !== 'all' && { action: actionFilter }),
       }),
@@ -279,10 +281,10 @@ export default function AuditLogsPage() {
 
               {logsData.meta && (
                 <Pagination
-                  currentPage={logsData.meta.currentPage}
+                  currentPage={page}
                   totalPages={logsData.meta.totalPages}
-                  totalItems={logsData.meta.totalItems}
-                  itemsPerPage={logsData.meta.perPage}
+                  totalItems={logsData.meta.total}
+                  itemsPerPage={logsData.meta.limit}
                   onPageChange={setPage}
                 />
               )}
