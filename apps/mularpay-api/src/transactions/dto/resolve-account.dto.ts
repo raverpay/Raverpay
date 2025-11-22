@@ -7,6 +7,5 @@ export class ResolveAccountDto {
   accountNumber: string;
 
   @IsString()
-  @Length(3, 3, { message: 'Bank code must be exactly 3 digits' })
   bankCode: string;
 }
