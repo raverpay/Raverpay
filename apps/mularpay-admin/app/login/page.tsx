@@ -117,10 +117,10 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+          {/* <div className="mt-6 text-center text-sm text-muted-foreground">
             <p>Test Credentials:</p>
             <p className="font-mono text-xs mt-1">admin@raverpay.com / SuperAdmin123!</p>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>

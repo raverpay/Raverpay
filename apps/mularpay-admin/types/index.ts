@@ -243,7 +243,7 @@ export type NotificationType =
   | 'TRANSACTION'
   | 'KYC'
   | 'SECURITY'
-  | 'PROMOTION'
+  | 'PROMOTIONAL'
   | 'VTU'
   | 'GIFTCARD'
   | 'CRYPTO';

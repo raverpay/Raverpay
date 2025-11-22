@@ -225,7 +225,7 @@ export default function VirtualAccountDetailPage({
               {accounts.map(
                 (acct) =>
                   acct.user && (
-                    <>
+                    <div key={acct.id}>
                       <div>
                         <p className="text-sm font-medium text-muted-foreground mb-2">User</p>
                         <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -255,7 +255,7 @@ export default function VirtualAccountDetailPage({
                           </Badge>
                         </div>
                       </div>
-                    </>
+                    </div>
                   ),
               )}
 

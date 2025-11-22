@@ -2,14 +2,23 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, NotificationType } from '@prisma/client';
 import { CreateBroadcastDto, UpdateNotificationDto } from '../dto';
+import { NotificationDispatcherService } from '../../notifications/notification-dispatcher.service';
+import { NotificationPreferencesService } from '../../notifications/notification-preferences.service';
 
 @Injectable()
 export class AdminNotificationsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(AdminNotificationsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private notificationDispatcher: NotificationDispatcherService,
+    private preferencesService: NotificationPreferencesService,
+  ) {}
 
   /**
    * Get notifications with filters
@@ -171,32 +180,173 @@ export class AdminNotificationsService {
 
   /**
    * Create broadcast notification (send to all users)
+   * Uses NotificationDispatcher to send via selected channels
+   * Respects user notification preferences
    */
   async createBroadcast(adminUserId: string, dto: CreateBroadcastDto) {
-    // Get all active users
+    const broadcastId = `BROADCAST_${Date.now()}`;
+
+    this.logger.log(
+      `Creating broadcast ${broadcastId} via channels: ${dto.channels.join(', ')}`,
+    );
+
+    // Get all active users with their notification preferences
     const users = await this.prisma.user.findMany({
       where: { status: 'ACTIVE' },
-      select: { id: true },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        expoPushToken: true,
+      },
     });
 
     if (users.length === 0) {
-      throw new BadRequestException('No active users to broadcast to');
+      throw new BadRequestException({
+        message: 'No active users found in the system',
+        code: 'NO_ACTIVE_USERS',
+        details: {
+          totalUsers: 0,
+        },
+      });
     }
 
-    // Create notifications for all users
-    const notifications = await this.prisma.notification.createMany({
-      data: users.map((user) => ({
-        userId: user.id,
-        type: dto.type,
+    // Map notification type to category
+    const categoryMap: Record<NotificationType, string> = {
+      TRANSACTION: 'TRANSACTION',
+      KYC: 'KYC',
+      SECURITY: 'SECURITY',
+      PROMOTIONAL: 'PROMOTIONAL',
+      SYSTEM: 'SYSTEM',
+    };
+    const category = categoryMap[dto.type] || 'SYSTEM';
+
+    // Track rejection reasons for better error messages
+    const rejectionReasons: Record<string, number> = {
+      noEmail: 0,
+      noPhone: 0,
+      noPushToken: 0,
+      optedOutOfCategory: 0,
+      channelDisabled: 0,
+    };
+
+    // Filter users based on notification preferences for each channel
+    const eligibleUsers: string[] = [];
+
+    for (const user of users) {
+      // Check if user has opted in for at least one of the requested channels
+      let isEligible = false;
+      let rejectionReason: string | null = null;
+
+      for (const channel of dto.channels) {
+        const shouldSend = await this.preferencesService.shouldSendNotification(
+          user.id,
+          channel,
+          category,
+        );
+
+        if (!shouldSend) {
+          // User has opted out of this channel/category combination
+          rejectionReason = 'optedOutOfCategory';
+          continue;
+        }
+
+        // Additional checks for channel-specific requirements
+        if (channel === 'EMAIL') {
+          if (user.email) {
+            isEligible = true;
+            break;
+          } else {
+            rejectionReason = 'noEmail';
+          }
+        } else if (channel === 'SMS') {
+          if (user.phone) {
+            isEligible = true;
+            break;
+          } else {
+            rejectionReason = 'noPhone';
+          }
+        } else if (channel === 'PUSH') {
+          if (user.expoPushToken) {
+            isEligible = true;
+            break;
+          } else {
+            rejectionReason = 'noPushToken';
+          }
+        } else if (channel === 'IN_APP') {
+          isEligible = true;
+          break;
+        }
+      }
+
+      if (isEligible) {
+        eligibleUsers.push(user.id);
+      } else if (rejectionReason) {
+        rejectionReasons[rejectionReason]++;
+      }
+    }
+
+    if (eligibleUsers.length === 0) {
+      // Build a helpful error message based on rejection reasons
+      const reasons: string[] = [];
+
+      if (rejectionReasons.optedOutOfCategory > 0) {
+        reasons.push(
+          `${rejectionReasons.optedOutOfCategory} user(s) have opted out of ${dto.type.toLowerCase()} notifications`,
+        );
+      }
+      if (rejectionReasons.noEmail > 0 && dto.channels.includes('EMAIL')) {
+        reasons.push(
+          `${rejectionReasons.noEmail} user(s) don't have an email address`,
+        );
+      }
+      if (rejectionReasons.noPhone > 0 && dto.channels.includes('SMS')) {
+        reasons.push(
+          `${rejectionReasons.noPhone} user(s) don't have a phone number`,
+        );
+      }
+      if (rejectionReasons.noPushToken > 0 && dto.channels.includes('PUSH')) {
+        reasons.push(
+          `${rejectionReasons.noPushToken} user(s) don't have push notifications enabled`,
+        );
+      }
+
+      const detailMessage = reasons.length > 0
+        ? `Reasons: ${reasons.join('; ')}`
+        : 'All users have opted out of the selected notification type and channels';
+
+      throw new BadRequestException({
+        message: `No eligible users found for this broadcast. ${detailMessage}`,
+        code: 'NO_ELIGIBLE_USERS',
+        details: {
+          totalUsers: users.length,
+          channels: dto.channels,
+          notificationType: dto.type,
+          rejectionReasons,
+        },
+      });
+    }
+
+    this.logger.log(
+      `Sending broadcast to ${eligibleUsers.length} eligible users (filtered from ${users.length} total)`,
+    );
+
+    // Use NotificationDispatcher to send notifications via bulk method
+    const result = await this.notificationDispatcher.sendBulkNotifications(
+      eligibleUsers,
+      {
+        eventType: dto.eventType || 'admin_broadcast',
+        category: category as any,
+        channels: dto.channels as any[],
         title: dto.title,
         message: dto.message,
-        isRead: false,
         data: {
-          broadcastId: `BROADCAST_${Date.now()}`,
+          broadcastId,
           sentBy: adminUserId,
+          isAdminBroadcast: true,
         },
-      })),
-    });
+      },
+    );
 
     // Create audit log
     await this.prisma.auditLog.create({
@@ -204,9 +354,14 @@ export class AdminNotificationsService {
         userId: adminUserId,
         action: 'CREATE_BROADCAST_NOTIFICATION',
         resource: 'Notification',
-        resourceId: 'BROADCAST',
+        resourceId: broadcastId,
         metadata: {
-          recipientCount: users.length,
+          broadcastId,
+          totalUsers: users.length,
+          eligibleUsers: eligibleUsers.length,
+          successfulDeliveries: result.successful,
+          failedDeliveries: result.failed,
+          channels: dto.channels,
           type: dto.type,
           title: dto.title,
         },
@@ -215,8 +370,13 @@ export class AdminNotificationsService {
 
     return {
       success: true,
-      recipientCount: users.length,
-      message: `Broadcast sent to ${users.length} users`,
+      broadcastId,
+      totalUsers: users.length,
+      eligibleUsers: eligibleUsers.length,
+      successfulDeliveries: result.successful,
+      failedDeliveries: result.failed,
+      channels: dto.channels,
+      message: `Broadcast sent to ${result.successful} users via ${dto.channels.join(', ')}`,
     };
   }
 

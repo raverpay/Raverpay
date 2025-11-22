@@ -1,5 +1,15 @@
-import { IsNotEmpty, IsOptional, IsString, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsArray,
+  ArrayMinSize,
+  IsIn,
+} from 'class-validator';
 import { NotificationType } from '@prisma/client';
+
+export type NotificationChannel = 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP';
 
 export class CreateBroadcastDto {
   @IsEnum(NotificationType)
@@ -12,6 +22,15 @@ export class CreateBroadcastDto {
   @IsString()
   @IsNotEmpty()
   message: string;
+
+  @IsArray()
+  @ArrayMinSize(1, { message: 'At least one channel must be selected' })
+  @IsIn(['EMAIL', 'SMS', 'PUSH', 'IN_APP'], { each: true })
+  channels: NotificationChannel[];
+
+  @IsOptional()
+  @IsString()
+  eventType?: string;
 }
 
 export class UpdateNotificationDto {

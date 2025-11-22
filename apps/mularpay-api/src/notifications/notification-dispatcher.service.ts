@@ -548,19 +548,53 @@ export class NotificationDispatcherService {
   ) {
     const results: any[] = [];
 
-    // Process in batches to avoid overwhelming the system
-    const batchSize = 50;
-    for (let i = 0; i < userIds.length; i += batchSize) {
-      const batch = userIds.slice(i, i + batchSize);
-      const batchPromises = batch.map((userId) =>
-        this.sendNotification({ ...event, userId }),
+    // Check if EMAIL is in the channels - if so, we need to rate limit
+    const hasEmailChannel = event.channels?.includes('EMAIL');
+
+    if (hasEmailChannel) {
+      // Process sequentially with delays to respect Resend rate limit (2 req/sec)
+      // We use 600ms delay to stay safely under the limit
+      this.logger.log(
+        `Bulk notification with EMAIL channel - processing ${userIds.length} users with rate limiting`,
       );
 
-      const batchResults = await Promise.allSettled(batchPromises);
-      results.push(...batchResults);
+      for (let i = 0; i < userIds.length; i++) {
+        const userId = userIds[i];
+        try {
+          const result = await this.sendNotification({ ...event, userId });
+          results.push({ status: 'fulfilled', value: result });
+        } catch (error) {
+          results.push({ status: 'rejected', reason: error });
+        }
 
-      // Add small delay between batches
-      await new Promise((resolve) => setTimeout(resolve, 100));
+        // Add delay between each email to respect rate limit (2 requests/second)
+        // 600ms ensures we stay under the limit even with some variance
+        if (i < userIds.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+        }
+
+        // Log progress every 10 users
+        if ((i + 1) % 10 === 0) {
+          this.logger.log(
+            `Bulk notification progress: ${i + 1}/${userIds.length} processed`,
+          );
+        }
+      }
+    } else {
+      // For non-email channels, process in batches (push/in-app don't have strict rate limits)
+      const batchSize = 50;
+      for (let i = 0; i < userIds.length; i += batchSize) {
+        const batch = userIds.slice(i, i + batchSize);
+        const batchPromises = batch.map((userId) =>
+          this.sendNotification({ ...event, userId }),
+        );
+
+        const batchResults = await Promise.allSettled(batchPromises);
+        results.push(...batchResults);
+
+        // Add small delay between batches
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
     }
 
     const successful = results.filter((r) => r.status === 'fulfilled').length;

@@ -27,9 +27,10 @@ import { AdminAuditLogsController } from './audit-logs/admin-audit-logs.controll
 import { AdminAuditLogsService } from './audit-logs/admin-audit-logs.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { PrismaModule } from '../prisma/prisma.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, NotificationsModule],
   controllers: [
     AdminUsersController,
     AdminTransactionsController,

@@ -305,6 +305,29 @@ export class EmailService {
     }
 
     try {
+      // Filter out internal metadata that shouldn't be shown to users
+      const internalKeys = [
+        'broadcastId',
+        'sentBy',
+        'isAdminBroadcast',
+        'userId',
+        'adminId',
+        'internalRef',
+        'systemGenerated',
+      ];
+
+      const filteredData = data
+        ? Object.fromEntries(
+            Object.entries(data).filter(
+              ([key]) => !internalKeys.includes(key),
+            ),
+          )
+        : null;
+
+      // Only include data section if there's non-internal data to show
+      const hasVisibleData =
+        filteredData && Object.keys(filteredData).length > 0;
+
       const html = `
         <!DOCTYPE html>
         <html>
@@ -324,9 +347,9 @@ export class EmailService {
               <p>${message}</p>
 
               ${
-                data
+                hasVisibleData
                   ? `<div style="background: #f7f7f7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                ${Object.entries(data)
+                ${Object.entries(filteredData)
                   .map(
                     ([key, value]) => `
                   <p style="margin: 5px 0;"><strong>${key}:</strong> ${value}</p>

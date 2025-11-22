@@ -543,9 +543,9 @@ model NotificationPreference {
   kycSms    Boolean @default(false) // SMS costs money - opt-in only
   kycPush   Boolean @default(true)
 
-  promotionalEmails Boolean @default(false)
+  promotionalEmails Boolean @default(true) // Opt-out model for marketing
   promotionalSms    Boolean @default(false) // SMS costs money - opt-in only
-  promotionalPush   Boolean @default(false)
+  promotionalPush   Boolean @default(true) // Opt-out model for marketing
 
   // Frequency controls
   emailFrequency NotificationFrequency @default(IMMEDIATE)
