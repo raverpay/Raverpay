@@ -90,6 +90,12 @@ model User {
   savedRecipients        SavedRecipient[]
   deletionRequests       AccountDeletionRequest[]
 
+  // Support System Relations
+  conversations          Conversation[]
+  tickets                Ticket[]
+  assignedTickets        Ticket[]        @relation("AssignedTickets")
+  cannedResponses        CannedResponse[] @relation("CannedResponseCreator")
+
   @@index([email])
   @@index([phone])
   @@index([status])
@@ -854,4 +860,197 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 
   @@map("system_config")
+}
+
+// ============================================
+// SUPPORT SYSTEM
+// ============================================
+
+model Conversation {
+  id                 String             @id @default(uuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status             ConversationStatus @default(OPEN)
+  category           String?
+  lastMessagePreview String?
+  unreadCount        Int                @default(0)
+
+  // Transaction context (when conversation starts from transaction screen)
+  transactionId      String?
+  transactionType    String?
+  transactionContext Json? // Full transaction context for quick reference
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  messages Message[]
+  ticket   Ticket?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@map("conversations")
+}
+
+enum ConversationStatus {
+  OPEN
+  BOT_HANDLING
+  AWAITING_AGENT
+  AGENT_ASSIGNED
+  AWAITING_RATING
+  ENDED
+}
+
+model Message {
+  id             String     @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderType     SenderType
+  senderId       String? // User ID or Agent ID
+
+  content     String  @db.Text
+  attachments Json? // Array of file URLs
+  isRead      Boolean @default(false)
+  metadata    Json? // For quick reply buttons, transaction cards, etc.
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+enum SenderType {
+  USER
+  BOT
+  AGENT
+  SYSTEM
+}
+
+model Ticket {
+  id             String   @id @default(uuid())
+  ticketNumber   Int      @unique @default(autoincrement())
+  conversationId String   @unique
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category String
+  title    String
+  status   TicketStatus   @default(OPEN)
+  priority TicketPriority @default(MEDIUM)
+
+  // Assignment
+  assignedAgentId String?
+  assignedAgent   User?  @relation("AssignedTickets", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+
+  // Rating after resolution
+  rating        Int? // 1-5 for emoji ratings
+  ratingComment String?
+
+  // Timestamps
+  resolvedAt DateTime?
+  closedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedAgentId])
+  @@index([ticketNumber])
+  @@index([createdAt])
+  @@index([status, priority])
+  @@index([status, createdAt])
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================
+// HELP CENTER
+// ============================================
+
+model HelpCollection {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  icon        String? // Icon name or URL
+  order       Int    @default(0)
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  articles HelpArticle[]
+
+  @@index([order])
+  @@index([isActive])
+  @@map("help_collections")
+}
+
+model HelpArticle {
+  id           String         @id @default(uuid())
+  collectionId String
+  collection   HelpCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  title   String
+  content String @db.Text // Rich text/markdown content
+  slug    String @unique // For URL-friendly access
+  order   Int    @default(0)
+
+  // Analytics
+  viewCount      Int @default(0)
+  helpfulCount   Int @default(0)
+  unhelpfulCount Int @default(0)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([collectionId])
+  @@index([order])
+  @@index([isActive])
+  @@index([slug])
+  @@map("help_articles")
+}
+
+// ============================================
+// CANNED RESPONSES (FOR AGENTS)
+// ============================================
+
+model CannedResponse {
+  id          String  @id @default(uuid())
+  title       String
+  content     String  @db.Text
+  category    String?
+  shortcut    String? // Quick access shortcut e.g., "/greeting"
+  isActive    Boolean @default(true)
+  usageCount  Int     @default(0)
+  createdById String
+  createdBy   User    @relation("CannedResponseCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@index([shortcut])
+  @@map("canned_responses")
 }

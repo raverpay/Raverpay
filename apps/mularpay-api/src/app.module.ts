@@ -15,6 +15,7 @@ import { VirtualAccountsModule } from './virtual-accounts/virtual-accounts.modul
 import { VTUModule } from './vtu/vtu.module';
 import { WalletModule } from './wallet/wallet.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     VTUModule,
     CloudinaryModule,
     NotificationsModule,
+    SupportModule, // Support system (chat, tickets, help center)
     AdminModule, // Admin module for dashboard
   ],
   controllers: [AppController],

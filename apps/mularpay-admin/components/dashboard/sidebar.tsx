@@ -21,6 +21,7 @@ import {
   FileText,
   Settings,
   UserCog,
+  Headphones,
   LucideIcon,
 } from 'lucide-react';
 
@@ -41,6 +42,7 @@ const navigation: NavItem[] = [
   { name: 'Gift Cards', href: '/dashboard/giftcards', icon: Gift, roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
   { name: 'Crypto Orders', href: '/dashboard/crypto', icon: Bitcoin, roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
   { name: 'Virtual Accounts', href: '/dashboard/virtual-accounts', icon: Building2, roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
+  { name: 'Support', href: '/dashboard/support', icon: Headphones, roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
   { name: 'Deletions', href: '/dashboard/deletions', icon: Trash2, roles: ['SUPER_ADMIN', 'ADMIN'] },
   { name: 'Notifications', href: '/dashboard/notifications', icon: Bell, roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },

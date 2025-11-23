@@ -18,6 +18,7 @@ export interface Permissions {
   canAccessAuditLogs: boolean;
   canAccessSettings: boolean;
   canAccessAdmins: boolean;
+  canAccessSupport: boolean;
 
   // Action permissions
   canManageUsers: boolean;
@@ -31,6 +32,8 @@ export interface Permissions {
   canBroadcastNotifications: boolean;
   canDeleteNotifications: boolean;
   canModifySettings: boolean;
+  canManageHelpCenter: boolean;
+  canManageCannedResponses: boolean;
 
   // General
   isReadOnly: boolean;
@@ -65,6 +68,7 @@ export const usePermissions = (): Permissions => {
     canAccessAuditLogs: isAdminOrAbove,
     canAccessSettings: isSuperAdmin,
     canAccessAdmins: isSuperAdmin,
+    canAccessSupport: true, // All roles can access support
 
     // Action permissions
     canManageUsers: isAdminOrAbove,
@@ -78,6 +82,8 @@ export const usePermissions = (): Permissions => {
     canBroadcastNotifications: isSuperAdmin,
     canDeleteNotifications: isSuperAdmin,
     canModifySettings: isSuperAdmin,
+    canManageHelpCenter: isAdminOrAbove, // Admin and Super Admin can manage help center
+    canManageCannedResponses: true, // All support roles can manage canned responses
 
     // General
     isReadOnly: isSupport,
@@ -106,6 +112,7 @@ export const getNavigationForRole = (role: UserRole | undefined): NavItem[] => {
     { name: 'Gift Cards', href: '/dashboard/giftcards', icon: 'Gift', roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
     { name: 'Crypto Orders', href: '/dashboard/crypto', icon: 'Bitcoin', roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
     { name: 'Virtual Accounts', href: '/dashboard/virtual-accounts', icon: 'Building2', roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
+    { name: 'Support', href: '/dashboard/support', icon: 'Headphones', roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
     { name: 'Deletions', href: '/dashboard/deletions', icon: 'Trash2', roles: ['SUPER_ADMIN', 'ADMIN'] },
     { name: 'Notifications', href: '/dashboard/notifications', icon: 'Bell', roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
     { name: 'Analytics', href: '/dashboard/analytics', icon: 'BarChart3', roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'] },
