@@ -656,7 +656,9 @@ export class VTPassService {
 
       // VTPass balance endpoint returns code: 1 for success (not "000")
       if (result.code !== 1 && result.code !== '1') {
-        this.logger.error(`[VTPass] Balance API error: ${JSON.stringify(result)}`);
+        this.logger.error(
+          `[VTPass] Balance API error: ${JSON.stringify(result)}`,
+        );
         throw new BadRequestException('Failed to retrieve VTPass balance');
       }
 

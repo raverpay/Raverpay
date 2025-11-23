@@ -132,7 +132,7 @@ export default function NotificationsPage() {
     success: boolean;
     message: string;
     eligibleUsers?: number;
-    successfulDeliveries?: number;
+    totalQueued?: number;
     details?: {
       totalUsers?: number;
       channels?: string[];
@@ -168,7 +168,7 @@ export default function NotificationsPage() {
         success: true,
         message: response.message,
         eligibleUsers: response.eligibleUsers,
-        successfulDeliveries: response.successfulDeliveries,
+        totalQueued: response.totalQueued,
       });
     },
     onError: (
@@ -360,10 +360,8 @@ export default function NotificationsPage() {
                               <span className="font-medium">{broadcastResult.eligibleUsers}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground">Delivered:</span>{' '}
-                              <span className="font-medium">
-                                {broadcastResult.successfulDeliveries}
-                              </span>
+                              <span className="text-muted-foreground">Queued:</span>{' '}
+                              <span className="font-medium">{broadcastResult.totalQueued}</span>
                             </div>
                           </div>
                         )}

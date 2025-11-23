@@ -193,7 +193,11 @@ export class AdminAdminsService {
     }
 
     // Validate role
-    const validRoles: Array<'ADMIN' | 'SUPPORT' | 'SUPER_ADMIN'> = ['ADMIN', 'SUPPORT', 'SUPER_ADMIN'];
+    const validRoles: Array<'ADMIN' | 'SUPPORT' | 'SUPER_ADMIN'> = [
+      'ADMIN',
+      'SUPPORT',
+      'SUPER_ADMIN',
+    ];
     if (!validRoles.includes(dto.role)) {
       throw new ForbiddenException('Invalid role for admin user');
     }
@@ -240,7 +244,9 @@ export class AdminAdminsService {
       },
     });
 
-    this.logger.log(`Admin created: ${admin.email} (${admin.role}) by ${requester.email}`);
+    this.logger.log(
+      `Admin created: ${admin.email} (${admin.role}) by ${requester.email}`,
+    );
 
     return admin;
   }
@@ -273,12 +279,20 @@ export class AdminAdminsService {
     }
 
     // Prevent self-demotion
-    if (adminId === requesterId && dto.role && dto.role !== UserRole.SUPER_ADMIN) {
+    if (
+      adminId === requesterId &&
+      dto.role &&
+      dto.role !== UserRole.SUPER_ADMIN
+    ) {
       throw new ForbiddenException('Cannot demote yourself');
     }
 
     // Prevent self-deactivation
-    if (adminId === requesterId && dto.status && dto.status !== UserStatus.ACTIVE) {
+    if (
+      adminId === requesterId &&
+      dto.status &&
+      dto.status !== UserStatus.ACTIVE
+    ) {
       throw new ForbiddenException('Cannot deactivate yourself');
     }
 
@@ -372,7 +386,9 @@ export class AdminAdminsService {
       },
     });
 
-    this.logger.log(`Admin deleted: ${existingAdmin.email} by ${requester.email}`);
+    this.logger.log(
+      `Admin deleted: ${existingAdmin.email} by ${requester.email}`,
+    );
 
     return { success: true, message: 'Admin deactivated successfully' };
   }
@@ -380,14 +396,20 @@ export class AdminAdminsService {
   /**
    * Reset admin password
    */
-  async resetPassword(requesterId: string, adminId: string, newPassword: string) {
+  async resetPassword(
+    requesterId: string,
+    adminId: string,
+    newPassword: string,
+  ) {
     // Check if requester is SUPER_ADMIN
     const requester = await this.prisma.user.findUnique({
       where: { id: requesterId },
     });
 
     if (!requester || requester.role !== UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Only SUPER_ADMIN can reset admin passwords');
+      throw new ForbiddenException(
+        'Only SUPER_ADMIN can reset admin passwords',
+      );
     }
 
     // Check if admin exists

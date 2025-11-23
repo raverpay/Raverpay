@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, TransactionStatus, CryptoOrderType } from '@prisma/client';
-import { ApproveCryptoDto, RejectCryptoDto, AdjustCryptoAmountDto } from '../dto';
+import {
+  ApproveCryptoDto,
+  RejectCryptoDto,
+  AdjustCryptoAmountDto,
+} from '../dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()

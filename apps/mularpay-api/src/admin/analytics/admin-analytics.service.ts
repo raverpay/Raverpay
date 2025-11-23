@@ -153,10 +153,7 @@ export class AdminAnalyticsService {
   /**
    * Get user growth analytics
    */
-  async getUserGrowthAnalytics(
-    startDate?: string,
-    endDate?: string,
-  ) {
+  async getUserGrowthAnalytics(startDate?: string, endDate?: string) {
     const where: Prisma.UserWhereInput = {};
 
     if (startDate || endDate) {

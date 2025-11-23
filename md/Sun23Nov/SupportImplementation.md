@@ -148,8 +148,8 @@ Admin Panel (log in as SUPPORT, ADMIN, or SUPER_ADMIN user):
    - Stats cards (Open Tickets, Waiting for Agent, Avg Response Time, CSAT)
    - Tabs: Overview, Recent Tickets, Live Chats
 
-5. Click Live Chat button or go to Conversations tab // NOT SEEN
-6. Find a conversation that's "Waiting for Agent" // NOT SEEN
+5. Click Live Chat button or go to Conversations tab
+6. Find a conversation that's "Waiting for Agent"
 7. Click Join to assign yourself
 8. You'll be taken to the chat interface:
    - Left: User info (name, email)

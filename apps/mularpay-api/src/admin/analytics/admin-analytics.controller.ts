@@ -9,9 +9,7 @@ import { AdminAnalyticsService } from './admin-analytics.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
 export class AdminAnalyticsController {
-  constructor(
-    private readonly adminAnalyticsService: AdminAnalyticsService,
-  ) {}
+  constructor(private readonly adminAnalyticsService: AdminAnalyticsService) {}
 
   /**
    * GET /admin/analytics/dashboard
@@ -22,10 +20,7 @@ export class AdminAnalyticsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.adminAnalyticsService.getDashboardAnalytics(
-      startDate,
-      endDate,
-    );
+    return this.adminAnalyticsService.getDashboardAnalytics(startDate, endDate);
   }
 
   /**

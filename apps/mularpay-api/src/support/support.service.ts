@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  ForbiddenException,
   BadRequestException,
   Logger,
 } from '@nestjs/common';
@@ -11,6 +10,8 @@ import {
   SenderType,
   TicketStatus,
   TicketPriority,
+  UserRole,
+  UserStatus,
 } from '@prisma/client';
 import {
   CreateConversationDto,
@@ -69,7 +70,9 @@ export class SupportService {
         },
       });
 
-      this.logger.log(`Conversation ${conversation.id} created for user ${userId}`);
+      this.logger.log(
+        `Conversation ${conversation.id} created for user ${userId}`,
+      );
 
       return {
         conversation,
@@ -84,6 +87,12 @@ export class SupportService {
   async getConversations(userId: string, options: FindConversationsDto) {
     const { page = 1, limit = 20, status } = options;
 
+    // Ensure page and limit are numbers (safeguard against string values from query params)
+    const pageNum =
+      typeof page === 'string' ? parseInt(page, 10) : Number(page) || 1;
+    const limitNum =
+      typeof limit === 'string' ? parseInt(limit, 10) : Number(limit) || 20;
+
     const where: any = { userId };
     if (status) where.status = status;
 
@@ -92,8 +101,8 @@ export class SupportService {
         this.prisma.conversation.findMany({
           where,
           orderBy: { updatedAt: 'desc' },
-          skip: (page - 1) * limit,
-          take: limit,
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
           include: {
             ticket: {
               select: {
@@ -111,11 +120,11 @@ export class SupportService {
       return {
         conversations,
         pagination: {
-          page,
-          limit,
+          page: pageNum,
+          limit: limitNum,
           total,
-          totalPages: Math.ceil(total / limit),
-          hasMore: page * limit < total,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: pageNum * limitNum < total,
         },
       };
     } catch (error) {
@@ -158,37 +167,50 @@ export class SupportService {
     options: FindMessagesDto,
     userId?: string,
   ) {
-    const { page = 1, limit = 50 } = options;
+    try {
+      const { page = 1, limit = 50 } = options;
 
-    // Verify conversation exists and user has access
-    const conversation = await this.prisma.conversation.findFirst({
-      where: userId ? { id: conversationId, userId } : { id: conversationId },
-    });
+      // Ensure page and limit are numbers (safeguard against string values from query params)
+      const pageNum =
+        typeof page === 'string' ? parseInt(page, 10) : Number(page) || 1;
+      const limitNum =
+        typeof limit === 'string' ? parseInt(limit, 10) : Number(limit) || 50;
 
-    if (!conversation) {
-      throw new NotFoundException('Conversation not found');
+      // Verify conversation exists and user has access
+      const conversation = await this.prisma.conversation.findFirst({
+        where: userId ? { id: conversationId, userId } : { id: conversationId },
+      });
+
+      if (!conversation) {
+        throw new NotFoundException('Conversation not found');
+      }
+
+      const [messages, total] = await Promise.all([
+        this.prisma.message.findMany({
+          where: { conversationId },
+          orderBy: { createdAt: 'asc' },
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
+        }),
+        this.prisma.message.count({ where: { conversationId } }),
+      ]);
+
+      return {
+        data: messages || [],
+        meta: {
+          page: pageNum,
+          limit: limitNum,
+          total: total || 0,
+          totalPages: Math.ceil((total || 0) / limitNum),
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error fetching messages for conversation ${conversationId}:`,
+        error,
+      );
+      throw error;
     }
-
-    const [messages, total] = await Promise.all([
-      this.prisma.message.findMany({
-        where: { conversationId },
-        orderBy: { createdAt: 'asc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      this.prisma.message.count({ where: { conversationId } }),
-    ]);
-
-    return {
-      messages,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasMore: page * limit < total,
-      },
-    };
   }
 
   // ============================================
@@ -269,7 +291,9 @@ export class SupportService {
     await this.prisma.message.updateMany({
       where: {
         conversationId,
-        senderType: { in: [SenderType.AGENT, SenderType.BOT, SenderType.SYSTEM] },
+        senderType: {
+          in: [SenderType.AGENT, SenderType.BOT, SenderType.SYSTEM],
+        },
         isRead: false,
       },
       data: { isRead: true },
@@ -301,7 +325,9 @@ export class SupportService {
       }
 
       if (conversation.ticket) {
-        throw new BadRequestException('Ticket already exists for this conversation');
+        throw new BadRequestException(
+          'Ticket already exists for this conversation',
+        );
       }
 
       const ticket = await this.prisma.ticket.create({
@@ -324,7 +350,9 @@ export class SupportService {
         },
       });
 
-      this.logger.log(`Ticket #${ticket.ticketNumber} created for user ${userId}`);
+      this.logger.log(
+        `Ticket #${ticket.ticketNumber} created for user ${userId}`,
+      );
 
       return ticket;
     } catch (error) {
@@ -336,6 +364,12 @@ export class SupportService {
   async getUserTickets(userId: string, options: FindTicketsDto) {
     const { page = 1, limit = 20, status, priority, category } = options;
 
+    // Ensure page and limit are numbers (safeguard against string values from query params)
+    const pageNum =
+      typeof page === 'string' ? parseInt(page, 10) : Number(page) || 1;
+    const limitNum =
+      typeof limit === 'string' ? parseInt(limit, 10) : Number(limit) || 20;
+
     const where: any = { userId };
     if (status) where.status = status;
     if (priority) where.priority = priority;
@@ -346,8 +380,8 @@ export class SupportService {
         this.prisma.ticket.findMany({
           where,
           orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * limit,
-          take: limit,
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
           include: {
             conversation: {
               select: {
@@ -371,11 +405,11 @@ export class SupportService {
       return {
         tickets,
         pagination: {
-          page,
-          limit,
+          page: pageNum,
+          limit: limitNum,
           total,
-          totalPages: Math.ceil(total / limit),
-          hasMore: page * limit < total,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: pageNum * limitNum < total,
         },
       };
     } catch (error) {
@@ -440,7 +474,9 @@ export class SupportService {
       data: updateData,
     });
 
-    this.logger.log(`Ticket #${ticket.ticketNumber} updated by agent ${agentId}`);
+    this.logger.log(
+      `Ticket #${ticket.ticketNumber} updated by agent ${agentId}`,
+    );
 
     return updatedTicket;
   }
@@ -470,9 +506,86 @@ export class SupportService {
       data: { status: ConversationStatus.AGENT_ASSIGNED },
     });
 
-    this.logger.log(`Ticket #${ticket.ticketNumber} assigned to agent ${agentId}`);
+    this.logger.log(
+      `Ticket #${ticket.ticketNumber} assigned to agent ${agentId}`,
+    );
 
     return updatedTicket;
+  }
+
+  async assignConversation(conversationId: string, agentId: string) {
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: { ticket: true },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    // If conversation doesn't have a ticket, create one
+    let ticket = conversation.ticket;
+    if (!ticket) {
+      // Create a ticket for this conversation
+      ticket = await this.prisma.ticket.create({
+        data: {
+          conversationId: conversation.id,
+          userId: conversation.userId,
+          category: conversation.category || 'General',
+          title: 'Support Request',
+          priority: TicketPriority.MEDIUM,
+        },
+      });
+    }
+
+    // Update ticket assignment
+    await this.prisma.ticket.update({
+      where: { id: ticket.id },
+      data: {
+        assignedAgentId: agentId,
+        status: TicketStatus.IN_PROGRESS,
+      },
+    });
+
+    // Update conversation status
+    const updatedConversation = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { status: ConversationStatus.AGENT_ASSIGNED },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+        ticket: {
+          include: {
+            assignedAgent: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    this.logger.log(
+      `Conversation ${conversationId} assigned to agent ${agentId}`,
+    );
+
+    return updatedConversation;
+  }
+
+  async transferConversation(conversationId: string, agentId: string) {
+    // Transfer is the same as assign, just with a different agent
+    return this.assignConversation(conversationId, agentId);
   }
 
   async resolveTicket(ticketId: string, agentId: string) {
@@ -500,7 +613,9 @@ export class SupportService {
       data: { status: ConversationStatus.AWAITING_RATING },
     });
 
-    this.logger.log(`Ticket #${ticket.ticketNumber} resolved by agent ${agentId}`);
+    this.logger.log(
+      `Ticket #${ticket.ticketNumber} resolved by agent ${agentId}`,
+    );
 
     return updatedTicket;
   }
@@ -530,7 +645,9 @@ export class SupportService {
       data: { status: ConversationStatus.ENDED },
     });
 
-    this.logger.log(`Ticket #${ticket.ticketNumber} closed by agent ${agentId}`);
+    this.logger.log(
+      `Ticket #${ticket.ticketNumber} closed by agent ${agentId}`,
+    );
 
     return updatedTicket;
   }
@@ -600,6 +717,83 @@ export class SupportService {
     return { success: true };
   }
 
+  async endConversation(conversationId: string) {
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+        ticket: {
+          include: {
+            assignedAgent: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    // Update conversation status to ENDED
+    const updatedConversation = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { status: ConversationStatus.ENDED },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+        ticket: {
+          include: {
+            assignedAgent: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // If there's a ticket, close it as well
+    if (conversation.ticket) {
+      await this.prisma.ticket.update({
+        where: { id: conversation.ticket.id },
+        data: {
+          status: TicketStatus.CLOSED,
+          closedAt: new Date(),
+        },
+      });
+    }
+
+    this.logger.log(`Conversation ${conversationId} ended by admin`);
+
+    return updatedConversation;
+  }
+
   // ============================================
   // ADMIN/AGENT METHODS
   // ============================================
@@ -614,6 +808,12 @@ export class SupportService {
       assignedAgentId,
       search,
     } = options;
+
+    // Ensure page and limit are numbers (safeguard against string values from query params)
+    const pageNum =
+      typeof page === 'string' ? parseInt(page, 10) : Number(page) || 1;
+    const limitNum =
+      typeof limit === 'string' ? parseInt(limit, 10) : Number(limit) || 20;
 
     const where: any = {};
     if (status) where.status = status;
@@ -634,8 +834,8 @@ export class SupportService {
         this.prisma.ticket.findMany({
           where,
           orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
-          skip: (page - 1) * limit,
-          take: limit,
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
           include: {
             user: {
               select: {
@@ -670,11 +870,11 @@ export class SupportService {
       return {
         tickets,
         pagination: {
-          page,
-          limit,
+          page: pageNum,
+          limit: limitNum,
           total,
-          totalPages: Math.ceil(total / limit),
-          hasMore: page * limit < total,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: pageNum * limitNum < total,
         },
         stats,
       };
@@ -685,14 +885,19 @@ export class SupportService {
   }
 
   async getTicketStats() {
-    const [open, inProgress, resolved, closed, urgent, high] = await Promise.all([
-      this.prisma.ticket.count({ where: { status: TicketStatus.OPEN } }),
-      this.prisma.ticket.count({ where: { status: TicketStatus.IN_PROGRESS } }),
-      this.prisma.ticket.count({ where: { status: TicketStatus.RESOLVED } }),
-      this.prisma.ticket.count({ where: { status: TicketStatus.CLOSED } }),
-      this.prisma.ticket.count({ where: { priority: TicketPriority.URGENT } }),
-      this.prisma.ticket.count({ where: { priority: TicketPriority.HIGH } }),
-    ]);
+    const [open, inProgress, resolved, closed, urgent, high] =
+      await Promise.all([
+        this.prisma.ticket.count({ where: { status: TicketStatus.OPEN } }),
+        this.prisma.ticket.count({
+          where: { status: TicketStatus.IN_PROGRESS },
+        }),
+        this.prisma.ticket.count({ where: { status: TicketStatus.RESOLVED } }),
+        this.prisma.ticket.count({ where: { status: TicketStatus.CLOSED } }),
+        this.prisma.ticket.count({
+          where: { priority: TicketPriority.URGENT },
+        }),
+        this.prisma.ticket.count({ where: { priority: TicketPriority.HIGH } }),
+      ]);
 
     return {
       open,
@@ -703,6 +908,260 @@ export class SupportService {
       high,
       total: open + inProgress + resolved + closed,
     };
+  }
+
+  async getAllConversations(options: FindConversationsDto) {
+    const { page = 1, limit = 20, status } = options;
+
+    // Ensure page and limit are numbers (safeguard against string values from query params)
+    const pageNum =
+      typeof page === 'string' ? parseInt(page, 10) : Number(page) || 1;
+    const limitNum =
+      typeof limit === 'string' ? parseInt(limit, 10) : Number(limit) || 20;
+
+    const where: any = {};
+    if (status) where.status = status;
+
+    try {
+      const [conversations, total] = await Promise.all([
+        this.prisma.conversation.findMany({
+          where,
+          orderBy: { updatedAt: 'desc' },
+          skip: (pageNum - 1) * limitNum,
+          take: limitNum,
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+                avatar: true,
+              },
+            },
+            ticket: {
+              select: {
+                id: true,
+                ticketNumber: true,
+                status: true,
+                priority: true,
+                assignedAgent: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        }),
+        this.prisma.conversation.count({ where }),
+      ]);
+
+      // Map conversations to include assignedAgent at the top level for frontend compatibility
+      const mappedConversations = conversations.map((conv) => ({
+        ...conv,
+        assignedAgent: conv.ticket?.assignedAgent || null,
+        assignedAgentId: conv.ticket?.assignedAgent?.id || null,
+      }));
+
+      return {
+        data: mappedConversations,
+        meta: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      };
+    } catch (error) {
+      this.logger.error('Error fetching all conversations:', error);
+      throw error;
+    }
+  }
+
+  async getSupportStats() {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Ticket stats
+      const [
+        openTickets,
+        inProgressTickets,
+        resolvedToday,
+        ticketsByPriority,
+        ticketsByCategory,
+      ] = await Promise.all([
+        this.prisma.ticket.count({ where: { status: TicketStatus.OPEN } }),
+        this.prisma.ticket.count({
+          where: { status: TicketStatus.IN_PROGRESS },
+        }),
+        this.prisma.ticket.count({
+          where: {
+            status: TicketStatus.RESOLVED,
+            resolvedAt: { gte: today },
+          },
+        }),
+        this.prisma.ticket.groupBy({
+          by: ['priority'],
+          where: {
+            status: { in: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS] },
+          },
+          _count: true,
+        }),
+        this.prisma.ticket.groupBy({
+          by: ['category'],
+          where: {
+            status: { in: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS] },
+          },
+          _count: true,
+        }),
+      ]);
+
+      // Conversation stats
+      const [activeConversations, waitingForAgent, conversationsByStatus] =
+        await Promise.all([
+          this.prisma.conversation.count({
+            where: {
+              status: ConversationStatus.AGENT_ASSIGNED,
+            },
+          }),
+          this.prisma.conversation.count({
+            where: {
+              status: ConversationStatus.AWAITING_AGENT,
+            },
+          }),
+          this.prisma.conversation.groupBy({
+            by: ['status'],
+            _count: true,
+          }),
+        ]);
+
+      // Calculate average response time (time from conversation creation to first agent message)
+      const conversationsWithFirstResponse =
+        await this.prisma.conversation.findMany({
+          where: {
+            status: { not: ConversationStatus.BOT_HANDLING },
+            messages: {
+              some: {
+                senderType: SenderType.AGENT,
+              },
+            },
+          },
+          include: {
+            messages: {
+              where: {
+                senderType: SenderType.AGENT,
+              },
+              orderBy: { createdAt: 'asc' },
+              take: 1,
+            },
+          },
+        });
+
+      let totalResponseTime = 0;
+      let responseCount = 0;
+      conversationsWithFirstResponse.forEach((conv) => {
+        if (conv.messages.length > 0) {
+          const responseTime =
+            conv.messages[0].createdAt.getTime() - conv.createdAt.getTime();
+          totalResponseTime += responseTime;
+          responseCount++;
+        }
+      });
+      const avgResponseTime =
+        responseCount > 0
+          ? Math.round(totalResponseTime / responseCount / 1000 / 60) // Convert to minutes
+          : 0;
+
+      // Calculate average resolution time (time from ticket creation to resolution)
+      const resolvedTickets = await this.prisma.ticket.findMany({
+        where: {
+          status: TicketStatus.RESOLVED,
+          resolvedAt: { not: null },
+        },
+        select: {
+          createdAt: true,
+          resolvedAt: true,
+        },
+      });
+
+      let totalResolutionTime = 0;
+      let resolutionCount = 0;
+      resolvedTickets.forEach((ticket) => {
+        if (ticket.resolvedAt) {
+          const resolutionTime =
+            ticket.resolvedAt.getTime() - ticket.createdAt.getTime();
+          totalResolutionTime += resolutionTime;
+          resolutionCount++;
+        }
+      });
+      const avgResolutionTime =
+        resolutionCount > 0
+          ? Math.round(totalResolutionTime / resolutionCount / 1000 / 60 / 60) // Convert to hours
+          : 0;
+
+      // Calculate CSAT score (average rating from tickets)
+      const ratedTickets = await this.prisma.ticket.aggregate({
+        where: {
+          rating: { not: null },
+        },
+        _avg: {
+          rating: true,
+        },
+      });
+      const csatScore = ratedTickets._avg.rating || 0;
+
+      // Format tickets by priority
+      const ticketsByPriorityMap: Record<TicketPriority, number> = {
+        [TicketPriority.LOW]: 0,
+        [TicketPriority.MEDIUM]: 0,
+        [TicketPriority.HIGH]: 0,
+        [TicketPriority.URGENT]: 0,
+      };
+      ticketsByPriority.forEach((item) => {
+        ticketsByPriorityMap[item.priority] = item._count;
+      });
+
+      // Format tickets by category
+      const ticketsByCategoryMap: Record<string, number> = {};
+      ticketsByCategory.forEach((item) => {
+        ticketsByCategoryMap[item.category] = item._count;
+      });
+
+      // Format conversations by status
+      const conversationsByStatusMap: Record<ConversationStatus, number> = {
+        [ConversationStatus.OPEN]: 0,
+        [ConversationStatus.BOT_HANDLING]: 0,
+        [ConversationStatus.AWAITING_AGENT]: 0,
+        [ConversationStatus.AGENT_ASSIGNED]: 0,
+        [ConversationStatus.AWAITING_RATING]: 0,
+        [ConversationStatus.ENDED]: 0,
+      };
+      conversationsByStatus.forEach((item) => {
+        conversationsByStatusMap[item.status] = item._count;
+      });
+
+      return {
+        openTickets,
+        inProgressTickets,
+        resolvedToday,
+        avgResponseTime,
+        avgResolutionTime,
+        csatScore,
+        activeConversations,
+        waitingForAgent,
+        ticketsByPriority: ticketsByPriorityMap,
+        ticketsByCategory: ticketsByCategoryMap,
+        conversationsByStatus: conversationsByStatusMap,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching support stats:', error);
+      throw error;
+    }
   }
 
   async getConversationWithUserContext(conversationId: string) {
@@ -781,5 +1240,57 @@ export class SupportService {
     });
 
     return { unreadCount: count._sum.unreadCount || 0 };
+  }
+
+  // ============================================
+  // AGENT MANAGEMENT
+  // ============================================
+
+  async getAvailableAgents() {
+    try {
+      // Get all users with support/admin roles
+      const agents = await this.prisma.user.findMany({
+        where: {
+          role: {
+            in: [UserRole.SUPPORT, UserRole.ADMIN, UserRole.SUPER_ADMIN],
+          },
+          status: UserStatus.ACTIVE,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+      });
+
+      // Get active chat counts for each agent
+      const agentsWithCounts = await Promise.all(
+        agents.map(async (agent) => {
+          // Count active tickets assigned to this agent
+          // Active = OPEN or IN_PROGRESS status
+          const activeChats = await this.prisma.ticket.count({
+            where: {
+              assignedAgentId: agent.id,
+              status: {
+                in: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS],
+              },
+            },
+          });
+
+          return {
+            id: agent.id,
+            firstName: agent.firstName,
+            lastName: agent.lastName,
+            activeChats,
+          };
+        }),
+      );
+
+      return agentsWithCounts;
+    } catch (error) {
+      this.logger.error('Error fetching available agents:', error);
+      throw error;
+    }
   }
 }

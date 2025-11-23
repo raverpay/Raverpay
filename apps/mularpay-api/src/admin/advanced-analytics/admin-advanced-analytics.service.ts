@@ -47,9 +47,11 @@ export class AdminAdvancedAnalyticsService {
         totalRevenue: grouped.reduce((sum, item) => sum + item.revenue, 0),
         totalVolume: grouped.reduce((sum, item) => sum + item.volume, 0),
         totalTransactions: transactions.length,
-        averageRevenue: grouped.length > 0
-          ? grouped.reduce((sum, item) => sum + item.revenue, 0) / grouped.length
-          : 0,
+        averageRevenue:
+          grouped.length > 0
+            ? grouped.reduce((sum, item) => sum + item.revenue, 0) /
+              grouped.length
+            : 0,
       },
     };
   }
@@ -136,9 +138,10 @@ export class AdminAdvancedAnalyticsService {
       data: grouped,
       summary: {
         newUsers: users.length,
-        growthRate: usersBefore > 0
-          ? ((users.length / usersBefore) * 100).toFixed(2)
-          : '100',
+        growthRate:
+          usersBefore > 0
+            ? ((users.length / usersBefore) * 100).toFixed(2)
+            : '100',
       },
     };
   }
@@ -218,12 +221,12 @@ export class AdminAdvancedAnalyticsService {
       const statusBreakdown = vtuByStatus.filter(
         (s) => s.provider === provider.provider,
       );
-      const completed = statusBreakdown.find(
-        (s) => s.status === TransactionStatus.COMPLETED,
-      )?._count || 0;
-      const failed = statusBreakdown.find(
-        (s) => s.status === TransactionStatus.FAILED,
-      )?._count || 0;
+      const completed =
+        statusBreakdown.find((s) => s.status === TransactionStatus.COMPLETED)
+          ?._count || 0;
+      const failed =
+        statusBreakdown.find((s) => s.status === TransactionStatus.FAILED)
+          ?._count || 0;
       const total = provider._count;
 
       return {
@@ -245,10 +248,13 @@ export class AdminAdvancedAnalyticsService {
       summary: {
         totalProviders: providerStats.length,
         totalOrders: providerStats.reduce((sum, p) => sum + p.totalOrders, 0),
-        totalVolume: providerStats.reduce((sum, p) => sum + Number(p.totalVolume), 0),
+        totalVolume: providerStats.reduce(
+          (sum, p) => sum + Number(p.totalVolume),
+          0,
+        ),
         overallSuccessRate:
-          providerStats.reduce((sum, p) => sum + p.completed, 0) /
-            providerStats.reduce((sum, p) => sum + p.totalOrders, 0) *
+          (providerStats.reduce((sum, p) => sum + p.completed, 0) /
+            providerStats.reduce((sum, p) => sum + p.totalOrders, 0)) *
             100 || 0,
       },
     };
@@ -294,7 +300,8 @@ export class AdminAdvancedAnalyticsService {
       users: {
         total: totalUsers,
         active: activeUsers,
-        activeRate: totalUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(2) : '0',
+        activeRate:
+          totalUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(2) : '0',
       },
       transactions: {
         total: totalTransactions,
@@ -313,7 +320,10 @@ export class AdminAdvancedAnalyticsService {
     transactions: any[],
     interval: 'day' | 'week' | 'month',
   ) {
-    const grouped = new Map<string, { revenue: number; volume: number; count: number }>();
+    const grouped = new Map<
+      string,
+      { revenue: number; volume: number; count: number }
+    >();
 
     transactions.forEach((tx) => {
       const key = this.getIntervalKey(tx.createdAt, interval);
@@ -364,7 +374,8 @@ export class AdminAdvancedAnalyticsService {
     return Array.from(grouped.entries()).map(([period, data]) => ({
       period,
       ...data,
-      successRate: data.total > 0 ? ((data.completed / data.total) * 100).toFixed(2) : '0',
+      successRate:
+        data.total > 0 ? ((data.completed / data.total) * 100).toFixed(2) : '0',
     }));
   }
 
@@ -385,7 +396,10 @@ export class AdminAdvancedAnalyticsService {
     }));
   }
 
-  private getIntervalKey(date: Date, interval: 'day' | 'week' | 'month'): string {
+  private getIntervalKey(
+    date: Date,
+    interval: 'day' | 'week' | 'month',
+  ): string {
     const d = new Date(date);
 
     if (interval === 'day') {
@@ -399,7 +413,9 @@ export class AdminAdvancedAnalyticsService {
   }
 
   private getWeekNumber(date: Date): number {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));

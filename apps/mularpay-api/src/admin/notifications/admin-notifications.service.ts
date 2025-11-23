@@ -313,9 +313,10 @@ export class AdminNotificationsService {
         );
       }
 
-      const detailMessage = reasons.length > 0
-        ? `Reasons: ${reasons.join('; ')}`
-        : 'All users have opted out of the selected notification type and channels';
+      const detailMessage =
+        reasons.length > 0
+          ? `Reasons: ${reasons.join('; ')}`
+          : 'All users have opted out of the selected notification type and channels';
 
       throw new BadRequestException({
         message: `No eligible users found for this broadcast. ${detailMessage}`,

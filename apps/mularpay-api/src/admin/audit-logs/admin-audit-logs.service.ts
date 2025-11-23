@@ -127,7 +127,9 @@ export class AdminAuditLogsService {
     ]);
 
     // Get user details for top admins
-    const userIds = byUser.map((item) => item.userId).filter((id): id is string => id !== null);
+    const userIds = byUser
+      .map((item) => item.userId)
+      .filter((id): id is string => id !== null);
     const users = await this.prisma.user.findMany({
       where: { id: { in: userIds } },
       select: {
@@ -143,11 +145,13 @@ export class AdminAuditLogsService {
       const user = users.find((u) => u.id === item.userId);
       return {
         userId: item.userId,
-        user: user ? {
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          role: user.role,
-        } : null,
+        user: user
+          ? {
+              email: user.email,
+              name: `${user.firstName} ${user.lastName}`,
+              role: user.role,
+            }
+          : null,
         actionCount: item._count,
       };
     });
@@ -169,11 +173,7 @@ export class AdminAuditLogsService {
   /**
    * Get user activity logs
    */
-  async getUserActivity(
-    userId: string,
-    page: number = 1,
-    limit: number = 50,
-  ) {
+  async getUserActivity(userId: string, page: number = 1, limit: number = 50) {
     const skip = (page - 1) * limit;
 
     const [logs, total] = await Promise.all([

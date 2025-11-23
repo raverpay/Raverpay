@@ -29,10 +29,8 @@ export class AdminWalletsService {
 
     if (minBalance !== undefined || maxBalance !== undefined) {
       where.balance = {};
-      if (minBalance !== undefined)
-        where.balance.gte = new Decimal(minBalance);
-      if (maxBalance !== undefined)
-        where.balance.lte = new Decimal(maxBalance);
+      if (minBalance !== undefined) where.balance.gte = new Decimal(minBalance);
+      if (maxBalance !== undefined) where.balance.lte = new Decimal(maxBalance);
     }
 
     // Search by user's name, email, or phone
@@ -52,7 +50,7 @@ export class AdminWalletsService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy as string]: sortOrder },
+        orderBy: { [sortBy]: sortOrder },
         include: {
           user: {
             select: {

@@ -14,7 +14,11 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../auth/decorators/get-user.decorator';
 import { UserRole, GiftCardType, TransactionStatus } from '@prisma/client';
-import { ApproveGiftCardDto, RejectGiftCardDto, AdjustGiftCardAmountDto } from '../dto';
+import {
+  ApproveGiftCardDto,
+  RejectGiftCardDto,
+  AdjustGiftCardAmountDto,
+} from '../dto';
 
 @Controller('admin/giftcards')
 @UseGuards(JwtAuthGuard, RolesGuard)

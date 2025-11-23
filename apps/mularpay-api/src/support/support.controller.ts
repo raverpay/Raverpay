@@ -18,6 +18,7 @@ import {
   CreateMessageDto,
   FindConversationsDto,
   FindMessagesDto,
+  FindTicketsDto,
   RateConversationDto,
 } from './dto';
 
@@ -77,7 +78,7 @@ export class SupportController {
     @Param('id') conversationId: string,
     @Query() query: FindMessagesDto,
   ) {
-    return this.supportService.getConversationMessages(
+    return await this.supportService.getConversationMessages(
       conversationId,
       query,
       userId,
@@ -146,7 +147,10 @@ export class SupportController {
    * GET /support/tickets
    */
   @Get('tickets')
-  async getUserTickets(@GetUser('id') userId: string, @Query() query: any) {
+  async getUserTickets(
+    @GetUser('id') userId: string,
+    @Query() query: FindTicketsDto,
+  ) {
     return this.supportService.getUserTickets(userId, query);
   }
 

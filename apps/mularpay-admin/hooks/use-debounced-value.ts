@@ -19,11 +19,7 @@ import { useState, useEffect } from 'react';
  *   queryFn: () => fetchUsers(debouncedSearch),
  * });
  */
-export function useDebouncedValue<T>(
-  value: T,
-  delay: number = 300,
-  minLength: number = 0,
-): T {
+export function useDebouncedValue<T>(value: T, delay: number = 300, minLength: number = 0): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
@@ -62,21 +58,18 @@ export function useDebouncedValue<T>(
  * <Input value={value} onChange={(e) => setValue(e.target.value)} />
  * {isDebouncing && <Spinner />}
  */
-export function useDebouncedState<T>(
-  initialValue: T,
-  delay: number = 300,
-  minLength: number = 0,
-) {
+export function useDebouncedState<T>(initialValue: T, delay: number = 300, minLength: number = 0) {
   const [value, setValue] = useState<T>(initialValue);
   const [isDebouncing, setIsDebouncing] = useState(false);
   const debouncedValue = useDebouncedValue(value, delay, minLength);
 
   useEffect(() => {
-    if (value !== debouncedValue) {
-      setIsDebouncing(true);
-    } else {
-      setIsDebouncing(false);
-    }
+    // Use setTimeout to avoid synchronous setState in effect
+    const timer = setTimeout(() => {
+      setIsDebouncing(value !== debouncedValue);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [value, debouncedValue]);
 
   return {

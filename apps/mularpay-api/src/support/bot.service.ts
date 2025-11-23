@@ -177,11 +177,20 @@ export class BotService {
       }
 
       // Check for common keywords
-      if (this.containsKeywords(userMessage, ['agent', 'human', 'person', 'speak'])) {
+      if (
+        this.containsKeywords(userMessage, [
+          'agent',
+          'human',
+          'person',
+          'speak',
+        ])
+      ) {
         return this.escalateToAgent(conversationId, firstName);
       }
 
-      if (this.containsKeywords(userMessage, ['refund', 'money back', 'return'])) {
+      if (
+        this.containsKeywords(userMessage, ['refund', 'money back', 'return'])
+      ) {
         return this.handleRefundRequest(firstName);
       }
 
@@ -251,7 +260,8 @@ export class BotService {
       REVERSED: 'Reversed',
     };
 
-    const typeLabel = typeLabels[context.transactionType] || context.transactionType;
+    const typeLabel =
+      typeLabels[context.transactionType] || context.transactionType;
     const statusLabel = statusLabels[context.status || ''] || context.status;
     const statusEmoji =
       context.status === 'COMPLETED'

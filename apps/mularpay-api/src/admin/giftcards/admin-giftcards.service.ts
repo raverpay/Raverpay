@@ -4,8 +4,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import {  Prisma, TransactionStatus, GiftCardType } from '@prisma/client';
-import { ApproveGiftCardDto, RejectGiftCardDto, AdjustGiftCardAmountDto } from '../dto';
+import { Prisma, TransactionStatus, GiftCardType } from '@prisma/client';
+import {
+  ApproveGiftCardDto,
+  RejectGiftCardDto,
+  AdjustGiftCardAmountDto,
+} from '../dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()

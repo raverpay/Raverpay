@@ -107,9 +107,6 @@ export class AdminVirtualAccountsController {
    */
   @Patch(':accountId/reactivate')
   async reactivate(@Request() req, @Param('accountId') accountId: string) {
-    return this.adminVirtualAccountsService.reactivate(
-      req.user.id,
-      accountId,
-    );
+    return this.adminVirtualAccountsService.reactivate(req.user.id, accountId);
   }
 }

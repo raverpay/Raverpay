@@ -154,7 +154,8 @@ export class AdminDeletionsService {
         reviewedBy: adminUserId,
         reviewedAt: new Date(),
         reviewNotes: notes,
-        scheduledFor: scheduledFor || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default: 7 days from now
+        scheduledFor:
+          scheduledFor || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default: 7 days from now
       },
     });
 

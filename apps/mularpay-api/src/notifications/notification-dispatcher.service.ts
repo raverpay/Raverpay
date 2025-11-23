@@ -98,7 +98,7 @@ export class NotificationDispatcherService {
 
       // 3. Queue other channels (EMAIL, SMS, PUSH) for background processing
       // This prevents rate limit issues when multiple users trigger notifications simultaneously
-      const queuedChannels = allowedChannels.filter(ch => ch !== 'IN_APP');
+      const queuedChannels = allowedChannels.filter((ch) => ch !== 'IN_APP');
 
       if (queuedChannels.length > 0) {
         await this.queueChannelNotifications(event, queuedChannels);
@@ -366,14 +366,23 @@ export class NotificationDispatcherService {
       // Add service-specific details
       if (event.eventType === 'cable_tv_payment_success') {
         if (event.data.productName)
-          additionalInfo.push({ label: 'Package', value: event.data.productName });
+          additionalInfo.push({
+            label: 'Package',
+            value: event.data.productName,
+          });
         if (event.data.provider)
-          additionalInfo.push({ label: 'Provider', value: event.data.provider });
+          additionalInfo.push({
+            label: 'Provider',
+            value: event.data.provider,
+          });
       } else if (event.eventType === 'showmax_payment_success') {
         if (event.data.productName)
           additionalInfo.push({ label: 'Plan', value: event.data.productName });
         if (event.data.voucher)
-          additionalInfo.push({ label: 'Voucher Code', value: event.data.voucher });
+          additionalInfo.push({
+            label: 'Voucher Code',
+            value: event.data.voucher,
+          });
       } else if (event.eventType === 'electricity_payment_success') {
         if (event.data.provider)
           additionalInfo.push({ label: 'DISCO', value: event.data.provider });
@@ -391,14 +400,21 @@ export class NotificationDispatcherService {
           additionalInfo.push({ label: 'Network', value: event.data.network });
       } else if (event.eventType === 'international_airtime_success') {
         if (event.data.countryCode)
-          additionalInfo.push({ label: 'Country', value: event.data.countryCode });
+          additionalInfo.push({
+            label: 'Country',
+            value: event.data.countryCode,
+          });
       }
     }
 
     return await this.emailService.sendVTUTransactionEmail(user.email, {
       firstName: user.firstName,
       serviceType,
-      serviceName: event.data?.productName || event.data?.plan || event.data?.network || serviceType,
+      serviceName:
+        event.data?.productName ||
+        event.data?.plan ||
+        event.data?.network ||
+        serviceType,
       amount: event.data?.amount?.toLocaleString() || '0',
       recipient: event.data?.recipient || event.data?.phoneNumber || 'N/A',
       reference: event.data?.reference || 'N/A',

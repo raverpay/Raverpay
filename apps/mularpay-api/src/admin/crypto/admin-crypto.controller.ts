@@ -14,7 +14,11 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../auth/decorators/get-user.decorator';
 import { UserRole, CryptoOrderType, TransactionStatus } from '@prisma/client';
-import { ApproveCryptoDto, RejectCryptoDto, AdjustCryptoAmountDto } from '../dto';
+import {
+  ApproveCryptoDto,
+  RejectCryptoDto,
+  AdjustCryptoAmountDto,
+} from '../dto';
 
 @Controller('admin/crypto')
 @UseGuards(JwtAuthGuard, RolesGuard)

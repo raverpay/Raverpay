@@ -139,7 +139,9 @@ export class NotificationQueueProcessor {
       user: userMap.get(item.userId),
     }));
 
-    this.logger.log(`Processing ${itemsWithUsers.length} ${channel} notifications`);
+    this.logger.log(
+      `Processing ${itemsWithUsers.length} ${channel} notifications`,
+    );
 
     for (const item of itemsWithUsers) {
       try {
@@ -184,7 +186,7 @@ export class NotificationQueueProcessor {
     channel: NotificationChannel,
   ): Promise<boolean> {
     const { user, variables } = item;
-    const vars = variables as Record<string, any> || {};
+    const vars = (variables as Record<string, any>) || {};
 
     switch (channel) {
       case 'EMAIL':
@@ -452,7 +454,10 @@ export class NotificationQueueProcessor {
       };
     } catch (error) {
       // Table might not exist yet, return empty stats
-      this.logger.warn('Could not get queue stats, table may not exist:', error.message);
+      this.logger.warn(
+        'Could not get queue stats, table may not exist:',
+        error.message,
+      );
       return {
         total: 0,
         queued: 0,
@@ -482,7 +487,9 @@ export class NotificationQueueProcessor {
     });
 
     if (deleted.count > 0) {
-      this.logger.log(`Cleaned up ${deleted.count} old notification queue items`);
+      this.logger.log(
+        `Cleaned up ${deleted.count} old notification queue items`,
+      );
     }
   }
 }

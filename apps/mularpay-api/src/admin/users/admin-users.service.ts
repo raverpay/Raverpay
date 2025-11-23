@@ -20,8 +20,16 @@ export class AdminUsersService {
    * Get paginated list of users with filters
    */
   async getUsers(query: QueryUsersDto) {
-    const { page = 1, limit = 20, search, role, status, kycTier, sortBy = 'createdAt', sortOrder = 'desc' } =
-      query;
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      role,
+      status,
+      kycTier,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
 
     const skip = (page - 1) * limit;
 
@@ -47,7 +55,7 @@ export class AdminUsersService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy as string]: sortOrder },
+        orderBy: { [sortBy]: sortOrder },
         select: {
           id: true,
           email: true,
@@ -130,9 +138,7 @@ export class AdminUsersService {
       this.prisma.user.count({
         where: {
           createdAt: {
-            gte: new Date(
-              new Date().setDate(new Date().getDate() - 7),
-            ),
+            gte: new Date(new Date().setDate(new Date().getDate() - 7)),
           },
         },
       }),
@@ -141,9 +147,7 @@ export class AdminUsersService {
       this.prisma.user.count({
         where: {
           createdAt: {
-            gte: new Date(
-              new Date().setDate(new Date().getDate() - 30),
-            ),
+            gte: new Date(new Date().setDate(new Date().getDate() - 30)),
           },
         },
       }),
@@ -151,18 +155,27 @@ export class AdminUsersService {
 
     return {
       totalUsers,
-      byRole: byRole.reduce((acc, item) => {
-        acc[item.role] = item._count;
-        return acc;
-      }, {} as Record<UserRole, number>),
-      byStatus: byStatus.reduce((acc, item) => {
-        acc[item.status] = item._count;
-        return acc;
-      }, {} as Record<UserStatus, number>),
-      byKYCTier: byKYCTier.reduce((acc, item) => {
-        acc[item.kycTier] = item._count;
-        return acc;
-      }, {} as Record<KYCTier, number>),
+      byRole: byRole.reduce(
+        (acc, item) => {
+          acc[item.role] = item._count;
+          return acc;
+        },
+        {} as Record<UserRole, number>,
+      ),
+      byStatus: byStatus.reduce(
+        (acc, item) => {
+          acc[item.status] = item._count;
+          return acc;
+        },
+        {} as Record<UserStatus, number>,
+      ),
+      byKYCTier: byKYCTier.reduce(
+        (acc, item) => {
+          acc[item.kycTier] = item._count;
+          return acc;
+        },
+        {} as Record<KYCTier, number>,
+      ),
       newUsers: {
         today: newUsersToday,
         thisWeek: newUsersThisWeek,
@@ -375,11 +388,7 @@ export class AdminUsersService {
   /**
    * Get user audit logs
    */
-  async getUserAuditLogs(
-    userId: string,
-    page: number = 1,
-    limit: number = 20,
-  ) {
+  async getUserAuditLogs(userId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
 
     const [logs, total] = await Promise.all([

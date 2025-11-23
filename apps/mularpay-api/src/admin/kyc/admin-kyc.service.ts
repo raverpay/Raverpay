@@ -241,7 +241,13 @@ export class AdminKYCService {
       where: {
         resourceId: userId,
         action: {
-          in: ['APPROVE_BVN', 'REJECT_BVN', 'APPROVE_NIN', 'REJECT_NIN', 'UPDATE_KYC_TIER'],
+          in: [
+            'APPROVE_BVN',
+            'REJECT_BVN',
+            'APPROVE_NIN',
+            'REJECT_NIN',
+            'UPDATE_KYC_TIER',
+          ],
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -269,10 +275,16 @@ export class AdminKYCService {
 
     // BVN verification qualifies user for TIER_2
     // Only upgrade if current tier is below TIER_2
-    const tierOrder = [KYCTier.TIER_0, KYCTier.TIER_1, KYCTier.TIER_2, KYCTier.TIER_3];
+    const tierOrder = [
+      KYCTier.TIER_0,
+      KYCTier.TIER_1,
+      KYCTier.TIER_2,
+      KYCTier.TIER_3,
+    ];
     const currentTierIndex = tierOrder.indexOf(user.kycTier);
     const tier2Index = tierOrder.indexOf(KYCTier.TIER_2);
-    const newTier = currentTierIndex < tier2Index ? KYCTier.TIER_2 : user.kycTier;
+    const newTier =
+      currentTierIndex < tier2Index ? KYCTier.TIER_2 : user.kycTier;
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },

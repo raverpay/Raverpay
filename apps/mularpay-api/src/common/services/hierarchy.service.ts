@@ -138,17 +138,13 @@ export class HierarchyService {
    * Check if user is ADMIN or higher
    */
   isAdminOrHigher(role: UserRole): boolean {
-    return (
-      this.getRoleLevel(role) >= this.getRoleLevel(UserRole.ADMIN)
-    );
+    return this.getRoleLevel(role) >= this.getRoleLevel(UserRole.ADMIN);
   }
 
   /**
    * Check if user is SUPPORT or higher
    */
   isSupportOrHigher(role: UserRole): boolean {
-    return (
-      this.getRoleLevel(role) >= this.getRoleLevel(UserRole.SUPPORT)
-    );
+    return this.getRoleLevel(role) >= this.getRoleLevel(UserRole.SUPPORT);
   }
 }

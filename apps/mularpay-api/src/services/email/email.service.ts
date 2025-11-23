@@ -319,9 +319,7 @@ export class EmailService {
 
       const filteredData = data
         ? Object.fromEntries(
-            Object.entries(data).filter(
-              ([key]) => !internalKeys.includes(key),
-            ),
+            Object.entries(data).filter(([key]) => !internalKeys.includes(key)),
           )
         : null;
 

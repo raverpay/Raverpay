@@ -21,6 +21,9 @@ import { HelpService } from './help.service';
 import { CannedResponseService } from './canned-response.service';
 import {
   FindTicketsDto,
+  FindConversationsDto,
+  FindMessagesDto,
+  CreateMessageDto,
   AssignTicketDto,
   UpdateTicketDto,
   CreateHelpCollectionDto,
@@ -31,7 +34,7 @@ import {
   UpdateCannedResponseDto,
 } from './dto';
 
-@Controller('support/admin')
+@Controller('admin/support')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SUPPORT, UserRole.ADMIN, UserRole.SUPER_ADMIN)
 export class SupportAdminController {
@@ -42,12 +45,25 @@ export class SupportAdminController {
   ) {}
 
   // ============================================
+  // DASHBOARD STATS
+  // ============================================
+
+  /**
+   * Get comprehensive support statistics
+   * GET /admin/support/stats
+   */
+  @Get('stats')
+  async getSupportStats() {
+    return await this.supportService.getSupportStats();
+  }
+
+  // ============================================
   // TICKET QUEUE
   // ============================================
 
   /**
    * Get ticket queue for agents
-   * GET /support/admin/queue
+   * GET /admin/support/queue
    */
   @Get('queue')
   async getTicketQueue(@Query() query: FindTicketsDto) {
@@ -55,12 +71,12 @@ export class SupportAdminController {
   }
 
   /**
-   * Get ticket statistics
-   * GET /support/admin/stats
+   * Get available agents for conversation transfer
+   * GET /admin/support/agents
    */
-  @Get('stats')
-  async getTicketStats() {
-    return this.supportService.getTicketStats();
+  @Get('agents')
+  async getAvailableAgents() {
+    return await this.supportService.getAvailableAgents();
   }
 
   // ============================================
@@ -68,8 +84,17 @@ export class SupportAdminController {
   // ============================================
 
   /**
+   * Get all conversations (admin view)
+   * GET /admin/support/conversations
+   */
+  @Get('conversations')
+  async getAllConversations(@Query() query: FindConversationsDto) {
+    return await this.supportService.getAllConversations(query);
+  }
+
+  /**
    * Get conversation with full user context
-   * GET /support/admin/conversations/:id
+   * GET /admin/support/conversations/:id
    */
   @Get('conversations/:id')
   async getConversationWithContext(@Param('id') conversationId: string) {
@@ -78,33 +103,78 @@ export class SupportAdminController {
 
   /**
    * Get conversation messages (agent access)
-   * GET /support/admin/conversations/:id/messages
+   * GET /admin/support/conversations/:id/messages
    */
   @Get('conversations/:id/messages')
   async getConversationMessages(
     @Param('id') conversationId: string,
-    @Query() query: any,
+    @Query() query: FindMessagesDto,
   ) {
-    return this.supportService.getConversationMessages(conversationId, query);
+    return await this.supportService.getConversationMessages(
+      conversationId,
+      query,
+    );
   }
 
   /**
    * Send message as agent
-   * POST /support/admin/conversations/:id/messages
+   * POST /admin/support/conversations/:id/messages
    */
   @Post('conversations/:id/messages')
   @HttpCode(HttpStatus.CREATED)
   async sendAgentMessage(
     @GetUser('id') agentId: string,
     @Param('id') conversationId: string,
-    @Body() dto: any,
+    @Body() dto: CreateMessageDto,
   ) {
-    return this.supportService.sendMessage(
+    return await this.supportService.sendMessage(
       conversationId,
       dto,
       agentId,
       'AGENT',
     );
+  }
+
+  /**
+   * Assign conversation to current agent
+   * POST /admin/support/conversations/:id/assign
+   */
+  @Post('conversations/:id/assign')
+  @HttpCode(HttpStatus.OK)
+  async assignConversation(
+    @GetUser('id') agentId: string,
+    @Param('id') conversationId: string,
+  ) {
+    return await this.supportService.assignConversation(
+      conversationId,
+      agentId,
+    );
+  }
+
+  /**
+   * Transfer conversation to another agent
+   * POST /admin/support/conversations/:id/transfer
+   */
+  @Post('conversations/:id/transfer')
+  @HttpCode(HttpStatus.OK)
+  async transferConversation(
+    @Param('id') conversationId: string,
+    @Body() dto: { agentId: string },
+  ) {
+    return await this.supportService.transferConversation(
+      conversationId,
+      dto.agentId,
+    );
+  }
+
+  /**
+   * End a conversation (admin only)
+   * POST /admin/support/conversations/:id/end
+   */
+  @Post('conversations/:id/end')
+  @HttpCode(HttpStatus.OK)
+  async endConversation(@Param('id') conversationId: string) {
+    return await this.supportService.endConversation(conversationId);
   }
 
   // ============================================
@@ -113,7 +183,7 @@ export class SupportAdminController {
 
   /**
    * Get ticket details (agent access)
-   * GET /support/admin/tickets/:id
+   * GET /admin/support/tickets/:id
    */
   @Get('tickets/:id')
   async getTicket(@Param('id') ticketId: string) {
@@ -122,7 +192,7 @@ export class SupportAdminController {
 
   /**
    * Assign ticket to agent
-   * POST /support/admin/tickets/:id/assign
+   * POST /admin/support/tickets/:id/assign
    */
   @Post('tickets/:id/assign')
   @HttpCode(HttpStatus.OK)
@@ -136,7 +206,7 @@ export class SupportAdminController {
 
   /**
    * Update ticket
-   * PUT /support/admin/tickets/:id
+   * PUT /admin/support/tickets/:id
    */
   @Put('tickets/:id')
   async updateTicket(
@@ -149,7 +219,7 @@ export class SupportAdminController {
 
   /**
    * Resolve ticket
-   * POST /support/admin/tickets/:id/resolve
+   * POST /admin/support/tickets/:id/resolve
    */
   @Post('tickets/:id/resolve')
   @HttpCode(HttpStatus.OK)
@@ -162,7 +232,7 @@ export class SupportAdminController {
 
   /**
    * Close ticket
-   * POST /support/admin/tickets/:id/close
+   * POST /admin/support/tickets/:id/close
    */
   @Post('tickets/:id/close')
   @HttpCode(HttpStatus.OK)
@@ -179,7 +249,7 @@ export class SupportAdminController {
 
   /**
    * Create help collection
-   * POST /support/admin/help/collections
+   * POST /admin/support/help/collections
    */
   @Post('help/collections')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -190,7 +260,7 @@ export class SupportAdminController {
 
   /**
    * Update help collection
-   * PUT /support/admin/help/collections/:id
+   * PUT /admin/support/help/collections/:id
    */
   @Put('help/collections/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -203,7 +273,7 @@ export class SupportAdminController {
 
   /**
    * Delete help collection
-   * DELETE /support/admin/help/collections/:id
+   * DELETE /admin/support/help/collections/:id
    */
   @Delete('help/collections/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -213,7 +283,7 @@ export class SupportAdminController {
 
   /**
    * Create help article
-   * POST /support/admin/help/articles
+   * POST /admin/support/help/articles
    */
   @Post('help/articles')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -224,7 +294,7 @@ export class SupportAdminController {
 
   /**
    * Update help article
-   * PUT /support/admin/help/articles/:id
+   * PUT /admin/support/help/articles/:id
    */
   @Put('help/articles/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -237,7 +307,7 @@ export class SupportAdminController {
 
   /**
    * Delete help article
-   * DELETE /support/admin/help/articles/:id
+   * DELETE /admin/support/help/articles/:id
    */
   @Delete('help/articles/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -251,7 +321,7 @@ export class SupportAdminController {
 
   /**
    * Get canned responses
-   * GET /support/admin/canned-responses
+   * GET /admin/support/canned-responses
    */
   @Get('canned-responses')
   async getCannedResponses(@Query('category') category?: string) {
@@ -260,7 +330,7 @@ export class SupportAdminController {
 
   /**
    * Create canned response
-   * POST /support/admin/canned-responses
+   * POST /admin/support/canned-responses
    */
   @Post('canned-responses')
   @HttpCode(HttpStatus.CREATED)
@@ -273,7 +343,7 @@ export class SupportAdminController {
 
   /**
    * Update canned response
-   * PUT /support/admin/canned-responses/:id
+   * PUT /admin/support/canned-responses/:id
    */
   @Put('canned-responses/:id')
   async updateCannedResponse(
@@ -285,7 +355,7 @@ export class SupportAdminController {
 
   /**
    * Delete canned response
-   * DELETE /support/admin/canned-responses/:id
+   * DELETE /admin/support/canned-responses/:id
    */
   @Delete('canned-responses/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
@@ -295,7 +365,7 @@ export class SupportAdminController {
 
   /**
    * Increment canned response usage
-   * POST /support/admin/canned-responses/:id/use
+   * POST /admin/support/canned-responses/:id/use
    */
   @Post('canned-responses/:id/use')
   @HttpCode(HttpStatus.OK)

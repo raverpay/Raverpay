@@ -51,10 +51,8 @@ export class AdminTransactionsService {
 
     if (minAmount !== undefined || maxAmount !== undefined) {
       where.amount = {};
-      if (minAmount !== undefined)
-        where.amount.gte = new Decimal(minAmount);
-      if (maxAmount !== undefined)
-        where.amount.lte = new Decimal(maxAmount);
+      if (minAmount !== undefined) where.amount.gte = new Decimal(minAmount);
+      if (maxAmount !== undefined) where.amount.lte = new Decimal(maxAmount);
     }
 
     if (startDate || endDate) {
@@ -88,7 +86,7 @@ export class AdminTransactionsService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy as string]: sortOrder },
+        orderBy: { [sortBy]: sortOrder },
         include: {
           user: {
             select: {
@@ -160,11 +158,10 @@ export class AdminTransactionsService {
       }),
     ]);
 
-    const successCount = byStatus.find(
-      (s) => s.status === TransactionStatus.COMPLETED,
-    )?._count || 0;
-    const successRate =
-      totalCount > 0 ? (successCount / totalCount) * 100 : 0;
+    const successCount =
+      byStatus.find((s) => s.status === TransactionStatus.COMPLETED)?._count ||
+      0;
+    const successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0;
 
     return {
       totalCount,
@@ -451,7 +448,10 @@ export class AdminTransactionsService {
         },
       })
       .catch((error) => {
-        this.logger.error('Failed to send transaction reversal notification', error);
+        this.logger.error(
+          'Failed to send transaction reversal notification',
+          error,
+        );
       });
 
     return {

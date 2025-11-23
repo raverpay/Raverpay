@@ -16,7 +16,11 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AdminAdminsService } from './admin-admins.service';
-import { CreateAdminDto, UpdateAdminDto, ResetPasswordDto } from '../dto/admin.dto';
+import {
+  CreateAdminDto,
+  UpdateAdminDto,
+  ResetPasswordDto,
+} from '../dto/admin.dto';
 
 @Controller('admin/admins')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -104,6 +108,10 @@ export class AdminAdminsController {
     @Param('adminId') adminId: string,
     @Body() dto: ResetPasswordDto,
   ) {
-    return this.adminAdminsService.resetPassword(req.user.id, adminId, dto.password);
+    return this.adminAdminsService.resetPassword(
+      req.user.id,
+      adminId,
+      dto.password,
+    );
   }
 }

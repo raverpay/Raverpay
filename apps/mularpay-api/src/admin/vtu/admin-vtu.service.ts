@@ -210,11 +210,7 @@ export class AdminVTUService {
   /**
    * Refund VTU order
    */
-  async refundOrder(
-    adminUserId: string,
-    orderId: string,
-    dto: RefundVTUDto,
-  ) {
+  async refundOrder(adminUserId: string, orderId: string, dto: RefundVTUDto) {
     const order = await this.prisma.vTUOrder.findUnique({
       where: { id: orderId },
       include: { user: true },

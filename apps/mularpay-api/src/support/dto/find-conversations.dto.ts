@@ -1,13 +1,10 @@
-import {
-  IsOptional,
-  IsEnum,
-  IsInt,
-  Min,
-  Max,
-  IsString,
-} from 'class-validator';
+import { IsOptional, IsEnum, IsInt, Min, Max, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ConversationStatus, TicketStatus, TicketPriority } from '@prisma/client';
+import {
+  ConversationStatus,
+  TicketStatus,
+  TicketPriority,
+} from '@prisma/client';
 
 export class FindConversationsDto {
   @IsOptional()

@@ -63,7 +63,9 @@ export class CannedResponseService {
         },
       });
 
-      this.logger.log(`Canned response "${response.title}" created by ${userId}`);
+      this.logger.log(
+        `Canned response "${response.title}" created by ${userId}`,
+      );
 
       return response;
     } catch (error) {

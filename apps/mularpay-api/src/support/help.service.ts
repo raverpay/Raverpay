@@ -37,7 +37,10 @@ export class HelpService {
     });
   }
 
-  async getCollectionById(collectionId: string, includeArticles: boolean = true) {
+  async getCollectionById(
+    collectionId: string,
+    includeArticles: boolean = true,
+  ) {
     const collection = await this.prisma.helpCollection.findUnique({
       where: { id: collectionId },
       include: includeArticles
