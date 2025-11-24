@@ -53,6 +53,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.0)(react@19.2.0)
+      '@vercel/analytics':
+        specifier: ^1.5.0
+        version: 1.5.0(next@16.0.1)(react@19.2.0)
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -5849,6 +5852,36 @@ packages:
     dependencies:
       '@urql/core': 5.2.0
       wonka: 6.3.5
+    dev: false
+
+  /@vercel/analytics@1.5.0(next@16.0.1)(react@19.2.0):
+    resolution: {integrity: sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
+    dependencies:
+      next: 16.0.1(@babel/core@7.28.5)(react-dom@19.2.0)(react@19.2.0)
+      react: 19.2.0
     dev: false
 
   /@webassemblyjs/ast@1.14.1:
