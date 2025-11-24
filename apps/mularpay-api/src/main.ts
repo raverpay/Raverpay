@@ -12,6 +12,7 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:3002',
       'https://admin.raverpay.com',
+      'https://mularpay-admin.vercel.app',
     ],
     credentials: true,
   });
