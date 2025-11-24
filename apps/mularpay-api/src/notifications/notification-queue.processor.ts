@@ -82,8 +82,8 @@ export class NotificationQueueProcessor {
     const delay = this.DELAYS[channel];
     const now = new Date();
 
-    // Get queued items for this channel using raw query to avoid enum type issues
-    // The channel column might be stored as text in the database
+    // Get queued items for this channel using raw query
+    // Raw SQL is needed because the channel column is stored as text in the database
     const items = await this.prisma.$queryRaw<
       Array<{
         id: string;
@@ -133,17 +133,10 @@ export class NotificationQueueProcessor {
 
     const userMap = new Map(users.map((u) => [u.id, u]));
 
-    // Attach user data to items
-    const itemsWithUsers = items.map((item) => ({
-      ...item,
-      user: userMap.get(item.userId),
-    }));
+    this.logger.log(`Processing ${items.length} ${channel} notifications`);
 
-    this.logger.log(
-      `Processing ${itemsWithUsers.length} ${channel} notifications`,
-    );
-
-    for (const item of itemsWithUsers) {
+    for (const item of items) {
+      const user = userMap.get(item.userId);
       try {
         // Mark as processing
         await this.prisma.notificationQueue.update({
@@ -152,7 +145,7 @@ export class NotificationQueueProcessor {
         });
 
         // Send the notification
-        const success = await this.sendNotification(item, channel);
+        const success = await this.sendNotification(item, user, channel);
 
         if (success) {
           // Mark as sent
@@ -182,11 +175,15 @@ export class NotificationQueueProcessor {
    * Send notification based on channel
    */
   private async sendNotification(
-    item: any,
+    item: { variables: any },
+    user: { id: string; email: string; phone: string; firstName: string; lastName: string; expoPushToken: string | null } | undefined,
     channel: NotificationChannel,
   ): Promise<boolean> {
-    const { user, variables } = item;
-    const vars = (variables as Record<string, any>) || {};
+    if (!user) {
+      this.logger.warn('User not found for notification');
+      return false;
+    }
+    const vars = (item.variables as Record<string, any>) || {};
 
     switch (channel) {
       case 'EMAIL':
@@ -265,7 +262,7 @@ export class NotificationQueueProcessor {
    * Send push notification
    */
   private async sendPush(
-    user: { id: string; expoPushToken?: string; firstName: string },
+    user: { id: string; expoPushToken?: string | null; firstName: string },
     variables: Record<string, any>,
   ): Promise<boolean> {
     if (!user.expoPushToken) {

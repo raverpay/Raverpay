@@ -20,10 +20,12 @@ import {
 import { toast } from 'sonner';
 
 import { supportApi } from '@/lib/api/support';
+import { useAuthStore } from '@/lib/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,6 +113,9 @@ export default function ConversationDetailPage({
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState('');
   const [showCannedResponses, setShowCannedResponses] = useState(false);
+
+  // Get current user from auth store
+  const { user: currentUser } = useAuthStore();
 
   // Queries
   const { data: conversation, isLoading: loadingConversation } = useQuery({
@@ -231,8 +236,24 @@ export default function ConversationDetailPage({
     }
   };
 
+  // Check if conversation is active and if current user can send messages
+  const assignedAgentId = conversation?.ticket?.assignedAgentId;
   const isConversationActive =
-    conversation?.status === ConversationStatus.AGENT_ASSIGNED;
+    conversation?.status === ConversationStatus.AGENT_ASSIGNED ||
+    conversation?.status === ConversationStatus.AWAITING_AGENT ||
+    conversation?.status === ConversationStatus.BOT_HANDLING;
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isAssignedAgent = assignedAgentId === currentUser?.id;
+  const isUnassigned = !assignedAgentId;
+
+  // Can send if: super admin, assigned agent, or conversation is unassigned
+  const canSendMessages =
+    isConversationActive && (isSuperAdmin || isAssignedAgent || isUnassigned);
+
+  // Get the name of the assigned agent for display
+  const assignedAgentName = conversation?.ticket?.assignedAgent
+    ? `${conversation.ticket.assignedAgent.firstName} ${conversation.ticket.assignedAgent.lastName}`
+    : null;
 
   if (loadingConversation) {
     return (
@@ -281,17 +302,28 @@ export default function ConversationDetailPage({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setShowTransferDialog(true)}>
-                Transfer to Agent
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => endConversationMutation.mutate()}
-                disabled={endConversationMutation.isPending}
-                className="text-destructive"
-              >
-                End Conversation
-              </DropdownMenuItem>
+              {conversation?.status !== ConversationStatus.ENDED &&
+                conversation?.status !== ConversationStatus.AWAITING_RATING && (
+                  <>
+                    <DropdownMenuItem onClick={() => setShowTransferDialog(true)}>
+                      Transfer to Agent
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => endConversationMutation.mutate()}
+                      disabled={endConversationMutation.isPending}
+                      className="text-destructive"
+                    >
+                      End Conversation
+                    </DropdownMenuItem>
+                  </>
+                )}
+              {(conversation?.status === ConversationStatus.ENDED ||
+                conversation?.status === ConversationStatus.AWAITING_RATING) && (
+                <DropdownMenuItem disabled className="text-muted-foreground">
+                  Conversation has ended
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -336,8 +368,15 @@ export default function ConversationDetailPage({
           </div>
 
           {/* Input Area */}
-          {isConversationActive ? (
+          {canSendMessages ? (
             <div className="p-4 border-t">
+              {isUnassigned && (
+                <Alert className="mb-3">
+                  <AlertDescription>
+                    This conversation is unassigned. Sending a message will automatically assign it to you.
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -395,6 +434,14 @@ export default function ConversationDetailPage({
                   </div>
                 </div>
               )}
+            </div>
+          ) : isConversationActive && assignedAgentName ? (
+            <div className="p-4 border-t bg-muted">
+              <Alert variant="destructive">
+                <AlertDescription>
+                  This conversation is assigned to <strong>{assignedAgentName}</strong>. You cannot send messages.
+                </AlertDescription>
+              </Alert>
             </div>
           ) : (
             <div className="p-4 border-t bg-muted text-center text-muted-foreground">

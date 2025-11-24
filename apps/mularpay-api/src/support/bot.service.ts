@@ -8,6 +8,8 @@ interface BotResponse {
     quickReplies?: Array<{ label: string; value: string }>;
     transactionCard?: any;
     actions?: Array<{ label: string; action: string; data?: any }>;
+    ticketNumber?: number;
+    assignedAgent?: { id: string; name: string } | null;
   };
 }
 
@@ -123,47 +125,42 @@ export class BotService {
           },
           messages: {
             orderBy: { createdAt: 'asc' },
-            take: 10,
           },
         },
       });
 
       if (!conversation) return null;
 
-      const messageCount = conversation.messages.length;
       const firstName = conversation.user.firstName;
+      const lowerMessage = userMessage.toLowerCase().trim();
 
-      // If this is a new conversation (first user message after bot greeting)
-      if (messageCount <= 2) {
-        // Check if there's transaction context
-        if (conversation.transactionContext) {
-          return this.handleTransactionContext(
-            conversation.transactionContext as unknown as TransactionContext,
-            firstName,
-          );
-        }
-
-        // First user message - show category options
+      // Check for restart flow command
+      if (
+        lowerMessage === 'restart' ||
+        lowerMessage === 'restart_flow' ||
+        lowerMessage.includes('start over') ||
+        lowerMessage.includes('go back')
+      ) {
         return this.getGreetingWithCategories(firstName);
       }
 
-      // Check if user selected a category
+      // Check if user selected a category (exact match on value for quick reply clicks)
       const categoryMatch = this.CATEGORIES.find(
         (cat) =>
-          userMessage.toLowerCase().includes(cat.value) ||
-          userMessage.toLowerCase().includes(cat.label.toLowerCase()),
+          lowerMessage === cat.value ||
+          lowerMessage === cat.label.toLowerCase(),
       );
 
       if (categoryMatch) {
         return this.handleCategorySelection(categoryMatch, firstName);
       }
 
-      // Check for sub-option selection
+      // Check for sub-option selection (exact match on value for quick reply clicks)
       for (const category of this.CATEGORIES) {
         const subOption = category.subOptions.find(
           (sub) =>
-            userMessage.toLowerCase().includes(sub.value) ||
-            userMessage.toLowerCase().includes(sub.label.toLowerCase()),
+            lowerMessage === sub.value ||
+            lowerMessage === sub.label.toLowerCase(),
         );
 
         if (subOption) {
@@ -174,6 +171,24 @@ export class BotService {
             conversationId,
           );
         }
+      }
+
+      // Check if bot is waiting for transaction ID
+      const lastBotMessage = [...conversation.messages]
+        .reverse()
+        .find((m) => m.senderType === 'BOT');
+
+      if (
+        lastBotMessage?.content?.includes('transaction ID') ||
+        lastBotMessage?.content?.includes('reference number')
+      ) {
+        // User is providing transaction ID
+        return this.handleTransactionIdProvided(
+          conversationId,
+          userMessage,
+          firstName,
+          userId,
+        );
       }
 
       // Check for common keywords
@@ -260,6 +275,17 @@ export class BotService {
       REVERSED: 'Reversed',
     };
 
+    // Map transaction type to relevant category for subcategory filtering
+    const transactionTypeToCategoryMap: Record<string, string> = {
+      VTU_AIRTIME: 'airtime_data',
+      VTU_DATA: 'airtime_data',
+      VTU_CABLE: 'cable_tv',
+      VTU_ELECTRICITY: 'electricity',
+      DEPOSIT: 'wallet_funding',
+      WITHDRAWAL: 'transaction',
+      TRANSFER: 'transaction',
+    };
+
     const typeLabel =
       typeLabels[context.transactionType] || context.transactionType;
     const statusLabel = statusLabels[context.status || ''] || context.status;
@@ -282,29 +308,37 @@ export class BotService {
       content += `⚠️ Error: ${context.errorMessage}\n`;
     }
 
-    content += '\nHow would you like me to help?';
+    content += '\nWhat issue are you experiencing?';
 
-    const actions: Array<{ label: string; action: string; data?: any }> = [];
+    // Get relevant subcategories based on transaction type
+    const relevantCategoryValue =
+      transactionTypeToCategoryMap[context.transactionType] || 'transaction';
+    const relevantCategory = this.CATEGORIES.find(
+      (c) => c.value === relevantCategoryValue,
+    );
 
-    if (context.status === 'FAILED') {
-      actions.push(
-        { label: 'Request Refund', action: 'refund', data: context },
-        { label: 'Retry Transaction', action: 'retry', data: context },
-      );
-    }
-
-    actions.push({ label: 'Speak to Agent', action: 'escalate' });
+    // Build quick replies from relevant subcategories
+    const quickReplies = relevantCategory?.subOptions.length
+      ? [
+          ...relevantCategory.subOptions.map((sub) => ({
+            label: sub.label,
+            value: sub.value,
+          })),
+          { label: 'Other Issue', value: 'speak_agent' },
+          { label: '← See All Categories', value: 'restart_flow' },
+        ]
+      : [
+          { label: 'Request Refund', value: 'refund' },
+          { label: 'Check Status', value: 'check_status' },
+          { label: 'Speak to Agent', value: 'speak_agent' },
+          { label: '← See All Categories', value: 'restart_flow' },
+        ];
 
     return {
       content,
       metadata: {
         transactionCard: context,
-        actions,
-        quickReplies: [
-          { label: 'Request Refund', value: 'refund' },
-          { label: 'Check Status', value: 'check_status' },
-          { label: 'Speak to Agent', value: 'speak_agent' },
-        ],
+        quickReplies,
       },
     };
   }
@@ -317,18 +351,27 @@ export class BotService {
       return {
         content: `I understand you have a question about "${category.label}". Please describe your issue and I'll connect you with an agent who can help.`,
         metadata: {
-          quickReplies: [{ label: 'Speak to Agent', value: 'speak_agent' }],
+          quickReplies: [
+            { label: 'Speak to Agent', value: 'speak_agent' },
+            { label: '← Restart', value: 'restart_flow' },
+          ],
         },
       };
     }
 
+    // Add restart option to subcategories
+    const quickReplies = [
+      ...category.subOptions.map((sub) => ({
+        label: sub.label,
+        value: sub.value,
+      })),
+      { label: '← Restart', value: 'restart_flow' },
+    ];
+
     return {
       content: `I see you're having issues with ${category.label}. What specific issue are you experiencing?`,
       metadata: {
-        quickReplies: category.subOptions.map((sub) => ({
-          label: sub.label,
-          value: sub.value,
-        })),
+        quickReplies,
       },
     };
   }
@@ -339,42 +382,248 @@ export class BotService {
     firstName: string,
     conversationId: string,
   ): Promise<BotResponse> {
-    // Create ticket for this issue
+    // Store the selected category and subcategory in conversation
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: {
+        category: `${category.value}:${subOption.value}`,
+      },
+    });
+
+    // Ask for transaction ID before creating ticket and assigning agent
+    return {
+      content: `Thank you for selecting "${subOption.label}", ${firstName}.\n\nTo help you faster, please provide your transaction ID or reference number.\n\n💡 You can find this in your transaction history or receipt.`,
+      metadata: {
+        quickReplies: [
+          { label: "I don't have it", value: 'no_transaction_id' },
+          { label: 'Speak to Agent', value: 'speak_agent' },
+          { label: '← Restart', value: 'restart_flow' },
+        ],
+      },
+    };
+  }
+
+  private async handleTransactionIdProvided(
+    conversationId: string,
+    transactionId: string,
+    firstName: string,
+    userId: string,
+  ): Promise<BotResponse> {
     const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
     });
 
-    if (conversation && conversation.userId) {
-      // Update conversation status
+    if (!conversation) {
+      return this.getDefaultResponse(firstName);
+    }
+
+    // Check if user said they don't have transaction ID
+    const lowerMessage = transactionId.toLowerCase().trim();
+    if (
+      lowerMessage === 'no_transaction_id' ||
+      lowerMessage.includes("don't have") ||
+      lowerMessage.includes('dont have')
+    ) {
+      return this.createTicketAndAssignAgent(
+        conversationId,
+        conversation.category || 'General',
+        firstName,
+        userId,
+        null,
+      );
+    }
+
+    // Validate and look up transaction
+    const transaction = await this.prisma.transaction.findFirst({
+      where: {
+        OR: [
+          { id: transactionId.trim() },
+          { reference: transactionId.trim() },
+        ],
+        userId,
+      },
+    });
+
+    if (transaction) {
+      // Found transaction - update conversation context and create ticket
       await this.prisma.conversation.update({
         where: { id: conversationId },
         data: {
-          status: ConversationStatus.AWAITING_AGENT,
-          category: category.value,
+          transactionId: transaction.id,
+          transactionType: transaction.type,
+          transactionContext: {
+            transactionId: transaction.id,
+            reference: transaction.reference,
+            type: transaction.type,
+            amount: Number(transaction.amount),
+            status: transaction.status,
+          },
         },
       });
 
-      // Create ticket
-      await this.prisma.ticket.create({
-        data: {
-          conversationId,
-          userId: conversation.userId,
-          category: category.value,
-          title: `${category.label}: ${subOption.label}`,
-          updatedAt: new Date(),
-        },
-      });
+      return this.createTicketAndAssignAgent(
+        conversationId,
+        conversation.category || 'General',
+        firstName,
+        userId,
+        transaction,
+      );
+    }
+
+    // Transaction not found - still create ticket but mention it
+    return this.createTicketAndAssignAgent(
+      conversationId,
+      conversation.category || 'General',
+      firstName,
+      userId,
+      null,
+      transactionId.trim(),
+    );
+  }
+
+  private async createTicketAndAssignAgent(
+    conversationId: string,
+    category: string,
+    firstName: string,
+    userId: string,
+    transaction: any,
+    providedTransactionId?: string,
+  ): Promise<BotResponse> {
+    // Parse category to get main category and subcategory
+    const [mainCategory, subCategory] = category.split(':');
+    const categoryInfo = this.CATEGORIES.find((c) => c.value === mainCategory);
+    const subCategoryInfo = categoryInfo?.subOptions.find(
+      (s) => s.value === subCategory,
+    );
+
+    const ticketTitle = subCategoryInfo
+      ? `${categoryInfo?.label || mainCategory}: ${subCategoryInfo.label}`
+      : categoryInfo?.label || mainCategory;
+
+    // Create ticket
+    const ticket = await this.prisma.ticket.create({
+      data: {
+        conversationId,
+        userId,
+        category: mainCategory,
+        title: ticketTitle,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Update conversation status to AWAITING_AGENT
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: {
+        status: ConversationStatus.AWAITING_AGENT,
+      },
+    });
+
+    // Auto-assign to an available agent (round-robin based on active chats)
+    const assignedAgent = await this.autoAssignAgent(ticket.id);
+
+    let content = `Thank you, ${firstName}! I've created support ticket #${ticket.ticketNumber} for you.\n\n`;
+
+    if (transaction) {
+      content += `📋 Transaction Found:\n`;
+      content += `• Reference: ${transaction.reference}\n`;
+      content += `• Amount: ₦${Number(transaction.amount).toLocaleString()}\n`;
+      content += `• Status: ${transaction.status}\n\n`;
+    } else if (providedTransactionId) {
+      content += `⚠️ I couldn't find a transaction with ID "${providedTransactionId}" in your account. Our agent will help verify this.\n\n`;
+    }
+
+    if (assignedAgent) {
+      content += `✅ ${assignedAgent.firstName} has been assigned to help you.\n`;
+      content += `⏱️ Expected response time: under 5 minutes.\n\n`;
+      content += `Feel free to add any additional details while you wait.`;
+    } else {
+      content += `⏳ A support agent will be assigned shortly.\n`;
+      content += `⏱️ Average response time: under 5 minutes.\n\n`;
+      content += `Feel free to add any additional details while you wait.`;
     }
 
     return {
-      content: `Thank you for the details, ${firstName}. I've created a support ticket for your "${subOption.label}" issue.\n\nA support agent will be with you shortly. Average response time is under 5 minutes.\n\nIs there anything else you'd like to add while you wait?`,
+      content,
       metadata: {
-        quickReplies: [
-          { label: 'Add more details', value: 'add_details' },
-          { label: 'Upload screenshot', value: 'upload' },
-        ],
+        ticketNumber: ticket.ticketNumber,
+        assignedAgent: assignedAgent
+          ? {
+              id: assignedAgent.id,
+              name: `${assignedAgent.firstName} ${assignedAgent.lastName}`,
+            }
+          : null,
       },
     };
+  }
+
+  private async autoAssignAgent(ticketId: string): Promise<{
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null> {
+    try {
+      // Get all support agents with their active ticket counts
+      const agents = await this.prisma.user.findMany({
+        where: {
+          role: { in: ['SUPPORT', 'ADMIN', 'SUPER_ADMIN'] },
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      if (agents.length === 0) {
+        return null;
+      }
+
+      // Get active ticket counts for each agent
+      const agentsWithCounts = await Promise.all(
+        agents.map(async (agent) => {
+          const activeCount = await this.prisma.ticket.count({
+            where: {
+              assignedAgentId: agent.id,
+              status: { in: ['OPEN', 'IN_PROGRESS'] },
+            },
+          });
+          return { ...agent, activeCount };
+        }),
+      );
+
+      // Sort by active count (ascending) to find least busy agent
+      agentsWithCounts.sort((a, b) => a.activeCount - b.activeCount);
+      const selectedAgent = agentsWithCounts[0];
+
+      // Assign the ticket
+      const ticket = await this.prisma.ticket.update({
+        where: { id: ticketId },
+        data: {
+          assignedAgentId: selectedAgent.id,
+          status: 'IN_PROGRESS',
+        },
+        include: { conversation: true },
+      });
+
+      // Update conversation status to AGENT_ASSIGNED
+      if (ticket.conversation) {
+        await this.prisma.conversation.update({
+          where: { id: ticket.conversationId },
+          data: { status: ConversationStatus.AGENT_ASSIGNED },
+        });
+      }
+
+      this.logger.log(
+        `Ticket ${ticketId} auto-assigned to agent ${selectedAgent.id}`,
+      );
+
+      return selectedAgent;
+    } catch (error) {
+      this.logger.error('Error auto-assigning agent:', error);
+      return null;
+    }
   }
 
   private async escalateToAgent(

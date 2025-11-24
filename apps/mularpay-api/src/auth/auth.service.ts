@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { VirtualAccountsService } from '../virtual-accounts/virtual-accounts.service';
 import { RegisterDto, LoginDto } from './dto';
 import * as argon2 from 'argon2';
+import { randomUUID } from 'crypto';
 import { User, UserStatus } from '@prisma/client';
 import { UsersService } from '../users/users.service';
 
@@ -274,16 +275,19 @@ export class AuthService {
     };
 
     const [accessToken, refreshToken] = await Promise.all([
-      // Access token (15 minutes)
+      // Access token (30 minutes)
       this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,
         expiresIn: '30m',
       }),
-      // Refresh token (7 days)
-      this.jwtService.signAsync(payload, {
-        secret: process.env.JWT_REFRESH_SECRET,
-        expiresIn: '7d',
-      }),
+      // Refresh token (7 days) - includes unique jti to prevent duplicate token conflicts
+      this.jwtService.signAsync(
+        { ...payload, jti: randomUUID() },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: '7d',
+        },
+      ),
     ]);
 
     // Store refresh token in database

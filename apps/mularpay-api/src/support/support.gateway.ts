@@ -163,6 +163,28 @@ export class SupportGateway
 
       const senderType = isAgent ? SenderType.AGENT : SenderType.USER;
 
+      // For agents, validate they have permission to send messages
+      if (isAgent) {
+        const conversation = await this.supportService.getConversationById(conversationId);
+        const assignedAgentId = conversation.ticket?.assignedAgentId;
+        const isSuperAdmin = client.userRole === 'SUPER_ADMIN';
+        const isAssignedAgent = assignedAgentId === client.userId;
+        const isUnassigned = !assignedAgentId;
+
+        if (!isSuperAdmin && !isAssignedAgent && !isUnassigned) {
+          return {
+            success: false,
+            error: 'You cannot send messages to a conversation assigned to another agent',
+          };
+        }
+
+        // Auto-assign if unassigned
+        if (isUnassigned) {
+          await this.supportService.assignConversation(conversationId, client.userId!);
+          this.notifyConversationUpdate(conversationId, 'AGENT_ASSIGNED');
+        }
+      }
+
       // Save message
       const message = await this.supportService.sendMessage(
         conversationId,
@@ -179,8 +201,10 @@ export class SupportGateway
 
       // If user message, trigger bot response
       if (senderType === SenderType.USER) {
+        // Extract the quick reply value from metadata if present, otherwise use content
+        const messageForBot = metadata?.quickReplyValue || content;
         // Process with bot (async)
-        this.processBotResponse(conversationId, content, client.userId!);
+        this.processBotResponse(conversationId, messageForBot, client.userId!);
       }
 
       return { success: true, message };
@@ -262,6 +286,14 @@ export class SupportGateway
 
   notifyUser(userId: string, event: string, data: any) {
     this.server.to(`user:${userId}`).emit(event, data);
+  }
+
+  // Notify conversation participants about status changes
+  notifyConversationUpdate(conversationId: string, status: string) {
+    this.server.to(`conversation:${conversationId}`).emit('conversation:updated', {
+      conversationId,
+      status,
+    });
   }
 
   // ============================================

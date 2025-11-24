@@ -729,6 +729,8 @@ model NotificationQueue {
   @@index([channel])
   @@index([scheduledFor])
   @@index([priority])
+  // Composite index for the queue processing query (fixes slow query)
+  @@index([channel, status, scheduledFor, nextRetryAt, priority, createdAt])
   @@map("notification_queue")
 }
 

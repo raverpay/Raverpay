@@ -10,6 +10,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -19,6 +20,8 @@ import { UserRole } from '@prisma/client';
 import { SupportService } from './support.service';
 import { HelpService } from './help.service';
 import { CannedResponseService } from './canned-response.service';
+import { SupportGateway } from './support.gateway';
+import { SupportNotificationService } from './support-notification.service';
 import {
   FindTicketsDto,
   FindConversationsDto,
@@ -42,6 +45,8 @@ export class SupportAdminController {
     private readonly supportService: SupportService,
     private readonly helpService: HelpService,
     private readonly cannedResponseService: CannedResponseService,
+    private readonly supportGateway: SupportGateway,
+    private readonly supportNotificationService: SupportNotificationService,
   ) {}
 
   // ============================================
@@ -86,9 +91,21 @@ export class SupportAdminController {
   /**
    * Get all conversations (admin view)
    * GET /admin/support/conversations
+   *
+   * - SUPER_ADMIN and ADMIN: See all conversations
+   * - SUPPORT: Only see conversations assigned to them
    */
   @Get('conversations')
-  async getAllConversations(@Query() query: FindConversationsDto) {
+  async getAllConversations(
+    @GetUser('id') agentId: string,
+    @GetUser('role') agentRole: string,
+    @Query() query: FindConversationsDto,
+  ) {
+    // For SUPPORT role, filter to only their assigned conversations
+    if (agentRole === UserRole.SUPPORT) {
+      query.assignedAgentId = agentId;
+    }
+
     return await this.supportService.getAllConversations(query);
   }
 
@@ -119,20 +136,65 @@ export class SupportAdminController {
   /**
    * Send message as agent
    * POST /admin/support/conversations/:id/messages
+   *
+   * Permission rules:
+   * - SUPER_ADMIN can send to any conversation
+   * - Assigned agent can send to their conversation
+   * - If unassigned, sending auto-assigns the conversation to the agent
    */
   @Post('conversations/:id/messages')
   @HttpCode(HttpStatus.CREATED)
   async sendAgentMessage(
     @GetUser('id') agentId: string,
+    @GetUser('role') agentRole: string,
     @Param('id') conversationId: string,
     @Body() dto: CreateMessageDto,
   ) {
-    return await this.supportService.sendMessage(
+    // Get conversation with ticket to check assignment
+    const conversation = await this.supportService.getConversationById(conversationId);
+    const assignedAgentId = conversation.ticket?.assignedAgentId;
+
+    // Check permissions
+    const isSuperAdmin = agentRole === UserRole.SUPER_ADMIN;
+    const isAssignedAgent = assignedAgentId === agentId;
+    const isUnassigned = !assignedAgentId;
+
+    if (!isSuperAdmin && !isAssignedAgent && !isUnassigned) {
+      throw new ForbiddenException(
+        'You cannot send messages to a conversation assigned to another agent',
+      );
+    }
+
+    // If unassigned, auto-assign to this agent
+    if (isUnassigned) {
+      await this.supportService.assignConversation(conversationId, agentId);
+      // Notify via WebSocket
+      this.supportGateway.notifyConversationUpdate(conversationId, 'AGENT_ASSIGNED');
+    }
+
+    const message = await this.supportService.sendMessage(
       conversationId,
       dto,
       agentId,
       'AGENT',
     );
+
+    // Broadcast via WebSocket
+    this.supportGateway.server
+      .to(`conversation:${conversationId}`)
+      .emit('message:receive', {
+        message,
+        conversationId,
+      });
+
+    // Send push notification to user
+    this.supportNotificationService.notifyNewMessage(
+      conversationId,
+      dto.content,
+      'AGENT',
+    );
+
+    return message;
   }
 
   /**
@@ -145,10 +207,18 @@ export class SupportAdminController {
     @GetUser('id') agentId: string,
     @Param('id') conversationId: string,
   ) {
-    return await this.supportService.assignConversation(
+    const result = await this.supportService.assignConversation(
       conversationId,
       agentId,
     );
+
+    // Send notification to user that an agent has been assigned
+    this.supportNotificationService.notifyAgentAssigned(conversationId, agentId);
+
+    // Notify via WebSocket
+    this.supportGateway.notifyConversationUpdate(conversationId, 'AGENT_ASSIGNED');
+
+    return result;
   }
 
   /**
@@ -168,13 +238,21 @@ export class SupportAdminController {
   }
 
   /**
-   * End a conversation (admin only)
+   * End a conversation (admin only) - Sets to AWAITING_RATING so user can rate
    * POST /admin/support/conversations/:id/end
    */
   @Post('conversations/:id/end')
   @HttpCode(HttpStatus.OK)
   async endConversation(@Param('id') conversationId: string) {
-    return await this.supportService.endConversation(conversationId);
+    const result = await this.supportService.endConversation(conversationId);
+    // Notify via WebSocket so mobile app can show rating UI
+    this.supportGateway.notifyConversationUpdate(
+      conversationId,
+      result.status,
+    );
+    // Send push/email notification to user
+    this.supportNotificationService.notifyConversationEnded(conversationId);
+    return result;
   }
 
   // ============================================

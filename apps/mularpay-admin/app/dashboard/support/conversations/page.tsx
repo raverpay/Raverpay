@@ -7,14 +7,9 @@ import { Search, MessageSquare, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supportApi } from '@/lib/api/support';
+import { useAuthStore } from '@/lib/auth-store';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,10 +52,14 @@ function getStatusBadge(status: ConversationStatus) {
 
 export default function ConversationsPage() {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  const isSupportRole = currentUser?.role === 'SUPPORT';
+  const isAdminOrSuperAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN';
 
   const { data: conversationsData, isLoading } = useQuery({
     queryKey: ['support-conversations', page, debouncedSearch, statusFilter],
@@ -81,8 +80,7 @@ export default function ConversationsPage() {
   });
 
   const assignMutation = useMutation({
-    mutationFn: (conversationId: string) =>
-      supportApi.assignConversation(conversationId),
+    mutationFn: (conversationId: string) => supportApi.assignConversation(conversationId),
     onSuccess: (conversation) => {
       queryClient.invalidateQueries({ queryKey: ['support-conversations'] });
       toast.success('Conversation assigned to you');
@@ -101,9 +99,13 @@ export default function ConversationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Live Conversations</h2>
+          <h2 className="text-3xl font-bold tracking-tight">
+            {isSupportRole ? 'My Conversations' : 'Live Conversations'}
+          </h2>
           <p className="text-muted-foreground">
-            Manage real-time customer support chats
+            {isSupportRole
+              ? 'Conversations assigned to you'
+              : 'Manage real-time customer support chats'}
           </p>
         </div>
       </div>
@@ -117,21 +119,19 @@ export default function ConversationsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.activeConversations || 0}
-            </div>
+            <div className="text-2xl font-bold">{stats?.activeConversations || 0}</div>
           </CardContent>
         </Card>
-        <Card className={stats?.waitingForAgent && stats.waitingForAgent > 5 ? 'border-orange-500' : ''}>
+        <Card
+          className={stats?.waitingForAgent && stats.waitingForAgent > 5 ? 'border-orange-500' : ''}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Waiting for Agent
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.waitingForAgent || 0}
-            </div>
+            <div className="text-2xl font-bold">{stats?.waitingForAgent || 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -141,21 +141,15 @@ export default function ConversationsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.avgResponseTime || 0}m
-            </div>
+            <div className="text-2xl font-bold">{stats?.avgResponseTime || 0}m</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              CSAT Score
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">CSAT Score</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.csatScore?.toFixed(1) || '0.0'}
-            </div>
+            <div className="text-2xl font-bold">{stats?.csatScore?.toFixed(1) || '0.0'}</div>
           </CardContent>
         </Card>
       </div>
@@ -163,9 +157,13 @@ export default function ConversationsPage() {
       {/* Main Content */}
       <Card>
         <CardHeader>
-          <CardTitle>Conversations Queue</CardTitle>
+          <CardTitle>
+            {isSupportRole ? 'Your Assigned Conversations' : 'Conversations Queue'}
+          </CardTitle>
           <CardDescription>
-            View and join customer conversations
+            {isSupportRole
+              ? 'Manage your assigned customer conversations'
+              : 'View and join customer conversations'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -187,18 +185,10 @@ export default function ConversationsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value={ConversationStatus.BOT_HANDLING}>
-                  Bot Handling
-                </SelectItem>
-                <SelectItem value={ConversationStatus.AWAITING_AGENT}>
-                  Waiting for Agent
-                </SelectItem>
-                <SelectItem value={ConversationStatus.AGENT_ASSIGNED}>
-                  Agent Assigned
-                </SelectItem>
-                <SelectItem value={ConversationStatus.AWAITING_RATING}>
-                  Awaiting Rating
-                </SelectItem>
+                <SelectItem value={ConversationStatus.BOT_HANDLING}>Bot Handling</SelectItem>
+                <SelectItem value={ConversationStatus.AWAITING_AGENT}>Waiting for Agent</SelectItem>
+                <SelectItem value={ConversationStatus.AGENT_ASSIGNED}>Agent Assignedsss</SelectItem>
+                <SelectItem value={ConversationStatus.AWAITING_RATING}>Awaiting Rating</SelectItem>
                 <SelectItem value={ConversationStatus.ENDED}>Ended</SelectItem>
               </SelectContent>
             </Select>
@@ -234,65 +224,50 @@ export default function ConversationsPage() {
                         <TableRow key={conversation.id}>
                           <TableCell className="font-medium">
                             <div>
-                              {conversation.user?.firstName}{' '}
-                              {conversation.user?.lastName}
+                              {conversation.user?.firstName} {conversation.user?.lastName}
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {conversation.user?.email}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            {conversation.category || 'General'}
-                          </TableCell>
+                          <TableCell>{conversation.category || 'General'}</TableCell>
                           <TableCell className="max-w-[200px] truncate">
                             {conversation.lastMessagePreview || 'No messages'}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusBadge.variant}>
-                              {statusBadge.label}
-                            </Badge>
+                            <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                           </TableCell>
                           <TableCell>
                             {conversation.assignedAgent ? (
                               `${conversation.assignedAgent.firstName} ${conversation.assignedAgent.lastName}`
                             ) : (
-                              <span className="text-muted-foreground">
-                                Unassigned
-                              </span>
+                              <span className="text-muted-foreground">Unassigned</span>
                             )}
                           </TableCell>
                           <TableCell>
                             {conversation.unreadCount > 0 && (
-                              <Badge variant="destructive">
-                                {conversation.unreadCount}
-                              </Badge>
+                              <Badge variant="destructive">{conversation.unreadCount}</Badge>
                             )}
                           </TableCell>
-                          <TableCell>
-                            {formatRelativeTime(conversation.updatedAt)}
-                          </TableCell>
+                          <TableCell>{formatRelativeTime(conversation.updatedAt)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
-                              {conversation.status ===
-                                ConversationStatus.AWAITING_AGENT && (
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  onClick={() =>
-                                    assignMutation.mutate(conversation.id)
-                                  }
-                                  disabled={assignMutation.isPending}
-                                  className="gap-1"
-                                >
-                                  <UserPlus className="h-4 w-4" />
-                                  Join
-                                </Button>
-                              )}
-                              {conversation.status ===
-                                ConversationStatus.AGENT_ASSIGNED && (
-                                <Link
-                                  href={`/dashboard/support/conversations/${conversation.id}`}
-                                >
+                              {/* Join button - only for ADMIN/SUPER_ADMIN on unassigned conversations */}
+                              {isAdminOrSuperAdmin &&
+                                conversation.status === ConversationStatus.AWAITING_AGENT && (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => assignMutation.mutate(conversation.id)}
+                                    disabled={assignMutation.isPending}
+                                    className="gap-1"
+                                  >
+                                    <UserPlus className="h-4 w-4" />
+                                    Join
+                                  </Button>
+                                )}
+                              {conversation.status === ConversationStatus.AGENT_ASSIGNED && (
+                                <Link href={`/dashboard/support/conversations/${conversation.id}`}>
                                   <Button variant="outline" size="sm" className="gap-1">
                                     <MessageSquare className="h-4 w-4" />
                                     Open
@@ -301,14 +276,14 @@ export default function ConversationsPage() {
                               )}
                               {conversation.status !== ConversationStatus.AWAITING_AGENT &&
                                 conversation.status !== ConversationStatus.AGENT_ASSIGNED && (
-                                <Link
-                                  href={`/dashboard/support/conversations/${conversation.id}`}
-                                >
-                                  <Button variant="ghost" size="sm">
-                                    View
-                                  </Button>
-                                </Link>
-                              )}
+                                  <Link
+                                    href={`/dashboard/support/conversations/${conversation.id}`}
+                                  >
+                                    <Button variant="ghost" size="sm">
+                                      View
+                                    </Button>
+                                  </Link>
+                                )}
                             </div>
                           </TableCell>
                         </TableRow>

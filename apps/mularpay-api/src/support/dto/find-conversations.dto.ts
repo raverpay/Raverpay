@@ -23,6 +23,10 @@ export class FindConversationsDto {
   @IsOptional()
   @IsEnum(ConversationStatus)
   status?: ConversationStatus;
+
+  @IsOptional()
+  @IsString()
+  assignedAgentId?: string;
 }
 
 export class FindTicketsDto {

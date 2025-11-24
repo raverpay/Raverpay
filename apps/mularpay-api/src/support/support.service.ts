@@ -41,19 +41,34 @@ export class SupportService {
         where: {
           userId,
           status: {
-            notIn: [ConversationStatus.ENDED],
+            notIn: [ConversationStatus.ENDED, ConversationStatus.AWAITING_RATING],
           },
         },
       });
 
+      // If there's a transaction context, check if it's for the same transaction
+      // If different transaction, create new conversation
       if (existingConversation) {
-        this.logger.log(
-          `User ${userId} already has active conversation ${existingConversation.id}`,
-        );
-        return {
-          conversation: existingConversation,
-          isExisting: true,
-        };
+        const hasNewTransactionContext =
+          dto.transactionContext?.transactionId &&
+          existingConversation.transactionId !==
+            dto.transactionContext.transactionId;
+
+        if (hasNewTransactionContext) {
+          // Different transaction - create new conversation
+          this.logger.log(
+            `User ${userId} has new transaction context, creating new conversation`,
+          );
+        } else {
+          // Same or no transaction - return existing conversation
+          this.logger.log(
+            `User ${userId} already has active conversation ${existingConversation.id}`,
+          );
+          return {
+            conversation: existingConversation,
+            isExisting: true,
+          };
+        }
       }
 
       const conversation = await this.prisma.conversation.create({
@@ -306,6 +321,22 @@ export class SupportService {
     });
 
     return { success: true };
+  }
+
+  async updateConversationStatus(
+    conversationId: string,
+    status: ConversationStatus | string,
+  ) {
+    const conversation = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { status: status as ConversationStatus },
+    });
+
+    this.logger.log(
+      `Conversation ${conversationId} status updated to ${status}`,
+    );
+
+    return conversation;
   }
 
   // ============================================
@@ -749,10 +780,10 @@ export class SupportService {
       throw new NotFoundException('Conversation not found');
     }
 
-    // Update conversation status to ENDED
+    // Update conversation status to AWAITING_RATING so user can rate the conversation
     const updatedConversation = await this.prisma.conversation.update({
       where: { id: conversationId },
-      data: { status: ConversationStatus.ENDED },
+      data: { status: ConversationStatus.AWAITING_RATING },
       include: {
         user: {
           select: {
@@ -778,18 +809,18 @@ export class SupportService {
       },
     });
 
-    // If there's a ticket, close it as well
+    // If there's a ticket, mark it as resolved (not closed - will close after rating)
     if (conversation.ticket) {
       await this.prisma.ticket.update({
         where: { id: conversation.ticket.id },
         data: {
-          status: TicketStatus.CLOSED,
-          closedAt: new Date(),
+          status: TicketStatus.RESOLVED,
+          resolvedAt: new Date(),
         },
       });
     }
 
-    this.logger.log(`Conversation ${conversationId} ended by admin`);
+    this.logger.log(`Conversation ${conversationId} ended by admin - awaiting rating`);
 
     return updatedConversation;
   }
@@ -911,7 +942,7 @@ export class SupportService {
   }
 
   async getAllConversations(options: FindConversationsDto) {
-    const { page = 1, limit = 20, status } = options;
+    const { page = 1, limit = 20, status, assignedAgentId } = options;
 
     // Ensure page and limit are numbers (safeguard against string values from query params)
     const pageNum =
@@ -921,6 +952,13 @@ export class SupportService {
 
     const where: any = {};
     if (status) where.status = status;
+
+    // Filter by assigned agent if provided (for SUPPORT role users)
+    if (assignedAgentId) {
+      where.ticket = {
+        assignedAgentId,
+      };
+    }
 
     try {
       const [conversations, total] = await Promise.all([
