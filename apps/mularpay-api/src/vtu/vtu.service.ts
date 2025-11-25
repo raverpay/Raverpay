@@ -311,24 +311,48 @@ export class VTUService {
     // 2. Validate phone
     this.validatePhone(dto.phone);
 
-    // 3. Calculate total
-    const fee = this.calculateFee(dto.amount, 'AIRTIME');
-    const total = dto.amount + fee;
+    // 3. Calculate cashback to earn
+    const cashbackToEarn = await this.cashbackService.calculateCashback(
+      'AIRTIME',
+      dto.network.toUpperCase(),
+      dto.amount,
+    );
 
-    // 4. Check balance
+    // 4. Handle cashback redemption if requested
+    let cashbackRedeemed = 0;
+    if (dto.useCashback && dto.cashbackAmount && dto.cashbackAmount > 0) {
+      const userCashbackBalance = await this.cashbackService.getCashbackBalance(
+        userId,
+      );
+
+      if (dto.cashbackAmount > userCashbackBalance.availableBalance) {
+        throw new BadRequestException(
+          `Insufficient cashback balance. Available: ₦${userCashbackBalance.availableBalance}`,
+        );
+      }
+
+      // User can't redeem more than the purchase amount
+      cashbackRedeemed = Math.min(dto.cashbackAmount, dto.amount);
+    }
+
+    // 5. Calculate total (subtract cashback)
+    const fee = this.calculateFee(dto.amount, 'AIRTIME');
+    const total = dto.amount + fee - cashbackRedeemed;
+
+    // 6. Check balance
     await this.checkWalletBalance(userId, total);
 
-    // 5. Check duplicate
+    // 7. Check duplicate
     await this.checkDuplicateOrder(userId, 'AIRTIME', dto.phone, dto.amount);
 
-    // 6. Lock wallet
+    // 8. Lock wallet
     await this.lockWalletForTransaction(userId);
 
     try {
-      // 7. Generate reference
+      // 9. Generate reference
       const reference = this.generateReference('AIRTIME');
 
-      // 8. Create order
+      // 10. Create order
       const order = await this.prisma.vTUOrder.create({
         data: {
           reference,
@@ -340,23 +364,27 @@ export class VTUService {
           productName: `${dto.network.toUpperCase()} Airtime`,
           amount: new Decimal(dto.amount),
           status: 'PENDING',
+          cashbackPercentage: new Decimal(cashbackToEarn.percentage),
+          cashbackRedeemed: new Decimal(cashbackRedeemed),
         },
       });
 
-      // 9. Get wallet balance before transaction
+      // 11. Get wallet balance before transaction
       const wallet = await this.prisma.wallet.findUnique({
         where: { userId },
       });
       const balanceBefore = wallet!.balance;
       const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
 
-      // 9. Debit wallet and create transaction
+      // 12. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
           where: { userId },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
+            dailySpent: { increment: new Decimal(dto.amount) },
+            monthlySpent: { increment: new Decimal(dto.amount) },
           },
         }),
         this.prisma.transaction.create({
@@ -366,6 +394,7 @@ export class VTUService {
             type: 'VTU_AIRTIME',
             amount: new Decimal(dto.amount),
             fee: new Decimal(fee),
+            cashbackRedeemed: new Decimal(cashbackRedeemed),
             totalAmount: new Decimal(total),
             balanceBefore,
             balanceAfter,
@@ -376,12 +405,26 @@ export class VTUService {
               provider: dto.network.toUpperCase(),
               recipient: dto.phone,
               orderId: order.id,
+              cashbackToEarn: cashbackToEarn.cashbackAmount,
+              cashbackRedeemed,
             },
           },
         }),
       ]);
 
-      // 9. Call VTPass API
+      // 13. Redeem cashback from user's cashback wallet (before calling VTPass)
+      if (cashbackRedeemed > 0) {
+        await this.cashbackService.redeemCashback(
+          userId,
+          cashbackRedeemed,
+          order.id,
+        );
+        this.logger.log(
+          `[Airtime] Redeemed ₦${cashbackRedeemed} cashback for user ${userId}`,
+        );
+      }
+
+      // 14. Call VTPass API
       let vtpassResult: VTPassPurchaseResult;
       try {
         vtpassResult = await this.vtpassService.purchaseAirtime({
@@ -401,6 +444,14 @@ export class VTUService {
           },
         });
 
+        // Reverse cashback redemption if any
+        if (cashbackRedeemed > 0) {
+          await this.cashbackService.reverseCashbackRedemption(userId, order.id);
+          this.logger.log(
+            `[Airtime] Reversed ₦${cashbackRedeemed} cashback for failed order`,
+          );
+        }
+
         // Refund immediately
         await this.refundFailedOrder(order.id);
 
@@ -409,13 +460,15 @@ export class VTUService {
         );
       }
 
-      // 10. Prepare response data FIRST (before async operations)
+      // 15. Prepare response data FIRST (before async operations)
       const response = {
         reference,
         orderId: order.id,
         status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
         amount: dto.amount,
         fee,
+        cashbackRedeemed,
+        cashbackEarned: cashbackToEarn.cashbackAmount,
         totalAmount: total,
         provider: dto.network.toUpperCase(),
         recipient: dto.phone,
@@ -425,7 +478,7 @@ export class VTUService {
             : 'Airtime purchase failed. Wallet refunded.',
       };
 
-      // 11. Update order asynchronously (fire-and-forget)
+      // 16. Update order asynchronously (fire-and-forget)
       this.prisma.vTUOrder
         .update({
           where: { id: order.id },
@@ -433,6 +486,10 @@ export class VTUService {
             status: vtpassResult.status === 'success' ? 'COMPLETED' : 'FAILED',
             providerRef: vtpassResult.transactionId,
             providerToken: vtpassResult.token,
+            cashbackEarned:
+              vtpassResult.status === 'success'
+                ? new Decimal(cashbackToEarn.cashbackAmount)
+                : undefined,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             providerResponse: JSON.parse(JSON.stringify(vtpassResult)),
             completedAt:
@@ -443,11 +500,44 @@ export class VTUService {
           this.logger.error('Failed to update order status', error),
         );
 
-      // 12. If failed, refund asynchronously
+      // 17. If failed, refund and reverse cashback asynchronously
       if (vtpassResult.status !== 'success') {
         this.refundFailedOrder(order.id).catch((error) =>
           this.logger.error('Failed to refund order', error),
         );
+
+        // Reverse cashback redemption if any
+        if (cashbackRedeemed > 0) {
+          this.cashbackService
+            .reverseCashbackRedemption(userId, order.id)
+            .catch((error) =>
+              this.logger.error('Failed to reverse cashback redemption', error),
+            );
+        }
+      }
+
+      // 18. If successful, award cashback asynchronously
+      if (
+        vtpassResult.status === 'success' &&
+        cashbackToEarn.isEligible &&
+        cashbackToEarn.cashbackAmount > 0
+      ) {
+        this.cashbackService
+          .awardCashback(
+            userId,
+            order.id,
+            'AIRTIME',
+            dto.network.toUpperCase(),
+            dto.amount,
+          )
+          .then(() => {
+            this.logger.log(
+              `[Airtime] Awarded ₦${cashbackToEarn.cashbackAmount} cashback to user ${userId}`,
+            );
+          })
+          .catch((error) =>
+            this.logger.error('Failed to award cashback (non-critical)', error),
+          );
       }
 
       // 13. Auto-save recipient asynchronously (fire-and-forget)
@@ -505,11 +595,17 @@ export class VTUService {
           });
       }
 
+      // 16. Unlock wallet asynchronously (fire-and-forget)
+      this.unlockWalletForTransaction(userId).catch((error) =>
+        this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
+      );
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return response;
-    } finally {
-      // 14. Always unlock wallet
+    } catch (error) {
+      // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
+      throw error;
     }
   }
 
@@ -611,6 +707,8 @@ export class VTUService {
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
+            dailySpent: { increment: new Decimal(amount) },
+            monthlySpent: { increment: new Decimal(amount) },
           },
         }),
         this.prisma.transaction.create({
@@ -641,6 +739,7 @@ export class VTUService {
       ]);
 
       // 11. Redeem cashback from user's cashback wallet (before calling VTPass)
+      // Note: This MUST be synchronous to ensure cashback is deducted before VTPass call
       if (cashbackRedeemed > 0) {
         await this.cashbackService.redeemCashback(
           userId,
@@ -825,10 +924,17 @@ export class VTUService {
           });
       }
 
+      // 17. Unlock wallet asynchronously (fire-and-forget)
+      this.unlockWalletForTransaction(userId).catch((error) =>
+        this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
+      );
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return response;
-    } finally {
+    } catch (error) {
+      // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
+      throw error;
     }
   }
 
@@ -938,6 +1044,8 @@ export class VTUService {
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
+            dailySpent: { increment: new Decimal(amount) },
+            monthlySpent: { increment: new Decimal(amount) },
           },
         }),
         this.prisma.transaction.create({
@@ -1078,10 +1186,17 @@ export class VTUService {
           });
       }
 
+      // 15. Unlock wallet asynchronously (fire-and-forget)
+      this.unlockWalletForTransaction(userId).catch((error) =>
+        this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
+      );
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return response;
-    } finally {
+    } catch (error) {
+      // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
+      throw error;
     }
   }
 
@@ -1157,6 +1272,8 @@ export class VTUService {
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
+            dailySpent: { increment: new Decimal(amount) },
+            monthlySpent: { increment: new Decimal(amount) },
           },
         }),
         this.prisma.transaction.create({
@@ -1293,10 +1410,17 @@ export class VTUService {
           });
       }
 
+      // 16. Unlock wallet asynchronously (fire-and-forget)
+      this.unlockWalletForTransaction(userId).catch((error) =>
+        this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
+      );
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return responseShowmax;
-    } finally {
+    } catch (error) {
+      // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
+      throw error;
     }
   }
 
@@ -1361,6 +1485,8 @@ export class VTUService {
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
+            dailySpent: { increment: new Decimal(dto.amount) },
+            monthlySpent: { increment: new Decimal(dto.amount) },
           },
         }),
         this.prisma.transaction.create({
@@ -1534,10 +1660,17 @@ export class VTUService {
           });
       }
 
+      // 15. Unlock wallet asynchronously (fire-and-forget)
+      this.unlockWalletForTransaction(userId).catch((error) =>
+        this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
+      );
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return responseElec;
-    } finally {
+    } catch (error) {
+      // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
+      throw error;
     }
   }
 
@@ -1760,10 +1893,17 @@ export class VTUService {
           });
       }
 
+      // 16. Unlock wallet asynchronously (fire-and-forget)
+      this.unlockWalletForTransaction(userId).catch((error) =>
+        this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
+      );
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return responseIntl;
-    } finally {
+    } catch (error) {
+      // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
+      throw error;
     }
   }
 

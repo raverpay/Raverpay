@@ -66,53 +66,57 @@ export class CashbackService {
     serviceType: VTUServiceType,
     provider?: string,
   ): Promise<any | null> {
-    // Convert enum to string for Prisma query
-    const serviceTypeString = serviceType as string;
+    // Use raw SQL to avoid enum comparison issues
+    const serviceTypeString = serviceType.toString();
 
     // First try to find provider-specific config
     if (provider) {
-      const providerConfig = await this.prisma.cashbackConfig.findFirst({
-        where: {
-          serviceType: serviceTypeString as any,
-          provider: provider.toUpperCase(),
-          isActive: true,
-        },
-      });
+      const providerUpper = provider.toUpperCase();
+      const providerConfig = await this.prisma.$queryRaw`
+        SELECT * FROM "cashback_config"
+        WHERE "serviceType"::text = ${serviceTypeString}
+        AND "provider" = ${providerUpper}
+        AND "isActive" = true
+        LIMIT 1
+      `;
 
-      if (providerConfig) {
-        return providerConfig;
+      if (Array.isArray(providerConfig) && providerConfig.length > 0) {
+        return providerConfig[0];
       }
     }
 
     // Fall back to general config (provider = null)
-    const generalConfig = await this.prisma.cashbackConfig.findFirst({
-      where: {
-        serviceType: serviceTypeString as any,
-        provider: null,
-        isActive: true,
-      },
-    });
+    const generalConfig = await this.prisma.$queryRaw`
+      SELECT * FROM "cashback_config"
+      WHERE "serviceType"::text = ${serviceTypeString}
+      AND "provider" IS NULL
+      AND "isActive" = true
+      LIMIT 1
+    `;
 
-    return generalConfig;
+    if (Array.isArray(generalConfig) && generalConfig.length > 0) {
+      return generalConfig[0];
+    }
+
+    return null;
   }
 
   /**
    * Create a new cashback configuration
    */
   async createConfig(dto: CreateCashbackConfigDto) {
-    // Check for existing config
+    // Check for existing config using raw SQL
     const providerValue = dto.provider ? dto.provider.toUpperCase() : null;
-    const serviceTypeString = dto.serviceType as string;
-    const existing = await this.prisma.cashbackConfig.findUnique({
-      where: {
-        serviceType_provider: {
-          serviceType: serviceTypeString as any,
-          provider: providerValue as string,
-        },
-      },
-    });
+    const serviceTypeString = dto.serviceType.toString();
 
-    if (existing) {
+    const existing = await this.prisma.$queryRaw`
+      SELECT * FROM "cashback_config"
+      WHERE "serviceType"::text = ${serviceTypeString}
+      AND "provider" ${providerValue === null ? Prisma.sql`IS NULL` : Prisma.sql`= ${providerValue}`}
+      LIMIT 1
+    `;
+
+    if (Array.isArray(existing) && existing.length > 0) {
       throw new BadRequestException(
         'Cashback configuration already exists for this service type and provider',
       );
