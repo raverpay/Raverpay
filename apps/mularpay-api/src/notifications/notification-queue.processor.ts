@@ -222,6 +222,52 @@ export class NotificationQueueProcessor {
       );
     }
 
+    // Check if this is a withdrawal transaction event
+    const withdrawalEventTypes = [
+      'withdrawal_initiated',
+      'withdrawal_success',
+      'withdrawal_failed',
+    ];
+
+    if (withdrawalEventTypes.includes(eventType)) {
+      // Map event type to status
+      const statusMap: Record<string, 'initiated' | 'success' | 'failed'> = {
+        withdrawal_initiated: 'initiated',
+        withdrawal_success: 'success',
+        withdrawal_failed: 'failed',
+      };
+
+      const status = statusMap[eventType] || 'initiated';
+
+      return this.emailService.sendWithdrawalTransactionEmail(user.email, {
+        firstName: user.firstName,
+        amount:
+          typeof data?.amount === 'number'
+            ? data.amount.toLocaleString()
+            : data?.amount?.toString() || '0',
+        fee:
+          typeof data?.fee === 'number'
+            ? data.fee.toLocaleString()
+            : data?.fee?.toString() || '0',
+        totalDebit:
+          typeof data?.totalDebit === 'number'
+            ? data.totalDebit.toLocaleString()
+            : data?.totalDebit?.toString() ||
+              (typeof data?.amount === 'number'
+                ? data.amount.toLocaleString()
+                : '0'),
+        accountName: data?.accountName || 'N/A',
+        accountNumber: data?.accountNumber || 'N/A',
+        bankName: data?.bankName,
+        reference: data?.reference || 'N/A',
+        status,
+        date: new Date().toLocaleString('en-NG', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }),
+      });
+    }
+
     // Generic notification email
     return this.emailService.sendGenericNotification(
       user.email,

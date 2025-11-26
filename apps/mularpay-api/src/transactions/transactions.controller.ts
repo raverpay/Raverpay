@@ -108,4 +108,14 @@ export class TransactionsController {
   ) {
     return this.transactionsService.previewWithdrawalFee(userId, dto.amount);
   }
+
+  /**
+   * Get saved bank accounts for user
+   * GET /api/transactions/saved-bank-accounts
+   */
+  @Get('saved-bank-accounts')
+  @UseGuards(JwtAuthGuard)
+  async getSavedBankAccounts(@GetUser('id') userId: string) {
+    return this.transactionsService.getSavedBankAccounts(userId);
+  }
 }

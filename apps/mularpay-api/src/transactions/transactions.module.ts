@@ -6,6 +6,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { UsersModule } from '../users/users.module';
 import { WalletModule } from '../wallet/wallet.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { WalletModule } from '../wallet/wallet.module';
     forwardRef(() => PaymentsModule),
     forwardRef(() => WalletModule),
     UsersModule,
+    NotificationsModule,
   ],
   controllers: [TransactionsController],
   providers: [TransactionsService],

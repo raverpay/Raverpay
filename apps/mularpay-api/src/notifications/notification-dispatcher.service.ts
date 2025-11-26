@@ -289,9 +289,19 @@ export class NotificationDispatcherService {
         'international_airtime_success',
       ];
 
+      // Check if this is a withdrawal transaction event
+      const withdrawalEventTypes = [
+        'withdrawal_initiated',
+        'withdrawal_success',
+        'withdrawal_failed',
+      ];
+
       if (vtuEventTypes.includes(event.eventType)) {
         // Use VTU-specific template
         emailSent = await this.sendVTUTransactionEmail(user, event);
+      } else if (withdrawalEventTypes.includes(event.eventType)) {
+        // Use withdrawal-specific template
+        emailSent = await this.sendWithdrawalTransactionEmail(user, event);
       } else {
         // Use generic template for other notifications
         emailSent = await this.emailService.sendGenericNotification(
@@ -424,6 +434,61 @@ export class NotificationDispatcherService {
         timeStyle: 'short',
       }),
       additionalInfo: additionalInfo.length > 0 ? additionalInfo : undefined,
+    });
+  }
+
+  /**
+   * Send withdrawal transaction email with proper template
+   *
+   * @param user - User data
+   * @param event - Notification event
+   * @returns Whether email was sent successfully
+   */
+  private async sendWithdrawalTransactionEmail(
+    user: { email: string; firstName: string },
+    event: NotificationEvent,
+  ): Promise<boolean> {
+    // Map event type to status
+    const statusMap = {
+      withdrawal_initiated: 'initiated' as const,
+      withdrawal_success: 'success' as const,
+      withdrawal_failed: 'failed' as const,
+    };
+
+    const status = statusMap[event.eventType] || 'initiated';
+
+    // Get bank name from transaction metadata if available
+    let bankName: string | undefined;
+    if (event.data?.bankName) {
+      bankName = event.data.bankName as string;
+    }
+
+    return await this.emailService.sendWithdrawalTransactionEmail(user.email, {
+      firstName: user.firstName,
+      amount:
+        typeof event.data?.amount === 'number'
+          ? event.data.amount.toLocaleString()
+          : event.data?.amount?.toString() || '0',
+      fee:
+        typeof event.data?.fee === 'number'
+          ? event.data.fee.toLocaleString()
+          : event.data?.fee?.toString() || '0',
+      totalDebit:
+        typeof event.data?.totalDebit === 'number'
+          ? event.data.totalDebit.toLocaleString()
+          : event.data?.totalDebit?.toString() ||
+            (typeof event.data?.amount === 'number'
+              ? event.data.amount.toLocaleString()
+              : '0'),
+      accountName: (event.data?.accountName as string) || 'N/A',
+      accountNumber: (event.data?.accountNumber as string) || 'N/A',
+      bankName: bankName,
+      reference: (event.data?.reference as string) || 'N/A',
+      status,
+      date: new Date().toLocaleString('en-NG', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }),
     });
   }
 

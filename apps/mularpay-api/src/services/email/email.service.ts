@@ -5,6 +5,7 @@ import { verificationCodeTemplate } from './templates/verification-code.template
 import { welcomeEmailTemplate } from './templates/welcome.template';
 import { vtuTransactionEmailTemplate } from './templates/vtu-transaction.template';
 import { birthdayEmailTemplate } from './templates/birthday.template';
+import { withdrawalTransactionEmailTemplate } from './templates/withdrawal-transaction.template';
 
 @Injectable()
 export class EmailService {
@@ -320,6 +321,8 @@ export class EmailService {
         'rejectionReason',
         'notes',
         'scheduledFor',
+        'transactionId', // Internal ID, don't show to users
+        'bankCode', // Technical field, bankName is more user-friendly
       ];
 
       const filteredData = data
@@ -354,11 +357,25 @@ export class EmailService {
                 hasVisibleData
                   ? `<div style="background: #f7f7f7; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 ${Object.entries(filteredData)
-                  .map(
-                    ([key, value]) => `
-                  <p style="margin: 5px 0;"><strong>${key}:</strong> ${value}</p>
-                `,
-                  )
+                  .map(([key, value]) => {
+                    // Convert technical keys to user-friendly labels
+                    const labelMap: Record<string, string> = {
+                      amount: 'Amount',
+                      fee: 'Processing Fee',
+                      totalDebit: 'Total Debit',
+                      accountNumber: 'Account Number',
+                      accountName: 'Account Name',
+                      bankName: 'Bank',
+                      reference: 'Reference',
+                      status: 'Status',
+                    };
+                    const friendlyLabel = labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim();
+                    // Format currency values
+                    const formattedValue = (key === 'amount' || key === 'fee' || key === 'totalDebit') && typeof value === 'number'
+                      ? `₦${value.toLocaleString()}`
+                      : value;
+                    return `<p style="margin: 5px 0;"><strong>${friendlyLabel}:</strong> ${formattedValue}</p>`;
+                  })
                   .join('')}
               </div>`
                   : ''
@@ -500,6 +517,69 @@ export class EmailService {
       return true;
     } catch (error) {
       this.logger.error(`Error sending birthday email to ${email}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send withdrawal transaction email with professional template
+   */
+  async sendWithdrawalTransactionEmail(
+    email: string,
+    details: {
+      firstName: string;
+      amount: string;
+      fee: string;
+      totalDebit: string;
+      accountName: string;
+      accountNumber: string;
+      bankName?: string;
+      reference: string;
+      status: 'initiated' | 'success' | 'failed';
+      date: string;
+    },
+  ): Promise<boolean> {
+    if (!this.enabled) {
+      this.logger.log(
+        `📧 [MOCK] Withdrawal transaction email to ${email}: ${details.status}`,
+      );
+      return true;
+    }
+
+    if (!this.resend) {
+      this.logger.warn(
+        `📧 [MOCK] Would send withdrawal transaction email to ${email}: ${details.status}`,
+      );
+      return true;
+    }
+
+    try {
+      const { html, subject } = withdrawalTransactionEmailTemplate(details);
+
+      const result = await this.resend.emails.send({
+        from: `${this.fromName} <${this.fromEmail}>`,
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (result.error) {
+        this.logger.error(
+          `Failed to send withdrawal transaction email to ${email}:`,
+          result.error,
+        );
+        return false;
+      }
+
+      this.logger.log(
+        `✅ Withdrawal transaction email sent to ${email} (ID: ${result.data?.id})`,
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Error sending withdrawal transaction email to ${email}:`,
+        error,
+      );
       return false;
     }
   }

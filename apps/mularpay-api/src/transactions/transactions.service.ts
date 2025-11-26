@@ -5,11 +5,13 @@ import {
   ForbiddenException,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../payments/paystack.service';
 import { UsersService } from '../users/users.service';
 import { WalletService } from '../wallet/wallet.service';
+import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { TransactionType, TransactionStatus, KYCTier } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import {
@@ -25,12 +27,15 @@ import {
 
 @Injectable()
 export class TransactionsService {
+  private readonly logger = new Logger(TransactionsService.name);
+
   constructor(
     private prisma: PrismaService,
     private paystackService: PaystackService,
     private usersService: UsersService,
     @Inject(forwardRef(() => WalletService))
     private walletService: WalletService,
+    private notificationDispatcher: NotificationDispatcherService,
   ) {}
 
   /**
@@ -584,6 +589,9 @@ export class TransactionsService {
     // Generate reference
     const reference = this.generateReference('withdrawal');
 
+    // Get bank name from bank code (for metadata)
+    const bankName = await this.getBankNameFromCode(bankCode);
+
     // Debit wallet and create transaction atomically
     const newBalance = wallet.balance.minus(feeCalc.totalAmount);
 
@@ -617,6 +625,7 @@ export class TransactionsService {
             accountNumber,
             accountName,
             bankCode,
+            bankName,
             provider: 'paystack',
           },
         },
@@ -634,7 +643,7 @@ export class TransactionsService {
         reference,
       );
 
-      // Update transaction with provider reference
+      // Update transaction with provider reference (preserve existing metadata including bankName)
       await this.prisma.transaction.update({
         where: { id: transaction.id },
         data: {
@@ -646,6 +655,39 @@ export class TransactionsService {
           },
         },
       });
+
+      // Send notification for withdrawal initiation
+      try {
+        await this.notificationDispatcher.sendNotification({
+          userId: user.id,
+          eventType: 'withdrawal_initiated',
+          category: 'TRANSACTION',
+          channels: ['EMAIL', 'SMS', 'IN_APP', 'PUSH'],
+          title: 'Withdrawal Initiated',
+          message: `Your withdrawal of ₦${amount.toLocaleString()} to ${accountName} has been initiated. This may take a few minutes to complete.`,
+          data: {
+            transactionId: transaction.id,
+            amount,
+            fee: feeCalc.fee,
+            totalDebit: feeCalc.totalAmount,
+            reference: transaction.reference,
+            accountNumber,
+            accountName,
+            bankCode,
+            bankName,
+            status: transaction.status,
+          },
+        });
+        this.logger.log(
+          `📬 Withdrawal initiation notification sent for user ${user.id}`,
+        );
+      } catch (notifError) {
+        this.logger.error(
+          `Failed to send withdrawal initiation notification to user ${user.id}`,
+          notifError,
+        );
+        // Don't fail the withdrawal if notification fails
+      }
     } catch (error) {
       // If transfer fails, refund wallet and mark transaction as failed
       await this.prisma.$transaction([
@@ -869,7 +911,9 @@ export class TransactionsService {
           maxWithdrawal: new Decimal(data.maxWithdrawal),
         }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
-        ...(data.description !== undefined && { description: data.description }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
       },
     });
   }
@@ -889,5 +933,96 @@ export class TransactionsService {
     return this.prisma.withdrawalConfig.delete({
       where: { id },
     });
+  }
+
+  /**
+   * Get bank name from bank code
+   * Helper method to lookup bank name
+   */
+  private async getBankNameFromCode(bankCode: string): Promise<string> {
+    try {
+      const banks = await this.paystackService.getBanks();
+      const bank = banks.find((b) => b.code === bankCode);
+      return bank?.name || 'Unknown Bank';
+    } catch (error) {
+      this.logger.warn(
+        `Failed to lookup bank name for code ${bankCode}, using default`,
+      );
+      return 'Unknown Bank';
+    }
+  }
+
+  /**
+   * Save or update bank account after successful withdrawal
+   * Similar to savedRecipients for VTU services
+   */
+  async upsertBankAccount(
+    userId: string,
+    bankCode: string,
+    accountNumber: string,
+    accountName: string,
+  ) {
+    try {
+      // Get bank name from banks list
+      const bankName = await this.getBankNameFromCode(bankCode);
+
+      await this.prisma.bankAccount.upsert({
+        where: {
+          userId_accountNumber: {
+            userId,
+            accountNumber,
+          },
+        },
+        update: {
+          bankName,
+          bankCode,
+          accountName,
+          isVerified: true, // Mark as verified since we successfully sent to it
+          updatedAt: new Date(),
+        },
+        create: {
+          userId,
+          bankName,
+          bankCode,
+          accountNumber,
+          accountName,
+          isVerified: true,
+        },
+      });
+
+      this.logger.log(
+        `[BankAccount] Saved bank account for user ${userId}: ${accountNumber} (${bankName})`,
+      );
+    } catch (error) {
+      // Don't fail the withdrawal if saving bank account fails
+      this.logger.error(
+        `[BankAccount] Failed to save bank account for user ${userId}:`,
+        error,
+      );
+    }
+  }
+
+  /**
+   * Get saved bank accounts for a user
+   * Returns most recently used accounts first
+   */
+  async getSavedBankAccounts(userId: string) {
+    const accounts = await this.prisma.bankAccount.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      take: 10, // Limit to 10 most recent
+    });
+
+    return accounts.map((account) => ({
+      id: account.id,
+      bankName: account.bankName,
+      bankCode: account.bankCode,
+      accountNumber: account.accountNumber,
+      accountName: account.accountName,
+      isVerified: account.isVerified,
+      isPrimary: account.isPrimary,
+      lastUsedAt: account.updatedAt.toISOString(),
+      createdAt: account.createdAt.toISOString(),
+    }));
   }
 }

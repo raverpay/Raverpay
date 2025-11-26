@@ -275,6 +275,19 @@ export class PaymentsController {
     const { reference } = payload.data;
 
     try {
+      // Get transaction with metadata to extract bank account details
+      const transaction = await this.transactionsService[
+        'prisma'
+      ].transaction.findUnique({
+        where: { reference },
+        include: { user: true },
+      });
+
+      if (!transaction) {
+        this.logger.error(`Transaction not found: ${reference}`);
+        return;
+      }
+
       // Update transaction status to COMPLETED
       await this.transactionsService['prisma'].transaction.update({
         where: { reference },
@@ -286,6 +299,62 @@ export class PaymentsController {
       });
 
       this.logger.log(`Transfer completed: ${reference}`);
+
+      // Extract bank account details from transaction metadata
+      const metadata = transaction.metadata as {
+        accountNumber?: string;
+        accountName?: string;
+        bankCode?: string;
+        bankName?: string;
+      } | null;
+
+      if (
+        metadata?.accountNumber &&
+        metadata?.accountName &&
+        metadata?.bankCode
+      ) {
+        // Save bank account for future use
+        await this.transactionsService.upsertBankAccount(
+          transaction.userId,
+          metadata.bankCode,
+          metadata.accountNumber,
+          metadata.accountName,
+        );
+      }
+
+      // Send notification for successful withdrawal
+      try {
+        const amount = Number(transaction.amount);
+        await this.notificationDispatcher.sendNotification({
+          userId: transaction.userId,
+          eventType: 'withdrawal_success',
+          category: 'TRANSACTION',
+          channels: ['EMAIL', 'SMS', 'IN_APP', 'PUSH'],
+          title: 'Withdrawal Successful',
+          message: `Your withdrawal of ₦${amount.toLocaleString()} has been successfully sent to ${metadata?.accountName || 'your bank account'}.`,
+          data: {
+            transactionId: transaction.id,
+            amount,
+            fee: Number(transaction.fee),
+            totalDebit: Number(transaction.totalAmount),
+            reference: transaction.reference,
+            accountNumber: metadata?.accountNumber,
+            accountName: metadata?.accountName,
+            bankCode: metadata?.bankCode,
+            bankName: metadata?.bankName,
+            status: 'COMPLETED',
+          },
+        });
+        this.logger.log(
+          `📬 Withdrawal success notification sent for user ${transaction.userId}`,
+        );
+      } catch (notifError) {
+        this.logger.error(
+          `Failed to send withdrawal success notification to user ${transaction.userId}`,
+          notifError,
+        );
+        // Don't fail the webhook if notification fails
+      }
     } catch (error) {
       this.logger.error(`Failed to update transfer: ${reference}`, error);
     }
@@ -341,6 +410,49 @@ export class PaymentsController {
       ]);
 
       this.logger.log(`Transfer failed and refunded: ${reference}`);
+
+      // Extract bank account details from transaction metadata
+      const metadata = transaction.metadata as {
+        accountNumber?: string;
+        accountName?: string;
+        bankCode?: string;
+        bankName?: string;
+      } | null;
+
+      // Send notification for failed withdrawal
+      try {
+        const amount = Number(transaction.amount);
+        await this.notificationDispatcher.sendNotification({
+          userId: transaction.userId,
+          eventType: 'withdrawal_failed',
+          category: 'TRANSACTION',
+          channels: ['EMAIL', 'SMS', 'IN_APP', 'PUSH'],
+          title: 'Withdrawal Failed',
+          message: `Your withdrawal of ₦${amount.toLocaleString()} failed. The amount has been refunded to your wallet.`,
+          data: {
+            transactionId: transaction.id,
+            amount,
+            fee: Number(transaction.fee),
+            totalDebit: Number(transaction.totalAmount),
+            reference: transaction.reference,
+            accountNumber: metadata?.accountNumber,
+            accountName: metadata?.accountName,
+            bankCode: metadata?.bankCode,
+            bankName: metadata?.bankName,
+            status: 'FAILED',
+            refunded: true,
+          },
+        });
+        this.logger.log(
+          `📬 Withdrawal failure notification sent for user ${transaction.userId}`,
+        );
+      } catch (notifError) {
+        this.logger.error(
+          `Failed to send withdrawal failure notification to user ${transaction.userId}`,
+          notifError,
+        );
+        // Don't fail the webhook if notification fails
+      }
     } catch (error) {
       this.logger.error(
         `Failed to handle transfer failure: ${reference}`,
