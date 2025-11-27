@@ -17,9 +17,12 @@ import { WalletModule } from './wallet/wallet.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { SupportModule } from './support/support.module';
 import { CashbackModule } from './cashback/cashback.module';
+import { CryptoModule } from './crypto/crypto.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(), // Enable cron jobs
     CacheModule, // Add cache module first for global availability
     UtilsModule, // Utils module (BVN encryption) - global
     PrismaModule,
@@ -32,6 +35,7 @@ import { CashbackModule } from './cashback/cashback.module';
     WebhooksModule,
     VTUModule,
     CashbackModule, // Cashback rewards system
+    CryptoModule, // Crypto wallet system
     CloudinaryModule,
     NotificationsModule,
     SupportModule, // Support system (chat, tickets, help center)

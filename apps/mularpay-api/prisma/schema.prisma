@@ -75,7 +75,7 @@ model User {
   updatedAt       DateTime  @updatedAt
 
   // Relations
-  wallet                 Wallet?
+  wallets                Wallet[] // Changed from wallet Wallet?
   transactions           Transaction[]
   vtuOrders              VTUOrder[]
   giftCardOrders         GiftCardOrder[]
@@ -100,6 +100,11 @@ model User {
   // Cashback Relations
   cashbackWallet         CashbackWallet?
   cashbackTransactions   CashbackTransaction[]
+
+  // Crypto Relations
+  venlyUser              VenlyUser?
+  cryptoTransactions     CryptoTransaction[]
+  cryptoConversions      CryptoConversion[]
 
   @@index([email])
   @@index([phone])
@@ -161,27 +166,49 @@ model RefreshToken {
 // WALLET SYSTEM
 // ============================================
 
+enum WalletType {
+  NAIRA // Existing
+  CRYPTO // New - holds USDT, USDC, MATIC
+  USD // Future - for virtual card funding
+}
+
 model Wallet {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String     @id @default(uuid())
+  userId String
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Wallet type
+  type WalletType
+
+  // For NAIRA wallet (existing)
   balance       Decimal @default(0) @db.Decimal(15, 2)
-  ledgerBalance Decimal @default(0) @db.Decimal(15, 2) // Balance including pending transactions
-  currency      String  @default("NGN")
+  ledgerBalance Decimal @default(0) @db.Decimal(15, 2)
+  currency      String  @default("NGN") // NGN, USD, or CRYPTO
 
-  // Limits tracking (reset daily/monthly)
+  // For CRYPTO wallet (new)
+  venlyWalletId String? @unique // Venly's wallet ID
+  walletAddress String? @unique // Blockchain address (0x...)
+
+  // Limits tracking
   dailySpent   Decimal  @default(0) @db.Decimal(15, 2)
   monthlySpent Decimal  @default(0) @db.Decimal(15, 2)
   lastResetAt  DateTime @default(now())
 
+  // Status
   isLocked     Boolean @default(false)
   lockedReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  cryptoBalances CryptoBalance[]
+
+  @@unique([userId, type]) // User can have one NAIRA, one CRYPTO, one USD wallet
   @@index([userId])
+  @@index([type])
+  @@index([walletAddress])
+  @@index([venlyWalletId])
   @@map("wallets")
 }
 
@@ -257,6 +284,18 @@ enum TransactionType {
   CRYPTO_SELL
   REFUND
   FEE
+
+  // New crypto wallet types
+  CRYPTO_DEPOSIT // Incoming crypto
+  CRYPTO_SEND // Outgoing crypto
+  CRYPTO_TO_NAIRA // Crypto → Naira conversion
+
+  // Future: USD wallet types
+  USD_DEPOSIT // Add to USD wallet
+  USD_WITHDRAWAL // Withdraw from USD wallet
+  CARD_LOAD // Load virtual card
+  CARD_PURCHASE // Virtual card purchase
+  CRYPTO_TO_USD // Crypto → USD wallet
 }
 
 enum TransactionStatus {
@@ -1198,4 +1237,297 @@ model WithdrawalConfig {
 enum WithdrawalFeeType {
   FLAT       // Fixed amount (e.g., ₦50 per withdrawal)
   PERCENTAGE // Percentage of amount (e.g., 1.5%)
+}
+
+// ============================================
+// CRYPTO WALLET SYSTEM
+// ============================================
+
+// ============================================
+// CRYPTO BALANCES (Per Token)
+// ============================================
+
+model CryptoBalance {
+  id       String @id @default(uuid())
+  walletId String
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  // Token info
+  tokenSymbol   String  // USDT, USDC, MATIC
+  tokenAddress  String? // Contract address (null for native MATIC)
+  tokenDecimals Int     @default(18) // 6 for USDT/USDC, 18 for MATIC
+
+  // Balance
+  balance    Decimal @db.Decimal(36, 18) // Human-readable
+  rawBalance String // Blockchain raw value (wei/smallest unit)
+
+  // USD values (live updated)
+  usdPrice Decimal? @db.Decimal(18, 8) // Current price in USD
+  usdValue Decimal? @db.Decimal(18, 2) // Total value (balance * price)
+
+  lastUpdated DateTime @default(now())
+
+  @@unique([walletId, tokenSymbol])
+  @@index([walletId])
+  @@index([tokenSymbol])
+  @@map("crypto_balances")
+}
+
+// ============================================
+// CRYPTO TRANSACTIONS
+// ============================================
+
+model CryptoTransaction {
+  id              String @id @default(uuid())
+  reference       String @unique // TXN_CRYPTO_xxx
+  transactionHash String @unique // Blockchain tx hash
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  walletId String
+
+  // Transaction type & direction
+  type      CryptoTransactionType
+  direction TransactionDirection
+
+  // Addresses
+  fromAddress String
+  toAddress   String
+
+  // Token details
+  tokenSymbol   String
+  tokenAddress  String?
+  tokenDecimals Int     @default(6)
+
+  // Amounts
+  amount    Decimal @db.Decimal(36, 18) // Human-readable
+  rawAmount String // Blockchain raw value
+  usdValue  Decimal @db.Decimal(18, 2) // USD value at time of tx
+
+  // Gas (only for outgoing)
+  gasFee    Decimal? @db.Decimal(10, 6) // In MATIC
+  gasFeeUsd Decimal? @db.Decimal(10, 2) // Gas in USD
+
+  // Blockchain details
+  network            String  @default("MATIC") // MATIC, ETH, etc.
+  blockNumber        Int?
+  blockHash          String?
+  confirmations      Int     @default(0)
+  hasReachedFinality Boolean @default(false)
+  nonce              Int?
+
+  // Status
+  status        CryptoTransactionStatus @default(PENDING)
+  failureReason String?
+
+  // Metadata
+  memo String? // User note/description
+
+  // Timestamps
+  submittedAt DateTime  @default(now())
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([transactionHash])
+  @@index([status])
+  @@index([type])
+  @@index([direction])
+  @@index([submittedAt])
+  @@index([status, submittedAt])
+  @@map("crypto_transactions")
+}
+
+enum CryptoTransactionType {
+  RECEIVE // Incoming crypto
+  SEND // Outgoing crypto
+  CONVERT // Convert to Naira (internal)
+}
+
+enum TransactionDirection {
+  INCOMING
+  OUTGOING
+}
+
+enum CryptoTransactionStatus {
+  PENDING // Submitted to blockchain
+  CONFIRMING // Accumulating confirmations
+  COMPLETED // Finalized
+  FAILED // Failed on blockchain
+}
+
+// ============================================
+// CRYPTO → NAIRA CONVERSIONS
+// ============================================
+
+model CryptoConversion {
+  id        String @id @default(uuid())
+  reference String @unique // TXN_CRYPTO_CONVERT_xxx
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Crypto details
+  tokenSymbol  String
+  cryptoAmount Decimal @db.Decimal(36, 18)
+  usdValue     Decimal @db.Decimal(18, 2) // Crypto → USD
+
+  // Naira details
+  nairaAmount    Decimal @db.Decimal(18, 2) // Final amount
+  exchangeRate   Decimal @db.Decimal(10, 2) // USD → NGN rate
+  feePercent     Decimal @db.Decimal(5, 2) // Platform fee %
+  feeAmount      Decimal @db.Decimal(18, 2) // Fee in Naira
+  netNaira       Decimal @db.Decimal(18, 2) // After fee
+
+  // Status
+  status ConversionStatus @default(PENDING)
+
+  // Admin approval (if needed)
+  requiresApproval Boolean   @default(false)
+  approvedBy       String? // Admin user ID
+  approvedAt       DateTime?
+  rejectionReason  String?
+
+  // Transaction references
+  cryptoTransactionId String? // Debit from crypto wallet
+  nairaTransactionId  String? // Credit to naira wallet
+
+  // Timestamps
+  requestedAt DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("crypto_conversions")
+}
+
+enum ConversionStatus {
+  PENDING // Awaiting processing
+  PROCESSING // Being processed
+  COMPLETED // Naira credited
+  FAILED // Failed
+  REJECTED // Admin rejected
+}
+
+// ============================================
+// EXCHANGE RATES (Admin Managed)
+// ============================================
+
+model ExchangeRate {
+  id String @id @default(uuid())
+
+  // Rate configuration
+  fromCurrency String // USD
+  toCurrency   String // NGN
+  rate         Decimal @db.Decimal(10, 2) // Exchange rate (e.g., 1650.00)
+
+  // Fee
+  platformFeePercent Decimal @db.Decimal(5, 2) // Platform fee % (e.g., 1.00)
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Admin tracking
+  setBy     String // Admin user ID
+  setAt     DateTime  @default(now())
+  expiresAt DateTime? // Optional expiry
+
+  // Metadata
+  source String? // "manual", "binance_api", "coingecko"
+  notes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fromCurrency, toCurrency, isActive])
+  @@index([isActive])
+  @@map("exchange_rates")
+}
+
+// ============================================
+// CRYPTO PRICES (Live from API)
+// ============================================
+
+model CryptoPrice {
+  id String @id @default(uuid())
+
+  symbol   String // MATIC, USDT, USDC
+  usdPrice Decimal @db.Decimal(18, 8) // Current price in USD
+
+  // Source
+  source String @default("coingecko") // coingecko, binance, etc.
+
+  // Timestamps
+  fetchedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([symbol, fetchedAt])
+  @@index([symbol])
+  @@index([fetchedAt])
+  @@map("crypto_prices")
+}
+
+// ============================================
+// WEBHOOK LOGS
+// ============================================
+
+model CryptoWebhookLog {
+  id String @id @default(uuid())
+
+  // Webhook details
+  eventType String // TRANSACTION_SUCCEEDED, TRANSACTION_FAILED
+  payload   Json // Full webhook payload
+
+  // Processing
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  error       String?
+
+  // Extracted data (for quick lookup)
+  transactionHash String?
+  fromAddress     String?
+  toAddress       String?
+  amount          Decimal? @db.Decimal(18, 8)
+  tokenSymbol     String?
+
+  receivedAt DateTime @default(now())
+
+  @@index([eventType])
+  @@index([transactionHash])
+  @@index([processed])
+  @@index([receivedAt])
+  @@map("crypto_webhook_logs")
+}
+
+// ============================================
+// VENLY USER MANAGEMENT
+// ============================================
+
+model VenlyUser {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Venly credentials
+  venlyUserId          String @unique // Venly's user ID
+  venlySigningMethodId String? // PIN signing method ID
+  venlyReference       String // Custom reference
+
+  // PIN security (encrypted)
+  encryptedPin String // Never store plain PIN!
+  pinSetAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venlyUserId])
+  @@index([userId])
+  @@map("venly_users")
 }
