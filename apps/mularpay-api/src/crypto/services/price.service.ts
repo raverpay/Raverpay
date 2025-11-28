@@ -13,11 +13,20 @@ export class PriceService {
   private readonly httpClient: AxiosInstance;
 
   // CoinGecko API IDs
+  // Note: MATIC was rebranded to POL, CoinGecko may use different IDs
   private readonly TOKEN_IDS = {
-    MATIC: 'matic-network',
+    MATIC: 'matic-network', // Primary ID (may need fallback)
     USDT: 'tether',
     USDC: 'usd-coin',
   };
+
+  // Alternative IDs for MATIC/POL (try these if primary fails)
+  // Note: MATIC was migrated to POL on Sep 4, 2024. Use 'polygon-ecosystem-token' for POL price
+  private readonly MATIC_ALTERNATIVE_IDS = [
+    'polygon-ecosystem-token', // POL (ex-MATIC) - this is the correct one!
+    'polygon',
+    'matic-network',
+  ];
 
   constructor(private readonly prisma: PrismaService) {
     this.httpClient = axios.create({
@@ -33,7 +42,12 @@ export class PriceService {
     try {
       this.logger.log('Fetching prices from CoinGecko...');
 
-      const ids = Object.values(this.TOKEN_IDS).join(',');
+      // Build list of IDs to fetch (include MATIC alternatives)
+      const ids = [
+        ...this.MATIC_ALTERNATIVE_IDS,
+        this.TOKEN_IDS.USDT,
+        this.TOKEN_IDS.USDC,
+      ].join(',');
 
       const response = await this.httpClient.get('/simple/price', {
         params: {
@@ -42,15 +56,53 @@ export class PriceService {
         },
       });
 
-      const prices = response.data;
+      const prices = response.data as Record<string, { usd?: number }>;
 
-      // Update each token price
-      for (const [symbol, coinGeckoId] of Object.entries(this.TOKEN_IDS)) {
-        const priceData = prices[coinGeckoId];
+      // Update USDT
+      const usdtPrice = prices[this.TOKEN_IDS.USDT];
+      if (usdtPrice?.usd) {
+        await this.savePrice('USDT', usdtPrice.usd);
+        this.logger.debug(`Saved price for USDT: $${usdtPrice.usd}`);
+      } else {
+        this.logger.warn(
+          `No price data found for USDT (${this.TOKEN_IDS.USDT})`,
+        );
+      }
 
-        if (priceData && priceData.usd) {
-          await this.savePrice(symbol, priceData.usd);
+      // Update USDC
+      const usdcPrice = prices[this.TOKEN_IDS.USDC];
+      if (usdcPrice?.usd) {
+        await this.savePrice('USDC', usdcPrice.usd);
+        this.logger.debug(`Saved price for USDC: $${usdcPrice.usd}`);
+      } else {
+        this.logger.warn(
+          `No price data found for USDC (${this.TOKEN_IDS.USDC})`,
+        );
+      }
+
+      // Update MATIC - try alternative IDs
+      let maticPrice: number | null = null;
+      let maticIdUsed: string | null = null;
+
+      for (const id of this.MATIC_ALTERNATIVE_IDS) {
+        const priceData = prices[id];
+        if (priceData?.usd !== undefined) {
+          maticPrice = priceData.usd;
+          maticIdUsed = id;
+          this.logger.debug(`Found MATIC price using ID: ${id}`);
+          break;
         }
+      }
+
+      if (maticPrice !== null) {
+        await this.savePrice('MATIC', maticPrice);
+        this.logger.debug(
+          `Saved price for MATIC: $${maticPrice} (from ${maticIdUsed})`,
+        );
+      } else {
+        this.logger.warn(
+          `No price data found for MATIC. Tried IDs: ${this.MATIC_ALTERNATIVE_IDS.join(', ')}`,
+        );
       }
 
       this.logger.log('Prices updated successfully');
@@ -166,7 +218,9 @@ export class PriceService {
         });
 
         if (deleted.count > 0) {
-          this.logger.log(`Cleaned up ${deleted.count} old prices for ${symbol}`);
+          this.logger.log(
+            `Cleaned up ${deleted.count} old prices for ${symbol}`,
+          );
         }
       }
     } catch (error) {

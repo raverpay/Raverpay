@@ -231,7 +231,7 @@ export class AdminGiftCardsService {
     // Perform approval in a transaction
     const result = await this.prisma.$transaction(async (prisma) => {
       // Get wallet
-      const wallet = await prisma.wallet.findUnique({
+      const wallet = await prisma.wallet.findFirst({
         where: { userId: order.userId },
       });
 
@@ -243,7 +243,12 @@ export class AdminGiftCardsService {
 
       // Update wallet
       await prisma.wallet.update({
-        where: { userId: order.userId },
+        where: {
+          userId_type: {
+            userId: order.userId,
+            type: 'NAIRA'
+          }
+        },
         data: {
           balance: newBalance,
           ledgerBalance: newBalance,

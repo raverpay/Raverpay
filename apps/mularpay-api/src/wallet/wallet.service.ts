@@ -43,7 +43,7 @@ export class WalletService {
     }
 
     // Cache miss - fetch from database
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
       include: {
         user: {
@@ -117,19 +117,24 @@ export class WalletService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        wallet: true,
+        wallets: {
+          where: {
+            type: 'NAIRA',
+          },
+        },
       },
     });
 
-    if (!user || !user.wallet) {
+    const nairaWallet = user?.wallets?.[0];
+    if (!user || !nairaWallet) {
       throw new NotFoundException('User or wallet not found');
     }
 
     const kycTier = user.kycTier;
     const limits = KYC_TIER_LIMITS[kycTier];
 
-    const dailySpent = user.wallet.dailySpent.toString();
-    const monthlySpent = user.wallet.monthlySpent.toString();
+    const dailySpent = nairaWallet.dailySpent.toString();
+    const monthlySpent = nairaWallet.monthlySpent.toString();
 
     const dailyRemaining = this.calculateRemaining(
       limits.dailyLimit,
@@ -153,7 +158,7 @@ export class WalletService {
       monthlySpent,
       dailyRemaining,
       monthlyRemaining,
-      canTransact: !user.wallet.isLocked,
+      canTransact: !nairaWallet.isLocked,
       limitInfo: {
         isUnlimited: limits.isUnlimited,
         nextTier,
@@ -170,7 +175,7 @@ export class WalletService {
    * @returns Lock confirmation
    */
   async lockWallet(userId: string, reason: string) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
     });
 
@@ -221,7 +226,7 @@ export class WalletService {
    * @returns Unlock confirmation
    */
   async unlockWallet(walletId: string, adminId: string, reason: string) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { id: walletId },
     });
 

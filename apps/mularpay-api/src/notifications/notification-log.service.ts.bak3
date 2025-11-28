@@ -1,0 +1,229 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+/**
+ * Notification Log Service
+ *
+ * Tracks delivery status for all notification channels
+ * Provides analytics on delivery, open rates, and failures
+ */
+@Injectable()
+export class NotificationLogService {
+  private readonly logger = new Logger(NotificationLogService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Log a successful notification delivery
+   *
+   * @param data - Delivery log data
+   * @returns Created log entry
+   */
+  async logDelivery(data: {
+    notificationId: string;
+    userId: string;
+    channel: 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP';
+    status: 'PENDING' | 'SENT' | 'DELIVERED';
+    provider?: string;
+    providerMessageId?: string;
+  }) {
+    const log = await this.prisma.notificationLog.create({
+      data: {
+        notificationId: data.notificationId,
+        userId: data.userId,
+        channel: data.channel,
+        status: data.status,
+        provider: data.provider,
+        providerMessageId: data.providerMessageId,
+        sentAt:
+          data.status === 'SENT' || data.status === 'DELIVERED'
+            ? new Date()
+            : null,
+        deliveredAt: data.status === 'DELIVERED' ? new Date() : null,
+      },
+    });
+
+    this.logger.log(
+      `Logged ${data.status} for ${data.channel}: notification ${data.notificationId}`,
+    );
+
+    return log;
+  }
+
+  /**
+   * Log a failed notification delivery
+   *
+   * @param data - Failure log data
+   * @returns Created log entry
+   */
+  async logFailure(data: {
+    notificationId: string;
+    userId: string;
+    channel: 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP';
+    failureReason: string;
+    provider?: string;
+    retryCount?: number;
+  }) {
+    const log = await this.prisma.notificationLog.create({
+      data: {
+        notificationId: data.notificationId,
+        userId: data.userId,
+        channel: data.channel,
+        status: 'FAILED',
+        failureReason: data.failureReason,
+        provider: data.provider,
+        retryCount: data.retryCount || 0,
+        lastRetryAt: data.retryCount && data.retryCount > 0 ? new Date() : null,
+      },
+    });
+
+    this.logger.warn(
+      `Failed delivery for ${data.channel}: ${data.failureReason}`,
+    );
+
+    return log;
+  }
+
+  /**
+   * Update log status (e.g., SENT → DELIVERED)
+   *
+   * @param logId - Log entry ID
+   * @param status - New status
+   * @returns Updated log entry
+   */
+  async updateStatus(
+    logId: string,
+    status: 'SENT' | 'DELIVERED' | 'FAILED' | 'BOUNCED',
+  ) {
+    const updateData: any = { status };
+
+    if (status === 'DELIVERED') {
+      updateData.deliveredAt = new Date();
+    }
+
+    return this.prisma.notificationLog.update({
+      where: { id: logId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Log notification opened (for analytics)
+   *
+   * @param logId - Log entry ID
+   * @returns Updated log entry
+   */
+  async logOpened(logId: string) {
+    return this.prisma.notificationLog.update({
+      where: { id: logId },
+      data: {
+        status: 'OPENED',
+        openedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Log notification clicked (for analytics)
+   *
+   * @param logId - Log entry ID
+   * @param clickUrl - URL that was clicked
+   * @returns Updated log entry
+   */
+  async logClicked(logId: string, clickUrl?: string) {
+    return this.prisma.notificationLog.update({
+      where: { id: logId },
+      data: {
+        status: 'CLICKED',
+        clickedAt: new Date(),
+        clickUrl,
+      },
+    });
+  }
+
+  /**
+   * Get delivery logs for a notification
+   *
+   * @param notificationId - Notification ID
+   * @returns All delivery logs for the notification
+   */
+  async getLogsForNotification(notificationId: string) {
+    return this.prisma.notificationLog.findMany({
+      where: { notificationId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  /**
+   * Get delivery stats for a user
+   *
+   * @param userId - User ID
+   * @returns Delivery statistics
+   */
+  async getUserStats(userId: string) {
+    const logs = await this.prisma.notificationLog.findMany({
+      where: { userId, type: 'NAIRA' },
+    });
+
+    const stats = {
+      total: logs.length,
+      sent: logs.filter((l) => l.status === 'SENT' || l.status === 'DELIVERED')
+        .length,
+      delivered: logs.filter((l) => l.status === 'DELIVERED').length,
+      failed: logs.filter((l) => l.status === 'FAILED').length,
+      opened: logs.filter((l) => l.status === 'OPENED').length,
+      clicked: logs.filter((l) => l.status === 'CLICKED').length,
+      byChannel: {
+        email: logs.filter((l) => l.channel === 'EMAIL').length,
+        sms: logs.filter((l) => l.channel === 'SMS').length,
+        push: logs.filter((l) => l.channel === 'PUSH').length,
+        inApp: logs.filter((l) => l.channel === 'IN_APP').length,
+      },
+    };
+
+    return stats;
+  }
+
+  /**
+   * Get failed deliveries that need retry
+   *
+   * @param maxRetries - Maximum retry count
+   * @returns Logs that need retry
+   */
+  async getFailedDeliveriesForRetry(maxRetries: number = 3) {
+    return this.prisma.notificationLog.findMany({
+      where: {
+        status: 'FAILED',
+        retryCount: {
+          lt: maxRetries,
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+      take: 100, // Process in batches
+    });
+  }
+
+  /**
+   * Increment retry count for a log
+   *
+   * @param logId - Log entry ID
+   * @returns Updated log entry
+   */
+  async incrementRetryCount(logId: string) {
+    const log = await this.prisma.notificationLog.findUnique({
+      where: { id: logId },
+    });
+
+    if (!log) {
+      throw new Error(`Log ${logId} not found`);
+    }
+
+    return this.prisma.notificationLog.update({
+      where: { id: logId },
+      data: {
+        retryCount: log.retryCount + 1,
+        lastRetryAt: new Date(),
+      },
+    });
+  }
+}

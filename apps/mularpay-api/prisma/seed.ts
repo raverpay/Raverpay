@@ -41,9 +41,10 @@ async function seedSuperAdmin() {
       phoneVerified: true,
       emailVerifiedAt: new Date(),
       phoneVerifiedAt: new Date(),
-      // Create wallet for the admin
-      wallet: {
+      // Create NAIRA wallet for the admin
+      wallets: {
         create: {
+          type: 'NAIRA',
           balance: 0,
           ledgerBalance: 0,
           currency: 'NGN',

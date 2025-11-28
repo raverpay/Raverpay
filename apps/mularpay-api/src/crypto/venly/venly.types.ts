@@ -210,12 +210,21 @@ export const VENLY_BASE_URL = {
 };
 
 export const VENLY_AUTH_URL = {
-  sandbox: 'https://login-sandbox.venly.io/auth/realms/Arkane/protocol/openid-connect/token',
-  production: 'https://login.venly.io/auth/realms/Arkane/protocol/openid-connect/token',
+  sandbox:
+    'https://login-sandbox.venly.io/auth/realms/Arkane/protocol/openid-connect/token',
+  production:
+    'https://login.venly.io/auth/realms/Arkane/protocol/openid-connect/token',
 };
 
 // Polygon Mainnet Token Addresses
 export const POLYGON_TOKEN_ADDRESSES = {
   USDT: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', // 6 decimals
   USDC: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // 6 decimals
+} as const;
+
+// Polygon Amoy Testnet Token Addresses
+// Set these via environment variables when you have testnet token contracts
+export const POLYGON_AMOY_TOKEN_ADDRESSES = {
+  USDT: process.env.POLYGON_AMOY_USDT_ADDRESS || null,
+  USDC: process.env.POLYGON_AMOY_USDC_ADDRESS || null,
 } as const;

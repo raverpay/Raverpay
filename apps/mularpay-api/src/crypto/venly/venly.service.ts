@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { VenlyAuthService } from './venly-auth.service';
 import {
   VENLY_BASE_URL,
@@ -15,6 +15,7 @@ import {
   TransactionStatus,
   VenlyUser,
   POLYGON_TOKEN_ADDRESSES,
+  POLYGON_AMOY_TOKEN_ADDRESSES,
 } from './venly.types';
 
 /**
@@ -52,7 +53,9 @@ export class VenlyService {
     pin: string;
   }): Promise<CreateVenlyUserResponse> {
     try {
-      this.logger.log(`Creating Venly user with reference: ${params.reference}`);
+      this.logger.log(
+        `Creating Venly user with reference: ${params.reference}`,
+      );
 
       const headers = await this.venlyAuth.getAuthHeaders();
 
@@ -64,24 +67,27 @@ export class VenlyService {
         },
       };
 
-      const response = await this.httpClient.post<VenlyApiResponse<CreateVenlyUserResponse>>(
-        '/users',
-        requestBody,
-        { headers },
-      );
+      const response = await this.httpClient.post<
+        VenlyApiResponse<CreateVenlyUserResponse>
+      >('/users', requestBody, { headers });
 
       if (!response.data.success) {
         throw new Error('Venly API returned success: false');
       }
 
-      this.logger.log(`Venly user created successfully: ${response.data.result.id}`);
+      this.logger.log(
+        `Venly user created successfully: ${response.data.result.id}`,
+      );
 
       return response.data.result;
     } catch (error) {
       this.logger.error('Failed to create Venly user', error);
 
       if (axios.isAxiosError(error) && error.response) {
-        this.logger.error('Response data:', JSON.stringify(error.response.data));
+        this.logger.error(
+          'Response data:',
+          JSON.stringify(error.response.data),
+        );
       }
 
       throw new Error('Failed to create crypto wallet user');
@@ -132,29 +138,32 @@ export class VenlyService {
         description: params.description || 'MularPay Crypto Wallet',
       };
 
-      const response = await this.httpClient.post<VenlyApiResponse<VenlyWallet>>(
-        '/wallets',
-        requestBody,
-        {
-          headers: {
-            ...headers,
-            'Signing-Method': params.signingMethod,
-          },
+      const response = await this.httpClient.post<
+        VenlyApiResponse<VenlyWallet>
+      >('/wallets', requestBody, {
+        headers: {
+          ...headers,
+          'Signing-Method': params.signingMethod,
         },
-      );
+      });
 
       if (!response.data.success) {
         throw new Error('Venly API returned success: false');
       }
 
-      this.logger.log(`Wallet created successfully: ${response.data.result.address}`);
+      this.logger.log(
+        `Wallet created successfully: ${response.data.result.address}`,
+      );
 
       return response.data.result;
     } catch (error) {
       this.logger.error('Failed to create Venly wallet', error);
 
       if (axios.isAxiosError(error) && error.response) {
-        this.logger.error('Response data:', JSON.stringify(error.response.data));
+        this.logger.error(
+          'Response data:',
+          JSON.stringify(error.response.data),
+        );
       }
 
       throw new Error('Failed to create crypto wallet');
@@ -186,53 +195,129 @@ export class VenlyService {
 
   /**
    * Get native balance (MATIC)
+   * Retries on SSL/network errors
    */
   async getWalletBalance(walletId: string): Promise<VenlyNativeBalance> {
-    try {
-      const headers = await this.venlyAuth.getAuthHeaders();
+    const maxRetries = 3;
+    const baseDelay = 1000;
+    let lastError: Error | undefined;
 
-      const response = await this.httpClient.get<VenlyApiResponse<VenlyNativeBalance>>(
-        `/wallets/${walletId}/balance`,
-        { headers },
-      );
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const headers = await this.venlyAuth.getAuthHeaders();
 
-      if (!response.data.success) {
-        throw new Error('Venly API returned success: false');
+        const response = await this.httpClient.get<
+          VenlyApiResponse<VenlyNativeBalance>
+        >(`/wallets/${walletId}/balance`, { headers });
+
+        if (!response.data.success) {
+          throw new Error('Venly API returned success: false');
+        }
+
+        return response.data.result;
+      } catch (error) {
+        lastError = error as Error;
+
+        // Check if it's a retryable error (SSL, network, timeout)
+        if (this.isRetryableError(error) && attempt < maxRetries - 1) {
+          const delay = baseDelay * Math.pow(2, attempt);
+          this.logger.warn(
+            `Retryable error fetching wallet balance for ${walletId} (attempt ${attempt + 1}/${maxRetries}), retrying in ${delay}ms...`,
+            error instanceof AxiosError ? error.message : String(error),
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        // Non-retryable error or max retries reached
+        this.logger.error(`Failed to get wallet balance: ${walletId}`, error);
+        throw new Error('Failed to fetch wallet balance');
+      }
+    }
+
+    throw lastError || new Error('Failed to fetch wallet balance');
+  }
+
+  /**
+   * Check if error is retryable (SSL, network, timeout errors)
+   */
+  private isRetryableError(error: unknown): boolean {
+    if (axios.isAxiosError(error)) {
+      const code = error.code;
+      const message = error.message?.toLowerCase() || '';
+
+      // SSL/TLS errors
+      if (
+        code === 'ERR_SSL_SSLV3_ALERT_BAD_RECORD_MAC' ||
+        code === 'ECONNRESET' ||
+        code === 'ETIMEDOUT' ||
+        code === 'ENOTFOUND' ||
+        code === 'ECONNREFUSED' ||
+        message.includes('ssl') ||
+        message.includes('tls') ||
+        message.includes('network') ||
+        message.includes('timeout')
+      ) {
+        return true;
       }
 
-      return response.data.result;
-    } catch (error) {
-      this.logger.error(`Failed to get wallet balance: ${walletId}`, error);
-      throw new Error('Failed to fetch wallet balance');
+      // 5xx server errors (retryable)
+      if (error.response?.status && error.response.status >= 500) {
+        return true;
+      }
     }
+
+    return false;
   }
 
   /**
    * Get ERC20 token balances
+   * Retries on SSL/network errors
    */
   async getTokenBalances(walletId: string): Promise<VenlyTokenBalance[]> {
-    try {
-      const headers = await this.venlyAuth.getAuthHeaders();
+    const maxRetries = 3;
+    const baseDelay = 1000;
+    let lastError: Error | undefined;
 
-      const response = await this.httpClient.get<VenlyApiResponse<VenlyTokenBalance[]>>(
-        `/wallets/${walletId}/balance/tokens`,
-        {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const headers = await this.venlyAuth.getAuthHeaders();
+
+        const response = await this.httpClient.get<
+          VenlyApiResponse<VenlyTokenBalance[]>
+        >(`/wallets/${walletId}/balance/tokens`, {
           headers,
           params: {
             includePossibleSpam: false,
           },
-        },
-      );
+        });
 
-      if (!response.data.success) {
-        throw new Error('Venly API returned success: false');
+        if (!response.data.success) {
+          throw new Error('Venly API returned success: false');
+        }
+
+        return response.data.result || [];
+      } catch (error) {
+        lastError = error as Error;
+
+        // Check if it's a retryable error
+        if (this.isRetryableError(error) && attempt < maxRetries - 1) {
+          const delay = baseDelay * Math.pow(2, attempt);
+          this.logger.warn(
+            `Retryable error fetching token balances for ${walletId} (attempt ${attempt + 1}/${maxRetries}), retrying in ${delay}ms...`,
+            error instanceof AxiosError ? error.message : String(error),
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        // Non-retryable error or max retries reached
+        this.logger.error(`Failed to get token balances: ${walletId}`, error);
+        throw new Error('Failed to fetch token balances');
       }
-
-      return response.data.result || [];
-    } catch (error) {
-      this.logger.error(`Failed to get token balances: ${walletId}`, error);
-      throw new Error('Failed to fetch token balances');
     }
+
+    throw lastError || new Error('Failed to fetch token balances');
   }
 
   /**
@@ -246,7 +331,8 @@ export class VenlyService {
       const balances = await this.getTokenBalances(walletId);
 
       const tokenBalance = balances.find(
-        (token) => token.tokenAddress.toLowerCase() === tokenAddress.toLowerCase(),
+        (token) =>
+          token.tokenAddress.toLowerCase() === tokenAddress.toLowerCase(),
       );
 
       return tokenBalance || null;
@@ -272,7 +358,9 @@ export class VenlyService {
     signingMethod: string; // Format: {signingMethodId}:{pin}
   }): Promise<ExecuteTransactionResponse> {
     try {
-      this.logger.log(`Executing ${params.type} transaction from wallet: ${params.walletId}`);
+      this.logger.log(
+        `Executing ${params.type} transaction from wallet: ${params.walletId}`,
+      );
 
       const headers = await this.venlyAuth.getAuthHeaders();
 
@@ -294,29 +382,32 @@ export class VenlyService {
         requestBody.transactionRequest.value = params.value;
       }
 
-      const response = await this.httpClient.post<VenlyApiResponse<ExecuteTransactionResponse>>(
-        '/transactions/execute',
-        requestBody,
-        {
-          headers: {
-            ...headers,
-            'Signing-Method': params.signingMethod,
-          },
+      const response = await this.httpClient.post<
+        VenlyApiResponse<ExecuteTransactionResponse>
+      >('/transactions/execute', requestBody, {
+        headers: {
+          ...headers,
+          'Signing-Method': params.signingMethod,
         },
-      );
+      });
 
       if (!response.data.success) {
         throw new Error('Venly API returned success: false');
       }
 
-      this.logger.log(`Transaction submitted: ${response.data.result.transactionHash}`);
+      this.logger.log(
+        `Transaction submitted: ${response.data.result.transactionHash}`,
+      );
 
       return response.data.result;
     } catch (error) {
       this.logger.error('Failed to execute transaction', error);
 
       if (axios.isAxiosError(error) && error.response) {
-        this.logger.error('Response data:', JSON.stringify(error.response.data));
+        this.logger.error(
+          'Response data:',
+          JSON.stringify(error.response.data),
+        );
       }
 
       throw new Error('Failed to send crypto');
@@ -326,14 +417,16 @@ export class VenlyService {
   /**
    * Get transaction status
    */
-  async getTransactionStatus(secretType: string, txHash: string): Promise<TransactionStatus> {
+  async getTransactionStatus(
+    secretType: string,
+    txHash: string,
+  ): Promise<TransactionStatus> {
     try {
       const headers = await this.venlyAuth.getAuthHeaders();
 
-      const response = await this.httpClient.get<VenlyApiResponse<TransactionStatus>>(
-        `/transactions/${secretType}/${txHash}/status`,
-        { headers },
-      );
+      const response = await this.httpClient.get<
+        VenlyApiResponse<TransactionStatus>
+      >(`/transactions/${secretType}/${txHash}/status`, { headers });
 
       if (!response.data.success) {
         throw new Error('Venly API returned success: false');
@@ -355,12 +448,19 @@ export class VenlyService {
     amount: string,
     signingMethod: string,
   ): Promise<ExecuteTransactionResponse> {
+    const isTestnet = this.venlyAuth.getEnvironment() === 'sandbox';
+    const tokenAddress = isTestnet
+      ? POLYGON_AMOY_TOKEN_ADDRESSES.USDT ||
+        process.env.POLYGON_AMOY_USDT_ADDRESS ||
+        POLYGON_TOKEN_ADDRESSES.USDT
+      : POLYGON_TOKEN_ADDRESSES.USDT;
+
     return this.executeTransaction({
       walletId,
       to,
       type: 'TOKEN_TRANSFER',
       value: amount,
-      tokenAddress: POLYGON_TOKEN_ADDRESSES.USDT,
+      tokenAddress,
       signingMethod,
     });
   }
@@ -374,12 +474,19 @@ export class VenlyService {
     amount: string,
     signingMethod: string,
   ): Promise<ExecuteTransactionResponse> {
+    const isTestnet = this.venlyAuth.getEnvironment() === 'sandbox';
+    const tokenAddress = isTestnet
+      ? POLYGON_AMOY_TOKEN_ADDRESSES.USDC ||
+        process.env.POLYGON_AMOY_USDC_ADDRESS ||
+        POLYGON_TOKEN_ADDRESSES.USDC
+      : POLYGON_TOKEN_ADDRESSES.USDC;
+
     return this.executeTransaction({
       walletId,
       to,
       type: 'TOKEN_TRANSFER',
       value: amount,
-      tokenAddress: POLYGON_TOKEN_ADDRESSES.USDC,
+      tokenAddress,
       signingMethod,
     });
   }

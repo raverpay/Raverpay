@@ -126,7 +126,7 @@ export class AdminWalletsService {
    * Get wallet details by user ID
    */
   async getWalletByUserId(userId: string) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
       include: {
         user: {
@@ -168,7 +168,7 @@ export class AdminWalletsService {
     userId: string,
     dto: AdjustWalletDto,
   ) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
     });
 
@@ -190,7 +190,12 @@ export class AdminWalletsService {
     const result = await this.prisma.$transaction(async (prisma) => {
       // Update wallet
       const updatedWallet = await prisma.wallet.update({
-        where: { userId },
+        where: {
+          userId_type: {
+            userId,
+            type: 'NAIRA'
+          }
+        },
         data: {
           balance: newBalance,
           ledgerBalance: newBalance,
@@ -253,7 +258,7 @@ export class AdminWalletsService {
    * Reset spending limits
    */
   async resetLimits(adminUserId: string, userId: string) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
     });
 
@@ -262,7 +267,12 @@ export class AdminWalletsService {
     }
 
     const updatedWallet = await this.prisma.wallet.update({
-      where: { userId },
+      where: {
+        userId_type: {
+          userId,
+          type: 'NAIRA'
+        }
+      },
       data: {
         dailySpent: 0,
         monthlySpent: 0,

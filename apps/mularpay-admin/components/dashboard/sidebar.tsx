@@ -25,6 +25,7 @@ import {
   LucideIcon,
   Percent,
   Banknote,
+  Coins,
 } from 'lucide-react';
 
 interface NavItem {
@@ -81,6 +82,12 @@ const navigation: NavItem[] = [
     name: 'Crypto Orders',
     href: '/dashboard/crypto',
     icon: Bitcoin,
+    roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
+  },
+  {
+    name: 'Venly Wallets',
+    href: '/dashboard/venly-wallets',
+    icon: Coins,
     roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
   },
   {

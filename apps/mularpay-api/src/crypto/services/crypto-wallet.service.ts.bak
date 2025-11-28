@@ -1,0 +1,223 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { VenlyService } from '../venly/venly.service';
+import { VenlyUserService } from '../venly/venly-user.service';
+import { WalletType } from '@prisma/client';
+
+/**
+ * Crypto Wallet Service
+ * Handles crypto wallet initialization and management
+ */
+@Injectable()
+export class CryptoWalletService {
+  private readonly logger = new Logger(CryptoWalletService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly venly: VenlyService,
+    private readonly venlyUser: VenlyUserService,
+  ) {}
+
+  /**
+   * Initialize crypto wallet for user
+   * Creates Venly user + wallet + database records
+   */
+  async initializeCryptoWallet(params: { userId: string; pin: string }) {
+    const { userId, pin } = params;
+
+    // Check if crypto wallet already exists
+    const existing = await this.prisma.wallet.findFirst({
+      where: { userId, type: WalletType.CRYPTO },
+    });
+
+    if (existing) {
+      this.logger.log(`Crypto wallet already exists for user: ${userId}`);
+      return existing;
+    }
+
+    try {
+      // 1. Create Venly user (if doesn't exist)
+      let venlyUser = await this.venlyUser.getVenlyUser(userId);
+
+      if (!venlyUser) {
+        venlyUser = await this.venlyUser.createVenlyUser({ userId, pin });
+      }
+
+      // 2. Get signing method header
+      const signingMethod = await this.venlyUser.getSigningMethodHeader(userId, pin);
+
+      // 3. Create MATIC wallet on Polygon via Venly
+      const venlyWallet = await this.venly.createWallet({
+        userId: venlyUser.venlyUserId,
+        signingMethod,
+        description: 'MularPay Crypto Wallet',
+        identifier: userId,
+      });
+
+      // 4. Create wallet in database
+      const wallet = await this.prisma.wallet.create({
+        data: {
+          userId,
+          type: WalletType.CRYPTO,
+          currency: 'CRYPTO',
+          balance: 0,
+          ledgerBalance: 0,
+          venlyWalletId: venlyWallet.id,
+          walletAddress: venlyWallet.address,
+        },
+      });
+
+      // 5. Initialize default balances (0 for each token)
+      await this.initializeBalances(wallet.id);
+
+      this.logger.log(`Initialized crypto wallet for user: ${userId}`);
+      this.logger.log(`Wallet address: ${venlyWallet.address}`);
+
+      return wallet;
+    } catch (error) {
+      this.logger.error(`Failed to initialize crypto wallet for user: ${userId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get crypto wallet (must exist)
+   */
+  async getCryptoWallet(userId: string) {
+    const wallet = await this.prisma.wallet.findFirst({
+      where: { userId, type: WalletType.CRYPTO },
+      include: {
+        cryptoBalances: {
+          orderBy: { usdValue: 'desc' },
+        },
+      },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Crypto wallet not found. Please initialize first.');
+    }
+
+    return wallet;
+  }
+
+  /**
+   * Get crypto wallet with full details including USD/NGN equivalents
+   */
+  async getCryptoWalletDetails(userId: string) {
+    const wallet = await this.getCryptoWallet(userId);
+
+    // Calculate total USD value
+    const totalUsdValue = wallet.cryptoBalances.reduce(
+      (sum, balance) => sum + (Number(balance.usdValue) || 0),
+      0,
+    );
+
+    // Get current NGN exchange rate
+    const exchangeRate = await this.prisma.exchangeRate.findFirst({
+      where: {
+        fromCurrency: 'USD',
+        toCurrency: 'NGN',
+        isActive: true,
+      },
+      orderBy: { setAt: 'desc' },
+    });
+
+    const nairaEquivalent = totalUsdValue * Number(exchangeRate?.rate || 0);
+
+    return {
+      wallet,
+      totalUsdValue,
+      nairaEquivalent,
+      exchangeRate: exchangeRate?.rate || 0,
+      balances: wallet.cryptoBalances,
+    };
+  }
+
+  /**
+   * Get deposit info (address + QR data)
+   */
+  async getDepositInfo(userId: string) {
+    const wallet = await this.getCryptoWallet(userId);
+
+    if (!wallet.walletAddress) {
+      throw new Error('Wallet address not found');
+    }
+
+    return {
+      walletAddress: wallet.walletAddress,
+      network: 'Polygon',
+      supportedTokens: ['USDT', 'USDC', 'MATIC'],
+      qrData: wallet.walletAddress, // Can be encoded as QR code
+      warning:
+        'Only send USDT, USDC, or MATIC on Polygon network. Other tokens or networks will result in permanent loss.',
+    };
+  }
+
+  /**
+   * Check if user has crypto wallet
+   */
+  async hasCryptoWallet(userId: string): Promise<boolean> {
+    const wallet = await this.prisma.wallet.findFirst({
+      where: { userId, type: WalletType.CRYPTO },
+    });
+
+    return !!wallet;
+  }
+
+  /**
+   * Get wallet by address
+   */
+  async getWalletByAddress(address: string) {
+    return this.prisma.wallet.findFirst({
+      where: { walletAddress: address },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Initialize default token balances
+   */
+  private async initializeBalances(walletId: string) {
+    const tokens = [
+      { symbol: 'MATIC', address: null, decimals: 18 },
+      {
+        symbol: 'USDT',
+        address: process.env.POLYGON_USDT_ADDRESS || '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+        decimals: 6,
+      },
+      {
+        symbol: 'USDC',
+        address: process.env.POLYGON_USDC_ADDRESS || '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+        decimals: 6,
+      },
+    ];
+
+    await Promise.all(
+      tokens.map((token) =>
+        this.prisma.cryptoBalance.create({
+          data: {
+            walletId,
+            tokenSymbol: token.symbol,
+            tokenAddress: token.address,
+            tokenDecimals: token.decimals,
+            balance: 0,
+            rawBalance: '0',
+            usdPrice: 0,
+            usdValue: 0,
+          },
+        }),
+      ),
+    );
+
+    this.logger.log(`Initialized balances for wallet: ${walletId}`);
+  }
+}

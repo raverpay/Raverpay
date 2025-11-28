@@ -224,15 +224,16 @@ export class TransactionsService {
     // Get user and wallet
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { wallet: true },
+      include: { wallets: { where: { type: 'NAIRA' } } },
     });
 
-    if (!user || !user.wallet) {
+    const nairaWallet = user?.wallets?.[0];
+    if (!user || !nairaWallet) {
       throw new NotFoundException('User or wallet not found');
     }
 
     // Check if wallet is locked
-    if (user.wallet.isLocked) {
+    if (nairaWallet.isLocked) {
       throw new ForbiddenException('Wallet is locked');
     }
 
@@ -265,8 +266,8 @@ export class TransactionsService {
         amount: new Decimal(amount), // Amount user wants in wallet
         fee: new Decimal(feeCalc.fee), // Paystack fee
         totalAmount: new Decimal(totalToCharge), // Total charged to customer
-        balanceBefore: user.wallet.balance,
-        balanceAfter: user.wallet.balance,
+        balanceBefore: nairaWallet.balance,
+        balanceAfter: nairaWallet.balance,
         currency: 'NGN',
         description: `Card deposit of ₦${amount.toLocaleString()} (₦${feeCalc.fee.toLocaleString()} fee)`,
         metadata: {
@@ -306,7 +307,7 @@ export class TransactionsService {
     // Get transaction
     const transaction = await this.prisma.transaction.findUnique({
       where: { reference },
-      include: { user: { include: { wallet: true } } },
+      include: { user: { include: { wallets: { where: { type: 'NAIRA' } } } } },
     });
 
     if (!transaction) {
@@ -359,7 +360,7 @@ export class TransactionsService {
     }
 
     // Credit wallet and complete transaction atomically
-    const wallet = transaction.user.wallet;
+    const wallet = transaction.user.wallets?.[0];
     if (!wallet) {
       throw new NotFoundException('Wallet not found');
     }
@@ -451,7 +452,7 @@ export class TransactionsService {
     // Find virtual account
     const virtualAccount = await this.prisma.virtualAccount.findUnique({
       where: { accountNumber },
-      include: { user: { include: { wallet: true } } },
+      include: { user: { include: { wallets: { where: { type: 'NAIRA' } } } } },
     });
 
     if (!virtualAccount) {
@@ -466,7 +467,7 @@ export class TransactionsService {
     );
 
     const user = virtualAccount.user;
-    const wallet = user.wallet;
+    const wallet = user.wallets?.[0];
 
     if (!wallet) {
       console.error(
@@ -554,14 +555,13 @@ export class TransactionsService {
     // Get user and wallet
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { wallet: true },
+      include: { wallets: { where: { type: 'NAIRA' } } },
     });
 
-    if (!user || !user.wallet) {
+    const wallet = user?.wallets?.[0];
+    if (!user || !wallet) {
       throw new NotFoundException('User or wallet not found');
     }
-
-    const wallet = user.wallet;
 
     // Check if wallet is locked
     if (wallet.isLocked) {

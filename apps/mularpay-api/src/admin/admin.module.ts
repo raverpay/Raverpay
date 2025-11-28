@@ -28,6 +28,8 @@ import { AdminAuditLogsController } from './audit-logs/admin-audit-logs.controll
 import { AdminAuditLogsService } from './audit-logs/admin-audit-logs.service';
 import { AdminAdminsController } from './admins/admin-admins.controller';
 import { AdminAdminsService } from './admins/admin-admins.service';
+import { AdminVenlyWalletsController } from './venly-wallets/admin-venly-wallets.controller';
+import { AdminVenlyWalletsService } from './venly-wallets/admin-venly-wallets.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -56,6 +58,7 @@ import { TransactionsModule } from '../transactions/transactions.module';
     AdminAdvancedAnalyticsController,
     AdminAuditLogsController,
     AdminAdminsController,
+    AdminVenlyWalletsController,
   ],
   providers: [
     AdminUsersService,
@@ -73,6 +76,7 @@ import { TransactionsModule } from '../transactions/transactions.module';
     AdminAdvancedAnalyticsService,
     AdminAuditLogsService,
     AdminAdminsService,
+    AdminVenlyWalletsService,
     HierarchyService,
   ],
   exports: [HierarchyService],

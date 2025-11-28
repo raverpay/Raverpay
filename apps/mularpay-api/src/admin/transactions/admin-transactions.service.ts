@@ -371,7 +371,7 @@ export class AdminTransactionsService {
       });
 
       // Get current wallet balance
-      const wallet = await prisma.wallet.findUnique({
+      const wallet = await prisma.wallet.findFirst({
         where: { userId: transaction.userId },
       });
 
@@ -385,7 +385,12 @@ export class AdminTransactionsService {
 
       // Update wallet balance
       await prisma.wallet.update({
-        where: { userId: transaction.userId },
+        where: {
+          userId_type: {
+            userId: transaction.userId,
+            type: 'NAIRA'
+          }
+        },
         data: {
           balance: newBalance,
           ledgerBalance: newBalance,

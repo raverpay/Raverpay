@@ -41,14 +41,17 @@ export class VenlyUserService {
     try {
       // Create Venly user with signing method (ONE API CALL - efficient!)
       const venlyUserResponse = await this.venly.createUser({
-        reference: `MULAR_${userId}`,
+        reference: `RAVERPAY_${userId}`,
         pin,
       });
 
       // Fetch full user details to get signing method ID
       const venlyUserDetails = await this.venly.getUser(venlyUserResponse.id);
 
-      if (!venlyUserDetails.signingMethods || venlyUserDetails.signingMethods.length === 0) {
+      if (
+        !venlyUserDetails.signingMethods ||
+        venlyUserDetails.signingMethods.length === 0
+      ) {
         throw new Error('No signing method returned from Venly');
       }
 
@@ -75,7 +78,10 @@ export class VenlyUserService {
 
       return savedUser;
     } catch (error) {
-      this.logger.error(`Failed to create Venly user for userId: ${userId}`, error);
+      this.logger.error(
+        `Failed to create Venly user for userId: ${userId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -132,11 +138,17 @@ export class VenlyUserService {
 
     if (!key || key.length !== 64) {
       // 64 hex chars = 32 bytes
-      throw new Error('CRYPTO_ENCRYPTION_KEY must be 64 character hex string (32 bytes)');
+      throw new Error(
+        'CRYPTO_ENCRYPTION_KEY must be 64 character hex string (32 bytes)',
+      );
     }
 
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
+    const cipher = crypto.createCipheriv(
+      'aes-256-cbc',
+      Buffer.from(key, 'hex'),
+      iv,
+    );
 
     let encrypted = cipher.update(pin, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -163,7 +175,11 @@ export class VenlyUserService {
       }
 
       const iv = Buffer.from(ivHex, 'hex');
-      const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
+      const decipher = crypto.createDecipheriv(
+        'aes-256-cbc',
+        Buffer.from(key, 'hex'),
+        iv,
+      );
 
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');
       decrypted += decipher.final('utf8');

@@ -372,15 +372,14 @@ export class PaymentsController {
         'prisma'
       ].transaction.findUnique({
         where: { reference },
-        include: { user: { include: { wallet: true } } },
+        include: { user: { include: { wallets: { where: { type: 'NAIRA' } } } } },
       });
 
-      if (!transaction || !transaction.user.wallet) {
+      const wallet = transaction?.user?.wallets?.[0];
+      if (!transaction || !wallet) {
         this.logger.error(`Transaction or wallet not found: ${reference}`);
         return;
       }
-
-      const wallet = transaction.user.wallet;
 
       // Refund amount to wallet and mark transaction as failed
       const refundAmount = transaction.totalAmount;

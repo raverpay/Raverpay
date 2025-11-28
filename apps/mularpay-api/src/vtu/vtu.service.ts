@@ -165,7 +165,7 @@ export class VTUService {
   }
 
   async checkWalletBalance(userId: string, requiredAmount: number) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
     });
 
@@ -269,7 +269,7 @@ export class VTUService {
   // ==================== Lock/Unlock Wallet ====================
 
   async lockWalletForTransaction(userId: string) {
-    const wallet = await this.prisma.wallet.findUnique({
+    const wallet = await this.prisma.wallet.findFirst({
       where: { userId },
     });
 
@@ -284,7 +284,12 @@ export class VTUService {
     }
 
     await this.prisma.wallet.update({
-      where: { userId },
+      where: {
+        userId_type: {
+          userId,
+          type: 'NAIRA'
+        }
+      },
       data: { isLocked: true },
     });
 
@@ -293,7 +298,12 @@ export class VTUService {
 
   async unlockWalletForTransaction(userId: string) {
     await this.prisma.wallet.update({
-      where: { userId },
+      where: {
+        userId_type: {
+          userId,
+          type: 'NAIRA'
+        }
+      },
       data: { isLocked: false },
     });
   }
@@ -370,7 +380,7 @@ export class VTUService {
       });
 
       // 11. Get wallet balance before transaction
-      const wallet = await this.prisma.wallet.findUnique({
+      const wallet = await this.prisma.wallet.findFirst({
         where: { userId },
       });
       const balanceBefore = wallet!.balance;
@@ -379,7 +389,12 @@ export class VTUService {
       // 12. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
-          where: { userId },
+          where: {
+            userId_type: {
+              userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
@@ -694,7 +709,7 @@ export class VTUService {
       });
 
       // 9. Get wallet balance before transaction
-      const walletData = await this.prisma.wallet.findUnique({
+      const walletData = await this.prisma.wallet.findFirst({
         where: { userId },
       });
       const balanceBefore = walletData!.balance;
@@ -703,7 +718,12 @@ export class VTUService {
       // 10. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
-          where: { userId },
+          where: {
+            userId_type: {
+              userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
@@ -1031,7 +1051,7 @@ export class VTUService {
       });
 
       // 8. Get wallet balance before transaction
-      const walletCable = await this.prisma.wallet.findUnique({
+      const walletCable = await this.prisma.wallet.findFirst({
         where: { userId },
       });
       const balanceBefore = walletCable!.balance;
@@ -1040,7 +1060,12 @@ export class VTUService {
       // 9. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
-          where: { userId },
+          where: {
+            userId_type: {
+              userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
@@ -1259,7 +1284,7 @@ export class VTUService {
       });
 
       // 8. Get wallet balance before transaction
-      const wallet = await this.prisma.wallet.findUnique({
+      const wallet = await this.prisma.wallet.findFirst({
         where: { userId },
       });
       const balanceBefore = wallet!.balance;
@@ -1268,7 +1293,12 @@ export class VTUService {
       // 9. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
-          where: { userId },
+          where: {
+            userId_type: {
+              userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
@@ -1472,7 +1502,7 @@ export class VTUService {
       });
 
       // 7. Get wallet balance before transaction
-      const walletElec = await this.prisma.wallet.findUnique({
+      const walletElec = await this.prisma.wallet.findFirst({
         where: { userId },
       });
       const balanceBefore = walletElec!.balance;
@@ -1481,7 +1511,12 @@ export class VTUService {
       // 8. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
-          where: { userId },
+          where: {
+            userId_type: {
+              userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
@@ -1743,7 +1778,7 @@ export class VTUService {
       });
 
       // 8. Get wallet balance before transaction
-      const wallet = await this.prisma.wallet.findUnique({
+      const wallet = await this.prisma.wallet.findFirst({
         where: { userId },
       });
       const balanceBefore = wallet!.balance;
@@ -1752,7 +1787,12 @@ export class VTUService {
       // 9. Debit wallet and create transaction
       await this.prisma.$transaction([
         this.prisma.wallet.update({
-          where: { userId },
+          where: {
+            userId_type: {
+              userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: { decrement: new Decimal(total) },
             ledgerBalance: { decrement: new Decimal(total) },
@@ -1930,7 +1970,7 @@ export class VTUService {
     }
 
     // Get wallet balance before refund
-    const walletBeforeRefund = await this.prisma.wallet.findUnique({
+    const walletBeforeRefund = await this.prisma.wallet.findFirst({
       where: { userId: order.userId },
     });
     const balanceBefore = walletBeforeRefund!.balance;
@@ -1941,7 +1981,12 @@ export class VTUService {
     // Refund to wallet
     await this.prisma.$transaction([
       this.prisma.wallet.update({
-        where: { userId: order.userId },
+        where: {
+          userId_type: {
+            userId: order.userId,
+            type: 'NAIRA'
+          }
+        },
         data: {
           balance: { increment: transaction.totalAmount },
           ledgerBalance: { increment: transaction.totalAmount },

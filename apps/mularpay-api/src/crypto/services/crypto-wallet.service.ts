@@ -44,14 +44,16 @@ export class CryptoWalletService {
       }
 
       // 2. Get signing method header
-      const signingMethod = await this.venlyUser.getSigningMethodHeader(userId, pin);
+      const signingMethod = await this.venlyUser.getSigningMethodHeader(
+        userId,
+        pin,
+      );
 
       // 3. Create MATIC wallet on Polygon via Venly
       const venlyWallet = await this.venly.createWallet({
         userId: venlyUser.venlyUserId,
-        secretType: 'MATIC',
         signingMethod,
-        description: 'MularPay Crypto Wallet',
+        description: 'RaverPay Crypto Wallet',
         identifier: userId,
       });
 
@@ -76,7 +78,10 @@ export class CryptoWalletService {
 
       return wallet;
     } catch (error) {
-      this.logger.error(`Failed to initialize crypto wallet for user: ${userId}`, error);
+      this.logger.error(
+        `Failed to initialize crypto wallet for user: ${userId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -95,7 +100,9 @@ export class CryptoWalletService {
     });
 
     if (!wallet) {
-      throw new NotFoundException('Crypto wallet not found. Please initialize first.');
+      throw new NotFoundException(
+        'Crypto wallet not found. Please initialize first.',
+      );
     }
 
     return wallet;
@@ -169,7 +176,7 @@ export class CryptoWalletService {
    * Get wallet by address
    */
   async getWalletByAddress(address: string) {
-    return this.prisma.wallet.findUnique({
+    return this.prisma.wallet.findFirst({
       where: { walletAddress: address },
       include: {
         user: {
@@ -188,16 +195,25 @@ export class CryptoWalletService {
    * Initialize default token balances
    */
   private async initializeBalances(walletId: string) {
+    // Check if we're in testnet mode
+    const isTestnet = process.env.VENLY_ENV === 'sandbox';
+
     const tokens = [
       { symbol: 'MATIC', address: null, decimals: 18 },
       {
         symbol: 'USDT',
-        address: process.env.POLYGON_USDT_ADDRESS || '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+        address: isTestnet
+          ? process.env.POLYGON_AMOY_USDT_ADDRESS || null
+          : process.env.POLYGON_USDT_ADDRESS ||
+            '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
         decimals: 6,
       },
       {
         symbol: 'USDC',
-        address: process.env.POLYGON_USDC_ADDRESS || '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+        address: isTestnet
+          ? process.env.POLYGON_AMOY_USDC_ADDRESS || null
+          : process.env.POLYGON_USDC_ADDRESS ||
+            '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
         decimals: 6,
       },
     ];

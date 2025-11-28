@@ -75,7 +75,7 @@ export class PaystackWebhookService {
       // Credit user's wallet using a transaction
       await this.prisma.$transaction(async (tx) => {
         // Get current wallet balance
-        const wallet = await tx.wallet.findUnique({
+        const wallet = await tx.wallet.findFirst({
           where: { userId: virtualAccount.userId },
         });
 
@@ -115,7 +115,12 @@ export class PaystackWebhookService {
 
         // Update wallet balance
         await tx.wallet.update({
-          where: { userId: virtualAccount.userId },
+          where: {
+            userId_type: {
+              userId: virtualAccount.userId,
+              type: 'NAIRA'
+            }
+          },
           data: {
             balance: {
               increment: amountInNaira,

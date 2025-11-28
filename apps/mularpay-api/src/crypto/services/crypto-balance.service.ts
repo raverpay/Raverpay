@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { VenlyService } from '../venly/venly.service';
@@ -33,16 +37,23 @@ export class CryptoBalanceService {
       this.logger.log(`Syncing balances for wallet: ${wallet.id}`);
 
       // Get native balance (MATIC) from Venly
-      const nativeBalance = await this.venly.getWalletBalance(wallet.venlyWalletId);
+      const nativeBalance = await this.venly.getWalletBalance(
+        wallet.venlyWalletId,
+      );
 
       // Get token balances (USDT, USDC) from Venly
-      const tokenBalances = await this.venly.getTokenBalances(wallet.venlyWalletId);
+      const tokenBalances = await this.venly.getTokenBalances(
+        wallet.venlyWalletId,
+      );
 
       // Update MATIC balance
       await this.updateNativeBalance(wallet.id, nativeBalance);
 
       // Update token balances (USDT, USDC)
       await this.updateTokenBalances(wallet.id, tokenBalances);
+
+      // Update USD values from CoinGecko (Venly returns 0 for testnet tokens)
+      await this.updateUsdValues(wallet.id);
 
       this.logger.log(`Balances synced successfully for wallet: ${wallet.id}`);
 
@@ -122,26 +133,27 @@ export class CryptoBalanceService {
    * Uses official Venly API response format
    */
   private async updateTokenBalances(walletId: string, tokenBalances: any[]) {
-    const USDT_ADDRESS =
-      process.env.POLYGON_USDT_ADDRESS?.toLowerCase() ||
-      '0xc2132d05d31c914a87c6611c10748aeb04b58e8f';
-    const USDC_ADDRESS =
-      process.env.POLYGON_USDC_ADDRESS?.toLowerCase() ||
-      '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
+    // Check if we're in testnet mode
+    const isTestnet = process.env.VENLY_ENV === 'sandbox';
+
+    const USDT_ADDRESS = isTestnet
+      ? process.env.POLYGON_AMOY_USDT_ADDRESS?.toLowerCase() || null
+      : process.env.POLYGON_USDT_ADDRESS?.toLowerCase() ||
+        '0xc2132d05d31c914a87c6611c10748aeb04b58e8f';
+    const USDC_ADDRESS = isTestnet
+      ? process.env.POLYGON_AMOY_USDC_ADDRESS?.toLowerCase() || null
+      : process.env.POLYGON_USDC_ADDRESS?.toLowerCase() ||
+        '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
 
     for (const tokenBalance of tokenBalances) {
       const tokenAddress = tokenBalance.tokenAddress.toLowerCase();
 
-      let tokenSymbol: string | null = null;
+      // Check which tokens this address matches (could be both if using same contract for testing)
+      const matchesUSDT = USDT_ADDRESS && tokenAddress === USDT_ADDRESS;
+      const matchesUSDC = USDC_ADDRESS && tokenAddress === USDC_ADDRESS;
 
-      if (tokenAddress === USDT_ADDRESS) {
-        tokenSymbol = 'USDT';
-      } else if (tokenAddress === USDC_ADDRESS) {
-        tokenSymbol = 'USDC';
-      }
-
-      // Only track USDT and USDC
-      if (!tokenSymbol) {
+      // Skip if doesn't match any configured token
+      if (!matchesUSDT && !matchesUSDC) {
         continue;
       }
 
@@ -151,34 +163,75 @@ export class CryptoBalanceService {
       const usdPrice = tokenBalance.exchange?.usdPrice || 0;
       const usdValue = tokenBalance.exchange?.usdBalanceValue || 0;
 
-      await this.prisma.cryptoBalance.upsert({
-        where: {
-          walletId_tokenSymbol: {
-            walletId,
-            tokenSymbol,
+      // Update USDT if it matches
+      if (matchesUSDT) {
+        await this.prisma.cryptoBalance.upsert({
+          where: {
+            walletId_tokenSymbol: {
+              walletId,
+              tokenSymbol: 'USDT',
+            },
           },
-        },
-        update: {
-          balance: new Decimal(balance),
-          rawBalance,
-          tokenDecimals: decimals,
-          usdPrice: new Decimal(usdPrice),
-          usdValue: new Decimal(usdValue),
-          lastUpdated: new Date(),
-        },
-        create: {
-          walletId,
-          tokenSymbol,
-          tokenAddress: tokenBalance.tokenAddress,
-          tokenDecimals: decimals,
-          balance: new Decimal(balance),
-          rawBalance,
-          usdPrice: new Decimal(usdPrice),
-          usdValue: new Decimal(usdValue),
-        },
-      });
+          update: {
+            balance: new Decimal(balance),
+            rawBalance,
+            tokenAddress: tokenBalance.tokenAddress,
+            tokenDecimals: decimals,
+            usdPrice: new Decimal(usdPrice),
+            usdValue: new Decimal(usdValue),
+            lastUpdated: new Date(),
+          },
+          create: {
+            walletId,
+            tokenSymbol: 'USDT',
+            tokenAddress: tokenBalance.tokenAddress,
+            tokenDecimals: decimals,
+            balance: new Decimal(balance),
+            rawBalance,
+            usdPrice: new Decimal(usdPrice),
+            usdValue: new Decimal(usdValue),
+          },
+        });
 
-      this.logger.debug(`Updated ${tokenSymbol} balance: ${balance} (USD: $${usdValue})`);
+        this.logger.debug(
+          `Updated USDT balance: ${balance} (USD: $${usdValue})`,
+        );
+      }
+
+      // Update USDC if it matches (can be same token for testing)
+      if (matchesUSDC) {
+        await this.prisma.cryptoBalance.upsert({
+          where: {
+            walletId_tokenSymbol: {
+              walletId,
+              tokenSymbol: 'USDC',
+            },
+          },
+          update: {
+            balance: new Decimal(balance),
+            rawBalance,
+            tokenAddress: tokenBalance.tokenAddress,
+            tokenDecimals: decimals,
+            usdPrice: new Decimal(usdPrice),
+            usdValue: new Decimal(usdValue),
+            lastUpdated: new Date(),
+          },
+          create: {
+            walletId,
+            tokenSymbol: 'USDC',
+            tokenAddress: tokenBalance.tokenAddress,
+            tokenDecimals: decimals,
+            balance: new Decimal(balance),
+            rawBalance,
+            usdPrice: new Decimal(usdPrice),
+            usdValue: new Decimal(usdValue),
+          },
+        });
+
+        this.logger.debug(
+          `Updated USDC balance: ${balance} (USD: $${usdValue})`,
+        );
+      }
     }
   }
 
@@ -219,12 +272,23 @@ export class CryptoBalanceService {
     });
 
     if (latestPrice) {
+      this.logger.debug(
+        `Found price for ${tokenSymbol}: $${latestPrice.usdPrice}`,
+      );
       return Number(latestPrice.usdPrice);
     }
 
     // Default prices for stablecoins
     if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC') {
+      this.logger.debug(`Using default price for ${tokenSymbol}: $1.00`);
       return 1.0;
+    }
+
+    // MATIC price not found - log warning
+    if (tokenSymbol === 'MATIC') {
+      this.logger.warn(
+        `MATIC price not found in database. CoinGecko price update may have failed.`,
+      );
     }
 
     return 0;
@@ -258,6 +322,9 @@ export class CryptoBalanceService {
       where: { walletId: wallet.id },
     });
 
-    return balances.reduce((sum, balance) => sum + Number(balance.usdValue || 0), 0);
+    return balances.reduce(
+      (sum, balance) => sum + Number(balance.usdValue || 0),
+      0,
+    );
   }
 }

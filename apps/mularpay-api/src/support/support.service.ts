@@ -1217,7 +1217,10 @@ export class SupportService {
             status: true,
             kycTier: true,
             createdAt: true,
-            wallet: {
+            wallets: {
+              where: {
+                type: 'NAIRA',
+              },
               select: {
                 balance: true,
                 currency: true,

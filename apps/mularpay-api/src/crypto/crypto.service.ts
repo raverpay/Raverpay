@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, Logger } from '@nestjs/common';
 import { CryptoWalletService } from './services/crypto-wallet.service';
 import { CryptoBalanceService } from './services/crypto-balance.service';
@@ -76,7 +77,10 @@ export class CryptoService {
     });
   }
 
-  async getTransactionHistory(userId: string, params?: { page?: number; limit?: number }) {
+  async getTransactionHistory(
+    userId: string,
+    params?: { page?: number; limit?: number },
+  ) {
     return this.cryptoSend.getTransactionHistory(userId, params);
   }
 
@@ -89,7 +93,11 @@ export class CryptoService {
   // ============================================
 
   async getConversionQuote(userId: string, dto: GetConversionQuoteDto) {
-    return this.conversion.getConversionQuote(userId, dto.tokenSymbol, dto.amount);
+    return this.conversion.getConversionQuote(
+      userId,
+      dto.tokenSymbol,
+      dto.amount,
+    );
   }
 
   async requestConversion(userId: string, dto: ConvertCryptoDto) {
@@ -101,7 +109,10 @@ export class CryptoService {
     });
   }
 
-  async getConversionHistory(userId: string, params?: { page?: number; limit?: number }) {
+  async getConversionHistory(
+    userId: string,
+    params?: { page?: number; limit?: number },
+  ) {
     return this.conversion.getConversionHistory(userId, params);
   }
 
