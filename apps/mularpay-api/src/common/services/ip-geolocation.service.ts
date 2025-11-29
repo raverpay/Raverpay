@@ -62,8 +62,6 @@ export class IpGeolocationService {
 
       const result = this.lookup.get(ipAddress);
 
-      console.log('result', result);
-
       if (!result) {
         return null;
       }
