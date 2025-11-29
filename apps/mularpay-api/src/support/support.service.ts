@@ -5,6 +5,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 import {
   ConversationStatus,
   SenderType,
@@ -27,6 +29,31 @@ import {
 @Injectable()
 export class SupportService {
   private readonly logger = new Logger(SupportService.name);
+  private readonly resend: Resend | null;
+  private readonly fromEmail: string;
+  private readonly fromName: string;
+
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    this.fromEmail =
+      this.configService.get<string>('RESEND_FROM_EMAIL') ||
+      'noreply@raverpay.com';
+    this.fromName =
+      this.configService.get<string>('RESEND_FROM_NAME') || 'RaverPay';
+
+    if (apiKey) {
+      this.resend = new Resend(apiKey);
+      this.logger.log('✅ Resend client initialized for conversation emails');
+    } else {
+      this.resend = null;
+      this.logger.warn(
+        '⚠️ RESEND_API_KEY not found - Cannot send emails from conversations',
+      );
+    }
+  }
 
   constructor(private prisma: PrismaService) {}
 
@@ -239,9 +266,20 @@ export class SupportService {
     senderType: SenderType = SenderType.USER,
   ) {
     try {
-      // Verify conversation exists
+      // Verify conversation exists and get inbound email if linked
       const conversation = await this.prisma.conversation.findUnique({
         where: { id: conversationId },
+        include: {
+          inboundEmail: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
       });
 
       if (!conversation) {
@@ -284,6 +322,26 @@ export class SupportService {
       this.logger.log(
         `Message sent in conversation ${conversationId} by ${senderType}`,
       );
+
+      // If agent sends a message in a conversation linked to an inbound email,
+      // send an email notification to the user
+      if (
+        senderType === SenderType.AGENT &&
+        conversation.inboundEmail &&
+        conversation.user
+      ) {
+        this.sendEmailFromConversation(
+          conversation.inboundEmail,
+          conversation.user.email,
+          dto.content,
+          message.id,
+        ).catch((error) => {
+          this.logger.error(
+            `Failed to send email from conversation ${conversationId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          // Don't fail the message send if email fails
+        });
+      }
 
       return message;
     } catch (error) {
@@ -1331,6 +1389,113 @@ export class SupportService {
       return agentsWithCounts;
     } catch (error) {
       this.logger.error('Error fetching available agents:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send email notification when agent sends a message in a conversation
+   * that was created from an inbound email
+   */
+  private async sendEmailFromConversation(
+    inboundEmail: any,
+    userEmail: string,
+    messageContent: string,
+    messageId: string,
+  ): Promise<void> {
+    if (!this.resend) {
+      this.logger.warn('Cannot send email - Resend client not initialized');
+      return;
+    }
+
+    try {
+      const fromEmail = inboundEmail.targetEmail || this.fromEmail;
+      const subject = `Re: ${inboundEmail.subject || 'No Subject'}`;
+
+      // Build email headers for threading
+      const headers: Record<string, string> = {
+        'In-Reply-To': inboundEmail.messageId || `<${inboundEmail.emailId}@raverpay.com>`,
+      };
+
+      // Get all previous message IDs from the conversation for References header
+      const previousMessages = await this.prisma.message.findMany({
+        where: {
+          conversationId: inboundEmail.conversationId,
+          senderType: 'AGENT',
+          metadata: {
+            path: ['resendEmailId'],
+            not: null,
+          },
+        },
+        select: {
+          metadata: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      // Build References header from previous email message IDs
+      const references: string[] = [];
+      if (inboundEmail.messageId) {
+        references.push(inboundEmail.messageId);
+      }
+      previousMessages.forEach((msg) => {
+        const resendEmailId = (msg.metadata as any)?.resendEmailId;
+        if (resendEmailId) {
+          // We'd need to fetch the messageId from Resend, but for now just use what we have
+          // This is a simplified version - ideally we'd store messageId from Resend responses
+        }
+      });
+
+      if (references.length > 0) {
+        headers['References'] = references.join(' ');
+      }
+
+      // Send email via Resend
+      const emailResult = await this.resend.emails.send({
+        from: `${this.fromName} <${fromEmail}>`,
+        to: [userEmail],
+        subject,
+        html: messageContent,
+        text: messageContent.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
+        headers,
+        replyTo: fromEmail,
+      });
+
+      if (emailResult.error) {
+        this.logger.error(
+          `Failed to send email from conversation: ${emailResult.error.message}`,
+        );
+        return;
+      }
+
+      // Update message metadata with Resend email ID for future threading
+      if (emailResult.data?.id) {
+        const currentMessage = await this.prisma.message.findUnique({
+          where: { id: messageId },
+          select: { metadata: true },
+        });
+
+        await this.prisma.message.update({
+          where: { id: messageId },
+          data: {
+            metadata: {
+              ...((currentMessage?.metadata as any) || {}),
+              resendEmailId: emailResult.data.id,
+              emailSent: true,
+            },
+          },
+        });
+      }
+
+      this.logger.log(
+        `✅ Email sent to ${userEmail} from conversation (Resend ID: ${emailResult.data?.id})`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error sending email from conversation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw error;
     }
   }

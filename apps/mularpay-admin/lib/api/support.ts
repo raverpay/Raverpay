@@ -9,6 +9,9 @@ import {
   CannedResponse,
   SupportStats,
   PaginatedResponse,
+  InboundEmail,
+  EmailStats,
+  UserRole,
 } from '@/types/support';
 
 export interface GetConversationsParams {
@@ -209,4 +212,60 @@ export const supportApi = {
     const response = await apiClient.get('/admin/support/agents');
     return response.data;
   },
+
+  // ============================================
+  // INBOUND EMAILS
+  // ============================================
+
+  getEmails: async (
+    params?: GetEmailsParams
+  ): Promise<PaginatedResponse<InboundEmail>> => {
+    const response = await apiClient.get<PaginatedResponse<InboundEmail>>(
+      '/admin/emails',
+      { params }
+    );
+    return response.data;
+  },
+
+  getEmail: async (id: string): Promise<InboundEmail> => {
+    const response = await apiClient.get<InboundEmail>(`/admin/emails/${id}`);
+    return response.data;
+  },
+
+  getEmailStats: async (): Promise<EmailStats> => {
+    const response = await apiClient.get<EmailStats>('/admin/emails/stats');
+    return response.data;
+  },
+
+  markEmailAsProcessed: async (id: string): Promise<InboundEmail> => {
+    const response = await apiClient.patch<InboundEmail>(
+      `/admin/emails/${id}/process`
+    );
+    return response.data;
+  },
+
+  replyToEmail: async (
+    id: string,
+    content: string,
+    subject?: string,
+  ): Promise<{ success: boolean; message: string; resendEmailId?: string }> => {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      resendEmailId?: string;
+    }>(`/admin/emails/${id}/reply`, {
+      content,
+      subject,
+    });
+    return response.data;
+  },
 };
+
+export interface GetEmailsParams {
+  page?: number;
+  limit?: number;
+  targetEmail?: string;
+  targetRole?: UserRole;
+  isProcessed?: boolean;
+  search?: string;
+}

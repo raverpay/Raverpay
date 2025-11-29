@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AdminUsersController } from './users/admin-users.controller';
 import { AdminUsersService } from './users/admin-users.service';
 import { AdminTransactionsController } from './transactions/admin-transactions.controller';
@@ -30,17 +31,22 @@ import { AdminAdminsController } from './admins/admin-admins.controller';
 import { AdminAdminsService } from './admins/admin-admins.service';
 import { AdminVenlyWalletsController } from './venly-wallets/admin-venly-wallets.controller';
 import { AdminVenlyWalletsService } from './venly-wallets/admin-venly-wallets.service';
+import { AdminEmailsController } from './emails/admin-emails.controller';
+import { AdminEmailsService } from './emails/admin-emails.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { VTUModule } from '../vtu/vtu.module';
 import { TransactionsModule } from '../transactions/transactions.module';
+import { SupportModule } from '../support/support.module';
 
 @Module({
   imports: [
+    ConfigModule,
     PrismaModule,
     NotificationsModule,
     VTUModule,
+    SupportModule,
     forwardRef(() => TransactionsModule),
   ],
   controllers: [
@@ -59,6 +65,7 @@ import { TransactionsModule } from '../transactions/transactions.module';
     AdminAuditLogsController,
     AdminAdminsController,
     AdminVenlyWalletsController,
+    AdminEmailsController,
   ],
   providers: [
     AdminUsersService,
@@ -77,6 +84,7 @@ import { TransactionsModule } from '../transactions/transactions.module';
     AdminAuditLogsService,
     AdminAdminsService,
     AdminVenlyWalletsService,
+    AdminEmailsService,
     HierarchyService,
   ],
   exports: [HierarchyService],

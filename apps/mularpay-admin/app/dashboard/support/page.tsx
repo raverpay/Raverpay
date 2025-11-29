@@ -12,16 +12,11 @@ import {
   AlertCircle,
   ArrowUpRight,
   TrendingUp,
+  Mail,
 } from 'lucide-react';
 
 import { supportApi } from '@/lib/api/support';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,28 +50,18 @@ function StatCard({
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {trend && (
           <div className="flex items-center gap-1 mt-2">
             <TrendingUp
-              className={`h-3 w-3 ${
-                trend.isPositive ? 'text-green-500' : 'text-red-500'
-              }`}
+              className={`h-3 w-3 ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}
             />
-            <span
-              className={`text-xs ${
-                trend.isPositive ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
+            <span className={`text-xs ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
               {trend.isPositive ? '+' : ''}
               {trend.value}%
             </span>
@@ -145,15 +130,11 @@ export default function SupportDashboardPage() {
 
   const { data: ticketsData, isLoading: loadingTickets } = useQuery({
     queryKey: ['support-tickets', { limit: 5, status: TicketStatus.OPEN }],
-    queryFn: () =>
-      supportApi.getTickets({ limit: 5, status: TicketStatus.OPEN }),
+    queryFn: () => supportApi.getTickets({ limit: 5, status: TicketStatus.OPEN }),
   });
 
   const { data: conversationsData, isLoading: loadingConversations } = useQuery({
-    queryKey: [
-      'support-conversations',
-      { limit: 5, status: ConversationStatus.AWAITING_AGENT },
-    ],
+    queryKey: ['support-conversations', { limit: 5, status: ConversationStatus.AWAITING_AGENT }],
     queryFn: () =>
       supportApi.getConversations({
         limit: 5,
@@ -167,11 +148,15 @@ export default function SupportDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Support Dashboard</h2>
-          <p className="text-muted-foreground">
-            Monitor and manage customer support operations
-          </p>
+          <p className="text-muted-foreground">Monitor and manage customer support operations</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/dashboard/support/emails">
+            <Button variant="outline" className="gap-2">
+              <Mail className="h-4 w-4" />
+              Emails
+            </Button>
+          </Link>
           <Link href="/dashboard/support/conversations">
             <Button variant="outline" className="gap-2">
               <MessageSquare className="h-4 w-4" />
@@ -190,9 +175,7 @@ export default function SupportDashboardPage() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {loadingStats ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)
         ) : (
           <>
             <StatCard
@@ -206,9 +189,7 @@ export default function SupportDashboardPage() {
               value={stats?.waitingForAgent || 0}
               description={`${stats?.activeConversations || 0} active chats`}
               icon={Users}
-              className={
-                (stats?.waitingForAgent || 0) > 5 ? 'border-orange-500' : ''
-              }
+              className={(stats?.waitingForAgent || 0) > 5 ? 'border-orange-500' : ''}
             />
             <StatCard
               title="Avg. Response Time"
@@ -240,34 +221,23 @@ export default function SupportDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Tickets by Priority</CardTitle>
-                <CardDescription>
-                  Distribution of open tickets by priority level
-                </CardDescription>
+                <CardDescription>Distribution of open tickets by priority level</CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingStats ? (
                   <Skeleton className="h-40" />
                 ) : (
                   <div className="space-y-4">
-                    {Object.entries(stats?.ticketsByPriority || {}).map(
-                      ([priority, count]) => (
-                        <div
-                          key={priority}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={getPriorityBadgeVariant(
-                                priority as TicketPriority
-                              )}
-                            >
-                              {priority}
-                            </Badge>
-                          </div>
-                          <span className="font-medium">{count as number}</span>
+                    {Object.entries(stats?.ticketsByPriority || {}).map(([priority, count]) => (
+                      <div key={priority} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getPriorityBadgeVariant(priority as TicketPriority)}>
+                            {priority}
+                          </Badge>
                         </div>
-                      )
-                    )}
+                        <span className="font-medium">{count as number}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
@@ -277,33 +247,22 @@ export default function SupportDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Conversations by Status</CardTitle>
-                <CardDescription>
-                  Current state of all support conversations
-                </CardDescription>
+                <CardDescription>Current state of all support conversations</CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingStats ? (
                   <Skeleton className="h-40" />
                 ) : (
                   <div className="space-y-4">
-                    {Object.entries(stats?.conversationsByStatus || {}).map(
-                      ([status, count]) => {
-                        const badgeInfo = getConversationStatusBadge(
-                          status as ConversationStatus
-                        );
-                        return (
-                          <div
-                            key={status}
-                            className="flex items-center justify-between"
-                          >
-                            <Badge variant={badgeInfo.variant}>
-                              {badgeInfo.label}
-                            </Badge>
-                            <span className="font-medium">{count as number}</span>
-                          </div>
-                        );
-                      }
-                    )}
+                    {Object.entries(stats?.conversationsByStatus || {}).map(([status, count]) => {
+                      const badgeInfo = getConversationStatusBadge(status as ConversationStatus);
+                      return (
+                        <div key={status} className="flex items-center justify-between">
+                          <Badge variant={badgeInfo.variant}>{badgeInfo.label}</Badge>
+                          <span className="font-medium">{count as number}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -351,9 +310,7 @@ export default function SupportDashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Recent Open Tickets</CardTitle>
-                <CardDescription>
-                  Latest tickets requiring attention
-                </CardDescription>
+                <CardDescription>Latest tickets requiring attention</CardDescription>
               </div>
               <Link href="/dashboard/support/tickets">
                 <Button variant="ghost" size="sm" className="gap-1">
@@ -385,17 +342,13 @@ export default function SupportDashboardPage() {
                   <TableBody>
                     {ticketsData.data.map((ticket) => (
                       <TableRow key={ticket.id}>
-                        <TableCell className="font-medium">
-                          #{ticket.ticketNumber}
-                        </TableCell>
+                        <TableCell className="font-medium">#{ticket.ticketNumber}</TableCell>
                         <TableCell>
                           {ticket.user?.firstName} {ticket.user?.lastName}
                         </TableCell>
                         <TableCell>{ticket.category}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant={getPriorityBadgeVariant(ticket.priority)}
-                          >
+                          <Badge variant={getPriorityBadgeVariant(ticket.priority)}>
                             {ticket.priority}
                           </Badge>
                         </TableCell>
@@ -404,9 +357,7 @@ export default function SupportDashboardPage() {
                             {ticket.status.replace('_', ' ')}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {formatRelativeTime(ticket.createdAt)}
-                        </TableCell>
+                        <TableCell>{formatRelativeTime(ticket.createdAt)}</TableCell>
                         <TableCell className="text-right">
                           <Link href={`/dashboard/support/tickets/${ticket.id}`}>
                             <Button variant="ghost" size="sm">
@@ -433,9 +384,7 @@ export default function SupportDashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Waiting for Agent</CardTitle>
-                <CardDescription>
-                  Conversations waiting to be assigned
-                </CardDescription>
+                <CardDescription>Conversations waiting to be assigned</CardDescription>
               </div>
               <Link href="/dashboard/support/conversations">
                 <Button variant="ghost" size="sm" className="gap-1">
@@ -451,8 +400,7 @@ export default function SupportDashboardPage() {
                     <Skeleton key={i} className="h-16 w-full" />
                   ))}
                 </div>
-              ) : conversationsData?.data &&
-                conversationsData.data.length > 0 ? (
+              ) : conversationsData?.data && conversationsData.data.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -466,33 +414,22 @@ export default function SupportDashboardPage() {
                   </TableHeader>
                   <TableBody>
                     {conversationsData.data.map((conversation) => {
-                      const statusBadge = getConversationStatusBadge(
-                        conversation.status
-                      );
+                      const statusBadge = getConversationStatusBadge(conversation.status);
                       return (
                         <TableRow key={conversation.id}>
                           <TableCell className="font-medium">
-                            {conversation.user?.firstName}{' '}
-                            {conversation.user?.lastName}
+                            {conversation.user?.firstName} {conversation.user?.lastName}
                           </TableCell>
-                          <TableCell>
-                            {conversation.category || 'General'}
-                          </TableCell>
+                          <TableCell>{conversation.category || 'General'}</TableCell>
                           <TableCell className="max-w-[200px] truncate">
                             {conversation.lastMessagePreview || 'No messages'}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusBadge.variant}>
-                              {statusBadge.label}
-                            </Badge>
+                            <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                           </TableCell>
-                          <TableCell>
-                            {formatRelativeTime(conversation.updatedAt)}
-                          </TableCell>
+                          <TableCell>{formatRelativeTime(conversation.updatedAt)}</TableCell>
                           <TableCell className="text-right">
-                            <Link
-                              href={`/dashboard/support/conversations/${conversation.id}`}
-                            >
+                            <Link href={`/dashboard/support/conversations/${conversation.id}`}>
                               <Button variant="ghost" size="sm">
                                 Join
                               </Button>
@@ -506,9 +443,7 @@ export default function SupportDashboardPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    No conversations waiting
-                  </p>
+                  <p className="text-muted-foreground">No conversations waiting</p>
                 </div>
               )}
             </CardContent>

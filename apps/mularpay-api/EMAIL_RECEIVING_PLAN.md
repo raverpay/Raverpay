@@ -345,3 +345,6 @@ This approach:
 - ✅ Minimal new UI needed
 - ✅ Extensible for future roles
 - ✅ Consistent with current architecture
+
+  cd apps/mularpay-api
+  psql "postgresql://postgres.oeanyukxcphqjrsljhqq:mularpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10" -f prisma/migrations/add_inbound_email_system.sql

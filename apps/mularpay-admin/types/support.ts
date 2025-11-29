@@ -180,3 +180,62 @@ export interface PaginatedResponse<T> {
     totalPages: number;
   };
 }
+
+// ============================================
+// INBOUND EMAIL TYPES
+// ============================================
+
+export enum UserRole {
+  USER = 'USER',
+  SUPPORT = 'SUPPORT',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
+export interface InboundEmail {
+  id: string;
+  emailId: string;
+  messageId?: string;
+  from: string;
+  fromName?: string;
+  to: string;
+  cc: string[];
+  bcc: string[];
+  subject: string;
+  textBody?: string;
+  htmlBody?: string;
+  targetRole?: UserRole;
+  targetEmail: string;
+  ticketId?: string;
+  ticket?: Ticket;
+  conversationId?: string;
+  conversation?: Conversation;
+  userId?: string;
+  user?: User;
+  attachments?: Array<{
+    id: string;
+    filename: string;
+    content_type: string;
+    content_disposition: string;
+    content_id?: string;
+  }>;
+  isProcessed: boolean;
+  processedAt?: string;
+  processingError?: string;
+  receivedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmailStats {
+  total: number;
+  unprocessed: number;
+  byRole: Array<{
+    role: UserRole | null;
+    count: number;
+  }>;
+  byEmail: Array<{
+    email: string;
+    count: number;
+  }>;
+}

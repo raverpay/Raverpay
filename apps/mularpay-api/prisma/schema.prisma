@@ -114,6 +114,9 @@ model User {
   // Device Management
   devices                Device[]
 
+  // Email Relations
+  inboundEmails          InboundEmail[] @relation("InboundEmails")
+
   @@index([email])
   @@index([phone])
   @@index([status])
@@ -1016,8 +1019,9 @@ model Conversation {
   updatedAt DateTime @updatedAt
 
   // Relations
-  messages Message[]
-  ticket   Ticket?
+  messages     Message[]
+  ticket       Ticket?
+  inboundEmail InboundEmail? @relation("EmailConversations")
 
   @@index([userId])
   @@index([status])
@@ -1083,6 +1087,9 @@ model Ticket {
   rating        Int? // 1-5 for emoji ratings
   ratingComment String?
 
+  // Email integration
+  inboundEmail    InboundEmail? @relation("EmailTickets")
+
   // Timestamps
   resolvedAt DateTime?
   closedAt   DateTime?
@@ -1112,6 +1119,79 @@ enum TicketPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// ============================================
+// INBOUND EMAIL SYSTEM
+// ============================================
+
+model InboundEmail {
+  id              String   @id @default(uuid())
+  emailId         String   @unique // Resend email ID
+  messageId       String?  // Email message ID
+
+  // Email metadata
+  from            String   // Sender email
+  fromName        String?  // Sender name
+  to              String   // Recipient (support@, admin@, etc.)
+  cc              String[] @default([])
+  bcc             String[] @default([])
+  subject         String
+  textBody        String?  @db.Text
+  htmlBody        String?  @db.Text
+
+  // Routing
+  targetRole      UserRole? // Which role/team this email is for
+  targetEmail     String   // Which email address received it
+
+  // Integration with support system
+  ticketId        String?  @unique
+  ticket          Ticket?  @relation("EmailTickets", fields: [ticketId], references: [id], onDelete: SetNull)
+  conversationId  String?  @unique
+  conversation    Conversation? @relation("EmailConversations", fields: [conversationId], references: [id], onDelete: SetNull)
+
+  // User matching (if sender is a registered user)
+  userId          String?
+  user            User?    @relation("InboundEmails", fields: [userId], references: [id], onDelete: SetNull)
+
+  // Attachments
+  attachments     Json?    // Array of attachment metadata
+
+  // Status
+  isProcessed     Boolean  @default(false)
+  processedAt     DateTime?
+  processingError String?  @db.Text
+
+  // Timestamps
+  receivedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([targetRole])
+  @@index([targetEmail])
+  @@index([userId])
+  @@index([ticketId])
+  @@index([conversationId])
+  @@index([isProcessed])
+  @@index([receivedAt])
+  @@map("inbound_emails")
+}
+
+model EmailRouting {
+  id                String   @id @default(uuid())
+  emailAddress      String   @unique // e.g., "support@raverpay.com"
+  targetRole        UserRole // Which role can access this
+  autoCreateTicket  Boolean  @default(false) // Auto-create ticket?
+  defaultPriority   TicketPriority? // Default priority for tickets
+  defaultCategory   String? // Default category
+  isActive          Boolean  @default(true)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([targetRole])
+  @@index([isActive])
+  @@map("email_routing")
 }
 
 // ============================================
