@@ -2,6 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import rateLimit from 'express-rate-limit';
+import { webcrypto } from 'crypto';
+
+// Polyfill for crypto.randomUUID() in Node.js v18
+if (!globalThis.crypto) {
+  globalThis.crypto = webcrypto as any;
+}
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
