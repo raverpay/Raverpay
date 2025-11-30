@@ -1005,6 +1005,27 @@ model SystemConfig {
 }
 
 // ============================================
+// APP RATING CONFIGURATION
+// ============================================
+
+model AppRatingConfig {
+  id                     String  @id @default(uuid())
+  enabled                Boolean @default(true)
+  promptFrequencyDays    Int     @default(30) // Days between prompts
+  minTransactionsRequired Int    @default(3) // Minimum successful transactions
+  minUsageDaysRequired   Int     @default(7) // Minimum days since registration
+  promptTitle            String  @default("Enjoying RaverPay?")
+  promptMessage          String  @default("Rate us on the app store! Your feedback helps us improve.")
+  iosAppStoreUrl         String
+  androidPlayStoreUrl    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("app_rating_config")
+}
+
+// ============================================
 // SUPPORT SYSTEM
 // ============================================
 

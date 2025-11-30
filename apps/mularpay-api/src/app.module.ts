@@ -20,6 +20,7 @@ import { CashbackModule } from './cashback/cashback.module';
 import { CryptoModule } from './crypto/crypto.module';
 import { DeviceModule } from './device/device.module';
 import { LimitsModule } from './limits/limits.module';
+import { AppConfigModule } from './app-config/app-config.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -43,6 +44,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     CloudinaryModule,
     NotificationsModule,
     SupportModule, // Support system (chat, tickets, help center)
+    AppConfigModule, // App configuration (rating prompts, etc.)
     AdminModule, // Admin module for dashboard
   ],
   controllers: [AppController],

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, DollarSign, Shield, Bell, Server } from 'lucide-react';
+import { Settings, DollarSign, Shield, Bell, Server, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as appConfigApi from '@/lib/api/app-config';
 
 import { usePermissions } from '@/lib/permissions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function SettingsPage() {
   const { canModifySettings } = usePermissions();
   const [activeTab, setActiveTab] = useState('general');
+  const queryClient = useQueryClient();
 
   // Form states
   const [generalSettings, setGeneralSettings] = useState({
@@ -60,6 +63,52 @@ export default function SettingsPage() {
     toast.success('KYC settings saved! (This is a demo - implement API call)');
   };
 
+  // Rating Configuration
+  const { data: ratingConfig, isLoading: isLoadingRating } = useQuery({
+    queryKey: ['app-config', 'rating'],
+    queryFn: appConfigApi.getRatingConfig,
+  });
+
+  const updateRatingMutation = useMutation({
+    mutationFn: appConfigApi.updateRatingConfig,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['app-config', 'rating'] });
+      toast.success('Rating configuration updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to update rating configuration');
+    },
+  });
+
+  const [ratingFormData, setRatingFormData] = useState({
+    enabled: true,
+    promptFrequencyDays: 30,
+    minTransactionsRequired: 3,
+    minUsageDaysRequired: 7,
+    promptTitle: 'Enjoying RaverPay?',
+    promptMessage: 'Rate us on the app store! Your feedback helps us improve.',
+    iosAppStoreUrl: '',
+    androidPlayStoreUrl: '',
+  });
+
+  // Update form when data is loaded
+  if (ratingConfig && !isLoadingRating && ratingFormData.iosAppStoreUrl === '') {
+    setRatingFormData({
+      enabled: ratingConfig.enabled,
+      promptFrequencyDays: ratingConfig.promptFrequencyDays,
+      minTransactionsRequired: ratingConfig.minTransactionsRequired,
+      minUsageDaysRequired: ratingConfig.minUsageDaysRequired,
+      promptTitle: ratingConfig.promptTitle,
+      promptMessage: ratingConfig.promptMessage,
+      iosAppStoreUrl: ratingConfig.iosAppStoreUrl,
+      androidPlayStoreUrl: ratingConfig.androidPlayStoreUrl,
+    });
+  }
+
+  const handleSaveRating = () => {
+    updateRatingMutation.mutate(ratingFormData);
+  };
+
   if (!canModifySettings) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -81,7 +130,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general" className="gap-2">
             <Settings className="h-4 w-4" />
             General
@@ -101,6 +150,10 @@ export default function SettingsPage() {
           <TabsTrigger value="providers" className="gap-2">
             <Server className="h-4 w-4" />
             Providers
+          </TabsTrigger>
+          <TabsTrigger value="rating" className="gap-2">
+            <Star className="h-4 w-4" />
+            App Rating
           </TabsTrigger>
         </TabsList>
 
@@ -482,6 +535,218 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Button>Save Provider Settings</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* App Rating Configuration */}
+        <TabsContent value="rating">
+          <Card>
+            <CardHeader>
+              <CardTitle>App Rating Configuration</CardTitle>
+              <CardDescription>
+                Configure when and how users are prompted to rate the app
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {isLoadingRating ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <>
+                  {/* Enable/Disable Toggle */}
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                    <div>
+                      <p className="font-medium">Enable Rating Prompts</p>
+                      <p className="text-sm text-muted-foreground">
+                        Show rating prompts to eligible users
+                      </p>
+                    </div>
+                    <Select
+                      value={ratingFormData.enabled ? 'enabled' : 'disabled'}
+                      onValueChange={(value) =>
+                        setRatingFormData({ ...ratingFormData, enabled: value === 'enabled' })
+                      }
+                    >
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="enabled">Enabled</SelectItem>
+                        <SelectItem value="disabled">Disabled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Eligibility Criteria */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Eligibility Criteria</h3>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="promptFrequency">Prompt Frequency (Days)</Label>
+                        <Input
+                          id="promptFrequency"
+                          type="number"
+                          min="1"
+                          value={ratingFormData.promptFrequencyDays}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              promptFrequencyDays: parseInt(e.target.value) || 30,
+                            })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">Days between rating prompts</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="minTransactions">Minimum Transactions</Label>
+                        <Input
+                          id="minTransactions"
+                          type="number"
+                          min="0"
+                          value={ratingFormData.minTransactionsRequired}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              minTransactionsRequired: parseInt(e.target.value) || 0,
+                            })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Required successful transactions
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="minUsageDays">Minimum Usage Days</Label>
+                        <Input
+                          id="minUsageDays"
+                          type="number"
+                          min="0"
+                          value={ratingFormData.minUsageDaysRequired}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              minUsageDaysRequired: parseInt(e.target.value) || 0,
+                            })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">Days since account creation</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Prompt Content */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Prompt Content</h3>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="promptTitle">Prompt Title</Label>
+                        <Input
+                          id="promptTitle"
+                          value={ratingFormData.promptTitle}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              promptTitle: e.target.value,
+                            })
+                          }
+                          placeholder="Enjoying RaverPay?"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="promptMessage">Prompt Message</Label>
+                        <Input
+                          id="promptMessage"
+                          value={ratingFormData.promptMessage}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              promptMessage: e.target.value,
+                            })
+                          }
+                          placeholder="Rate us on the app store! Your feedback helps us improve."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Store URLs */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">App Store URLs</h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="iosUrl">iOS App Store URL</Label>
+                        <Input
+                          id="iosUrl"
+                          type="url"
+                          value={ratingFormData.iosAppStoreUrl}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              iosAppStoreUrl: e.target.value,
+                            })
+                          }
+                          placeholder="https://apps.apple.com/app/id..."
+                        />
+                        <p className="text-xs text-muted-foreground">Apple App Store listing URL</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="androidUrl">Android Play Store URL</Label>
+                        <Input
+                          id="androidUrl"
+                          type="url"
+                          value={ratingFormData.androidPlayStoreUrl}
+                          onChange={(e) =>
+                            setRatingFormData({
+                              ...ratingFormData,
+                              androidPlayStoreUrl: e.target.value,
+                            })
+                          }
+                          placeholder="https://play.google.com/store/apps/details?id=..."
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Google Play Store listing URL
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preview Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Preview</h3>
+                    <div className="p-6 rounded-lg border bg-muted/50">
+                      <div className="max-w-sm mx-auto bg-background rounded-lg shadow-lg p-6 space-y-4">
+                        <div className="text-center">
+                          <Star className="h-12 w-12 mx-auto text-yellow-500 mb-3" />
+                          <h4 className="text-xl font-bold mb-2">{ratingFormData.promptTitle}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {ratingFormData.promptMessage}
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button size="sm" className="w-full">
+                            Rate Now
+                          </Button>
+                          <Button size="sm" variant="outline" className="w-full">
+                            Maybe Later
+                          </Button>
+                          <Button size="sm" variant="ghost" className="w-full">
+                            Don&apos;t Ask Again
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button onClick={handleSaveRating} disabled={updateRatingMutation.isPending}>
+                    {updateRatingMutation.isPending && (
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
+                    )}
+                    Save Rating Configuration
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
