@@ -21,7 +21,9 @@ export class BalanceSyncCron {
   /**
    * Sync all crypto wallet balances every 5 minutes
    */
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, {
+    name: 'sync-crypto-balances',
+  })
   async syncAllBalances() {
     if (this.isRunning) {
       this.logger.warn('Balance sync already running, skipping...');

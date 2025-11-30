@@ -16,7 +16,9 @@ export class PriceUpdateCron {
   /**
    * Update crypto prices every minute
    */
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, {
+    name: 'update-crypto-prices',
+  })
   async updatePrices() {
     if (this.isRunning) {
       this.logger.warn('Price update already running, skipping...');
@@ -37,7 +39,9 @@ export class PriceUpdateCron {
   /**
    * Cleanup old prices every day at midnight
    */
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    name: 'cleanup-old-crypto-prices',
+  })
   async cleanupOldPrices() {
     try {
       this.logger.log('Cleaning up old price records...');
