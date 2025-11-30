@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Mail,
   Clock,
-  Calendar,
   CheckCircle2,
   XCircle,
   User,
@@ -33,8 +32,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 // Separator component - using hr instead if not available
-import { formatDate, formatRelativeTime, getApiErrorMessage } from '@/lib/utils';
-import { UserRole } from '@/types/support';
+import { formatDate, getApiErrorMessage } from '@/lib/utils';
+import { UserRole, Message } from '@/types/support';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -289,10 +288,10 @@ export default function EmailDetailPage({
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Received:</span>
                   <span className="font-medium">
-                    {formatDate(email.receivedAt, {
+                    {new Intl.DateTimeFormat('en-US', {
                       dateStyle: 'full',
                       timeStyle: 'long',
-                    })}
+                    }).format(new Date(email.receivedAt))}
                   </span>
                 </div>
               </div>
@@ -360,7 +359,7 @@ export default function EmailDetailPage({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {email.conversation.messages.map((message: any) => (
+                {email.conversation.messages.map((message) => (
                   <div
                     key={message.id}
                     className="rounded-lg border p-4 space-y-2"
@@ -378,10 +377,10 @@ export default function EmailDetailPage({
                         )}
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {formatDate(message.createdAt, {
+                        {new Intl.DateTimeFormat('en-US', {
                           dateStyle: 'short',
                           timeStyle: 'short',
-                        })}
+                        }).format(new Date(message.createdAt))}
                       </span>
                     </div>
                     <div className="prose prose-sm max-w-none">
@@ -445,20 +444,20 @@ export default function EmailDetailPage({
               <div>
                 <p className="text-sm text-muted-foreground">Received At</p>
                 <p className="text-sm">
-                  {formatDate(email.receivedAt, {
+                  {new Intl.DateTimeFormat('en-US', {
                     dateStyle: 'full',
                     timeStyle: 'long',
-                  })}
+                  }).format(new Date(email.receivedAt))}
                 </p>
               </div>
               {email.processedAt && (
                 <div>
                   <p className="text-sm text-muted-foreground">Processed At</p>
                   <p className="text-sm">
-                    {formatDate(email.processedAt, {
+                    {new Intl.DateTimeFormat('en-US', {
                       dateStyle: 'full',
                       timeStyle: 'long',
-                    })}
+                    }).format(new Date(email.processedAt))}
                   </p>
                 </div>
               )}

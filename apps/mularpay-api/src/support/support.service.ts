@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { Prisma } from '@prisma/client';
 import {
   ConversationStatus,
   SenderType,
@@ -54,8 +55,6 @@ export class SupportService {
       );
     }
   }
-
-  constructor(private prisma: PrismaService) {}
 
   // ============================================
   // CONVERSATION MANAGEMENT
@@ -1423,8 +1422,7 @@ export class SupportService {
           conversationId: inboundEmail.conversationId,
           senderType: 'AGENT',
           metadata: {
-            path: ['resendEmailId'],
-            not: null,
+            not: Prisma.JsonNull,
           },
         },
         select: {

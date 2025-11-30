@@ -52,6 +52,7 @@ export interface Conversation {
   rating?: number;
   ratingComment?: string;
   ticket?: Ticket;
+  messages?: Message[]; // Optional messages array for email detail pages
   createdAt: string;
   updatedAt: string;
 }

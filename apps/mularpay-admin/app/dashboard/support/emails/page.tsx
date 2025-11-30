@@ -35,7 +35,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pagination } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
-import { formatDate, formatRelativeTime, getApiErrorMessage } from '@/lib/utils';
+import { formatRelativeTime, getApiErrorMessage } from '@/lib/utils';
 import { UserRole } from '@/types/support';
 
 function getRoleBadgeVariant(role?: UserRole) {
