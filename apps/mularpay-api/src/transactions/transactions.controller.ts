@@ -1,8 +1,22 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { TransactionsService } from './transactions.service';
-import { FundWalletDto, WithdrawFundsDto, ResolveAccountDto } from './dto';
+import {
+  FundWalletDto,
+  WithdrawFundsDto,
+  ResolveAccountDto,
+  SendToUserDto,
+  SetTagDto,
+} from './dto';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -117,5 +131,62 @@ export class TransactionsController {
   @UseGuards(JwtAuthGuard)
   async getSavedBankAccounts(@GetUser('id') userId: string) {
     return this.transactionsService.getSavedBankAccounts(userId);
+  }
+
+  // ============================================
+  // P2P TRANSFER ENDPOINTS
+  // ============================================
+
+  /**
+   * Send money to another user by tag
+   * POST /api/transactions/send
+   */
+  @Post('send')
+  @UseGuards(JwtAuthGuard)
+  async sendToUser(@GetUser('id') userId: string, @Body() dto: SendToUserDto) {
+    return this.transactionsService.sendToUser(
+      userId,
+      dto.recipientTag,
+      dto.amount,
+      dto.message,
+    );
+  }
+
+  /**
+   * Lookup user by tag (autocomplete)
+   * GET /api/transactions/lookup/:tag
+   */
+  @Get('lookup/:tag')
+  @UseGuards(JwtAuthGuard)
+  async lookupUserByTag(@Param('tag') tag: string) {
+    return this.transactionsService.lookupUserByTag(tag);
+  }
+
+  /**
+   * Set or update user's tag
+   * POST /api/transactions/set-tag
+   */
+  @Post('set-tag')
+  @UseGuards(JwtAuthGuard)
+  async setUserTag(@GetUser('id') userId: string, @Body() dto: SetTagDto) {
+    return this.transactionsService.setUserTag(userId, dto.tag);
+  }
+
+  /**
+   * Get P2P transfer history
+   * GET /api/transactions/p2p-history
+   */
+  @Get('p2p-history')
+  @UseGuards(JwtAuthGuard)
+  async getP2PHistory(
+    @GetUser('id') userId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.transactionsService.getP2PHistory(
+      userId,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 }

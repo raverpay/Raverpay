@@ -86,3 +86,22 @@ export interface TransactionLimits {
   minWithdrawal: number;
   maxWithdrawal: number;
 }
+
+// P2P Transfer types
+export interface P2PTransferResponse {
+  reference: string;
+  amount: string;
+  fee: string;
+  recipient: {
+    tag: string;
+    name: string;
+  };
+  status: string;
+  message?: string;
+  createdAt: Date;
+}
+
+export interface SetTagResponse {
+  tag: string;
+  message: string;
+}

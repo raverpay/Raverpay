@@ -1,6 +1,3 @@
-// MularPay Fintech Database Schema
-// This schema defines all database models for the Nigerian fintech app
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,122 +8,1067 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ============================================
-// USER MANAGEMENT
-// ============================================
-
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  phone     String     @unique
-  password  String // Argon2 hashed
-  firstName String
-  lastName  String
-  role      UserRole   @default(USER)
-  status    UserStatus @default(PENDING_VERIFICATION)
-  kycTier   KYCTier    @default(TIER_0)
-
-  // Profile
-  avatar      String?
-  dateOfBirth DateTime?
-  gender      Gender?
-  address     String?
-  city        String?
-  state       String?
-  country     String    @default("Nigeria")
-
-  // KYC Data
-  bvn         String? @unique
-  bvnVerified Boolean @default(false)
-  nin         String? @unique
-  ninVerified Boolean @default(false)
-
-  // Paystack Integration
-  paystackCustomerCode String? @unique // Paystack customer code for DVA
-
-  // Security
-  pin                  String? // Encrypted 4-digit transaction PIN
-  pinSetAt             DateTime?
-  twoFactorEnabled     Boolean   @default(false)
-  twoFactorSecret      String?
-  passwordResetAt      DateTime? // Track when password was last reset
-  lastPasswordChange   DateTime? // Track when password was last changed
-  failedLoginAttempts  Int       @default(0)
-  lockedUntil          DateTime? // Account lock expiry time
-  lastFailedLoginAt    DateTime? // Last failed login attempt
-  lastSuccessfulLoginIp String?  // Last successful login IP address
-
-  // Account Deletion
-  deletionRequested   Boolean   @default(false)
-  deletionRequestedAt DateTime?
-  deletedAt           DateTime? // Soft delete timestamp
-
-  // Profile Edit Tracking
-  profileEditedOnce Boolean   @default(false)
-  profileEditedAt   DateTime?
-
-  // Push Notifications
-  expoPushToken       String?   // Expo push notification token
-  lastPushTokenUpdate DateTime? // Last time push token was updated
-
-  // Timestamps
-  emailVerified   Boolean   @default(false)
-  emailVerifiedAt DateTime?
-  phoneVerified   Boolean   @default(false)
-  phoneVerifiedAt DateTime?
-  lastLoginAt     DateTime?
-  lastLoginEmailSentAt DateTime? // Track when last login notification email was sent
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  wallets                Wallet[] // Changed from wallet Wallet?
-  transactions           Transaction[]
-  vtuOrders              VTUOrder[]
-  giftCardOrders         GiftCardOrder[]
-  cryptoOrders           CryptoOrder[]
-  bankAccounts           BankAccount[]
-  virtualAccounts        VirtualAccount[]
-  notifications          Notification[]
-  notificationPreference NotificationPreference?
-  notificationLogs       NotificationLog[]
-  notificationQueue      NotificationQueue[]
+  id                     String                   @id @default(uuid())
+  email                  String                   @unique
+  phone                  String                   @unique
+  password               String
+  firstName              String
+  lastName               String
+  role                   UserRole                 @default(USER)
+  status                 UserStatus               @default(PENDING_VERIFICATION)
+  kycTier                KYCTier                  @default(TIER_0)
+  avatar                 String?
+  dateOfBirth            DateTime?
+  gender                 Gender?
+  address                String?
+  city                   String?
+  state                  String?
+  country                String                   @default("Nigeria")
+  bvn                    String?                  @unique
+  bvnVerified            Boolean                  @default(false)
+  nin                    String?                  @unique
+  ninVerified            Boolean                  @default(false)
+  pin                    String?
+  pinSetAt               DateTime?
+  twoFactorEnabled       Boolean                  @default(false)
+  twoFactorSecret        String?
+  passwordResetAt        DateTime?                @db.Timestamp(6)
+  lastPasswordChange     DateTime?                @db.Timestamp(6)
+  emailVerified          Boolean                  @default(false)
+  emailVerifiedAt        DateTime?
+  phoneVerified          Boolean                  @default(false)
+  phoneVerifiedAt        DateTime?
+  lastLoginAt            DateTime?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  paystackCustomerCode   String?                  @unique
+  deletionRequested      Boolean                  @default(false)
+  deletionRequestedAt    DateTime?
+  profileEditedOnce      Boolean                  @default(false)
+  profileEditedAt        DateTime?
+  expoPushToken          String?
+  lastPushTokenUpdate    DateTime?
+  deletedAt              DateTime?
+  failedLoginAttempts    Int                      @default(0)
+  lockedUntil            DateTime?
+  lastFailedLoginAt      DateTime?
+  lastSuccessfulLoginIp  String?
+  lastLoginEmailSentAt   DateTime?
+  tag                    String?                  @unique @db.VarChar(255)
+  tagSetAt               DateTime?
+  tagChangedCount        Int                      @default(0)
+  deletionRequests       AccountDeletionRequest[]
   auditLogs              AuditLog[]
+  bankAccounts           BankAccount[]
+  cannedResponses        CannedResponse[]         @relation("CannedResponseCreator")
+  cashbackTransactions   CashbackTransaction[]
+  cashbackWallet         CashbackWallet?
+  conversations          Conversation[]
+  cryptoConversions      CryptoConversion[]
+  cryptoOrders           CryptoOrder[]
+  cryptoTransactions     CryptoTransaction[]
+  devices                Device[]
+  giftCardOrders         GiftCardOrder[]
+  inboundEmails          InboundEmail[]           @relation("InboundEmails")
+  notificationLogs       NotificationLog[]
+  notificationPreference NotificationPreference?
+  notificationQueue      NotificationQueue[]
+  notifications          Notification[]
+  receivedTransfers      P2PTransfer[]            @relation("ReceiverTransfers")
+  sentTransfers          P2PTransfer[]            @relation("SenderTransfers")
   refreshTokens          RefreshToken[]
   savedRecipients        SavedRecipient[]
-  deletionRequests       AccountDeletionRequest[]
-
-  // Support System Relations
-  conversations          Conversation[]
+  assignedTickets        Ticket[]                 @relation("AssignedTickets")
   tickets                Ticket[]
-  assignedTickets        Ticket[]        @relation("AssignedTickets")
-  cannedResponses        CannedResponse[] @relation("CannedResponseCreator")
-
-  // Cashback Relations
-  cashbackWallet         CashbackWallet?
-  cashbackTransactions   CashbackTransaction[]
-
-  // Crypto Relations
+  transactions           Transaction[]
   venlyUser              VenlyUser?
-  cryptoTransactions     CryptoTransaction[]
-  cryptoConversions      CryptoConversion[]
-
-  // Device Management
-  devices                Device[]
-
-  // Email Relations
-  inboundEmails          InboundEmail[] @relation("InboundEmails")
+  virtualAccounts        VirtualAccount[]
+  vtuOrders              VTUOrder[]
+  wallets                Wallet[]
 
   @@index([email])
   @@index([phone])
   @@index([status])
+  @@index([tag])
+  @@index([email], map: "idx_users_email")
+  @@index([phone], map: "idx_users_phone")
+  @@index([status], map: "idx_users_status")
+  @@index([deletedAt])
+  @@index([expoPushToken], map: "users_expopushtoken_idx")
+  @@index([lastLoginEmailSentAt])
+  @@index([profileEditedOnce])
   @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model Device {
+  id             String    @id @default(uuid())
+  userId         String
+  deviceId       String    @unique
+  deviceName     String
+  deviceType     String
+  deviceModel    String?
+  osVersion      String?
+  appVersion     String?
+  ipAddress      String
+  lastIpAddress  String?
+  location       String?
+  userAgent      String?
+  isActive       Boolean   @default(true)
+  isVerified     Boolean   @default(false)
+  isTrusted      Boolean   @default(false)
+  firstLoginAt   DateTime  @default(now())
+  lastLoginAt    DateTime  @default(now())
+  lastActivityAt DateTime  @default(now())
+  verifiedAt     DateTime?
+  deactivatedAt  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "devices_userid_fkey")
+
+  @@index([deviceId], map: "devices_deviceid_idx")
+  @@index([isActive], map: "devices_isactive_idx")
+  @@index([userId], map: "devices_userid_idx")
+  @@map("devices")
+}
+
+model Wallet {
+  id             String          @id @default(uuid())
+  userId         String
+  balance        Decimal         @default(0) @db.Decimal(15, 2)
+  ledgerBalance  Decimal         @default(0) @db.Decimal(15, 2)
+  currency       String          @default("NGN")
+  dailySpent     Decimal         @default(0) @db.Decimal(15, 2)
+  monthlySpent   Decimal         @default(0) @db.Decimal(15, 2)
+  lastResetAt    DateTime        @default(now())
+  isLocked       Boolean         @default(false)
+  lockedReason   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  type           WalletType?     @default(NAIRA)
+  venlyWalletId  String?
+  walletAddress  String?
+  cryptoBalances CryptoBalance[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type], map: "wallets_userid_type_key")
+  @@index([userId])
+  @@index([type])
+  @@index([walletAddress])
+  @@index([venlyWalletId])
+  @@map("wallets")
+}
+
+model Transaction {
+  id               String            @id @default(uuid())
+  reference        String            @unique
+  userId           String
+  type             TransactionType
+  status           TransactionStatus @default(PENDING)
+  amount           Decimal           @db.Decimal(15, 2)
+  fee              Decimal           @default(0) @db.Decimal(15, 2)
+  totalAmount      Decimal           @db.Decimal(15, 2)
+  balanceBefore    Decimal           @db.Decimal(15, 2)
+  balanceAfter     Decimal           @db.Decimal(15, 2)
+  currency         String            @default("NGN")
+  metadata         Json?
+  relatedType      String?
+  relatedId        String?
+  provider         String?
+  providerRef      String?
+  providerStatus   String?
+  description      String
+  narration        String?
+  completedAt      DateTime?
+  failedAt         DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  channel          String?
+  cashbackRedeemed Decimal           @default(0) @db.Decimal(15, 2)
+  user             User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([reference])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference], map: "idx_transactions_reference")
+  @@index([userId, createdAt(sort: Desc)], map: "idx_transactions_user_created")
+  @@index([userId, status], map: "idx_transactions_user_status")
+  @@index([userId, type], map: "idx_transactions_user_type")
+  @@index([status, createdAt], map: "transactions_status_createdat_idx")
+  @@index([type, createdAt], map: "transactions_type_createdat_idx")
+  @@index([userId, createdAt], map: "transactions_userid_createdat_idx")
+  @@map("transactions")
+}
+
+model DailyTransactionLimit {
+  id                String   @id @default(uuid())
+  userId            String
+  date              DateTime @default(now())
+  totalTransferred  Decimal  @default(0) @db.Decimal(15, 2)
+  totalWithdrawn    Decimal  @default(0) @db.Decimal(15, 2)
+  totalAirtime      Decimal  @default(0) @db.Decimal(15, 2)
+  totalData         Decimal  @default(0) @db.Decimal(15, 2)
+  totalBillPayments Decimal  @default(0) @db.Decimal(15, 2)
+  transferCount     Int      @default(0)
+  withdrawalCount   Int      @default(0)
+  airtimeCount      Int      @default(0)
+  dataCount         Int      @default(0)
+  billPaymentCount  Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, date], map: "daily_transaction_limits_userid_date_key")
+  @@index([date])
+  @@index([userId], map: "daily_transaction_limits_userid_idx")
+  @@map("daily_transaction_limits")
+}
+
+model BankAccount {
+  id            String   @id @default(uuid())
+  userId        String
+  bankName      String
+  bankCode      String
+  accountNumber String
+  accountName   String
+  isVerified    Boolean  @default(false)
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, accountNumber])
+  @@index([userId])
+  @@map("bank_accounts")
+}
+
+model VirtualAccount {
+  id             String    @id @default(uuid())
+  userId         String
+  provider       String
+  bankName       String
+  bankCode       String
+  accountNumber  String    @unique
+  accountName    String
+  providerRef    String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  creationStatus String?
+  retryCount     Int       @default(0)
+  lastRetryAt    DateTime?
+  failureReason  String?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountNumber])
+  @@index([creationStatus], map: "virtual_accounts_creationstatus_idx")
+  @@map("virtual_accounts")
+}
+
+model VTUOrder {
+  id                 String            @id @default(uuid())
+  reference          String            @unique
+  userId             String
+  serviceType        VTUServiceType
+  provider           String
+  recipient          String
+  productCode        String
+  productName        String
+  amount             Decimal           @db.Decimal(15, 2)
+  status             TransactionStatus @default(PENDING)
+  providerRef        String?
+  providerToken      String?
+  providerResponse   Json?
+  transactionId      String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  completedAt        DateTime?
+  cashbackEarned     Decimal           @default(0) @db.Decimal(15, 2)
+  cashbackRedeemed   Decimal           @default(0) @db.Decimal(15, 2)
+  cashbackPercentage Decimal           @default(0) @db.Decimal(5, 2)
+  user               User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([reference])
+  @@index([status])
+  @@index([status], map: "idx_vtu_orders_status")
+  @@index([userId, createdAt(sort: Desc)], map: "idx_vtu_orders_user_created")
+  @@index([createdAt], map: "vtu_orders_createdat_idx")
+  @@index([status, createdAt], map: "vtu_orders_status_createdat_idx")
+  @@index([userId, createdAt], map: "vtu_orders_userid_createdat_idx")
+  @@map("vtu_orders")
+}
+
+model GiftCardOrder {
+  id            String            @id @default(uuid())
+  reference     String            @unique
+  userId        String
+  type          GiftCardType
+  brand         String
+  country       String
+  cardNumber    String?
+  cardPin       String?
+  cardImages    Json?
+  faceValue     Decimal           @db.Decimal(15, 2)
+  rate          Decimal           @db.Decimal(5, 2)
+  amount        Decimal           @db.Decimal(15, 2)
+  status        TransactionStatus @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  reviewNotes   String?
+  transactionId String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  completedAt   DateTime?
+  user          User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([reference])
+  @@index([status])
+  @@index([createdAt], map: "giftcard_orders_createdat_idx")
+  @@index([status, createdAt], map: "giftcard_orders_status_createdat_idx")
+  @@index([userId, createdAt], map: "giftcard_orders_userid_createdat_idx")
+  @@map("giftcard_orders")
+}
+
+model CryptoOrder {
+  id            String            @id @default(uuid())
+  reference     String            @unique
+  userId        String
+  type          CryptoOrderType
+  asset         String
+  network       String
+  cryptoAmount  Decimal           @db.Decimal(18, 8)
+  nairaAmount   Decimal           @db.Decimal(15, 2)
+  rate          Decimal           @db.Decimal(15, 2)
+  walletAddress String?
+  txHash        String?
+  status        TransactionStatus @default(PENDING)
+  provider      String?
+  providerRef   String?
+  transactionId String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  completedAt   DateTime?
+  user          User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([reference])
+  @@index([status])
+  @@index([createdAt], map: "crypto_orders_createdat_idx")
+  @@index([status, createdAt], map: "crypto_orders_status_createdat_idx")
+  @@index([userId, createdAt], map: "crypto_orders_userid_createdat_idx")
+  @@map("crypto_orders")
+}
+
+model Notification {
+  id             String            @id @default(uuid())
+  userId         String
+  type           NotificationType
+  title          String
+  message        String
+  data           Json?
+  isRead         Boolean           @default(false)
+  readAt         DateTime?
+  createdAt      DateTime          @default(now())
+  eventType      String?
+  category       String            @default("SYSTEM")
+  channels       String[]          @default(["in-app"])
+  deliveryStatus Json?
+  templateId     String?
+  variables      Json?
+  updatedAt      DateTime          @default(now()) @updatedAt
+  expiresAt      DateTime?
+  logs           NotificationLog[]
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([category])
+  @@index([eventType], map: "notifications_eventtype_idx")
+  @@index([userId, createdAt], map: "notifications_userid_createdat_idx")
+  @@index([userId, isRead, createdAt], map: "notifications_userid_isread_createdat_idx")
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                  String                 @id(map: "NotificationPreference_pkey") @default(uuid())
+  userId              String                 @unique(map: "NotificationPreference_userId_key")
+  emailEnabled        Boolean                @default(true)
+  smsEnabled          Boolean                @default(true)
+  pushEnabled         Boolean                @default(true)
+  inAppEnabled        Boolean                @default(true)
+  transactionEmails   Boolean                @default(true)
+  transactionSms      Boolean                @default(true)
+  transactionPush     Boolean                @default(true)
+  securityEmails      Boolean                @default(true)
+  securitySms         Boolean                @default(true)
+  securityPush        Boolean                @default(true)
+  kycEmails           Boolean                @default(true)
+  kycSms              Boolean                @default(true)
+  kycPush             Boolean                @default(true)
+  promotionalEmails   Boolean                @default(false)
+  promotionalSms      Boolean                @default(false)
+  promotionalPush     Boolean                @default(false)
+  emailFrequency      String                 @default("IMMEDIATE")
+  smsFrequency        String                 @default("IMMEDIATE")
+  quietHoursEnabled   Boolean                @default(false)
+  quietHoursStart     String?
+  quietHoursEnd       String?
+  timeZone            String                 @default("Africa/Lagos")
+  optOutCategories    String[]               @default([])
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  pushFrequency       NotificationFrequency? @default(IMMEDIATE)
+  oneSignalPlayerId   String?
+  oneSignalExternalId String?
+  lastPushTokenUpdate DateTime?
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "NotificationPreference_userId_fkey")
+
+  @@index([oneSignalPlayerId])
+  @@map("notification_preferences")
+}
+
+model NotificationLog {
+  id                String       @id(map: "NotificationLog_pkey") @default(uuid())
+  notificationId    String
+  userId            String
+  channel           String
+  status            String       @default("PENDING")
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  failureReason     String?
+  retryCount        Int          @default(0)
+  lastRetryAt       DateTime?
+  openedAt          DateTime?
+  clickedAt         DateTime?
+  clickUrl          String?
+  provider          String?
+  providerMessageId String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  notification      Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade, map: "NotificationLog_notificationId_fkey")
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade, map: "NotificationLog_userId_fkey")
+
+  @@index([channel], map: "NotificationLog_channel_idx")
+  @@index([notificationId], map: "NotificationLog_notificationId_idx")
+  @@index([status], map: "NotificationLog_status_idx")
+  @@index([userId], map: "NotificationLog_userId_idx")
+  @@map("notification_logs")
+}
+
+model NotificationTemplate {
+  id           String   @id(map: "NotificationTemplate_pkey") @default(uuid())
+  name         String   @unique(map: "NotificationTemplate_name_key")
+  eventType    String
+  channel      String
+  subject      String?
+  bodyTemplate String
+  variables    String[]
+  isActive     Boolean  @default(true)
+  version      Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("notification_templates")
+}
+
+model NotificationQueue {
+  id           String    @id(map: "NotificationQueue_pkey") @default(uuid())
+  userId       String
+  channel      String
+  eventType    String
+  templateId   String?
+  variables    Json?
+  status       String    @default("QUEUED")
+  priority     Int       @default(0)
+  retryCount   Int       @default(0)
+  maxRetries   Int       @default(3)
+  nextRetryAt  DateTime?
+  lastError    String?
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "NotificationQueue_userId_fkey")
+
+  @@index([userId])
+  @@index([status])
+  @@index([channel])
+  @@index([scheduledFor])
+  @@index([priority])
+  @@index([scheduledFor], map: "NotificationQueue_scheduledFor_idx")
+  @@index([status], map: "NotificationQueue_status_idx")
+  @@index([userId], map: "NotificationQueue_userId_idx")
+  @@map("notification_queue")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([action, createdAt], map: "audit_logs_action_createdat_idx")
+  @@index([resource, resourceId], map: "audit_logs_resource_resourceid_idx")
+  @@index([userId, createdAt], map: "audit_logs_userid_createdat_idx")
+  @@index([userId, createdAt(sort: Desc)], map: "idx_audit_logs_user")
+  @@map("audit_logs")
+}
+
+model SavedRecipient {
+  id            String         @id @default(uuid())
+  userId        String
+  serviceType   VTUServiceType
+  provider      String
+  recipient     String
+  recipientName String?
+  lastUsedAt    DateTime       @default(now())
+  usageCount    Int            @default(1)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "saved_recipients_userid_fkey")
+
+  @@unique([userId, serviceType, recipient], map: "saved_recipients_userid_servicetype_recipient_key")
+  @@index([lastUsedAt], map: "saved_recipients_lastusedat_idx")
+  @@index([userId], map: "saved_recipients_userid_idx")
+  @@index([userId, serviceType], map: "saved_recipients_userid_servicetype_idx")
+  @@map("saved_recipients")
+}
+
+model AccountDeletionRequest {
+  id               String                @id @default(uuid())
+  userId           String
+  reason           String
+  customReason     String?
+  passwordVerified Boolean               @default(true)
+  status           DeletionRequestStatus @default(PENDING)
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  reviewNotes      String?
+  rejectionReason  String?
+  requestedAt      DateTime              @default(now())
+  scheduledFor     DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @default(now()) @updatedAt
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade, map: "account_deletion_requests_userid_fkey")
+
+  @@index([userId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("account_deletion_requests")
+}
+
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model AppRatingConfig {
+  id                      String   @id @default(uuid())
+  enabled                 Boolean  @default(true)
+  promptFrequencyDays     Int      @default(30)
+  minTransactionsRequired Int      @default(3)
+  minUsageDaysRequired    Int      @default(7)
+  promptTitle             String   @default("Enjoying RaverPay?")
+  promptMessage           String   @default("Rate us on the app store! Your feedback helps us improve.")
+  iosAppStoreUrl          String   @default("")
+  androidPlayStoreUrl     String   @default("")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@map("app_rating_config")
+}
+
+model Conversation {
+  id                 String             @id @default(uuid())
+  userId             String
+  status             ConversationStatus @default(OPEN)
+  category           String?
+  lastMessagePreview String?
+  unreadCount        Int                @default(0)
+  transactionId      String?
+  transactionType    String?
+  transactionContext Json?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade, map: "conversations_userid_fkey")
+  inboundEmail       InboundEmail?      @relation("EmailConversations")
+  messages           Message[]
+  ticket             Ticket?
+
+  @@index([status])
+  @@index([createdAt], map: "conversations_createdat_idx")
+  @@index([userId], map: "conversations_userid_idx")
+  @@index([userId, status], map: "conversations_userid_status_idx")
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderType     SenderType
+  senderId       String?
+  content        String
+  attachments    Json?
+  isRead         Boolean      @default(false)
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, map: "messages_conversationid_fkey")
+
+  @@index([conversationId, createdAt], map: "messages_conversationid_createdat_idx")
+  @@index([conversationId], map: "messages_conversationid_idx")
+  @@index([createdAt], map: "messages_createdat_idx")
+  @@map("messages")
+}
+
+model Ticket {
+  id              String         @id @default(uuid())
+  ticketNumber    Int            @unique(map: "tickets_ticketnumber_key") @default(autoincrement())
+  conversationId  String         @unique(map: "tickets_conversationid_key")
+  userId          String
+  category        String
+  title           String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(MEDIUM)
+  assignedAgentId String?
+  rating          Int?
+  ratingComment   String?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  inboundEmail    InboundEmail?  @relation("EmailTickets")
+  assignedAgent   User?          @relation("AssignedTickets", fields: [assignedAgentId], references: [id], map: "tickets_assignedagentid_fkey")
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade, map: "tickets_conversationid_fkey")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "tickets_userid_fkey")
+
+  @@index([status])
+  @@index([priority])
+  @@index([status, priority])
+  @@index([assignedAgentId], map: "tickets_assignedagentid_idx")
+  @@index([createdAt], map: "tickets_createdat_idx")
+  @@index([status, createdAt], map: "tickets_status_createdat_idx")
+  @@index([ticketNumber], map: "tickets_ticketnumber_idx")
+  @@index([userId], map: "tickets_userid_idx")
+  @@map("tickets")
+}
+
+model InboundEmail {
+  id              String        @id @default(uuid())
+  emailId         String        @unique
+  messageId       String?
+  from            String
+  fromName        String?
+  to              String
+  cc              String[]      @default([])
+  bcc             String[]      @default([])
+  subject         String
+  textBody        String?
+  htmlBody        String?
+  targetRole      UserRole?
+  targetEmail     String
+  ticketId        String?       @unique
+  conversationId  String?       @unique
+  userId          String?
+  attachments     Json?
+  isProcessed     Boolean       @default(false)
+  processedAt     DateTime?
+  processingError String?
+  receivedAt      DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  conversation    Conversation? @relation("EmailConversations", fields: [conversationId], references: [id], map: "inbound_emails_conversationid_fkey")
+  ticket          Ticket?       @relation("EmailTickets", fields: [ticketId], references: [id], map: "inbound_emails_ticketid_fkey")
+  user            User?         @relation("InboundEmails", fields: [userId], references: [id], map: "inbound_emails_userid_fkey")
+
+  @@index([conversationId], map: "inbound_emails_conversationid_idx")
+  @@index([isProcessed], map: "inbound_emails_isprocessed_idx")
+  @@index([receivedAt], map: "inbound_emails_receivedat_idx")
+  @@index([targetEmail], map: "inbound_emails_targetemail_idx")
+  @@index([targetRole], map: "inbound_emails_targetrole_idx")
+  @@index([ticketId], map: "inbound_emails_ticketid_idx")
+  @@index([userId], map: "inbound_emails_userid_idx")
+  @@map("inbound_emails")
+}
+
+model EmailRouting {
+  id               String          @id @default(uuid())
+  emailAddress     String          @unique
+  targetRole       UserRole
+  autoCreateTicket Boolean         @default(false)
+  defaultPriority  TicketPriority?
+  defaultCategory  String?
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([isActive], map: "email_routing_isactive_idx")
+  @@index([targetRole], map: "email_routing_targetrole_idx")
+  @@map("email_routing")
+}
+
+model HelpCollection {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  icon        String?
+  order       Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  articles    HelpArticle[]
+
+  @@index([order])
+  @@index([isActive], map: "help_collections_isactive_idx")
+  @@map("help_collections")
+}
+
+model HelpArticle {
+  id             String         @id @default(uuid())
+  collectionId   String
+  title          String
+  content        String
+  slug           String         @unique
+  order          Int            @default(0)
+  viewCount      Int            @default(0)
+  helpfulCount   Int            @default(0)
+  unhelpfulCount Int            @default(0)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  collection     HelpCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade, map: "help_articles_collectionid_fkey")
+
+  @@index([order])
+  @@index([slug])
+  @@index([collectionId], map: "help_articles_collectionid_idx")
+  @@index([isActive], map: "help_articles_isactive_idx")
+  @@map("help_articles")
+}
+
+model CannedResponse {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  category    String?
+  shortcut    String?
+  isActive    Boolean  @default(true)
+  usageCount  Int      @default(0)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation("CannedResponseCreator", fields: [createdById], references: [id], onDelete: Cascade, map: "canned_responses_createdbyid_fkey")
+
+  @@index([category])
+  @@index([shortcut])
+  @@index([isActive], map: "canned_responses_isactive_idx")
+  @@map("canned_responses")
+}
+
+model CashbackConfig {
+  id          String   @id @default(uuid())
+  serviceType String
+  percentage  Decimal  @db.Decimal(5, 2)
+  isActive    Boolean  @default(true)
+  provider    String?
+  minAmount   Decimal  @default(0) @db.Decimal(15, 2)
+  maxCashback Decimal? @db.Decimal(15, 2)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([serviceType, provider], map: "cashback_config_servicetype_provider_key")
+  @@index([isActive], map: "cashback_config_isactive_idx")
+  @@index([serviceType], map: "cashback_config_servicetype_idx")
+  @@map("cashback_config")
+}
+
+model CashbackWallet {
+  id               String   @id @default(uuid())
+  userId           String   @unique(map: "cashback_wallets_userid_key")
+  totalEarned      Decimal  @default(0) @db.Decimal(15, 2)
+  availableBalance Decimal  @default(0) @db.Decimal(15, 2)
+  totalRedeemed    Decimal  @default(0) @db.Decimal(15, 2)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "cashback_wallets_userid_fkey")
+
+  @@index([userId], map: "cashback_wallets_userid_idx")
+  @@map("cashback_wallets")
+}
+
+model CashbackTransaction {
+  id              String                  @id @default(uuid())
+  userId          String
+  type            CashbackTransactionType
+  amount          Decimal                 @db.Decimal(15, 2)
+  balanceBefore   Decimal                 @db.Decimal(15, 2)
+  balanceAfter    Decimal                 @db.Decimal(15, 2)
+  sourceReference String?
+  description     String
+  metadata        Json?
+  createdAt       DateTime                @default(now())
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "cashback_transactions_userid_fkey")
+
+  @@index([type])
+  @@index([createdAt], map: "cashback_transactions_createdat_idx")
+  @@index([sourceReference], map: "cashback_transactions_sourcereference_idx")
+  @@index([userId, createdAt], map: "cashback_transactions_userid_createdat_idx")
+  @@index([userId], map: "cashback_transactions_userid_idx")
+  @@map("cashback_transactions")
+}
+
+model WithdrawalConfig {
+  id            String            @id @default(uuid())
+  feeType       WithdrawalFeeType @default(PERCENTAGE)
+  feeValue      Decimal           @db.Decimal(15, 2)
+  minFee        Decimal           @default(0) @db.Decimal(15, 2)
+  maxFee        Decimal?          @db.Decimal(15, 2)
+  tierLevel     KYCTier?          @unique(map: "withdrawal_config_tierlevel_key")
+  minWithdrawal Decimal           @default(100) @db.Decimal(15, 2)
+  maxWithdrawal Decimal           @default(50000) @db.Decimal(15, 2)
+  isActive      Boolean           @default(true)
+  description   String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([isActive], map: "withdrawal_config_isactive_idx")
+  @@map("withdrawal_config")
+}
+
+model CryptoBalance {
+  id            String   @id @default(uuid())
+  walletId      String
+  tokenSymbol   String
+  tokenAddress  String?
+  tokenDecimals Int      @default(18)
+  balance       Decimal  @db.Decimal(36, 18)
+  rawBalance    String
+  usdPrice      Decimal? @db.Decimal(18, 8)
+  usdValue      Decimal? @db.Decimal(18, 2)
+  lastUpdated   DateTime @default(now())
+  wallet        Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@unique([walletId, tokenSymbol])
+  @@index([walletId])
+  @@index([tokenSymbol])
+  @@map("crypto_balances")
+}
+
+model CryptoTransaction {
+  id                 String                  @id @default(uuid())
+  reference          String                  @unique
+  transactionHash    String                  @unique
+  userId             String
+  walletId           String
+  type               CryptoTransactionType
+  direction          TransactionDirection
+  fromAddress        String
+  toAddress          String
+  tokenSymbol        String
+  tokenAddress       String?
+  tokenDecimals      Int                     @default(6)
+  amount             Decimal                 @db.Decimal(36, 18)
+  rawAmount          String
+  usdValue           Decimal                 @db.Decimal(18, 2)
+  gasFee             Decimal?                @db.Decimal(10, 6)
+  gasFeeUsd          Decimal?                @db.Decimal(10, 2)
+  network            String                  @default("MATIC")
+  blockNumber        Int?
+  blockHash          String?
+  confirmations      Int                     @default(0)
+  hasReachedFinality Boolean                 @default(false)
+  nonce              Int?
+  status             CryptoTransactionStatus @default(PENDING)
+  failureReason      String?
+  memo               String?
+  submittedAt        DateTime                @default(now())
+  confirmedAt        DateTime?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([transactionHash])
+  @@index([status])
+  @@index([type])
+  @@index([direction])
+  @@index([submittedAt])
+  @@index([status, submittedAt])
+  @@map("crypto_transactions")
+}
+
+model CryptoConversion {
+  id                  String           @id @default(uuid())
+  reference           String           @unique
+  userId              String
+  tokenSymbol         String
+  cryptoAmount        Decimal          @db.Decimal(36, 18)
+  usdValue            Decimal          @db.Decimal(18, 2)
+  nairaAmount         Decimal          @db.Decimal(18, 2)
+  exchangeRate        Decimal          @db.Decimal(10, 2)
+  feePercent          Decimal          @db.Decimal(5, 2)
+  feeAmount           Decimal          @db.Decimal(18, 2)
+  netNaira            Decimal          @db.Decimal(18, 2)
+  status              ConversionStatus @default(PENDING)
+  requiresApproval    Boolean          @default(false)
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectionReason     String?
+  cryptoTransactionId String?
+  nairaTransactionId  String?
+  requestedAt         DateTime         @default(now())
+  completedAt         DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("crypto_conversions")
+}
+
+model ExchangeRate {
+  id                 String    @id @default(uuid())
+  fromCurrency       String
+  toCurrency         String
+  rate               Decimal   @db.Decimal(10, 2)
+  platformFeePercent Decimal   @db.Decimal(5, 2)
+  isActive           Boolean   @default(true)
+  setBy              String
+  setAt              DateTime  @default(now())
+  expiresAt          DateTime?
+  source             String?
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([fromCurrency, toCurrency, isActive])
+  @@index([isActive])
+  @@map("exchange_rates")
+}
+
+model CryptoPrice {
+  id        String   @id @default(uuid())
+  symbol    String
+  usdPrice  Decimal  @db.Decimal(18, 8)
+  source    String   @default("coingecko")
+  fetchedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([symbol, fetchedAt])
+  @@index([symbol])
+  @@index([fetchedAt])
+  @@map("crypto_prices")
+}
+
+model CryptoWebhookLog {
+  id              String    @id @default(uuid())
+  eventType       String
+  payload         Json
+  processed       Boolean   @default(false)
+  processedAt     DateTime?
+  error           String?
+  transactionHash String?
+  fromAddress     String?
+  toAddress       String?
+  amount          Decimal?  @db.Decimal(18, 8)
+  tokenSymbol     String?
+  receivedAt      DateTime  @default(now())
+
+  @@index([eventType])
+  @@index([transactionHash])
+  @@index([processed])
+  @@index([receivedAt])
+  @@map("crypto_webhook_logs")
+}
+
+model VenlyUser {
+  id                   String    @id @default(uuid())
+  userId               String    @unique
+  venlyUserId          String    @unique
+  venlySigningMethodId String?
+  venlyReference       String
+  encryptedPin         String
+  pinSetAt             DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([venlyUserId])
+  @@index([userId])
+  @@map("venly_users")
+}
+
+model P2PTransfer {
+  id                    String   @id @default(uuid())
+  reference             String   @unique
+  senderId              String
+  receiverId            String
+  amount                Decimal  @db.Decimal(15, 2)
+  fee                   Decimal  @default(0) @db.Decimal(15, 2)
+  status                String   @default("COMPLETED")
+  message               String?  @db.VarChar(200)
+  senderTransactionId   String
+  receiverTransactionId String
+  createdAt             DateTime @default(now())
+  receiver              User     @relation("ReceiverTransfers", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender                User     @relation("SenderTransfers", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@index([senderId, createdAt])
+  @@index([receiverId, createdAt])
+  @@map("p2p_transfers")
+}
+
+model reserved_tags {
+  id        String   @id
+  tag       String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
 }
 
 enum UserRole {
   USER
-  SUPPORT
   ADMIN
+  SUPPORT
   SUPER_ADMIN
 }
 
@@ -134,17 +1076,17 @@ enum UserStatus {
   ACTIVE
   SUSPENDED
   BANNED
-  LOCKED // Account temporarily locked due to failed login attempts
   PENDING_VERIFICATION
   PENDING_DELETION
   DELETED
+  LOCKED
 }
 
 enum KYCTier {
-  TIER_0 // Not verified - ₦50k limit
-  TIER_1 // Email + Phone - ₦300k limit
-  TIER_2 // BVN verified - ₦5M limit
-  TIER_3 // Full KYC - Unlimited
+  TIER_0
+  TIER_1
+  TIER_2
+  TIER_3
 }
 
 enum Gender {
@@ -153,203 +1095,10 @@ enum Gender {
   OTHER
 }
 
-// ============================================
-// REFRESH TOKEN MANAGEMENT
-// ============================================
-
-model RefreshToken {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  token     String   @unique
-  isRevoked Boolean  @default(false)
-  expiresAt DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([token])
-  @@map("refresh_tokens")
-}
-
-// Device Management for single device login
-model Device {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Device Identification
-  deviceId          String   @unique // Unique device fingerprint
-  deviceName        String // e.g., "iPhone 13 Pro"
-  deviceType        String // "ios", "android", "web"
-  deviceModel       String? // e.g., "iPhone13,3"
-  osVersion         String? // e.g., "iOS 16.0"
-  appVersion        String? // App version at time of registration
-
-  // Location & Network
-  ipAddress         String
-  lastIpAddress     String?
-  location          String? // e.g., "Lagos, Nigeria"
-  userAgent         String?
-
-  // Status
-  isActive          Boolean  @default(true) // Only one device can be active
-  isVerified        Boolean  @default(false) // Device verified via OTP
-  isTrusted         Boolean  @default(false) // Trusted device (no OTP needed)
-
-  // Timestamps
-  firstLoginAt      DateTime @default(now())
-  lastLoginAt       DateTime @default(now())
-  lastActivityAt    DateTime @default(now())
-  verifiedAt        DateTime?
-  deactivatedAt     DateTime?
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([userId])
-  @@index([deviceId])
-  @@index([isActive])
-  @@map("devices")
-}
-
-// ============================================
-// WALLET SYSTEM
-// ============================================
-
 enum WalletType {
-  NAIRA // Existing
-  CRYPTO // New - holds USDT, USDC, MATIC
-  USD // Future - for virtual card funding
-}
-
-model Wallet {
-  id     String     @id @default(uuid())
-  userId String
-  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Wallet type
-  type WalletType
-
-  // For NAIRA wallet (existing)
-  balance       Decimal @default(0) @db.Decimal(15, 2)
-  ledgerBalance Decimal @default(0) @db.Decimal(15, 2)
-  currency      String  @default("NGN") // NGN, USD, or CRYPTO
-
-  // For CRYPTO wallet (new)
-  venlyWalletId String? @unique // Venly's wallet ID
-  walletAddress String? @unique // Blockchain address (0x...)
-
-  // Limits tracking
-  dailySpent   Decimal  @default(0) @db.Decimal(15, 2)
-  monthlySpent Decimal  @default(0) @db.Decimal(15, 2)
-  lastResetAt  DateTime @default(now())
-
-  // Status
-  isLocked     Boolean @default(false)
-  lockedReason String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  cryptoBalances CryptoBalance[]
-
-  @@unique([userId, type]) // User can have one NAIRA, one CRYPTO, one USD wallet
-  @@index([userId])
-  @@index([type])
-  @@index([walletAddress])
-  @@index([venlyWalletId])
-  @@map("wallets")
-}
-
-// ============================================
-// TRANSACTIONS (Double-entry bookkeeping)
-// ============================================
-
-model Transaction {
-  id        String @id @default(uuid())
-  reference String @unique // e.g., TXN_1234567890
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  type   TransactionType
-  status TransactionStatus @default(PENDING)
-
-  amount           Decimal @db.Decimal(15, 2)
-  fee              Decimal @default(0) @db.Decimal(15, 2)
-  cashbackRedeemed Decimal @default(0) @db.Decimal(15, 2) // Cashback discount applied
-  totalAmount      Decimal @db.Decimal(15, 2) // amount + fee - cashbackRedeemed
-
-  balanceBefore Decimal @db.Decimal(15, 2)
-  balanceAfter  Decimal @db.Decimal(15, 2)
-
-  currency String @default("NGN")
-
-  // Additional data (JSON for flexibility)
-  metadata Json?
-
-  // Related entities
-  relatedType String? // e.g., "vtu_order", "giftcard_order"
-  relatedId   String?
-
-  // Provider info (for external transactions)
-  provider       String? // e.g., "paystack", "vtpass"
-  providerRef    String?
-  providerStatus String?
-  channel        String? // e.g., "BANK_TRANSFER", "CARD", "USSD"
-
-  // Descriptions
-  description String
-  narration   String?
-
-  // Timestamps
-  completedAt DateTime?
-  failedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([reference])
-  @@index([type])
-  @@index([status])
-  @@index([createdAt])
-  @@index([status, createdAt]) // Composite index for admin queries filtering by status
-  @@index([type, createdAt]) // Composite index for admin queries filtering by type
-  @@index([userId, createdAt]) // Composite index for user transaction history
-  @@map("transactions")
-}
-
-// Daily Transaction Limits Tracking
-model DailyTransactionLimit {
-  id     String @id @default(uuid())
-  userId String
-  date   DateTime @default(now()) // Date for this limit tracking (YYYY-MM-DD)
-
-  // Spending tracking
-  totalTransferred  Decimal @default(0) @db.Decimal(15, 2) // Total transfers + withdrawals
-  totalWithdrawn    Decimal @default(0) @db.Decimal(15, 2) // Withdrawals only
-  totalAirtime      Decimal @default(0) @db.Decimal(15, 2) // Airtime purchases
-  totalData         Decimal @default(0) @db.Decimal(15, 2) // Data purchases
-  totalBillPayments Decimal @default(0) @db.Decimal(15, 2) // Cable TV + Electricity
-
-  // Transaction counts
-  transferCount     Int @default(0)
-  withdrawalCount   Int @default(0)
-  airtimeCount      Int @default(0)
-  dataCount         Int @default(0)
-  billPaymentCount  Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, date])
-  @@index([userId])
-  @@index([date])
-  @@map("daily_transaction_limits")
+  NAIRA
+  CRYPTO
+  USD
 }
 
 enum TransactionType {
@@ -366,18 +1115,14 @@ enum TransactionType {
   CRYPTO_SELL
   REFUND
   FEE
-
-  // New crypto wallet types
-  CRYPTO_DEPOSIT // Incoming crypto
-  CRYPTO_SEND // Outgoing crypto
-  CRYPTO_TO_NAIRA // Crypto → Naira conversion
-
-  // Future: USD wallet types
-  USD_DEPOSIT // Add to USD wallet
-  USD_WITHDRAWAL // Withdraw from USD wallet
-  CARD_LOAD // Load virtual card
-  CARD_PURCHASE // Virtual card purchase
-  CRYPTO_TO_USD // Crypto → USD wallet
+  CRYPTO_DEPOSIT
+  CRYPTO_SEND
+  CRYPTO_TO_NAIRA
+  USD_DEPOSIT
+  USD_WITHDRAWAL
+  CARD_LOAD
+  CARD_PURCHASE
+  CRYPTO_TO_USD
 }
 
 enum TransactionStatus {
@@ -389,111 +1134,6 @@ enum TransactionStatus {
   REVERSED
 }
 
-// ============================================
-// BANK ACCOUNTS & VIRTUAL ACCOUNTS
-// ============================================
-
-model BankAccount {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  bankName      String
-  bankCode      String
-  accountNumber String
-  accountName   String
-
-  isVerified Boolean @default(false)
-  isPrimary  Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, accountNumber])
-  @@index([userId])
-  @@map("bank_accounts")
-}
-
-model VirtualAccount {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  provider      String // e.g., "paystack"
-  bankName      String
-  bankCode      String
-  accountNumber String @unique
-  accountName   String
-
-  providerRef String?
-  isActive    Boolean @default(true)
-
-  // DVA Creation Status Tracking
-  creationStatus String? // PENDING | PROCESSING | ACTIVE | FAILED
-  retryCount     Int     @default(0)
-  lastRetryAt    DateTime?
-  failureReason  String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([accountNumber])
-  @@index([creationStatus])
-  @@map("virtual_accounts")
-}
-
-// ============================================
-// VTU (VIRTUAL TOP-UP) SERVICES
-// ============================================
-
-model VTUOrder {
-  id        String @id @default(uuid())
-  reference String @unique
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  serviceType VTUServiceType
-  provider    String // MTN, GLO, AIRTEL, 9MOBILE, DSTV, etc.
-
-  // Recipient details
-  recipient String // Phone number or smartcard number
-
-  // Product details
-  productCode String
-  productName String
-  amount      Decimal @db.Decimal(15, 2)
-
-  // Status
-  status TransactionStatus @default(PENDING)
-
-  // Provider response
-  providerRef      String?
-  providerToken    String?
-  providerResponse Json?
-
-  // Transaction reference
-  transactionId String?
-
-  // Cashback fields
-  cashbackEarned     Decimal @default(0) @db.Decimal(15, 2) // Cashback earned from this purchase
-  cashbackRedeemed   Decimal @default(0) @db.Decimal(15, 2) // Cashback applied to this purchase
-  cashbackPercentage Decimal @default(0) @db.Decimal(5, 2) // Percentage used for calculation
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  completedAt DateTime?
-
-  @@index([userId])
-  @@index([reference])
-  @@index([status])
-  @@index([createdAt])
-  @@index([status, createdAt]) // Composite index for admin queries
-  @@index([userId, createdAt]) // Composite index for user order history
-  @@map("vtu_orders")
-}
-
 enum VTUServiceType {
   AIRTIME
   DATA
@@ -501,161 +1141,14 @@ enum VTUServiceType {
   ELECTRICITY
 }
 
-// ============================================
-// GIFT CARDS
-// ============================================
-
-model GiftCardOrder {
-  id        String @id @default(uuid())
-  reference String @unique
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  type    GiftCardType // BUY or SELL
-  brand   String // AMAZON, APPLE, STEAM, etc.
-  country String // US, UK, CA, etc.
-
-  // Card details (for selling)
-  cardNumber String? // Encrypted
-  cardPin    String? // Encrypted
-  cardImages Json? // Array of image URLs
-
-  // Pricing
-  faceValue Decimal @db.Decimal(15, 2)
-  rate      Decimal @db.Decimal(5, 2) // Exchange rate
-  amount    Decimal @db.Decimal(15, 2) // Amount in Naira
-
-  status TransactionStatus @default(PENDING)
-
-  // Admin review
-  reviewedBy  String?
-  reviewedAt  DateTime?
-  reviewNotes String?
-
-  // Transaction reference
-  transactionId String?
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  completedAt DateTime?
-
-  @@index([userId])
-  @@index([reference])
-  @@index([status])
-  @@index([createdAt])
-  @@index([status, createdAt]) // Composite index for admin queries
-  @@index([userId, createdAt]) // Composite index for user order history
-  @@map("giftcard_orders")
-}
-
 enum GiftCardType {
   BUY
   SELL
 }
 
-// ============================================
-// CRYPTO TRADING
-// ============================================
-
-model CryptoOrder {
-  id        String @id @default(uuid())
-  reference String @unique
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  type    CryptoOrderType // BUY or SELL
-  asset   String // BTC, ETH, USDT
-  network String // BTC, ETH, TRC20, BEP20
-
-  // Amounts
-  cryptoAmount Decimal @db.Decimal(18, 8)
-  nairaAmount  Decimal @db.Decimal(15, 2)
-  rate         Decimal @db.Decimal(15, 2) // Exchange rate per unit
-
-  // Wallet address (for selling)
-  walletAddress String?
-
-  // Transaction hash (for verification)
-  txHash String?
-
-  status TransactionStatus @default(PENDING)
-
-  // Provider info
-  provider    String? // e.g., "binance", "crypto.com"
-  providerRef String?
-
-  // Transaction reference
-  transactionId String?
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  completedAt DateTime?
-
-  @@index([userId])
-  @@index([reference])
-  @@index([status])
-  @@index([createdAt])
-  @@index([status, createdAt]) // Composite index for admin queries
-  @@index([userId, createdAt]) // Composite index for user order history
-  @@map("crypto_orders")
-}
-
 enum CryptoOrderType {
   BUY
   SELL
-}
-
-// ============================================
-// NOTIFICATIONS
-// ============================================
-
-model Notification {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Notification classification
-  type      NotificationType
-  eventType String? // "deposit", "withdrawal", "bvn_verified", etc.
-  category  NotificationCategory @default(SYSTEM)
-
-  // Content
-  title   String
-  message String
-  data    Json?
-
-  // Multi-channel support
-  channels String[] @default(["in-app"]) // ["email", "sms", "in-app", "push"]
-
-  // Delivery tracking
-  deliveryStatus Json? // { "email": "sent", "sms": "failed", "push": "pending" }
-
-  // Template reference
-  templateId String?
-  variables  Json? // Variables used to render template
-
-  // Read status
-  isRead Boolean   @default(false)
-  readAt DateTime?
-
-  // Lifecycle
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  expiresAt DateTime? // Auto-cleanup old notifications
-
-  // Relations
-  logs NotificationLog[]
-
-  @@index([userId])
-  @@index([isRead])
-  @@index([eventType])
-  @@index([category])
-  @@index([createdAt])
-  @@index([userId, isRead, createdAt]) // Composite for user unread notifications
-  @@index([userId, createdAt]) // Composite for user notification history
-  @@map("notifications")
 }
 
 enum NotificationType {
@@ -675,111 +1168,11 @@ enum NotificationCategory {
   ACCOUNT
 }
 
-// ============================================
-// NOTIFICATION PREFERENCES
-// ============================================
-
-model NotificationPreference {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Channel preferences
-  emailEnabled Boolean @default(true)
-  smsEnabled   Boolean @default(false) // SMS costs money - opt-in only
-  pushEnabled  Boolean @default(true)
-  inAppEnabled Boolean @default(true)
-
-  // Event type preferences
-  transactionEmails Boolean @default(true)
-  transactionSms    Boolean @default(false) // SMS costs money - opt-in only
-  transactionPush   Boolean @default(true)
-
-  securityEmails Boolean @default(true)
-  securitySms    Boolean @default(false) // SMS costs money - opt-in only
-  securityPush   Boolean @default(true)
-
-  kycEmails Boolean @default(true)
-  kycSms    Boolean @default(false) // SMS costs money - opt-in only
-  kycPush   Boolean @default(true)
-
-  promotionalEmails Boolean @default(true) // Opt-out model for marketing
-  promotionalSms    Boolean @default(false) // SMS costs money - opt-in only
-  promotionalPush   Boolean @default(true) // Opt-out model for marketing
-
-  // Frequency controls
-  emailFrequency NotificationFrequency @default(IMMEDIATE)
-  smsFrequency   NotificationFrequency @default(IMMEDIATE)
-  pushFrequency  NotificationFrequency @default(IMMEDIATE)
-
-  // Do not disturb
-  quietHoursEnabled Boolean @default(false)
-  quietHoursStart   String? // "22:00"
-  quietHoursEnd     String? // "06:00"
-  timeZone          String  @default("Africa/Lagos")
-
-  // Opt-outs
-  optOutCategories String[] @default([]) // Categories user opted out of
-
-  // OneSignal Push Notification Tokens
-  oneSignalPlayerId   String? // OneSignal subscription/player ID
-  oneSignalExternalId String? // External user ID (should match userId)
-  lastPushTokenUpdate DateTime? // Last time push token was updated
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@map("notification_preferences")
-}
-
 enum NotificationFrequency {
   IMMEDIATE
   DAILY
   WEEKLY
   NEVER
-}
-
-// ============================================
-// NOTIFICATION LOGS (Delivery Tracking)
-// ============================================
-
-model NotificationLog {
-  id             String       @id @default(uuid())
-  notificationId String
-  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Channel info
-  channel NotificationChannel
-  status  NotificationStatus  @default(PENDING)
-
-  // Delivery tracking
-  sentAt        DateTime?
-  deliveredAt   DateTime?
-  failureReason String?
-  retryCount    Int       @default(0)
-  lastRetryAt   DateTime?
-
-  // Analytics
-  openedAt  DateTime?
-  clickedAt DateTime?
-  clickUrl  String?
-
-  // Provider info
-  provider          String? // "resend", "termii", "vtpass", "onesignal"
-  providerMessageId String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([channel])
-  @@index([status])
-  @@index([notificationId])
-  @@map("notification_logs")
 }
 
 enum NotificationChannel {
@@ -795,83 +1188,6 @@ enum NotificationStatus {
   DELIVERED
   FAILED
   BOUNCED
-  OPENED
-  CLICKED
-}
-
-// ============================================
-// NOTIFICATION TEMPLATES
-// ============================================
-
-model NotificationTemplate {
-  id String @id @default(uuid())
-
-  // Template identification
-  name      String              @unique
-  eventType String // "deposit", "withdrawal", "bvn_verified", etc.
-  channel   NotificationChannel
-
-  // Content
-  subject      String? // For email/push
-  bodyTemplate String // Can use {{variable}} syntax
-
-  // Metadata
-  isActive  Boolean  @default(true)
-  version   Int      @default(1)
-  variables String[] // ["firstName", "amount", "reference"]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([eventType, channel, version])
-  @@index([eventType])
-  @@index([isActive])
-  @@map("notification_templates")
-}
-
-// ============================================
-// NOTIFICATION QUEUE (Async Processing)
-// ============================================
-
-model NotificationQueue {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Notification details
-  channel   NotificationChannel
-  eventType String
-
-  // Template data
-  templateId String?
-  variables  Json? // { "firstName": "John", "amount": "1000" }
-
-  // Status
-  status   QueueStatus @default(QUEUED)
-  priority Int         @default(0)
-
-  // Retry logic
-  retryCount  Int       @default(0)
-  maxRetries  Int       @default(3)
-  nextRetryAt DateTime?
-  lastError   String?
-
-  // Execution
-  scheduledFor DateTime?
-  sentAt       DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([channel])
-  @@index([scheduledFor])
-  @@index([priority])
-  // Composite index for the queue processing query (fixes slow query)
-  @@index([channel, status, scheduledFor, nextRetryAt, priority, createdAt])
-  @@map("notification_queue")
 }
 
 enum QueueStatus {
@@ -882,180 +1198,12 @@ enum QueueStatus {
   CANCELLED
 }
 
-// ============================================
-// AUDIT LOGS
-// ============================================
-
-model AuditLog {
-  id     String  @id @default(uuid())
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  action     String
-  resource   String
-  resourceId String?
-
-  ipAddress String?
-  userAgent String?
-
-  metadata Json?
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-  @@index([action, createdAt]) // Composite index for admin queries by action
-  @@index([resource, resourceId]) // Composite index for resource lookups
-  @@index([userId, createdAt]) // Composite index for user activity history
-  @@map("audit_logs")
-}
-
-// ============================================
-// SAVED RECIPIENTS (FOR VTU SERVICES)
-// ============================================
-
-model SavedRecipient {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Service details
-  serviceType VTUServiceType // AIRTIME, DATA, CABLE_TV, ELECTRICITY
-  provider    String // MTN, GLO, DSTV, IKEDC, etc.
-
-  // Recipient details
-  recipient     String // Phone number, smartcard, meter number
-  recipientName String? // Optional friendly name (e.g., "Mom", "Office")
-
-  // Usage tracking
-  lastUsedAt DateTime @default(now())
-  usageCount Int      @default(1)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, serviceType, recipient]) // Prevent duplicates
-  @@index([userId])
-  @@index([userId, serviceType])
-  @@index([lastUsedAt])
-  @@map("saved_recipients")
-}
-
-// ============================================
-// ACCOUNT DELETION REQUESTS
-// ============================================
-
-model AccountDeletionRequest {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Request details
-  reason       String
-  customReason String? // If user selects "Other"
-
-  // Verification
-  passwordVerified Boolean @default(true)
-
-  // Status tracking
-  status DeletionRequestStatus @default(PENDING)
-
-  // Admin review
-  reviewedBy      String? // Admin user ID
-  reviewedAt      DateTime?
-  reviewNotes     String?
-  rejectionReason String?
-
-  // Timestamps
-  requestedAt  DateTime  @default(now())
-  scheduledFor DateTime? // When deletion should occur
-  deletedAt    DateTime? // When actually deleted
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([requestedAt])
-  @@map("account_deletion_requests")
-}
-
 enum DeletionRequestStatus {
-  PENDING // Waiting for admin review
-  APPROVED // Admin approved, scheduled for deletion
-  REJECTED // Admin rejected the request
-  COMPLETED // Account deleted
-  CANCELLED // User cancelled the request
-}
-
-// ============================================
-// SYSTEM CONFIGURATION
-// ============================================
-
-model SystemConfig {
-  id    String @id @default(uuid())
-  key   String @unique
-  value Json
-
-  updatedBy String?
-  updatedAt DateTime @updatedAt
-
-  @@map("system_config")
-}
-
-// ============================================
-// APP RATING CONFIGURATION
-// ============================================
-
-model AppRatingConfig {
-  id                     String  @id @default(uuid())
-  enabled                Boolean @default(true)
-  promptFrequencyDays    Int     @default(30) // Days between prompts
-  minTransactionsRequired Int    @default(3) // Minimum successful transactions
-  minUsageDaysRequired   Int     @default(7) // Minimum days since registration
-  promptTitle            String  @default("Enjoying RaverPay?")
-  promptMessage          String  @default("Rate us on the app store! Your feedback helps us improve.")
-  iosAppStoreUrl         String
-  androidPlayStoreUrl    String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("app_rating_config")
-}
-
-// ============================================
-// SUPPORT SYSTEM
-// ============================================
-
-model Conversation {
-  id                 String             @id @default(uuid())
-  userId             String
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status             ConversationStatus @default(OPEN)
-  category           String?
-  lastMessagePreview String?
-  unreadCount        Int                @default(0)
-
-  // Transaction context (when conversation starts from transaction screen)
-  transactionId      String?
-  transactionType    String?
-  transactionContext Json? // Full transaction context for quick reference
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  messages     Message[]
-  ticket       Ticket?
-  inboundEmail InboundEmail? @relation("EmailConversations")
-
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([userId, status])
-  @@map("conversations")
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
 }
 
 enum ConversationStatus {
@@ -1067,72 +1215,11 @@ enum ConversationStatus {
   ENDED
 }
 
-model Message {
-  id             String     @id @default(uuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderType     SenderType
-  senderId       String? // User ID or Agent ID
-
-  content     String  @db.Text
-  attachments Json? // Array of file URLs
-  isRead      Boolean @default(false)
-  metadata    Json? // For quick reply buttons, transaction cards, etc.
-
-  createdAt DateTime @default(now())
-
-  @@index([conversationId])
-  @@index([createdAt])
-  @@index([conversationId, createdAt])
-  @@map("messages")
-}
-
 enum SenderType {
   USER
   BOT
   AGENT
   SYSTEM
-}
-
-model Ticket {
-  id             String   @id @default(uuid())
-  ticketNumber   Int      @unique @default(autoincrement())
-  conversationId String   @unique
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  category String
-  title    String
-  status   TicketStatus   @default(OPEN)
-  priority TicketPriority @default(MEDIUM)
-
-  // Assignment
-  assignedAgentId String?
-  assignedAgent   User?  @relation("AssignedTickets", fields: [assignedAgentId], references: [id], onDelete: SetNull)
-
-  // Rating after resolution
-  rating        Int? // 1-5 for emoji ratings
-  ratingComment String?
-
-  // Email integration
-  inboundEmail    InboundEmail? @relation("EmailTickets")
-
-  // Timestamps
-  resolvedAt DateTime?
-  closedAt   DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([priority])
-  @@index([assignedAgentId])
-  @@index([ticketNumber])
-  @@index([createdAt])
-  @@index([status, priority])
-  @@index([status, createdAt])
-  @@map("tickets")
 }
 
 enum TicketStatus {
@@ -1149,237 +1236,6 @@ enum TicketPriority {
   URGENT
 }
 
-// ============================================
-// INBOUND EMAIL SYSTEM
-// ============================================
-
-model InboundEmail {
-  id              String   @id @default(uuid())
-  emailId         String   @unique // Resend email ID
-  messageId       String?  // Email message ID
-
-  // Email metadata
-  from            String   // Sender email
-  fromName        String?  // Sender name
-  to              String   // Recipient (support@, admin@, etc.)
-  cc              String[] @default([])
-  bcc             String[] @default([])
-  subject         String
-  textBody        String?  @db.Text
-  htmlBody        String?  @db.Text
-
-  // Routing
-  targetRole      UserRole? // Which role/team this email is for
-  targetEmail     String   // Which email address received it
-
-  // Integration with support system
-  ticketId        String?  @unique
-  ticket          Ticket?  @relation("EmailTickets", fields: [ticketId], references: [id], onDelete: SetNull)
-  conversationId  String?  @unique
-  conversation    Conversation? @relation("EmailConversations", fields: [conversationId], references: [id], onDelete: SetNull)
-
-  // User matching (if sender is a registered user)
-  userId          String?
-  user            User?    @relation("InboundEmails", fields: [userId], references: [id], onDelete: SetNull)
-
-  // Attachments
-  attachments     Json?    // Array of attachment metadata
-
-  // Status
-  isProcessed     Boolean  @default(false)
-  processedAt     DateTime?
-  processingError String?  @db.Text
-
-  // Timestamps
-  receivedAt      DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([targetRole])
-  @@index([targetEmail])
-  @@index([userId])
-  @@index([ticketId])
-  @@index([conversationId])
-  @@index([isProcessed])
-  @@index([receivedAt])
-  @@map("inbound_emails")
-}
-
-model EmailRouting {
-  id                String   @id @default(uuid())
-  emailAddress      String   @unique // e.g., "support@raverpay.com"
-  targetRole        UserRole // Which role can access this
-  autoCreateTicket  Boolean  @default(false) // Auto-create ticket?
-  defaultPriority   TicketPriority? // Default priority for tickets
-  defaultCategory   String? // Default category
-  isActive          Boolean  @default(true)
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([targetRole])
-  @@index([isActive])
-  @@map("email_routing")
-}
-
-// ============================================
-// HELP CENTER
-// ============================================
-
-model HelpCollection {
-  id          String @id @default(uuid())
-  title       String
-  description String
-  icon        String? // Icon name or URL
-  order       Int    @default(0)
-  isActive    Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  articles HelpArticle[]
-
-  @@index([order])
-  @@index([isActive])
-  @@map("help_collections")
-}
-
-model HelpArticle {
-  id           String         @id @default(uuid())
-  collectionId String
-  collection   HelpCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-
-  title   String
-  content String @db.Text // Rich text/markdown content
-  slug    String @unique // For URL-friendly access
-  order   Int    @default(0)
-
-  // Analytics
-  viewCount      Int @default(0)
-  helpfulCount   Int @default(0)
-  unhelpfulCount Int @default(0)
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([collectionId])
-  @@index([order])
-  @@index([isActive])
-  @@index([slug])
-  @@map("help_articles")
-}
-
-// ============================================
-// CANNED RESPONSES (FOR AGENTS)
-// ============================================
-
-model CannedResponse {
-  id          String  @id @default(uuid())
-  title       String
-  content     String  @db.Text
-  category    String?
-  shortcut    String? // Quick access shortcut e.g., "/greeting"
-  isActive    Boolean @default(true)
-  usageCount  Int     @default(0)
-  createdById String
-  createdBy   User    @relation("CannedResponseCreator", fields: [createdById], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([category])
-  @@index([isActive])
-  @@index([shortcut])
-  @@map("canned_responses")
-}
-
-// ============================================
-// CASHBACK SYSTEM
-// ============================================
-
-model CashbackConfig {
-  id String @id @default(uuid())
-
-  // Service configuration
-  serviceType VTUServiceType
-
-  // Cashback settings
-  percentage Decimal @db.Decimal(5, 2) // E.g., 2.00 for 2%
-  isActive   Boolean @default(true)
-
-  // Optional: Provider-specific rates
-  provider String? // MTN, GLO, AIRTEL, 9MOBILE, DSTV, GOTV, etc.
-
-  // Minimum transaction amount to earn cashback
-  minAmount Decimal @default(0) @db.Decimal(15, 2)
-
-  // Maximum cashback per transaction
-  maxCashback Decimal? @db.Decimal(15, 2)
-
-  // Metadata
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([serviceType, provider])
-  @@index([serviceType])
-  @@index([isActive])
-  @@map("cashback_config")
-}
-
-model CashbackWallet {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Balances
-  totalEarned      Decimal @default(0) @db.Decimal(15, 2) // Lifetime earnings
-  availableBalance Decimal @default(0) @db.Decimal(15, 2) // Current spendable
-  totalRedeemed    Decimal @default(0) @db.Decimal(15, 2) // Lifetime redemptions
-
-  // Status
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@map("cashback_wallets")
-}
-
-model CashbackTransaction {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Transaction details
-  type   CashbackTransactionType
-  amount Decimal @db.Decimal(15, 2)
-
-  // Balance tracking
-  balanceBefore Decimal @db.Decimal(15, 2)
-  balanceAfter  Decimal @db.Decimal(15, 2)
-
-  // Source transaction reference
-  sourceReference String? // Reference to original VTU transaction
-
-  // Metadata
-  description String
-  metadata    Json?
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([sourceReference])
-  @@index([type])
-  @@index([createdAt])
-  @@index([userId, createdAt]) // Composite index for user history
-  @@map("cashback_transactions")
-}
-
 enum CashbackTransactionType {
   EARNED
   REDEEMED
@@ -1387,151 +1243,15 @@ enum CashbackTransactionType {
   REVERSED
 }
 
-// ============================================
-// WITHDRAWAL CONFIGURATION
-// ============================================
-
-model WithdrawalConfig {
-  id String @id @default(uuid())
-
-  // Fee configuration
-  feeType  WithdrawalFeeType @default(PERCENTAGE)
-  feeValue Decimal           @db.Decimal(15, 2) // e.g., 50 for ₦50 flat, or 1.5 for 1.5%
-  minFee   Decimal           @default(0) @db.Decimal(15, 2)
-  maxFee   Decimal?          @db.Decimal(15, 2)
-
-  // Limits per KYC tier (optional - if null, uses default from code)
-  tierLevel KYCTier? // Which tier this config applies to
-
-  // Global limits (used if tierLevel is null)
-  minWithdrawal Decimal @default(100) @db.Decimal(15, 2)
-  maxWithdrawal Decimal @default(50000) @db.Decimal(15, 2)
-
-  // Status
-  isActive Boolean @default(true)
-
-  // Metadata
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([tierLevel]) // Only one config per tier
-  @@index([isActive])
-  @@map("withdrawal_config")
-}
-
 enum WithdrawalFeeType {
-  FLAT       // Fixed amount (e.g., ₦50 per withdrawal)
-  PERCENTAGE // Percentage of amount (e.g., 1.5%)
-}
-
-// ============================================
-// CRYPTO WALLET SYSTEM
-// ============================================
-
-// ============================================
-// CRYPTO BALANCES (Per Token)
-// ============================================
-
-model CryptoBalance {
-  id       String @id @default(uuid())
-  walletId String
-  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-
-  // Token info
-  tokenSymbol   String  // USDT, USDC, MATIC
-  tokenAddress  String? // Contract address (null for native MATIC)
-  tokenDecimals Int     @default(18) // 6 for USDT/USDC, 18 for MATIC
-
-  // Balance
-  balance    Decimal @db.Decimal(36, 18) // Human-readable
-  rawBalance String // Blockchain raw value (wei/smallest unit)
-
-  // USD values (live updated)
-  usdPrice Decimal? @db.Decimal(18, 8) // Current price in USD
-  usdValue Decimal? @db.Decimal(18, 2) // Total value (balance * price)
-
-  lastUpdated DateTime @default(now())
-
-  @@unique([walletId, tokenSymbol])
-  @@index([walletId])
-  @@index([tokenSymbol])
-  @@map("crypto_balances")
-}
-
-// ============================================
-// CRYPTO TRANSACTIONS
-// ============================================
-
-model CryptoTransaction {
-  id              String @id @default(uuid())
-  reference       String @unique // TXN_CRYPTO_xxx
-  transactionHash String @unique // Blockchain tx hash
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  walletId String
-
-  // Transaction type & direction
-  type      CryptoTransactionType
-  direction TransactionDirection
-
-  // Addresses
-  fromAddress String
-  toAddress   String
-
-  // Token details
-  tokenSymbol   String
-  tokenAddress  String?
-  tokenDecimals Int     @default(6)
-
-  // Amounts
-  amount    Decimal @db.Decimal(36, 18) // Human-readable
-  rawAmount String // Blockchain raw value
-  usdValue  Decimal @db.Decimal(18, 2) // USD value at time of tx
-
-  // Gas (only for outgoing)
-  gasFee    Decimal? @db.Decimal(10, 6) // In MATIC
-  gasFeeUsd Decimal? @db.Decimal(10, 2) // Gas in USD
-
-  // Blockchain details
-  network            String  @default("MATIC") // MATIC, ETH, etc.
-  blockNumber        Int?
-  blockHash          String?
-  confirmations      Int     @default(0)
-  hasReachedFinality Boolean @default(false)
-  nonce              Int?
-
-  // Status
-  status        CryptoTransactionStatus @default(PENDING)
-  failureReason String?
-
-  // Metadata
-  memo String? // User note/description
-
-  // Timestamps
-  submittedAt DateTime  @default(now())
-  confirmedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([walletId])
-  @@index([transactionHash])
-  @@index([status])
-  @@index([type])
-  @@index([direction])
-  @@index([submittedAt])
-  @@index([status, submittedAt])
-  @@map("crypto_transactions")
+  FLAT
+  PERCENTAGE
 }
 
 enum CryptoTransactionType {
-  RECEIVE // Incoming crypto
-  SEND // Outgoing crypto
-  CONVERT // Convert to Naira (internal)
+  RECEIVE
+  SEND
+  CONVERT
 }
 
 enum TransactionDirection {
@@ -1540,181 +1260,16 @@ enum TransactionDirection {
 }
 
 enum CryptoTransactionStatus {
-  PENDING // Submitted to blockchain
-  CONFIRMING // Accumulating confirmations
-  COMPLETED // Finalized
-  FAILED // Failed on blockchain
-}
-
-// ============================================
-// CRYPTO → NAIRA CONVERSIONS
-// ============================================
-
-model CryptoConversion {
-  id        String @id @default(uuid())
-  reference String @unique // TXN_CRYPTO_CONVERT_xxx
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Crypto details
-  tokenSymbol  String
-  cryptoAmount Decimal @db.Decimal(36, 18)
-  usdValue     Decimal @db.Decimal(18, 2) // Crypto → USD
-
-  // Naira details
-  nairaAmount    Decimal @db.Decimal(18, 2) // Final amount
-  exchangeRate   Decimal @db.Decimal(10, 2) // USD → NGN rate
-  feePercent     Decimal @db.Decimal(5, 2) // Platform fee %
-  feeAmount      Decimal @db.Decimal(18, 2) // Fee in Naira
-  netNaira       Decimal @db.Decimal(18, 2) // After fee
-
-  // Status
-  status ConversionStatus @default(PENDING)
-
-  // Admin approval (if needed)
-  requiresApproval Boolean   @default(false)
-  approvedBy       String? // Admin user ID
-  approvedAt       DateTime?
-  rejectionReason  String?
-
-  // Transaction references
-  cryptoTransactionId String? // Debit from crypto wallet
-  nairaTransactionId  String? // Credit to naira wallet
-
-  // Timestamps
-  requestedAt DateTime  @default(now())
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([requestedAt])
-  @@map("crypto_conversions")
+  PENDING
+  CONFIRMING
+  COMPLETED
+  FAILED
 }
 
 enum ConversionStatus {
-  PENDING // Awaiting processing
-  PROCESSING // Being processed
-  COMPLETED // Naira credited
-  FAILED // Failed
-  REJECTED // Admin rejected
-}
-
-// ============================================
-// EXCHANGE RATES (Admin Managed)
-// ============================================
-
-model ExchangeRate {
-  id String @id @default(uuid())
-
-  // Rate configuration
-  fromCurrency String // USD
-  toCurrency   String // NGN
-  rate         Decimal @db.Decimal(10, 2) // Exchange rate (e.g., 1650.00)
-
-  // Fee
-  platformFeePercent Decimal @db.Decimal(5, 2) // Platform fee % (e.g., 1.00)
-
-  // Status
-  isActive Boolean @default(true)
-
-  // Admin tracking
-  setBy     String // Admin user ID
-  setAt     DateTime  @default(now())
-  expiresAt DateTime? // Optional expiry
-
-  // Metadata
-  source String? // "manual", "binance_api", "coingecko"
-  notes  String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([fromCurrency, toCurrency, isActive])
-  @@index([isActive])
-  @@map("exchange_rates")
-}
-
-// ============================================
-// CRYPTO PRICES (Live from API)
-// ============================================
-
-model CryptoPrice {
-  id String @id @default(uuid())
-
-  symbol   String // MATIC, USDT, USDC
-  usdPrice Decimal @db.Decimal(18, 8) // Current price in USD
-
-  // Source
-  source String @default("coingecko") // coingecko, binance, etc.
-
-  // Timestamps
-  fetchedAt DateTime @default(now())
-  createdAt DateTime @default(now())
-
-  @@unique([symbol, fetchedAt])
-  @@index([symbol])
-  @@index([fetchedAt])
-  @@map("crypto_prices")
-}
-
-// ============================================
-// WEBHOOK LOGS
-// ============================================
-
-model CryptoWebhookLog {
-  id String @id @default(uuid())
-
-  // Webhook details
-  eventType String // TRANSACTION_SUCCEEDED, TRANSACTION_FAILED
-  payload   Json // Full webhook payload
-
-  // Processing
-  processed   Boolean   @default(false)
-  processedAt DateTime?
-  error       String?
-
-  // Extracted data (for quick lookup)
-  transactionHash String?
-  fromAddress     String?
-  toAddress       String?
-  amount          Decimal? @db.Decimal(18, 8)
-  tokenSymbol     String?
-
-  receivedAt DateTime @default(now())
-
-  @@index([eventType])
-  @@index([transactionHash])
-  @@index([processed])
-  @@index([receivedAt])
-  @@map("crypto_webhook_logs")
-}
-
-// ============================================
-// VENLY USER MANAGEMENT
-// ============================================
-
-model VenlyUser {
-  id String @id @default(uuid())
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Venly credentials
-  venlyUserId          String @unique // Venly's user ID
-  venlySigningMethodId String? // PIN signing method ID
-  venlyReference       String // Custom reference
-
-  // PIN security (encrypted)
-  encryptedPin String // Never store plain PIN!
-  pinSetAt     DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venlyUserId])
-  @@index([userId])
-  @@map("venly_users")
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
 }

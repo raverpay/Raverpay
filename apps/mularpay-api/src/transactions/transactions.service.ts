@@ -24,6 +24,8 @@ import {
   ResolveAccountResponse,
   BankInfo,
   VirtualAccountResponse,
+  P2PTransferResponse,
+  SetTagResponse,
 } from './transactions.types';
 
 @Injectable()
@@ -43,8 +45,9 @@ export class TransactionsService {
   /**
    * Generate unique transaction reference
    */
-  private generateReference(type: 'deposit' | 'withdrawal'): string {
-    const prefix = type === 'deposit' ? 'DEP' : 'WD';
+  private generateReference(type: 'deposit' | 'withdrawal' | 'p2p'): string {
+    const prefix =
+      type === 'deposit' ? 'DEP' : type === 'withdrawal' ? 'WD' : 'P2P';
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 10000);
     return `TXN_${prefix}_${timestamp}${random}`;
@@ -1048,5 +1051,512 @@ export class TransactionsService {
       lastUsedAt: account.updatedAt.toISOString(),
       createdAt: account.createdAt.toISOString(),
     }));
+  }
+
+  // ============================================
+  // P2P TRANSFER METHODS
+  // ============================================
+
+  /**
+   * Send money to another user by tag
+   */
+  async sendToUser(
+    senderId: string,
+    recipientTag: string,
+    amount: number,
+    message?: string,
+  ): Promise<P2PTransferResponse> {
+    const { validateTag, isReservedTag } = await import(
+      './constants/reserved-tags.js'
+    );
+
+    // 1. Validate sender exists
+    const sender = await this.prisma.user.findUnique({
+      where: { id: senderId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        tag: true,
+        kycTier: true,
+        status: true,
+      },
+    });
+
+    if (!sender) {
+      throw new NotFoundException('Sender not found');
+    }
+
+    if (sender.status !== 'ACTIVE') {
+      throw new ForbiddenException('Your account is not active');
+    }
+
+    // P2P Transfer tier restrictions
+    // TIER_0 can receive but needs TIER_1+ to send
+    // TIER_1: ₦100K per transaction, ₦300K daily
+    // TIER_2: ₦1M per transaction, ₦5M daily
+    // TIER_3: Unlimited
+    if (sender.kycTier === 'TIER_0') {
+      throw new ForbiddenException(
+        'Please complete email and phone verification to send money to other users',
+      );
+    }
+
+    // Per-transaction limits based on tier
+    const tierLimits = {
+      TIER_1: 100000, // ₦100K
+      TIER_2: 1000000, // ₦1M
+      TIER_3: Infinity, // Unlimited
+    };
+
+    const maxPerTransaction = tierLimits[sender.kycTier] || tierLimits.TIER_1;
+    if (amount > maxPerTransaction) {
+      throw new BadRequestException(
+        `Maximum ${sender.kycTier} transaction limit is ₦${maxPerTransaction.toLocaleString()}`,
+      );
+    }
+
+    // 2. Find receiver by tag (case-insensitive)
+    const normalizedTag = recipientTag.toLowerCase().trim();
+    const receiver = await this.prisma.user.findUnique({
+      where: { tag: normalizedTag },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        tag: true,
+        status: true,
+      },
+    });
+
+    if (!receiver) {
+      throw new NotFoundException(`User @${recipientTag} not found`);
+    }
+
+    if (receiver.status !== 'ACTIVE') {
+      throw new BadRequestException('Recipient account is not active');
+    }
+
+    // 3. Prevent self-transfer
+    if (sender.id === receiver.id) {
+      throw new BadRequestException('You cannot send money to yourself');
+    }
+
+    // 4. Validate amount
+    if (amount <= 0) {
+      throw new BadRequestException('Amount must be greater than ₦0');
+    }
+
+    // 5. Check sender's wallet
+    const senderWallet = await this.prisma.wallet.findUnique({
+      where: {
+        userId_type: {
+          userId: senderId,
+          type: 'NAIRA',
+        },
+      },
+    });
+
+    if (!senderWallet) {
+      throw new NotFoundException('Sender wallet not found');
+    }
+
+    if (senderWallet.isLocked) {
+      throw new ForbiddenException('Your wallet is locked');
+    }
+
+    // 6. Check receiver's wallet exists
+    const receiverWallet = await this.prisma.wallet.findUnique({
+      where: {
+        userId_type: {
+          userId: receiver.id,
+          type: 'NAIRA',
+        },
+      },
+    });
+
+    if (!receiverWallet) {
+      throw new NotFoundException('Recipient wallet not found');
+    }
+
+    // 7. Calculate fee (free for P2P transfers)
+    const fee = 0;
+    const totalDebit = amount + fee;
+
+    // 8. Check balance
+    if (senderWallet.balance.lt(totalDebit)) {
+      throw new BadRequestException(
+        `Insufficient balance. You have ₦${senderWallet.balance.toString()} but need ₦${totalDebit.toLocaleString()}`,
+      );
+    }
+
+    // 9. Check daily limit
+    const limitCheck = await this.limitsService.checkDailyLimit(
+      senderId,
+      amount,
+      TransactionLimitType.P2P_TRANSFER,
+    );
+
+    if (!limitCheck.canProceed) {
+      throw new BadRequestException(
+        `Daily transfer limit exceeded. Limit: ₦${limitCheck.limit.toLocaleString()}, Spent: ₦${limitCheck.spent.toLocaleString()}, Remaining: ₦${limitCheck.remaining.toLocaleString()}`,
+      );
+    }
+
+    // 10. Generate reference
+    const reference = this.generateReference('p2p');
+
+    // 11. Execute transfer atomically
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Debit sender
+      const newSenderBalance = senderWallet.balance.minus(totalDebit);
+      await tx.wallet.update({
+        where: { id: senderWallet.id },
+        data: {
+          balance: newSenderBalance,
+          ledgerBalance: newSenderBalance,
+        },
+      });
+
+      // Credit receiver
+      const newReceiverBalance = receiverWallet.balance.plus(amount);
+      await tx.wallet.update({
+        where: { id: receiverWallet.id },
+        data: {
+          balance: newReceiverBalance,
+          ledgerBalance: newReceiverBalance,
+        },
+      });
+
+      // Create sender transaction (debit)
+      const senderTxn = await tx.transaction.create({
+        data: {
+          reference: `${reference}_DEBIT`,
+          userId: senderId,
+          type: TransactionType.TRANSFER,
+          status: TransactionStatus.COMPLETED,
+          amount: new Decimal(amount),
+          fee: new Decimal(fee),
+          totalAmount: new Decimal(totalDebit),
+          balanceBefore: senderWallet.balance,
+          balanceAfter: newSenderBalance,
+          currency: 'NGN',
+          description: `Sent ₦${amount.toLocaleString()} to @${receiver.tag}`,
+          metadata: {
+            recipientTag: receiver.tag,
+            recipientId: receiver.id,
+            recipientName: `${receiver.firstName} ${receiver.lastName}`,
+            message,
+            transferType: 'p2p',
+          },
+        },
+      });
+
+      // Create receiver transaction (credit)
+      const receiverTxn = await tx.transaction.create({
+        data: {
+          reference: `${reference}_CREDIT`,
+          userId: receiver.id,
+          type: TransactionType.DEPOSIT,
+          status: TransactionStatus.COMPLETED,
+          amount: new Decimal(amount),
+          fee: new Decimal(0),
+          totalAmount: new Decimal(amount),
+          balanceBefore: receiverWallet.balance,
+          balanceAfter: newReceiverBalance,
+          currency: 'NGN',
+          description: `Received ₦${amount.toLocaleString()} from @${sender.tag || sender.firstName}`,
+          metadata: {
+            senderTag: sender.tag,
+            senderId: sender.id,
+            senderName: `${sender.firstName} ${sender.lastName}`,
+            message,
+            transferType: 'p2p',
+          },
+        },
+      });
+
+      // Create P2P transfer record
+      const p2pTransfer = await tx.p2PTransfer.create({
+        data: {
+          reference,
+          senderId: sender.id,
+          receiverId: receiver.id,
+          amount: new Decimal(amount),
+          fee: new Decimal(fee),
+          status: TransactionStatus.COMPLETED,
+          message,
+          senderTransactionId: senderTxn.id,
+          receiverTransactionId: receiverTxn.id,
+        },
+      });
+
+      return { senderTxn, receiverTxn, p2pTransfer };
+    });
+
+    // 12. Update daily limits (async, non-blocking)
+    this.limitsService
+      .incrementDailySpend(senderId, amount, TransactionLimitType.P2P_TRANSFER)
+      .catch((error) =>
+        this.logger.error('Failed to increment P2P daily limit', error),
+      );
+
+    // 13. Send notifications
+    this.sendP2PNotifications(sender, receiver, amount, message).catch(
+      (error) => this.logger.error('Failed to send P2P notifications', error),
+    );
+
+    this.logger.log(
+      `[P2P] Transfer completed: @${sender.tag} → @${receiver.tag} | ₦${amount} | Ref: ${reference}`,
+    );
+
+    return {
+      reference: result.p2pTransfer.reference,
+      amount: amount.toString(),
+      fee: fee.toString(),
+      recipient: {
+        tag: receiver.tag!,
+        name: `${receiver.firstName} ${receiver.lastName}`,
+      },
+      status: 'COMPLETED',
+      message,
+      createdAt: result.p2pTransfer.createdAt,
+    };
+  }
+
+  /**
+   * Send P2P transfer notifications to both parties
+   */
+  private async sendP2PNotifications(
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      tag: string | null;
+    },
+    receiver: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      tag: string | null;
+    },
+    amount: number,
+    message?: string,
+  ) {
+    try {
+      // Notify sender
+      await this.notificationDispatcher.sendNotification({
+        userId: sender.id,
+        eventType: 'p2p_transfer_sent',
+        category: 'TRANSACTION',
+        channels: ['IN_APP', 'PUSH'],
+        title: 'Money Sent',
+        message: `You sent ₦${amount.toLocaleString()} to @${receiver.tag}`,
+        data: {
+          amount,
+          recipientTag: receiver.tag,
+          recipientName: `${receiver.firstName} ${receiver.lastName}`,
+          message,
+        },
+      });
+
+      // Notify receiver
+      await this.notificationDispatcher.sendNotification({
+        userId: receiver.id,
+        eventType: 'p2p_transfer_received',
+        category: 'TRANSACTION',
+        channels: ['IN_APP', 'PUSH', 'EMAIL'],
+        title: 'Money Received',
+        message: `You received ₦${amount.toLocaleString()} from @${sender.tag || sender.firstName}`,
+        data: {
+          amount,
+          senderTag: sender.tag,
+          senderName: `${sender.firstName} ${sender.lastName}`,
+          message,
+        },
+      });
+
+      this.logger.log(
+        `[P2P] Notifications sent for transfer: @${sender.tag} → @${receiver.tag}`,
+      );
+    } catch (error) {
+      this.logger.error('[P2P] Failed to send notifications', error);
+      // Don't throw - notifications are non-critical
+    }
+  }
+
+  /**
+   * Lookup user by tag for autocomplete
+   */
+  async lookupUserByTag(tag: string) {
+    const normalizedTag = tag.toLowerCase().trim();
+
+    const user = await this.prisma.user.findUnique({
+      where: { tag: normalizedTag },
+      select: {
+        tag: true,
+        firstName: true,
+        lastName: true,
+        avatar: true,
+        status: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User @${tag} not found`);
+    }
+
+    if (user.status !== 'ACTIVE') {
+      throw new BadRequestException('This user account is not active');
+    }
+
+    return {
+      tag: user.tag!,
+      name: `${user.firstName} ${user.lastName}`,
+      avatar: user.avatar,
+    };
+  }
+
+  /**
+   * Set or update user's tag
+   */
+  async setUserTag(userId: string, newTag: string): Promise<SetTagResponse> {
+    const { validateTag, isReservedTag } = await import(
+      './constants/reserved-tags.js'
+    );
+
+    const normalizedTag = newTag.toLowerCase().trim();
+
+    // 1. Validate tag format
+    const validation = validateTag(normalizedTag);
+    if (!validation.valid) {
+      throw new BadRequestException(validation.error);
+    }
+
+    // 2. Check if tag is already taken
+    const existing = await this.prisma.user.findUnique({
+      where: { tag: normalizedTag },
+    });
+
+    if (existing && existing.id !== userId) {
+      throw new BadRequestException('This tag is already taken');
+    }
+
+    // 3. Get current user
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        tag: true,
+        tagChangedCount: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 4. Check if user is setting tag for first time or updating
+    const isFirstTime = !user.tag;
+    const MAX_TAG_CHANGES = 3; // Allow up to 3 tag changes
+
+    if (!isFirstTime && user.tagChangedCount >= MAX_TAG_CHANGES) {
+      throw new ForbiddenException(
+        `You have reached the maximum number of tag changes (${MAX_TAG_CHANGES})`,
+      );
+    }
+
+    // 5. Update tag
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        tag: normalizedTag,
+        tagSetAt: isFirstTime ? new Date() : undefined,
+        tagChangedCount: isFirstTime ? 0 : user.tagChangedCount + 1,
+      },
+    });
+
+    this.logger.log(
+      `[P2P] User ${userId} ${isFirstTime ? 'set' : 'changed'} tag to @${normalizedTag}`,
+    );
+
+    return {
+      tag: normalizedTag,
+      message: isFirstTime
+        ? `Your tag @${normalizedTag} has been set successfully`
+        : `Your tag has been updated to @${normalizedTag}`,
+    };
+  }
+
+  /**
+   * Get P2P transfer history for a user
+   */
+  async getP2PHistory(userId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const [transfers, total] = await Promise.all([
+      this.prisma.p2PTransfer.findMany({
+        where: {
+          OR: [{ senderId: userId }, { receiverId: userId }],
+        },
+        include: {
+          sender: {
+            select: {
+              tag: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          receiver: {
+            select: {
+              tag: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.p2PTransfer.count({
+        where: {
+          OR: [{ senderId: userId }, { receiverId: userId }],
+        },
+      }),
+    ]);
+
+    return {
+      transfers: transfers.map((transfer) => ({
+        id: transfer.id,
+        reference: transfer.reference,
+        amount: transfer.amount.toString(),
+        fee: transfer.fee.toString(),
+        status: transfer.status,
+        message: transfer.message,
+        isSent: transfer.senderId === userId,
+        counterparty:
+          transfer.senderId === userId
+            ? {
+                tag: transfer.receiver.tag,
+                name: `${transfer.receiver.firstName} ${transfer.receiver.lastName}`,
+                avatar: transfer.receiver.avatar,
+              }
+            : {
+                tag: transfer.sender.tag,
+                name: `${transfer.sender.firstName} ${transfer.sender.lastName}`,
+                avatar: transfer.sender.avatar,
+              },
+        createdAt: transfer.createdAt,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
   }
 }

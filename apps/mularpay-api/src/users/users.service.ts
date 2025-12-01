@@ -52,6 +52,9 @@ export interface UserProfileResponse {
   phoneVerified: boolean;
   phoneVerifiedAt: Date | null;
   twoFactorEnabled: boolean;
+  tag: string | null;
+  tagSetAt: Date | null;
+  tagChangedCount: number;
   createdAt: Date;
   updatedAt: Date;
   wallet: {
@@ -110,6 +113,9 @@ export class UsersService {
         phoneVerified: true,
         phoneVerifiedAt: true,
         twoFactorEnabled: true,
+        tag: true,
+        tagSetAt: true,
+        tagChangedCount: true,
         createdAt: true,
         updatedAt: true,
         wallets: {
@@ -158,6 +164,9 @@ export class UsersService {
       phoneVerified: user.phoneVerified,
       phoneVerifiedAt: user.phoneVerifiedAt,
       twoFactorEnabled: user.twoFactorEnabled,
+      tag: user.tag,
+      tagSetAt: user.tagSetAt,
+      tagChangedCount: user.tagChangedCount,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       wallet:

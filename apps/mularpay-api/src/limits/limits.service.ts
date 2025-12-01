@@ -9,6 +9,7 @@ export enum TransactionLimitType {
   BILL_PAYMENT = 'BILL_PAYMENT',
   TRANSFER = 'TRANSFER',
   WITHDRAWAL = 'WITHDRAWAL',
+  P2P_TRANSFER = 'P2P_TRANSFER',
 }
 
 interface DailyLimitInfo {
@@ -52,7 +53,10 @@ export class LimitsService {
    * Get single transaction limit based on KYC tier
    */
   private getSingleTransactionLimit(kycTier: KYCTier): number {
-    return this.SINGLE_TRANSACTION_LIMITS[kycTier] || this.SINGLE_TRANSACTION_LIMITS.TIER_0;
+    return (
+      this.SINGLE_TRANSACTION_LIMITS[kycTier] ||
+      this.SINGLE_TRANSACTION_LIMITS.TIER_0
+    );
   }
 
   /**
@@ -147,7 +151,8 @@ export class LimitsService {
         break;
       case TransactionLimitType.TRANSFER:
       case TransactionLimitType.WITHDRAWAL:
-        // Transfers and withdrawals share the same limit
+      case TransactionLimitType.P2P_TRANSFER:
+        // Transfers, withdrawals, and P2P transfers share the same limit
         totalSpent = Number(record.totalTransferred);
         transactionCount = record.transferCount + record.withdrawalCount;
         break;
@@ -210,7 +215,9 @@ export class LimitsService {
         await this.prisma.dailyTransactionLimit.update({
           where: { id: record.id },
           data: {
-            totalBillPayments: new Decimal(record.totalBillPayments).add(amountDecimal),
+            totalBillPayments: new Decimal(record.totalBillPayments).add(
+              amountDecimal,
+            ),
             billPaymentCount: record.billPaymentCount + 1,
           },
         });
@@ -220,7 +227,9 @@ export class LimitsService {
         await this.prisma.dailyTransactionLimit.update({
           where: { id: record.id },
           data: {
-            totalTransferred: new Decimal(record.totalTransferred).add(amountDecimal),
+            totalTransferred: new Decimal(record.totalTransferred).add(
+              amountDecimal,
+            ),
             transferCount: record.transferCount + 1,
           },
         });
@@ -230,17 +239,31 @@ export class LimitsService {
         await this.prisma.dailyTransactionLimit.update({
           where: { id: record.id },
           data: {
-            totalTransferred: new Decimal(record.totalTransferred).add(amountDecimal),
-            totalWithdrawn: new Decimal(record.totalWithdrawn).add(amountDecimal),
+            totalTransferred: new Decimal(record.totalTransferred).add(
+              amountDecimal,
+            ),
+            totalWithdrawn: new Decimal(record.totalWithdrawn).add(
+              amountDecimal,
+            ),
             withdrawalCount: record.withdrawalCount + 1,
+          },
+        });
+        break;
+
+      case TransactionLimitType.P2P_TRANSFER:
+        await this.prisma.dailyTransactionLimit.update({
+          where: { id: record.id },
+          data: {
+            totalTransferred: new Decimal(record.totalTransferred).add(
+              amountDecimal,
+            ),
+            transferCount: record.transferCount + 1,
           },
         });
         break;
     }
 
-    this.logger.log(
-      `[LimitIncrement] User ${userId}: ${type} +₦${amount}`,
-    );
+    this.logger.log(`[LimitIncrement] User ${userId}: ${type} +₦${amount}`);
   }
 
   /**
