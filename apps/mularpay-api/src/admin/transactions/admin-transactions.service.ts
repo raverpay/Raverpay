@@ -391,8 +391,8 @@ export class AdminTransactionsService {
         where: {
           userId_type: {
             userId: transaction.userId,
-            type: 'NAIRA'
-          }
+            type: 'NAIRA',
+          },
         },
         data: {
           balance: newBalance,

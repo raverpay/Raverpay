@@ -436,10 +436,7 @@ export class BotService {
     // Validate and look up transaction
     const transaction = await this.prisma.transaction.findFirst({
       where: {
-        OR: [
-          { id: transactionId.trim() },
-          { reference: transactionId.trim() },
-        ],
+        OR: [{ id: transactionId.trim() }, { reference: transactionId.trim() }],
         userId,
       },
     });

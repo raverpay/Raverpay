@@ -245,8 +245,8 @@ export class AdminVTUService {
         where: {
           userId_type: {
             userId: order.userId,
-            type: 'NAIRA'
-          }
+            type: 'NAIRA',
+          },
         },
         data: {
           balance: newBalance,

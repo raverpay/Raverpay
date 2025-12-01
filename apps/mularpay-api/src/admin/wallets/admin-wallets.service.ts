@@ -199,8 +199,8 @@ export class AdminWalletsService {
         where: {
           userId_type: {
             userId,
-            type: 'NAIRA'
-          }
+            type: 'NAIRA',
+          },
         },
         data: {
           balance: newBalance,
@@ -279,8 +279,8 @@ export class AdminWalletsService {
       where: {
         userId_type: {
           userId,
-          type: 'NAIRA'
-        }
+          type: 'NAIRA',
+        },
       },
       data: {
         dailySpent: 0,

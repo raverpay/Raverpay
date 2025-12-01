@@ -121,8 +121,8 @@ export class PaystackWebhookService {
           where: {
             userId_type: {
               userId: virtualAccount.userId,
-              type: 'NAIRA'
-            }
+              type: 'NAIRA',
+            },
           },
           data: {
             balance: {
