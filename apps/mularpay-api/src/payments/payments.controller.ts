@@ -21,6 +21,7 @@ interface PaystackWebhookPayload {
     status: string;
     channel?: string; // e.g., "dedicated_nuban", "card"
     paid_at?: string;
+    fees?: number;
     customer?: {
       email: string;
       customer_code: string;
@@ -141,6 +142,7 @@ export class PaymentsController {
 
     // Amount is in kobo, convert to naira
     const amountInNaira = amount / 100;
+    const paystackFeeInNaira = (payload.data.fees || 0) / 100; // Paystack DVA fee
 
     try {
       // Check if it's a virtual account payment
@@ -179,13 +181,14 @@ export class PaymentsController {
         }
 
         this.logger.log(
-          `💰 Processing virtual account deposit: ₦${amountInNaira} to account ${accountNumber}`,
+          `💰 Processing virtual account deposit: ₦${amountInNaira} (Fee: ₦${paystackFeeInNaira}) to account ${accountNumber}`,
         );
 
         await this.transactionsService.processVirtualAccountCredit(
           reference,
           amountInNaira,
           accountNumber,
+          paystackFeeInNaira,
         );
         this.logger.log(`✅ Virtual account credited: ${reference}`);
 
@@ -199,16 +202,19 @@ export class PaymentsController {
         if (transaction) {
           // Send multi-channel notification for wallet funding
           try {
+            const netAmount = amountInNaira - paystackFeeInNaira;
             await this.notificationDispatcher.sendNotification({
               userId: transaction.userId,
               eventType: 'deposit_success',
               category: 'TRANSACTION',
               channels: ['EMAIL', 'SMS', 'IN_APP'],
               title: 'Wallet Funded Successfully',
-              message: `Your wallet has been credited with ₦${amountInNaira.toLocaleString()} via bank transfer.`,
+              message: `Your wallet has been credited with ₦${netAmount.toLocaleString()} via bank transfer${paystackFeeInNaira > 0 ? ` (₦${paystackFeeInNaira.toFixed(2)} transaction fee deducted)` : ''}.`,
               data: {
                 transactionId: transaction.id,
-                amount: amountInNaira,
+                amount: netAmount,
+                grossAmount: amountInNaira,
+                fee: paystackFeeInNaira,
                 reference,
                 channel: 'BANK_TRANSFER',
               },
@@ -372,7 +378,9 @@ export class PaymentsController {
         'prisma'
       ].transaction.findUnique({
         where: { reference },
-        include: { user: { include: { wallets: { where: { type: 'NAIRA' } } } } },
+        include: {
+          user: { include: { wallets: { where: { type: 'NAIRA' } } } },
+        },
       });
 
       const wallet = transaction?.user?.wallets?.[0];

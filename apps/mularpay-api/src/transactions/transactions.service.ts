@@ -446,9 +446,11 @@ export class TransactionsService {
     reference: string,
     amount: number,
     accountNumber: string,
+    paystackFee: number = 0,
   ): Promise<void> {
+    const netAmount = amount - paystackFee;
     console.log(
-      `🔍 [processVirtualAccountCredit] START - Reference: ${reference}, Amount: ₦${amount}, Account: ${accountNumber}`,
+      `🔍 [processVirtualAccountCredit] START - Reference: ${reference}, Amount: ₦${amount}, Fee: ₦${paystackFee}, Net: ₦${netAmount}, Account: ${accountNumber}`,
     );
 
     // Find virtual account
@@ -496,9 +498,9 @@ export class TransactionsService {
     }
 
     // Create transaction and credit wallet atomically
-    const newBalance = wallet.balance.plus(amount);
+    const newBalance = wallet.balance.plus(netAmount);
     console.log(
-      `💰 [processVirtualAccountCredit] Crediting wallet - Old balance: ₦${wallet.balance.toString()}, New balance: ₦${newBalance.toString()}`,
+      `💰 [processVirtualAccountCredit] Crediting wallet - Old balance: ₦${wallet.balance.toString()}, Net amount: ₦${netAmount}, New balance: ₦${newBalance.toString()}`,
     );
 
     await this.prisma.$transaction([
@@ -517,25 +519,28 @@ export class TransactionsService {
           userId: user.id,
           type: TransactionType.DEPOSIT,
           status: TransactionStatus.COMPLETED,
-          amount: new Decimal(amount),
-          fee: new Decimal(0), // No fee for bank transfer
-          totalAmount: new Decimal(amount),
+          amount: new Decimal(amount), // Original amount sent
+          fee: new Decimal(paystackFee), // Paystack DVA fee (1% capped at ₦300)
+          totalAmount: new Decimal(netAmount), // Net amount after fee
           balanceBefore: wallet.balance,
           balanceAfter: newBalance,
           currency: 'NGN',
-          description: `Bank transfer deposit of ₦${amount.toLocaleString()}`,
+          description: `Bank transfer deposit of ₦${amount.toLocaleString()}${paystackFee > 0 ? ` (Fee: ₦${paystackFee.toFixed(2)})` : ''}`,
           completedAt: new Date(),
           metadata: {
             paymentMethod: 'bank_transfer',
             provider: 'paystack',
             accountNumber,
+            grossAmount: amount,
+            paystackFee: paystackFee,
+            netAmount: netAmount,
           },
         },
       }),
     ]);
 
     console.log(
-      `✅ [processVirtualAccountCredit] SUCCESS - Wallet credited with ₦${amount}`,
+      `✅ [processVirtualAccountCredit] SUCCESS - Wallet credited with ₦${netAmount} (Gross: ₦${amount}, Fee: ₦${paystackFee})`,
     );
   }
 

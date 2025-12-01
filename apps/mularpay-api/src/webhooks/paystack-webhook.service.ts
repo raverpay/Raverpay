@@ -30,7 +30,7 @@ export class PaystackWebhookService {
    * Triggered when a customer transfers money to their DVA
    */
   async handleChargeSuccess(data: any) {
-    const { reference, amount, channel, authorization } = data;
+    const { reference, amount, channel, authorization, fees } = data;
 
     // Only process bank transfer payments to DVAs
     if (channel !== 'dedicated_nuban') {
@@ -40,6 +40,8 @@ export class PaystackWebhookService {
 
     const accountNumber = authorization?.receiver_bank_account_number;
     const amountInNaira = amount / 100; // Convert from kobo to naira
+    const paystackFeeInNaira = (fees || 0) / 100; // Paystack DVA fee in naira
+    const netAmount = amountInNaira - paystackFeeInNaira; // Amount to credit user
 
     if (!accountNumber) {
       this.logger.error('No account number in charge.success webhook');
@@ -47,7 +49,7 @@ export class PaystackWebhookService {
     }
 
     this.logger.log(
-      `Processing DVA payment: ₦${amountInNaira} to ${accountNumber}`,
+      `Processing DVA payment: ₦${amountInNaira} (Fee: ₦${paystackFeeInNaira}, Net: ₦${netAmount}) to ${accountNumber}`,
     );
 
     // Find virtual account
@@ -87,24 +89,24 @@ export class PaystackWebhookService {
         }
 
         const balanceBefore = Number(wallet.balance);
-        const fee = 0; // No fee for deposits
-        const totalAmount = amountInNaira + fee;
-        const balanceAfter = balanceBefore + amountInNaira;
+        const fee = paystackFeeInNaira; // Paystack DVA fee (1% capped at ₦300)
+        const totalAmount = netAmount; // Net amount after fee deduction
+        const balanceAfter = balanceBefore + netAmount;
 
         // Create transaction record
         await tx.transaction.create({
           data: {
             userId: virtualAccount.userId,
             type: 'DEPOSIT',
-            amount: amountInNaira,
+            amount: amountInNaira, // Original amount sent
             fee,
-            totalAmount,
+            totalAmount, // Net amount credited
             balanceBefore,
             balanceAfter,
             currency: 'NGN',
             status: 'COMPLETED',
             reference,
-            description: 'Wallet funding via bank transfer',
+            description: `Wallet funding via bank transfer (Fee: ₦${paystackFeeInNaira.toFixed(2)})`,
             channel: 'BANK_TRANSFER',
             provider: 'paystack',
             metadata: {
@@ -112,6 +114,9 @@ export class PaystackWebhookService {
               senderName: authorization?.sender_name,
               senderBank: authorization?.sender_bank,
               senderAccountNumber: authorization?.sender_bank_account_number,
+              grossAmount: amountInNaira,
+              paystackFee: paystackFeeInNaira,
+              netAmount: netAmount,
             },
           },
         });
@@ -126,10 +131,10 @@ export class PaystackWebhookService {
           },
           data: {
             balance: {
-              increment: amountInNaira,
+              increment: netAmount,
             },
             ledgerBalance: {
-              increment: amountInNaira,
+              increment: netAmount,
             },
           },
         });
@@ -142,7 +147,7 @@ export class PaystackWebhookService {
       );
 
       this.logger.log(
-        `✅ Wallet credited: User ${virtualAccount.userId} - ₦${amountInNaira}`,
+        `✅ Wallet credited: User ${virtualAccount.userId} - ₦${netAmount} (Gross: ₦${amountInNaira}, Fee: ₦${paystackFeeInNaira})`,
       );
 
       // Send transaction notification
@@ -153,9 +158,11 @@ export class PaystackWebhookService {
           category: 'TRANSACTION',
           channels: ['EMAIL', 'SMS', 'IN_APP'],
           title: 'Wallet Funded Successfully',
-          message: `Your wallet has been credited with ₦${amountInNaira.toLocaleString()} via bank transfer.`,
+          message: `Your wallet has been credited with ₦${netAmount.toLocaleString()} via bank transfer${paystackFeeInNaira > 0 ? ` (₦${paystackFeeInNaira.toFixed(2)} transaction fee deducted)` : ''}.`,
           data: {
-            amount: amountInNaira,
+            amount: netAmount,
+            grossAmount: amountInNaira,
+            fee: paystackFeeInNaira,
             reference,
             channel: 'BANK_TRANSFER',
             accountNumber,
