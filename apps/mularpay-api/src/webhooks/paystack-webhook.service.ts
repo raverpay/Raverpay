@@ -76,7 +76,10 @@ export class PaystackWebhookService {
       await this.prisma.$transaction(async (tx) => {
         // Get current wallet balance
         const wallet = await tx.wallet.findFirst({
-          where: { userId: virtualAccount.userId },
+          where: {
+            userId: virtualAccount.userId,
+            type: 'NAIRA',
+          },
         });
 
         if (!wallet) {

@@ -372,7 +372,10 @@ export class AdminTransactionsService {
 
       // Get current wallet balance
       const wallet = await prisma.wallet.findFirst({
-        where: { userId: transaction.userId },
+        where: {
+          userId: transaction.userId,
+          type: 'NAIRA',
+        },
       });
 
       if (!wallet) {

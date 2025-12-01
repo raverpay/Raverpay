@@ -657,7 +657,10 @@ export class BotService {
     firstName: string,
   ): Promise<BotResponse> {
     const wallet = await this.prisma.wallet.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        type: 'NAIRA',
+      },
     });
 
     if (wallet) {

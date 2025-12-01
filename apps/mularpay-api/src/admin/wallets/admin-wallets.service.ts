@@ -127,7 +127,10 @@ export class AdminWalletsService {
    */
   async getWalletByUserId(userId: string) {
     const wallet = await this.prisma.wallet.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        type: 'NAIRA',
+      },
       include: {
         user: {
           select: {
@@ -169,7 +172,10 @@ export class AdminWalletsService {
     dto: AdjustWalletDto,
   ) {
     const wallet = await this.prisma.wallet.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        type: 'NAIRA',
+      },
     });
 
     if (!wallet) {
@@ -259,7 +265,10 @@ export class AdminWalletsService {
    */
   async resetLimits(adminUserId: string, userId: string) {
     const wallet = await this.prisma.wallet.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        type: 'NAIRA',
+      },
     });
 
     if (!wallet) {

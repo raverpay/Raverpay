@@ -44,7 +44,10 @@ export class WalletService {
 
     // Cache miss - fetch from database
     const wallet = await this.prisma.wallet.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        type: 'NAIRA',
+      },
       include: {
         user: {
           select: {
@@ -176,7 +179,10 @@ export class WalletService {
    */
   async lockWallet(userId: string, reason: string) {
     const wallet = await this.prisma.wallet.findFirst({
-      where: { userId },
+      where: {
+        userId,
+        type: 'NAIRA',
+      },
     });
 
     if (!wallet) {

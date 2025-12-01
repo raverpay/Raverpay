@@ -234,7 +234,10 @@ export class AdminCryptoService {
     const result = await this.prisma.$transaction(async (prisma) => {
       // Get wallet
       const wallet = await prisma.wallet.findFirst({
-        where: { userId: order.userId },
+        where: {
+          userId: order.userId,
+          type: 'NAIRA',
+        },
       });
 
       if (!wallet) {
