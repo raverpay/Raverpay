@@ -78,6 +78,26 @@ export class WalletService {
       monthlySpent,
     );
 
+    // Get today's deposit spending from DailyTransactionLimit
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const depositRecord = await this.prisma.dailyTransactionLimit.findFirst({
+      where: {
+        userId,
+        date: {
+          gte: today,
+          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        },
+      },
+    });
+
+    const dailyDepositSpent = depositRecord?.totalDeposits?.toString() || '0';
+    const dailyDepositLimit = limits.dailyLimit; // Same as daily transaction limit
+    const dailyDepositRemaining = this.calculateRemaining(
+      dailyDepositLimit,
+      dailyDepositSpent,
+    );
+
     const response: WalletBalanceResponse = {
       id: wallet.id,
       balance: wallet.balance.toString(),
@@ -94,6 +114,9 @@ export class WalletService {
       lockedReason: wallet.lockedReason,
       kycTier,
       lastResetAt: wallet.lastResetAt,
+      dailyDepositLimit,
+      dailyDepositSpent,
+      dailyDepositRemaining,
     };
 
     // Cache for 60 seconds

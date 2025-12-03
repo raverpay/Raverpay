@@ -6,6 +6,7 @@ import { welcomeEmailTemplate } from './templates/welcome.template';
 import { vtuTransactionEmailTemplate } from './templates/vtu-transaction.template';
 import { birthdayEmailTemplate } from './templates/birthday.template';
 import { withdrawalTransactionEmailTemplate } from './templates/withdrawal-transaction.template';
+import { walletLockedTemplate } from './templates/wallet-locked.template';
 
 @Injectable()
 export class EmailService {
@@ -588,6 +589,64 @@ export class EmailService {
     } catch (error) {
       this.logger.error(
         `Error sending withdrawal transaction email to ${email}:`,
+        error,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Send wallet locked notification email
+   */
+  async sendWalletLockedEmail(
+    email: string,
+    data: {
+      firstName: string;
+      depositAmount: number;
+      kycTier: 'TIER_0' | 'TIER_1' | 'TIER_2' | 'TIER_3';
+      dailyLimit: number;
+      upgradeUrl?: string;
+    },
+  ): Promise<boolean> {
+    if (!this.enabled) {
+      this.logger.log(
+        `📧 [MOCK] Wallet locked email to ${email}: Deposit ₦${data.depositAmount.toLocaleString()}`,
+      );
+      return true;
+    }
+
+    if (!this.resend) {
+      this.logger.warn(
+        `📧 [MOCK] Would send wallet locked email to ${email}`,
+      );
+      return true;
+    }
+
+    try {
+      const { html, subject } = walletLockedTemplate(data);
+
+      const result = await this.resend.emails.send({
+        from: `${this.fromName} <${this.fromEmail}>`,
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (result.error) {
+        this.logger.error(
+          `Failed to send wallet locked email to ${email}:`,
+          result.error,
+        );
+        return false;
+      }
+
+      this.logger.log(
+        `✅ Wallet locked email sent to ${email} (ID: ${result.data?.id})`,
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Error sending wallet locked email to ${email}:`,
         error,
       );
       return false;

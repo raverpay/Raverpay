@@ -29,6 +29,9 @@ export interface WalletBalanceResponse {
   lockedReason: string | null;
   kycTier: KYCTier;
   lastResetAt: Date;
+  dailyDepositLimit: string;
+  dailyDepositSpent: string;
+  dailyDepositRemaining: string;
 }
 
 /**

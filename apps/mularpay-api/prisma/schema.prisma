@@ -226,11 +226,13 @@ model DailyTransactionLimit {
   totalAirtime      Decimal  @default(0) @db.Decimal(15, 2)
   totalData         Decimal  @default(0) @db.Decimal(15, 2)
   totalBillPayments Decimal  @default(0) @db.Decimal(15, 2)
+  totalDeposits     Decimal  @default(0) @db.Decimal(15, 2)
   transferCount     Int      @default(0)
   withdrawalCount   Int      @default(0)
   airtimeCount      Int      @default(0)
   dataCount         Int      @default(0)
   billPaymentCount  Int      @default(0)
+  depositCount      Int      @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

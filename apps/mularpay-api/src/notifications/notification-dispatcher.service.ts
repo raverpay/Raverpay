@@ -296,12 +296,18 @@ export class NotificationDispatcherService {
         'withdrawal_failed',
       ];
 
+      // Check if this is a wallet locked event
+      const walletLockedEventTypes = ['wallet_locked_deposit_limit'];
+
       if (vtuEventTypes.includes(event.eventType)) {
         // Use VTU-specific template
         emailSent = await this.sendVTUTransactionEmail(user, event);
       } else if (withdrawalEventTypes.includes(event.eventType)) {
         // Use withdrawal-specific template
         emailSent = await this.sendWithdrawalTransactionEmail(user, event);
+      } else if (walletLockedEventTypes.includes(event.eventType)) {
+        // Use wallet locked-specific template
+        emailSent = await this.sendWalletLockedEmail(user, event);
       } else {
         // Use generic template for other notifications
         emailSent = await this.emailService.sendGenericNotification(
@@ -489,6 +495,47 @@ export class NotificationDispatcherService {
         dateStyle: 'medium',
         timeStyle: 'short',
       }),
+    });
+  }
+
+  /**
+   * Send wallet locked email with proper template
+   *
+   * @param user - User data
+   * @param event - Notification event
+   * @returns Whether email was sent successfully
+   */
+  private async sendWalletLockedEmail(
+    user: { email: string; firstName: string },
+    event: NotificationEvent,
+  ): Promise<boolean> {
+    // Get user's KYC tier and daily limit from event data
+    const kycTier = (event.data?.kycTier as
+      | 'TIER_0'
+      | 'TIER_1'
+      | 'TIER_2'
+      | 'TIER_3') || 'TIER_0';
+
+    // Calculate daily limit based on tier
+    const tierLimits: Record<string, number> = {
+      TIER_0: 50000,
+      TIER_1: 300000,
+      TIER_2: 5000000,
+      TIER_3: Number.MAX_SAFE_INTEGER,
+    };
+
+    const dailyLimit = tierLimits[kycTier];
+    const depositAmount =
+      typeof event.data?.depositAmount === 'number'
+        ? event.data.depositAmount
+        : 0;
+
+    return await this.emailService.sendWalletLockedEmail(user.email, {
+      firstName: user.firstName,
+      depositAmount,
+      kycTier,
+      dailyLimit,
+      upgradeUrl: event.data?.upgradeUrl as string | undefined,
     });
   }
 

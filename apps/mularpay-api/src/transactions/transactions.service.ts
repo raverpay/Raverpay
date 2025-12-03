@@ -459,7 +459,18 @@ export class TransactionsService {
     // Find virtual account
     const virtualAccount = await this.prisma.virtualAccount.findUnique({
       where: { accountNumber },
-      include: { user: { include: { wallets: { where: { type: 'NAIRA' } } } } },
+      include: {
+        user: {
+          include: { wallets: { where: { type: 'NAIRA' } } },
+          select: {
+            id: true,
+            kycTier: true,
+            firstName: true,
+            email: true,
+            wallets: true,
+          },
+        },
+      },
     });
 
     if (!virtualAccount) {
@@ -484,7 +495,7 @@ export class TransactionsService {
     }
 
     console.log(
-      `✅ [processVirtualAccountCredit] Wallet found - Current balance: ₦${wallet.balance.toString()}`,
+      `✅ [processVirtualAccountCredit] Wallet found - Current balance: ₦${wallet.balance.toString()}, KYC Tier: ${user.kycTier}`,
     );
 
     // Check if transaction already exists
@@ -500,6 +511,33 @@ export class TransactionsService {
       return;
     }
 
+    // 🚨 NEW: Check deposit limits before processing (Option 2: Allow Deposit, Lock Wallet)
+    let shouldLockWallet = false;
+    let lockReason = '';
+
+    try {
+      // Check both per-transaction and daily deposit limits
+      const limitInfo = await this.limitsService.checkDailyLimit(
+        user.id,
+        amount,
+        TransactionLimitType.DEPOSIT,
+      );
+
+      if (!limitInfo.canProceed) {
+        shouldLockWallet = true;
+        lockReason = `Deposit of ₦${amount.toLocaleString()} exceeds your ${user.kycTier} daily limit of ₦${limitInfo.limit.toLocaleString()}. Please upgrade your KYC tier to unlock your wallet.`;
+
+        console.log(
+          `⚠️ [processVirtualAccountCredit] LIMIT EXCEEDED - Will lock wallet after deposit. User: ${user.id}, Amount: ₦${amount}, Limit: ₦${limitInfo.limit}, Spent: ₦${limitInfo.spent}`,
+        );
+      }
+    } catch (error) {
+      console.error(
+        `❌ [processVirtualAccountCredit] Error checking deposit limits: ${error.message}`,
+      );
+      // Continue with deposit even if limit check fails (fail-open for deposits)
+    }
+
     // Create transaction and credit wallet atomically
     const newBalance = wallet.balance.plus(netAmount);
     console.log(
@@ -513,6 +551,11 @@ export class TransactionsService {
         data: {
           balance: newBalance,
           ledgerBalance: newBalance,
+          // Lock wallet if limit exceeded
+          ...(shouldLockWallet && {
+            isLocked: true,
+            lockedReason: lockReason,
+          }),
         },
       }),
       // Create transaction
@@ -528,7 +571,7 @@ export class TransactionsService {
           balanceBefore: wallet.balance,
           balanceAfter: newBalance,
           currency: 'NGN',
-          description: `Bank transfer deposit of ₦${amount.toLocaleString()}${paystackFee > 0 ? ` (Fee: ₦${paystackFee.toFixed(2)})` : ''}`,
+          description: `Bank transfer deposit of ₦${amount.toLocaleString()}${paystackFee > 0 ? ` (Fee: ₦${paystackFee.toFixed(2)})` : ''}${shouldLockWallet ? ' (Wallet locked - limit exceeded)' : ''}`,
           completedAt: new Date(),
           metadata: {
             paymentMethod: 'bank_transfer',
@@ -537,14 +580,69 @@ export class TransactionsService {
             grossAmount: amount,
             paystackFee: paystackFee,
             netAmount: netAmount,
+            limitExceeded: shouldLockWallet,
+            lockedWallet: shouldLockWallet,
           },
         },
       }),
     ]);
 
-    console.log(
-      `✅ [processVirtualAccountCredit] SUCCESS - Wallet credited with ₦${netAmount} (Gross: ₦${amount}, Fee: ₦${paystackFee})`,
+    // Increment daily deposit spending
+    await this.limitsService.incrementDailySpend(
+      user.id,
+      amount,
+      TransactionLimitType.DEPOSIT,
     );
+
+    console.log(
+      `✅ [processVirtualAccountCredit] SUCCESS - Wallet credited with ₦${netAmount} (Gross: ₦${amount}, Fee: ₦${paystackFee})${shouldLockWallet ? ' - WALLET LOCKED' : ''}`,
+    );
+
+    // Send notifications if wallet was locked
+    if (shouldLockWallet) {
+      try {
+        await this.notificationDispatcher.sendNotification({
+          userId: user.id,
+          eventType: 'wallet_locked_deposit_limit',
+          category: 'SECURITY',
+          channels: ['EMAIL', 'PUSH', 'SMS'],
+          title: 'Wallet Locked - Deposit Limit Exceeded',
+          message: lockReason,
+          data: {
+            depositAmount: amount,
+            kycTier: user.kycTier,
+            upgradeUrl: '/kyc/upgrade',
+          },
+        });
+
+        console.log(
+          `📧 [processVirtualAccountCredit] Wallet lock notification sent to user: ${user.id}`,
+        );
+      } catch (notifError) {
+        console.error(
+          `❌ [processVirtualAccountCredit] Failed to send wallet lock notification: ${notifError.message}`,
+        );
+        // Don't fail the deposit if notification fails
+      }
+
+      // Create audit log for wallet lock
+      await this.prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: 'WALLET_LOCKED',
+          resource: 'WALLET',
+          resourceId: wallet.id,
+          ipAddress: '0.0.0.0',
+          userAgent: 'SYSTEM',
+          metadata: {
+            reason: lockReason,
+            depositAmount: amount,
+            reference,
+            automatedLock: true,
+          },
+        },
+      });
+    }
   }
 
   /**

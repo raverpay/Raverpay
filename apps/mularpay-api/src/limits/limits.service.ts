@@ -10,6 +10,7 @@ export enum TransactionLimitType {
   TRANSFER = 'TRANSFER',
   WITHDRAWAL = 'WITHDRAWAL',
   P2P_TRANSFER = 'P2P_TRANSFER',
+  DEPOSIT = 'DEPOSIT',
 }
 
 interface DailyLimitInfo {
@@ -156,6 +157,11 @@ export class LimitsService {
         totalSpent = Number(record.totalTransferred);
         transactionCount = record.transferCount + record.withdrawalCount;
         break;
+      case TransactionLimitType.DEPOSIT:
+        // Track deposits separately
+        totalSpent = Number(record.totalDeposits || 0);
+        transactionCount = record.depositCount || 0;
+        break;
     }
 
     const remaining = dailyLimit - totalSpent;
@@ -261,6 +267,18 @@ export class LimitsService {
           },
         });
         break;
+
+      case TransactionLimitType.DEPOSIT:
+        await this.prisma.dailyTransactionLimit.update({
+          where: { id: record.id },
+          data: {
+            totalDeposits: new Decimal(record.totalDeposits || 0).add(
+              amountDecimal,
+            ),
+            depositCount: (record.depositCount || 0) + 1,
+          },
+        });
+        break;
     }
 
     this.logger.log(`[LimitIncrement] User ${userId}: ${type} +₦${amount}`);
@@ -297,6 +315,10 @@ export class LimitsService {
       totalSpent,
       remaining: Math.max(0, dailyLimit - totalSpent),
       breakdown: {
+        deposits: {
+          amount: Number(record.totalDeposits || 0),
+          count: record.depositCount || 0,
+        },
         transfers: {
           amount: Number(record.totalTransferred),
           count: record.transferCount,
