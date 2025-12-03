@@ -324,10 +324,9 @@ export class AdminWalletsService {
       category: 'SECURITY',
       channels: ['EMAIL', 'PUSH', 'IN_APP'],
       title: 'Wallet Locked',
-      message: `Your wallet has been locked by an administrator. Reason: ${reason}`,
+      message: `Your wallet has been locked by an administrator. ${reason}`,
       data: {
         reason,
-        walletId: wallet.id,
       },
     });
 
@@ -399,11 +398,9 @@ export class AdminWalletsService {
       category: 'SECURITY',
       channels: ['EMAIL', 'PUSH', 'IN_APP'],
       title: 'Wallet Unlocked',
-      message: `Your wallet has been unlocked by an administrator. ${reason}`,
+      message: reason,
       data: {
         reason,
-        walletId: wallet.id,
-        previousLockReason: wallet.lockedReason,
       },
     });
 
