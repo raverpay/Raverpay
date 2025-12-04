@@ -47,4 +47,17 @@ export class RateLimitsController {
   async getGeographicDistribution() {
     return this.rateLimitsService.getGeographicDistribution();
   }
+
+  @Get('locked-accounts')
+  async getLockedAccounts(
+    @Query('permanent') permanent?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.rateLimitsService.getLockedAccounts({
+      permanent: permanent === 'true',
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 50,
+    });
+  }
 }

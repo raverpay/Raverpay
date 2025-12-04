@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AccountLockingService } from '../../common/services/account-locking.service';
 
 @Injectable()
 export class RateLimitsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private accountLockingService: AccountLockingService,
+  ) {}
 
   async getStats() {
     const now = new Date();
@@ -294,5 +298,17 @@ export class RateLimitsService {
       country: item.country,
       violations: item._count.id,
     }));
+  }
+
+  async getLockedAccounts(params?: {
+    permanent?: boolean;
+    page?: number;
+    limit?: number;
+  }) {
+    return this.accountLockingService.getLockedAccounts(params);
+  }
+
+  async unlockAccount(userId: string, adminId: string, reason?: string) {
+    return this.accountLockingService.unlockAccount(userId, adminId, reason);
   }
 }

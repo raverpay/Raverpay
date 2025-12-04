@@ -9,6 +9,7 @@ import { catchError } from 'rxjs/operators';
 import { ThrottlerException } from '@nestjs/throttler';
 import { Request } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AccountLockingService } from '../services/account-locking.service';
 import * as maxmind from 'maxmind';
 import * as path from 'path';
 
@@ -20,7 +21,10 @@ import * as path from 'path';
 export class RateLimitLoggerInterceptor implements NestInterceptor {
   private geoReader: maxmind.Reader<maxmind.CityResponse> | null = null;
 
-  constructor(private prisma: PrismaService) {
+  constructor(
+    private prisma: PrismaService,
+    private accountLockingService: AccountLockingService,
+  ) {
     void this.initializeGeoIP();
   }
 
@@ -97,6 +101,11 @@ export class RateLimitLoggerInterceptor implements NestInterceptor {
 
       // Update daily metrics
       await this.updateDailyMetrics(request.path, ip, user?.id);
+
+      // Check if account should be locked (only for authenticated users)
+      if (user?.id) {
+        await this.accountLockingService.checkAndLockAccount(user.id);
+      }
     } catch (error) {
       // Don't fail the request if logging fails
       console.error('Failed to log rate limit violation:', error);

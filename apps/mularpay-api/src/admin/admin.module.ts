@@ -36,6 +36,7 @@ import { AdminEmailsService } from './emails/admin-emails.service';
 import { RateLimitsController } from './rate-limits/rate-limits.controller';
 import { RateLimitsService } from './rate-limits/rate-limits.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
+import { AccountLockingService } from '../common/services/account-locking.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { VTUModule } from '../vtu/vtu.module';
@@ -91,6 +92,7 @@ import { PaymentsModule } from '../payments/payments.module';
     AdminVenlyWalletsService,
     AdminEmailsService,
     RateLimitsService,
+    AccountLockingService,
     HierarchyService,
   ],
   exports: [HierarchyService],

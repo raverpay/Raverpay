@@ -55,6 +55,9 @@ model User {
   lastFailedLoginAt      DateTime?
   lastSuccessfulLoginIp  String?
   lastLoginEmailSentAt   DateTime?
+  rateLimitLockCount     Int                      @default(0)
+  lastRateLimitLockAt    DateTime?
+  rateLimitLockReason    String?
   tag                    String?                  @unique @db.VarChar(255)
   tagSetAt               DateTime?
   tagChangedCount        Int                      @default(0)

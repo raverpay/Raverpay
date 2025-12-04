@@ -27,6 +27,8 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { RedisThrottlerStorage } from './common/storage/redis-throttler.storage';
 import { RateLimitLoggerInterceptor } from './common/interceptors/rate-limit-logger.interceptor';
+import { AccountLockingService } from './common/services/account-locking.service';
+import { AccountLockGuard } from './common/guards/account-lock.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -76,10 +78,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   controllers: [AppController],
   providers: [
     AppService,
+    AccountLockingService,
     // Apply custom throttler guard globally (tracks by user ID or IP)
     {
       provide: APP_GUARD,
       useClass: CustomThrottlerGuard,
+    },
+    // Check if account is locked before processing requests
+    {
+      provide: APP_GUARD,
+      useClass: AccountLockGuard,
     },
     // Log rate limit violations with geolocation
     {

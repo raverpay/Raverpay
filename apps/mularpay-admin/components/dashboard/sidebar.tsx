@@ -137,7 +137,7 @@ const navigation: NavItem[] = [
   },
   {
     name: 'Rate Limit',
-    href: '/dashboard/rate-limit',
+    href: '/dashboard/rate-limits',
     icon: BarChart3,
     roles: ['SUPER_ADMIN', 'ADMIN'],
   },
