@@ -33,6 +33,8 @@ import { AdminVenlyWalletsController } from './venly-wallets/admin-venly-wallets
 import { AdminVenlyWalletsService } from './venly-wallets/admin-venly-wallets.service';
 import { AdminEmailsController } from './emails/admin-emails.controller';
 import { AdminEmailsService } from './emails/admin-emails.service';
+import { RateLimitsController } from './rate-limits/rate-limits.controller';
+import { RateLimitsService } from './rate-limits/rate-limits.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -68,6 +70,7 @@ import { PaymentsModule } from '../payments/payments.module';
     AdminAdminsController,
     AdminVenlyWalletsController,
     AdminEmailsController,
+    RateLimitsController,
   ],
   providers: [
     AdminUsersService,
@@ -87,6 +90,7 @@ import { PaymentsModule } from '../payments/payments.module';
     AdminAdminsService,
     AdminVenlyWalletsService,
     AdminEmailsService,
+    RateLimitsService,
     HierarchyService,
   ],
   exports: [HierarchyService],
