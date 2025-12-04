@@ -135,6 +135,12 @@ const navigation: NavItem[] = [
     icon: BarChart3,
     roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
   },
+  {
+    name: 'Rate Limit',
+    href: '/dashboard/rate-limit',
+    icon: BarChart3,
+    roles: ['SUPER_ADMIN', 'ADMIN'],
+  },
   { name: 'Audit Logs', href: '/dashboard/audit', icon: FileText, roles: ['SUPER_ADMIN', 'ADMIN'] },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['SUPER_ADMIN'] },
   { name: 'Admins', href: '/dashboard/admins', icon: UserCog, roles: ['SUPER_ADMIN'] },

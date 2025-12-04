@@ -620,13 +620,14 @@ export class TransactionsService {
       where: { accountNumber },
       include: {
         user: {
-          include: { wallets: { where: { type: 'NAIRA' } } },
           select: {
             id: true,
             kycTier: true,
             firstName: true,
             email: true,
-            wallets: true,
+            wallets: {
+              where: { type: 'NAIRA' },
+            },
           },
         },
       },
