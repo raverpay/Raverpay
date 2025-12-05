@@ -206,13 +206,17 @@ export class HelpService {
           content: dto.content,
           slug,
           order: dto.order ?? (maxOrder._max.order ?? 0) + 1,
+          isActive: dto.isActive ?? false, // Default to draft/inactive
           updatedAt: new Date(),
         },
       });
 
       this.logger.log(`Help article "${article.title}" created`);
 
-      return article;
+      return {
+        ...article,
+        status: article.isActive ? ('PUBLISHED' as const) : ('DRAFT' as const),
+      };
     } catch (error) {
       this.logger.error('Error creating help article:', error);
       throw error;
@@ -228,6 +232,17 @@ export class HelpService {
       throw new NotFoundException('Help article not found');
     }
 
+    // Verify new collection exists if changing collection
+    if (dto.collectionId && dto.collectionId !== article.collectionId) {
+      const collection = await this.prisma.helpCollection.findUnique({
+        where: { id: dto.collectionId },
+      });
+
+      if (!collection) {
+        throw new NotFoundException('Help collection not found');
+      }
+    }
+
     // Check slug uniqueness if updating slug
     if (dto.slug && dto.slug !== article.slug) {
       const existingArticle = await this.prisma.helpArticle.findUnique({
@@ -239,13 +254,18 @@ export class HelpService {
       }
     }
 
-    return this.prisma.helpArticle.update({
+    const updated = await this.prisma.helpArticle.update({
       where: { id: articleId },
       data: {
         ...dto,
         updatedAt: new Date(),
       },
     });
+
+    return {
+      ...updated,
+      status: updated.isActive ? ('PUBLISHED' as const) : ('DRAFT' as const),
+    };
   }
 
   async deleteArticle(articleId: string) {
@@ -264,6 +284,119 @@ export class HelpService {
     this.logger.log(`Help article "${article.title}" deleted`);
 
     return { success: true };
+  }
+
+  async getArticles(params: {
+    page?: number;
+    limit?: number;
+    collectionId?: string;
+    search?: string;
+    status?: 'DRAFT' | 'PUBLISHED';
+  }) {
+    const { page = 1, limit = 10, collectionId, search, status } = params;
+
+    const where: any = {};
+
+    if (collectionId) {
+      where.collectionId = collectionId;
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (status === 'DRAFT') {
+      where.isActive = false;
+    } else if (status === 'PUBLISHED') {
+      where.isActive = true;
+    }
+
+    const [articles, total] = await Promise.all([
+      this.prisma.helpArticle.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+        include: {
+          collection: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      }),
+      this.prisma.helpArticle.count({ where }),
+    ]);
+
+    // Map isActive to status for frontend compatibility
+    const articlesWithStatus = articles.map((article) => ({
+      ...article,
+      status: article.isActive ? ('PUBLISHED' as const) : ('DRAFT' as const),
+    }));
+
+    return {
+      data: articlesWithStatus,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async publishArticle(articleId: string) {
+    const article = await this.prisma.helpArticle.findUnique({
+      where: { id: articleId },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Help article not found');
+    }
+
+    const updated = await this.prisma.helpArticle.update({
+      where: { id: articleId },
+      data: {
+        isActive: true,
+        updatedAt: new Date(),
+      },
+    });
+
+    this.logger.log(`Help article "${article.title}" published`);
+
+    return {
+      ...updated,
+      status: 'PUBLISHED' as const,
+    };
+  }
+
+  async unpublishArticle(articleId: string) {
+    const article = await this.prisma.helpArticle.findUnique({
+      where: { id: articleId },
+    });
+
+    if (!article) {
+      throw new NotFoundException('Help article not found');
+    }
+
+    const updated = await this.prisma.helpArticle.update({
+      where: { id: articleId },
+      data: {
+        isActive: false,
+        updatedAt: new Date(),
+      },
+    });
+
+    this.logger.log(`Help article "${article.title}" unpublished`);
+
+    return {
+      ...updated,
+      status: 'DRAFT' as const,
+    };
   }
 
   // ============================================

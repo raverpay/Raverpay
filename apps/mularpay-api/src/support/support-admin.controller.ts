@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -333,6 +334,26 @@ export class SupportAdminController {
   // ============================================
 
   /**
+   * Get all help collections (including inactive)
+   * GET /admin/support/help/collections
+   */
+  @Get('help/collections')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getHelpCollections() {
+    return this.helpService.getCollections(false); // false = include inactive
+  }
+
+  /**
+   * Get single help collection
+   * GET /admin/support/help/collections/:id
+   */
+  @Get('help/collections/:id')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getHelpCollection(@Param('id') collectionId: string) {
+    return this.helpService.getCollectionById(collectionId);
+  }
+
+  /**
    * Create help collection
    * POST /admin/support/help/collections
    */
@@ -345,9 +366,9 @@ export class SupportAdminController {
 
   /**
    * Update help collection
-   * PUT /admin/support/help/collections/:id
+   * PATCH /admin/support/help/collections/:id
    */
-  @Put('help/collections/:id')
+  @Patch('help/collections/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async updateHelpCollection(
     @Param('id') collectionId: string,
@@ -367,6 +388,38 @@ export class SupportAdminController {
   }
 
   /**
+   * Get all help articles (with pagination and filters)
+   * GET /admin/support/help/articles
+   */
+  @Get('help/articles')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getHelpArticles(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('collectionId') collectionId?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: 'DRAFT' | 'PUBLISHED',
+  ) {
+    return this.helpService.getArticles({
+      page: page ? parseInt(page.toString()) : 1,
+      limit: limit ? parseInt(limit.toString()) : 10,
+      collectionId,
+      search,
+      status,
+    });
+  }
+
+  /**
+   * Get single help article
+   * GET /admin/support/help/articles/:id
+   */
+  @Get('help/articles/:id')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getHelpArticle(@Param('id') articleId: string) {
+    return this.helpService.getArticleById(articleId);
+  }
+
+  /**
    * Create help article
    * POST /admin/support/help/articles
    */
@@ -379,9 +432,9 @@ export class SupportAdminController {
 
   /**
    * Update help article
-   * PUT /admin/support/help/articles/:id
+   * PATCH /admin/support/help/articles/:id
    */
-  @Put('help/articles/:id')
+  @Patch('help/articles/:id')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async updateHelpArticle(
     @Param('id') articleId: string,
@@ -398,6 +451,28 @@ export class SupportAdminController {
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async deleteHelpArticle(@Param('id') articleId: string) {
     return this.helpService.deleteArticle(articleId);
+  }
+
+  /**
+   * Publish help article
+   * POST /admin/support/help/articles/:id/publish
+   */
+  @Post('help/articles/:id/publish')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async publishHelpArticle(@Param('id') articleId: string) {
+    return this.helpService.publishArticle(articleId);
+  }
+
+  /**
+   * Unpublish help article
+   * POST /admin/support/help/articles/:id/unpublish
+   */
+  @Post('help/articles/:id/unpublish')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async unpublishHelpArticle(@Param('id') articleId: string) {
+    return this.helpService.unpublishArticle(articleId);
   }
 
   // ============================================

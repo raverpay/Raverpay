@@ -66,9 +66,17 @@ export class CreateHelpArticleDto {
   @Type(() => Number)
   @IsInt()
   order?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
 
 export class UpdateHelpArticleDto {
+  @IsOptional()
+  @IsString()
+  collectionId?: string;
+
   @IsOptional()
   @IsString()
   title?: string;
