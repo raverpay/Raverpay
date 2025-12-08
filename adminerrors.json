@@ -1,300 +1,202 @@
 [
   {
     "message": "scheduling build on Metal builder \"builder-qidoml\"",
-    "timestamp": "2025-12-08T23:37:57.663760710Z"
+    "timestamp": "2025-12-08T23:40:33.825171750Z"
   },
   {
-    "message": "fetched snapshot sha256:6ca65e02c3c59e97663e16ad3c90153e232f083c1fc825e2cc04df86d07dee83 (219 kB bytes)",
-    "timestamp": "2025-12-08T23:38:01.537122122Z"
+    "message": "fetched snapshot sha256:172f6cb626d7dca67bd749d61e10160ad0a8520f3535cedf96f62ceab71f0d4a (220 kB bytes)",
+    "timestamp": "2025-12-08T23:40:39.106538930Z"
   },
-  { "message": "fetching snapshot", "timestamp": "2025-12-08T23:38:01.537299908Z" },
-  { "message": "unpacking archive", "timestamp": "2025-12-08T23:38:02.537624599Z" },
+  { "message": "fetching snapshot", "timestamp": "2025-12-08T23:40:39.106612160Z" },
+  { "message": "unpacking archive", "timestamp": "2025-12-08T23:40:39.930105163Z" },
   {
     "message": "using build driver railpack-v0.15.1",
-    "timestamp": "2025-12-08T23:38:03.479061565Z"
+    "timestamp": "2025-12-08T23:40:40.629996145Z"
   },
-  { "message": "                   ", "timestamp": "2025-12-08T23:38:04.590540300Z" },
+  { "message": "                   ", "timestamp": "2025-12-08T23:40:41.478210600Z" },
   {
     "message": "\u001b[38;2;125;86;243m╭─────────────────╮\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590554271Z"
+    "timestamp": "2025-12-08T23:40:41.478233034Z"
   },
   {
     "message": "\u001b[38;2;125;86;243m│\u001b[0m Railpack 0.15.1 \u001b[38;2;125;86;243m│\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590555343Z"
+    "timestamp": "2025-12-08T23:40:41.478234737Z"
   },
   {
     "message": "\u001b[38;2;125;86;243m╰─────────────────╯\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590555764Z"
+    "timestamp": "2025-12-08T23:40:41.478235308Z"
   },
-  { "message": "", "timestamp": "2025-12-08T23:38:04.590556084Z" },
+  { "message": "", "timestamp": "2025-12-08T23:40:41.478235808Z" },
   {
     "message": "  \u001b[97m↳ Detected Node\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590557086Z"
+    "timestamp": "2025-12-08T23:40:41.478236539Z"
   },
   {
     "message": "  \u001b[97m↳ Using npm package manager\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590558778Z"
+    "timestamp": "2025-12-08T23:40:41.478238032Z"
   },
-  { "message": "            ", "timestamp": "2025-12-08T23:38:04.590559850Z" },
-  { "message": "  \u001b[1mPackages\u001b[0m  ", "timestamp": "2025-12-08T23:38:04.590560110Z" },
+  { "message": "            ", "timestamp": "2025-12-08T23:40:41.478239123Z" },
+  { "message": "  \u001b[1mPackages\u001b[0m  ", "timestamp": "2025-12-08T23:40:41.478239764Z" },
   {
     "message": "  \u001b[38;5;238m──────────\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590560350Z"
+    "timestamp": "2025-12-08T23:40:41.478240335Z"
   },
   {
     "message": "  \u001b[95mnode\u001b[0m  \u001b[38;5;238m│\u001b[0m  \u001b[96m22.21.1\u001b[0m  \u001b[38;5;238m│\u001b[0m  railpack default (22)",
-    "timestamp": "2025-12-08T23:38:04.590561582Z"
+    "timestamp": "2025-12-08T23:40:41.478241577Z"
   },
-  { "message": "            ", "timestamp": "2025-12-08T23:38:04.590561933Z" },
-  { "message": "  \u001b[1mSteps\u001b[0m     ", "timestamp": "2025-12-08T23:38:04.590576765Z" },
+  { "message": "            ", "timestamp": "2025-12-08T23:40:41.478242018Z" },
+  { "message": "  \u001b[1mSteps\u001b[0m     ", "timestamp": "2025-12-08T23:40:41.478242458Z" },
   {
     "message": "  \u001b[38;5;238m──────────\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590577085Z"
+    "timestamp": "2025-12-08T23:40:41.478242979Z"
   },
-  { "message": "  \u001b[95m▸ install\u001b[0m", "timestamp": "2025-12-08T23:38:04.590577486Z" },
+  { "message": "  \u001b[95m▸ install\u001b[0m", "timestamp": "2025-12-08T23:40:41.478244321Z" },
   {
     "message": "    \u001b[38;5;245m$\u001b[0m \u001b[1mnpm ci\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590577746Z"
+    "timestamp": "2025-12-08T23:40:41.478244962Z"
   },
-  { "message": "         ", "timestamp": "2025-12-08T23:38:04.590578077Z" },
-  { "message": "  \u001b[95m▸ build\u001b[0m", "timestamp": "2025-12-08T23:38:04.590578277Z" },
+  { "message": "         ", "timestamp": "2025-12-08T23:40:41.478245443Z" },
+  { "message": "  \u001b[95m▸ build\u001b[0m", "timestamp": "2025-12-08T23:40:41.478245933Z" },
   {
     "message": "    \u001b[38;5;245m$\u001b[0m \u001b[1mnpm run build\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590578558Z"
+    "timestamp": "2025-12-08T23:40:41.478246394Z"
   },
-  { "message": "            ", "timestamp": "2025-12-08T23:38:04.590578768Z" },
-  { "message": "  \u001b[1mDeploy\u001b[0m    ", "timestamp": "2025-12-08T23:38:04.590579018Z" },
+  { "message": "            ", "timestamp": "2025-12-08T23:40:41.478246875Z" },
+  { "message": "  \u001b[1mDeploy\u001b[0m    ", "timestamp": "2025-12-08T23:40:41.478247315Z" },
   {
     "message": "  \u001b[38;5;238m──────────\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590579209Z"
+    "timestamp": "2025-12-08T23:40:41.478247706Z"
   },
   {
     "message": "    \u001b[38;5;245m$\u001b[0m \u001b[1mnpm run start\u001b[0m",
-    "timestamp": "2025-12-08T23:38:04.590579439Z"
+    "timestamp": "2025-12-08T23:40:41.478248277Z"
   },
-  { "message": "", "timestamp": "2025-12-08T23:38:04.590579740Z" },
+  { "message": "", "timestamp": "2025-12-08T23:40:41.478248908Z" },
   {
     "message": "resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.15.1",
-    "timestamp": "2025-12-08T23:38:05.783733469Z"
+    "timestamp": "2025-12-08T23:40:42.200053599Z"
   },
   {
     "message": "resolve image config for docker-image://ghcr.io/railwayapp/railpack-frontend:v0.15.1",
-    "timestamp": "2025-12-08T23:38:05.939012769Z"
+    "timestamp": "2025-12-08T23:40:42.498882560Z"
   },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-frontend:v0.15.1@sha256:a4ad3453868dd475784adfd7eb98fb4aa0e1a532a9ff8f668d64cf21bd3908a7",
-    "timestamp": "2025-12-08T23:38:05.939091438Z"
+    "timestamp": "2025-12-08T23:40:42.499214728Z"
   },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-frontend:v0.15.1@sha256:a4ad3453868dd475784adfd7eb98fb4aa0e1a532a9ff8f668d64cf21bd3908a7",
-    "timestamp": "2025-12-08T23:38:05.939141743Z"
+    "timestamp": "2025-12-08T23:40:42.499371514Z"
   },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-frontend:v0.15.1@sha256:a4ad3453868dd475784adfd7eb98fb4aa0e1a532a9ff8f668d64cf21bd3908a7",
-    "timestamp": "2025-12-08T23:38:05.950494847Z"
+    "timestamp": "2025-12-08T23:40:42.509958989Z"
   },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-frontend:v0.15.1@sha256:a4ad3453868dd475784adfd7eb98fb4aa0e1a532a9ff8f668d64cf21bd3908a7",
-    "timestamp": "2025-12-08T23:38:05.950609549Z"
+    "timestamp": "2025-12-08T23:40:42.510239480Z"
   },
   {
     "message": "load build definition from ./railpack-plan.json",
-    "timestamp": "2025-12-08T23:38:06.110842502Z"
+    "timestamp": "2025-12-08T23:40:42.685797235Z"
   },
   {
     "message": "load build definition from ./railpack-plan.json",
-    "timestamp": "2025-12-08T23:38:06.111073759Z"
+    "timestamp": "2025-12-08T23:40:42.685814251Z"
   },
   {
     "message": "load build definition from ./railpack-plan.json",
-    "timestamp": "2025-12-08T23:38:06.111776182Z"
+    "timestamp": "2025-12-08T23:40:42.686599539Z"
   },
   {
     "message": "load build definition from ./railpack-plan.json",
-    "timestamp": "2025-12-08T23:38:06.122730739Z"
+    "timestamp": "2025-12-08T23:40:42.704100087Z"
   },
-  {
-    "message": "docker-image://ghcr.io/railwayapp/railpack-builder:latest",
-    "timestamp": "2025-12-08T23:38:06.158674248Z"
-  },
-  { "message": "install apt packages: libatomic1", "timestamp": "2025-12-08T23:38:06.158688720Z" },
+  { "message": "mkdir -p /app/node_modules/.cache", "timestamp": "2025-12-08T23:40:43.772090803Z" },
+  { "message": "copy /root/.local/state/mise", "timestamp": "2025-12-08T23:40:43.772097103Z" },
+  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:40:43.772098354Z" },
+  { "message": "copy /mise/shims", "timestamp": "2025-12-08T23:40:43.772098845Z" },
+  { "message": "copy / /app", "timestamp": "2025-12-08T23:40:43.772099246Z" },
+  { "message": "copy package-lock.json", "timestamp": "2025-12-08T23:40:43.772099616Z" },
+  { "message": "npm ci", "timestamp": "2025-12-08T23:40:43.772099997Z" },
+  { "message": "create mise config", "timestamp": "2025-12-08T23:40:43.772100508Z" },
+  { "message": "mkdir /etc/mise", "timestamp": "2025-12-08T23:40:43.772101029Z" },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-runtime:latest",
-    "timestamp": "2025-12-08T23:38:06.158689782Z"
+    "timestamp": "2025-12-08T23:40:43.772101409Z"
   },
-  { "message": "copy /etc/mise/config.toml", "timestamp": "2025-12-08T23:38:06.159007688Z" },
-  { "message": "mkdir /etc/mise", "timestamp": "2025-12-08T23:38:06.159021549Z" },
-  { "message": "copy /mise/installs", "timestamp": "2025-12-08T23:38:06.159022601Z" },
-  { "message": "copy /app/node_modules", "timestamp": "2025-12-08T23:38:06.159023051Z" },
-  { "message": "npm ci", "timestamp": "2025-12-08T23:38:06.159023352Z" },
-  { "message": "copy /mise/shims", "timestamp": "2025-12-08T23:38:06.159023712Z" },
-  { "message": "copy /root/.cache", "timestamp": "2025-12-08T23:38:06.159024043Z" },
-  { "message": "create mise config", "timestamp": "2025-12-08T23:38:06.159024353Z" },
-  { "message": "loading .", "timestamp": "2025-12-08T23:38:06.159024824Z" },
-  { "message": "npm run build", "timestamp": "2025-12-08T23:38:06.159025134Z" },
-  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:38:06.159025445Z" },
-  { "message": "copy /root/.local/state/mise", "timestamp": "2025-12-08T23:38:06.159025886Z" },
-  { "message": "copy /usr/local/bin/mise", "timestamp": "2025-12-08T23:38:06.159026196Z" },
-  { "message": "copy / /app", "timestamp": "2025-12-08T23:38:06.159026497Z" },
-  { "message": "mkdir -p /app/node_modules/.cache", "timestamp": "2025-12-08T23:38:06.159026807Z" },
-  { "message": "copy /app", "timestamp": "2025-12-08T23:38:06.159027117Z" },
-  { "message": "install mise packages: node", "timestamp": "2025-12-08T23:38:06.159027538Z" },
-  { "message": "copy package.json", "timestamp": "2025-12-08T23:38:06.159027849Z" },
+  { "message": "install apt packages: libatomic1", "timestamp": "2025-12-08T23:40:43.772101800Z" },
+  { "message": "loading .", "timestamp": "2025-12-08T23:40:43.772102180Z" },
+  { "message": "copy package.json", "timestamp": "2025-12-08T23:40:43.772104834Z" },
+  { "message": "install mise packages: node", "timestamp": "2025-12-08T23:40:43.772105285Z" },
+  { "message": "copy /mise/installs", "timestamp": "2025-12-08T23:40:43.772105856Z" },
+  { "message": "npm run build", "timestamp": "2025-12-08T23:40:43.772106557Z" },
+  {
+    "message": "docker-image://ghcr.io/railwayapp/railpack-builder:latest",
+    "timestamp": "2025-12-08T23:40:43.772107278Z"
+  },
+  { "message": "copy /etc/mise/config.toml", "timestamp": "2025-12-08T23:40:43.772107819Z" },
+  { "message": "copy /usr/local/bin/mise", "timestamp": "2025-12-08T23:40:43.772108199Z" },
   {
     "message": "[railpack] merge $packages:apt:runtime, $packages:mise, $build, $build",
-    "timestamp": "2025-12-08T23:38:06.159028159Z"
+    "timestamp": "2025-12-08T23:40:43.772198235Z"
   },
-  { "message": "copy package-lock.json", "timestamp": "2025-12-08T23:38:06.159028610Z" },
+  { "message": "copy /app", "timestamp": "2025-12-08T23:40:43.772199086Z" },
+  { "message": "copy /root/.cache", "timestamp": "2025-12-08T23:40:43.772202221Z" },
+  { "message": "copy /app/node_modules", "timestamp": "2025-12-08T23:40:43.772203002Z" },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-runtime:latest",
-    "timestamp": "2025-12-08T23:38:06.159372596Z"
+    "timestamp": "2025-12-08T23:40:43.772242431Z"
   },
+  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:40:43.772253497Z" },
+  { "message": "loading .", "timestamp": "2025-12-08T23:40:43.772254449Z" },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-builder:latest",
-    "timestamp": "2025-12-08T23:38:06.159383623Z"
+    "timestamp": "2025-12-08T23:40:43.772606437Z"
   },
-  { "message": "loading .", "timestamp": "2025-12-08T23:38:06.159447448Z" },
-  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:38:06.159458585Z" },
+  {
+    "message": "docker-image://ghcr.io/railwayapp/railpack-runtime:latest",
+    "timestamp": "2025-12-08T23:40:44.058380000Z"
+  },
+  { "message": "install apt packages: libatomic1", "timestamp": "2025-12-08T23:40:44.058997957Z" },
   {
     "message": "docker-image://ghcr.io/railwayapp/railpack-builder:latest",
-    "timestamp": "2025-12-08T23:38:06.318891727Z"
+    "timestamp": "2025-12-08T23:40:44.112398889Z"
   },
-  { "message": "loading .", "timestamp": "2025-12-08T23:38:06.320967963Z" },
-  { "message": "mkdir /etc/mise", "timestamp": "2025-12-08T23:38:06.320974462Z" },
-  { "message": "create mise config", "timestamp": "2025-12-08T23:38:06.320975784Z" },
-  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:38:06.320982735Z" },
-  { "message": "create mise config", "timestamp": "2025-12-08T23:38:06.323126291Z" },
-  { "message": "install mise packages: node", "timestamp": "2025-12-08T23:38:06.323253171Z" },
-  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:38:06.341148401Z" },
-  {
-    "message": "docker-image://ghcr.io/railwayapp/railpack-runtime:latest",
-    "timestamp": "2025-12-08T23:38:06.342133309Z"
-  },
-  {
-    "message": "docker-image://ghcr.io/railwayapp/railpack-runtime:latest",
-    "timestamp": "2025-12-08T23:38:06.344878458Z"
-  },
-  { "message": "install apt packages: libatomic1", "timestamp": "2025-12-08T23:38:06.345200951Z" },
-  { "message": "loading .", "timestamp": "2025-12-08T23:38:06.377138080Z" },
-  {
-    "message": "Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]\n",
-    "timestamp": "2025-12-08T23:38:06.545265858Z"
-  },
-  {
-    "message": "Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]\nGet:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]\n",
-    "timestamp": "2025-12-08T23:38:06.558438932Z"
-  },
-  { "message": "mise node@22.21.1    install\n", "timestamp": "2025-12-08T23:38:06.569664355Z" },
-  {
-    "message": "mise node@22.21.1    download node-v22.21.1-linux-x64.tar.gz\n",
-    "timestamp": "2025-12-08T23:38:06.572476294Z"
-  },
-  {
-    "message": "Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8791 kB]\n",
-    "timestamp": "2025-12-08T23:38:06.650291187Z"
-  },
-  {
-    "message": "Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]\n",
-    "timestamp": "2025-12-08T23:38:06.751172488Z"
-  },
-  {
-    "message": "Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [289 kB]\n",
-    "timestamp": "2025-12-08T23:38:06.839744882Z"
-  },
-  {
-    "message": "mise node@22.21.1    extract node-v22.21.1-linux-x64.tar.gz\n",
-    "timestamp": "2025-12-08T23:38:07.025039687Z"
-  },
-  {
-    "message": "Fetched 9342 kB in 1s (9363 kB/s)\nReading package lists...",
-    "timestamp": "2025-12-08T23:38:07.537416243Z"
-  },
-  { "message": "", "timestamp": "2025-12-08T23:38:07.984881918Z" },
-  { "message": "Reading package lists...", "timestamp": "2025-12-08T23:38:08.048225849Z" },
-  { "message": "mise node@22.21.1    node -v\n", "timestamp": "2025-12-08T23:38:08.205354213Z" },
-  { "message": "mise node@22.21.1    v22.21.1\n", "timestamp": "2025-12-08T23:38:08.212015888Z" },
-  { "message": "mise node@22.21.1    npm -v\n", "timestamp": "2025-12-08T23:38:08.213772504Z" },
-  { "message": "mise node@22.21.1    10.9.4\n", "timestamp": "2025-12-08T23:38:08.362133234Z" },
-  { "message": "mise node@22.21.1  ✓ installed\n", "timestamp": "2025-12-08T23:38:08.39336908Z" },
-  { "message": "", "timestamp": "2025-12-08T23:38:08.495336811Z" },
-  { "message": "Building dependency tree...", "timestamp": "2025-12-08T23:38:08.513085832Z" },
-  { "message": "\nReading state information...\n", "timestamp": "2025-12-08T23:38:08.629477555Z" },
-  {
-    "message": "The following NEW packages will be installed:\n",
-    "timestamp": "2025-12-08T23:38:08.7632057Z"
-  },
-  { "message": "  libatomic1\n", "timestamp": "2025-12-08T23:38:08.763941494Z" },
-  {
-    "message": "0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.\nNeed to get 9376 B of archives.\nAfter this operation, 46.1 kB of additional disk space will be used.\nGet:1 http://deb.debian.org/debian bookworm/main amd64 libatomic1 amd64 12.2.0-14+deb12u1 [9376 B]\n",
-    "timestamp": "2025-12-08T23:38:08.796027285Z"
-  },
-  { "message": "install mise packages: node", "timestamp": "2025-12-08T23:38:08.897513805Z" },
-  { "message": "mkdir -p /app/node_modules/.cache", "timestamp": "2025-12-08T23:38:08.902010532Z" },
-  {
-    "message": "debconf: delaying package configuration, since apt-utils is not installed\n",
-    "timestamp": "2025-12-08T23:38:09.102580616Z"
-  },
-  { "message": "Fetched 9376 B in 0s (393 kB/s)\n", "timestamp": "2025-12-08T23:38:09.146756888Z" },
-  { "message": "mkdir -p /app/node_modules/.cache", "timestamp": "2025-12-08T23:38:09.153179344Z" },
-  { "message": "copy package-lock.json", "timestamp": "2025-12-08T23:38:09.157695911Z" },
-  {
-    "message": "Selecting previously unselected package libatomic1:amd64.\r\n(Reading database ... \r",
-    "timestamp": "2025-12-08T23:38:09.187637775Z"
-  },
-  { "message": "copy package-lock.json", "timestamp": "2025-12-08T23:38:09.189097595Z" },
-  {
-    "message": "(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r",
-    "timestamp": "2025-12-08T23:38:09.192568623Z"
-  },
-  { "message": "copy package.json", "timestamp": "2025-12-08T23:38:09.192845278Z" },
-  { "message": "(Reading database ... 75%\r", "timestamp": "2025-12-08T23:38:09.196840363Z" },
-  { "message": "(Reading database ... 80%\r", "timestamp": "2025-12-08T23:38:09.197983347Z" },
-  { "message": "(Reading database ... 85%\r", "timestamp": "2025-12-08T23:38:09.198628706Z" },
-  { "message": "(Reading database ... 90%\r", "timestamp": "2025-12-08T23:38:09.199143538Z" },
-  { "message": "(Reading database ... 95%\r", "timestamp": "2025-12-08T23:38:09.199434685Z" },
-  {
-    "message": "(Reading database ... 100%\r(Reading database ... 6622 files and directories currently installed.)\r\n",
-    "timestamp": "2025-12-08T23:38:09.201492583Z"
-  },
-  {
-    "message": "Preparing to unpack .../libatomic1_12.2.0-14+deb12u1_amd64.deb ...\r\n",
-    "timestamp": "2025-12-08T23:38:09.202167185Z"
-  },
-  {
-    "message": "Unpacking libatomic1:amd64 (12.2.0-14+deb12u1) ...\r\n",
-    "timestamp": "2025-12-08T23:38:09.207115139Z"
-  },
-  { "message": "copy package.json", "timestamp": "2025-12-08T23:38:09.224863508Z" },
-  { "message": "npm ci", "timestamp": "2025-12-08T23:38:09.228750841Z" },
-  {
-    "message": "Setting up libatomic1:amd64 (12.2.0-14+deb12u1) ...\r\n",
-    "timestamp": "2025-12-08T23:38:09.271140011Z"
-  },
-  {
-    "message": "Processing triggers for libc-bin (2.36-9+deb12u13) ...\r\n",
-    "timestamp": "2025-12-08T23:38:09.281002929Z"
-  },
-  { "message": "install apt packages: libatomic1", "timestamp": "2025-12-08T23:38:09.351206052Z" },
+  { "message": "loading .", "timestamp": "2025-12-08T23:40:44.113812550Z" },
+  { "message": "mkdir /etc/mise", "timestamp": "2025-12-08T23:40:44.114020522Z" },
+  { "message": "create mise config", "timestamp": "2025-12-08T23:40:44.114022726Z" },
+  { "message": "install mise packages: node", "timestamp": "2025-12-08T23:40:44.114023417Z" },
+  { "message": "copy /mise/shims", "timestamp": "2025-12-08T23:40:44.114023577Z" },
+  { "message": "copy /mise/installs", "timestamp": "2025-12-08T23:40:44.114023847Z" },
+  { "message": "copy /usr/local/bin/mise", "timestamp": "2025-12-08T23:40:44.114024017Z" },
+  { "message": "copy /etc/mise/config.toml", "timestamp": "2025-12-08T23:40:44.114024318Z" },
+  { "message": "copy /root/.local/state/mise", "timestamp": "2025-12-08T23:40:44.114024478Z" },
+  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:40:44.114087783Z" },
+  { "message": "copy /root/.local/state/mise", "timestamp": "2025-12-08T23:40:44.115970218Z" },
+  { "message": "[railpack] secrets hash", "timestamp": "2025-12-08T23:40:44.116027814Z" },
+  { "message": "loading .", "timestamp": "2025-12-08T23:40:44.133541041Z" },
+  { "message": "mkdir -p /app/node_modules/.cache", "timestamp": "2025-12-08T23:40:44.138390857Z" },
+  { "message": "copy package-lock.json", "timestamp": "2025-12-08T23:40:44.138394072Z" },
+  { "message": "copy package.json", "timestamp": "2025-12-08T23:40:44.138395344Z" },
+  { "message": "npm ci", "timestamp": "2025-12-08T23:40:44.138395915Z" },
   {
     "message": "npm warn config production Use `--omit=dev` instead.\n",
-    "timestamp": "2025-12-08T23:38:09.512066786Z"
+    "timestamp": "2025-12-08T23:40:44.432979947Z"
   },
-  { "message": "copy /mise/shims", "timestamp": "2025-12-08T23:38:09.759422037Z" },
-  { "message": "copy /mise/installs", "timestamp": "2025-12-08T23:38:09.759436659Z" },
-  { "message": "copy /usr/local/bin/mise", "timestamp": "2025-12-08T23:38:09.759437760Z" },
-  { "message": "copy /etc/mise/config.toml", "timestamp": "2025-12-08T23:38:09.759438070Z" },
-  { "message": "copy /root/.local/state/mise", "timestamp": "2025-12-08T23:38:09.759438471Z" },
+  { "message": "npm error code EUSAGE\n", "timestamp": "2025-12-08T23:40:48.1103038Z" },
   {
-    "message": "npm error code EUSAGE\nnpm error\nnpm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.\nnpm error\nnpm error Missing: @hookform/resolvers@5.2.2 from lock file\nnpm error Missing: react-hook-form@7.68.0 from lock file\nnpm error Missing: @radix-ui/react-alert-dialog@1.1.15 from lock file\nnpm error Missing: @radix-ui/react-avatar@1.1.11 from lock file\nnpm error Missing: @radix-ui/react-checkbox@1.3.3 from lock file\nnpm error Missing: @radix-ui/react-dialog@1.1.15 from lock file\nnpm error Missing: @radix-ui/react-dropdown-menu@2.1.16 from lock file\nnpm error Missing: @radix-ui/react-label@2.1.8 from lock file\nnpm error Missing: @radix-ui/react-select@2.2.6 from lock file\nnpm error Missing: @radix-ui/react-separator@1.1.8 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.4 from lock file\nnpm error Missing: @radix-ui/react-switch@1.2.6 from lock file\nnpm error Missing: @radix-ui/react-tabs@1.1.13 from lock file\nnpm error Missing: @radix-ui/react-tooltip@1.2.8 from lock file\nnpm error Missing: @tanstack/react-query@5.90.12 from lock file\nnpm error Missing: @tanstack/react-table@8.21.3 from lock file\nnpm error Missing: @vercel/analytics@1.6.1 from lock file\nnpm error Missing: axios@1.13.2 from lock file\nnpm error Missing: class-variance-authority@0.7.1 from lock file\nnpm error Missing: clsx@2.1.1 from lock file\nnpm error Missing: date-fns@4.1.0 from lock file\nnpm error Missing: lucide-react@0.554.0 from lock file\nnpm error Missing: next-themes@0.4.6 from lock file\nnpm error Missing: recharts@3.5.1 from lock file\nnpm error Missing: sonner@2.0.7 from lock file\nnpm error Missing: tailwind-merge@3.4.0 from lock file\nnpm error Missing: zustand@5.0.9 from lock file\nnpm error Missing: @standard-schema/utils@0.3.0 from lock file\nnpm error Missing: @radix-ui/primitive@1.1.3 from lock file\nnpm error Missing: @radix-ui/react-compose-refs@1.1.2 from lock file\nnpm error Missing: @radix-ui/react-context@1.1.2 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.3 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-context@1.1.3 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.4 from lock file\nnpm error Missing: @radix-ui/react-use-callback-ref@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-use-is-hydrated@0.1.0 from lock file\nnpm error Missing: @radix-ui/react-use-layout-effect@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-presence@1.1.5 from lock file\nnpm error Missing: @radix-ui/react-use-controllable-state@1.2.2 from lock file\nnpm error Missing: @radix-ui/react-use-previous@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-use-size@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-dismissable-layer@1.1.11 from lock file\nnpm error Missing: @radix-ui/react-focus-guards@1.1.3 from lock file\nnpm error Missing: @radix-ui/react-focus-scope@1.1.7 from lock file\nnpm error Missing: @radix-ui/react-id@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-portal@1.1.9 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: aria-hidden@1.2.6 from lock file\nnpm error Missing: react-remove-scroll@2.7.2 from lock file\nnpm error Missing: @radix-ui/react-use-escape-keydown@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-menu@2.1.16 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.4 from lock file\nnpm error Missing: @radix-ui/react-collection@1.1.7 from lock file\nnpm error Missing: @radix-ui/react-direction@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-popper@1.2.8 from lock file\nnpm error Missing: @radix-ui/react-roving-focus@1.1.11 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @floating-ui/react-dom@2.1.6 from lock file\nnpm error Missing: @radix-ui/react-arrow@1.1.7 from lock file\nnpm error Missing: @radix-ui/react-use-rect@1.1.1 from lock file\nnpm error Missing: @radix-ui/rect@1.1.1 from lock file\nnpm error Missing: @floating-ui/dom@1.7.4 from lock file\nnpm error Missing: @floating-ui/core@1.7.3 from lock file\nnpm error Missing: @floating-ui/utils@0.2.10 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/number@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-visually-hidden@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.4 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-use-effect-event@0.0.2 from lock file\nnpm error Missing: use-sync-external-store@1.6.0 from lock file\nnpm error Missing: @tanstack/query-core@5.90.12 from lock file\nnpm error Missing: @tanstack/table-core@8.21.3 from lock file\nnpm error Missing: follow-redirects@1.15.11 from lock file\nnpm error Missing: form-data@4.0.5 from lock file\nnpm error Missing: proxy-from-env@1.1.0 from lock file\nnpm error Missing: asynckit@0.4.0 from lock file\nnpm error Missing: combined-stream@1.0.8 from lock file\nnpm error Missing: mime-types@2.1.35 from lock file\nnpm error Missing: delayed-stream@1.0.0 from lock file\nnpm error Missing: mime-db@1.52.0 from lock file\nnpm error Missing: react-remove-scroll-bar@2.3.8 from lock file\nnpm error Missing: react-style-singleton@2.2.3 from lock file\nnpm error Missing: use-callback-ref@1.3.3 from lock file\nnpm error Missing: use-sidecar@1.1.3 from lock file\nnpm error Missing: get-nonce@1.0.1 from lock file\nnpm error Missing: @reduxjs/toolkit@2.11.1 from lock file\nnpm error Missing: decimal.js-light@2.5.1 from lock file\nnpm error Missing: es-toolkit@1.42.0 from lock file\nnpm error Missing: eventemitter3@5.0.1 from lock file\nnpm error Missing: immer@10.2.0 from lock file\nnpm error Missing: react-redux@9.2.0 from lock file\nnpm error Missing: reselect@5.1.1 from lock file\nnpm error Missing: tiny-invariant@1.3.3 from lock file\nnpm error Missing: victory-vendor@37.3.6 from lock file\nnpm error Missing: @standard-schema/spec@1.0.0 from lock file\nnpm error Missing: immer@11.0.1 from lock file\nnpm error Missing: redux@5.0.1 from lock file\nnpm error Missing: redux-thunk@3.1.0 from lock file\nnpm error Missing: @types/use-sync-external-store@0.0.6 from lock file\nnpm error Missing: detect-node-es@1.1.0 from lock file\nnpm error Missing: @types/d3-array@3.2.2 from lock file\nnpm error Missing: @types/d3-ease@3.0.2 from lock file\nnpm error Missing: @types/d3-interpolate@3.0.4 from lock file\nnpm error Missing: @types/d3-scale@4.0.9 from lock file\nnpm error Missing: @types/d3-shape@3.1.7 from lock file\nnpm error Missing: @types/d3-time@3.0.4 from lock file\nnpm error Missing: @types/d3-timer@3.0.2 from lock file\nnpm error Missing: d3-array@3.2.4 from lock file\nnpm error Missing: d3-ease@3.0.1 from lock file\nnpm error Missing: d3-interpolate@3.0.1 from lock file\nnpm error Missing: d3-scale@4.0.2 from lock file\nnpm error Missing: d3-shape@3.2.0 from lock file\nnpm error Missing: d3-time@3.1.0 from lock file\nnpm error Missing: d3-timer@3.0.1 from lock file\nnpm error Missing: @types/d3-color@3.1.3 from lock file\nnpm error Missing: @types/d3-path@3.1.1 from lock file\nnpm error Missing: internmap@2.0.3 from lock file\nnpm error Missing: d3-color@3.1.0 from lock file\nnpm error Missing: d3-format@3.1.0 from lock file\nnpm error Missing: d3-time-format@4.1.0 from lock file\nnpm error Missing: d3-path@3.1.0 from lock file\nnpm error\nnpm error Clean install a project\nnpm error\nnpm error Usage:\nnpm error npm ci\nnpm error\nnpm error Options:\nnpm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]\nnpm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]\nnpm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]\nnpm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]\nnpm error [--no-bin-links] [--no-fund] [--dry-run]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [-ws|--workspaces] [--include-workspace-root] [--install-links]\nnpm error\nnpm error aliases: clean-install, ic, install-clean, isntall-clean\nnpm error\nnpm error Run \"npm help ci\" for more info\n",
-    "timestamp": "2025-12-08T23:38:17.68211975Z"
+    "message": "npm error\nnpm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.\nnpm error\nnpm error Missing: @hookform/resolvers@5.2.2 from lock file\nnpm error Missing: react-hook-form@7.68.0 from lock file\nnpm error Missing: @radix-ui/react-alert-dialog@1.1.15 from lock file\nnpm error Missing: @radix-ui/react-avatar@1.1.11 from lock file\nnpm error Missing: @radix-ui/react-checkbox@1.3.3 from lock file\nnpm error Missing: @radix-ui/react-dialog@1.1.15 from lock file\nnpm error Missing: @radix-ui/react-dropdown-menu@2.1.16 from lock file\nnpm error Missing: @radix-ui/react-label@2.1.8 from lock file\nnpm error Missing: @radix-ui/react-select@2.2.6 from lock file\nnpm error Missing: @radix-ui/react-separator@1.1.8 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.4 from lock file\nnpm error Missing: @radix-ui/react-switch@1.2.6 from lock file\nnpm error Missing: @radix-ui/react-tabs@1.1.13 from lock file\nnpm error Missing: @radix-ui/react-tooltip@1.2.8 from lock file\nnpm error Missing: @tanstack/react-query@5.90.12 from lock file\nnpm error Missing: @tanstack/react-table@8.21.3 from lock file\nnpm error Missing: @vercel/analytics@1.6.1 from lock file\nnpm error Missing: axios@1.13.2 from lock file\nnpm error Missing: class-variance-authority@0.7.1 from lock file\nnpm error Missing: clsx@2.1.1 from lock file\nnpm error Missing: date-fns@4.1.0 from lock file\nnpm error Missing: lucide-react@0.554.0 from lock file\nnpm error Missing: next-themes@0.4.6 from lock file\nnpm error Missing: recharts@3.5.1 from lock file\nnpm error Missing: sonner@2.0.7 from lock file\nnpm error Missing: tailwind-merge@3.4.0 from lock file\nnpm error Missing: zustand@5.0.9 from lock file\nnpm error Missing: @standard-schema/utils@0.3.0 from lock file\nnpm error Missing: @radix-ui/primitive@1.1.3 from lock file\nnpm error Missing: @radix-ui/react-compose-refs@1.1.2 from lock file\nnpm error Missing: @radix-ui/react-context@1.1.2 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.3 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-context@1.1.3 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.4 from lock file\nnpm error Missing: @radix-ui/react-use-callback-ref@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-use-is-hydrated@0.1.0 from lock file\nnpm error Missing: @radix-ui/react-use-layout-effect@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-presence@1.1.5 from lock file\nnpm error Missing: @radix-ui/react-use-controllable-state@1.2.2 from lock file\nnpm error Missing: @radix-ui/react-use-previous@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-use-size@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-dismissable-layer@1.1.11 from lock file\nnpm error Missing: @radix-ui/react-focus-guards@1.1.3 from lock file\nnpm error Missing: @radix-ui/react-focus-scope@1.1.7 from lock file\nnpm error Missing: @radix-ui/react-id@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-portal@1.1.9 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: aria-hidden@1.2.6 from lock file\nnpm error Missing: react-remove-scroll@2.7.2 from lock file\nnpm error Missing: @radix-ui/react-use-escape-keydown@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-menu@2.1.16 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.4 from lock file\nnpm error Missing: @radix-ui/react-collection@1.1.7 from lock file\nnpm error Missing: @radix-ui/react-direction@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-popper@1.2.8 from lock file\nnpm error Missing: @radix-ui/react-roving-focus@1.1.11 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @floating-ui/react-dom@2.1.6 from lock file\nnpm error Missing: @radix-ui/react-arrow@1.1.7 from lock file\nnpm error Missing: @radix-ui/react-use-rect@1.1.1 from lock file\nnpm error Missing: @radix-ui/rect@1.1.1 from lock file\nnpm error Missing: @floating-ui/dom@1.7.4 from lock file\nnpm error Missing: @floating-ui/core@1.7.3 from lock file\nnpm error Missing: @floating-ui/utils@0.2.10 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/number@1.1.1 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-visually-hidden@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-primitive@2.1.4 from lock file\nnpm error Missing: @radix-ui/react-slot@1.2.3 from lock file\nnpm error Missing: @radix-ui/react-use-effect-event@0.0.2 from lock file\nnpm error Missing: use-sync-external-store@1.6.0 from lock file\nnpm error Missing: @tanstack/query-core@5.90.12 from lock file\nnpm error Missing: @tanstack/table-core@8.21.3 from lock file\nnpm error Missing: follow-redirects@1.15.11 from lock file\nnpm error Missing: form-data@4.0.5 from lock file\nnpm error Missing: proxy-from-env@1.1.0 from lock file\nnpm error Missing: asynckit@0.4.0 from lock file\nnpm error Missing: combined-stream@1.0.8 from lock file\nnpm error Missing: mime-types@2.1.35 from lock file\nnpm error Missing: delayed-stream@1.0.0 from lock file\nnpm error Missing: mime-db@1.52.0 from lock file\nnpm error Missing: react-remove-scroll-bar@2.3.8 from lock file\nnpm error Missing: react-style-singleton@2.2.3 from lock file\nnpm error Missing: use-callback-ref@1.3.3 from lock file\nnpm error Missing: use-sidecar@1.1.3 from lock file\nnpm error Missing: get-nonce@1.0.1 from lock file\nnpm error Missing: @reduxjs/toolkit@2.11.1 from lock file\nnpm error Missing: decimal.js-light@2.5.1 from lock file\nnpm error Missing: es-toolkit@1.42.0 from lock file\nnpm error Missing: eventemitter3@5.0.1 from lock file\nnpm error Missing: immer@10.2.0 from lock file\nnpm error Missing: react-redux@9.2.0 from lock file\nnpm error Missing: reselect@5.1.1 from lock file\nnpm error Missing: tiny-invariant@1.3.3 from lock file\nnpm error Missing: victory-vendor@37.3.6 from lock file\nnpm error Missing: @standard-schema/spec@1.0.0 from lock file\nnpm error Missing: immer@11.0.1 from lock file\nnpm error Missing: redux@5.0.1 from lock file\nnpm error Missing: redux-thunk@3.1.0 from lock file\nnpm error Missing: @types/use-sync-external-store@0.0.6 from lock file\nnpm error Missing: detect-node-es@1.1.0 from lock file\nnpm error Missing: @types/d3-array@3.2.2 from lock file\nnpm error Missing: @types/d3-ease@3.0.2 from lock file\nnpm error Missing: @types/d3-interpolate@3.0.4 from lock file\nnpm error Missing: @types/d3-scale@4.0.9 from lock file\nnpm error Missing: @types/d3-shape@3.1.7 from lock file\nnpm error Missing: @types/d3-time@3.0.4 from lock file\nnpm error Missing: @types/d3-timer@3.0.2 from lock file\nnpm error Missing: d3-array@3.2.4 from lock file\nnpm error Missing: d3-ease@3.0.1 from lock file\nnpm error Missing: d3-interpolate@3.0.1 from lock file\nnpm error Missing: d3-scale@4.0.2 from lock file\nnpm error Missing: d3-shape@3.2.0 from lock file\nnpm error Missing: d3-time@3.1.0 from lock file\nnpm error Missing: d3-timer@3.0.1 from lock file\nnpm error Missing: @types/d3-color@3.1.3 from lock file\nnpm error Missing: @types/d3-path@3.1.1 from lock file\nnpm error Missing: internmap@2.0.3 from lock file\nnpm error Missing: d3-color@3.1.0 from lock file\nnpm error Missing: d3-format@3.1.0 from lock file\nnpm error Missing: d3-time-format@4.1.0 from lock file\nnpm error Missing: d3-path@3.1.0 from lock file\nnpm error\nnpm error Clean install a project\nnpm error\nnpm error Usage:\nnpm error npm ci\nnpm error\nnpm error Options:\nnpm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]\nnpm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]\nnpm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]\nnpm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]\nnpm error [--no-bin-links] [--no-fund] [--dry-run]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [-ws|--workspaces] [--include-workspace-root] [--install-links]\nnpm error\nnpm error aliases: clean-install, ic, install-clean, isntall-clean\nnpm error\nnpm error Run \"npm help ci\" for more info\n",
+    "timestamp": "2025-12-08T23:40:48.110560334Z"
   },
   {
-    "message": "npm error A complete log of this run can be found in: /root/.npm/_logs/2025-12-08T23_38_09_488Z-debug-0.log\n",
-    "timestamp": "2025-12-08T23:38:17.683230236Z"
+    "message": "npm error A complete log of this run can be found in: /root/.npm/_logs/2025-12-08T23_40_44_408Z-debug-0.log\n",
+    "timestamp": "2025-12-08T23:40:48.111845362Z"
   },
-  { "message": "npm ci", "timestamp": "2025-12-08T23:38:18.300618331Z" },
+  { "message": "npm ci", "timestamp": "2025-12-08T23:40:48.263150690Z" },
   {
     "message": "Build Failed: build daemon returned an error < failed to solve: process \"npm ci\" did not complete successfully: exit code: 1 >",
-    "timestamp": "2025-12-08T23:38:18.324691691Z"
+    "timestamp": "2025-12-08T23:40:48.283853252Z"
   }
 ]
