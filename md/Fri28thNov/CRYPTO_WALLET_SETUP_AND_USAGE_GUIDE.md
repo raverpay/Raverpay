@@ -16,7 +16,7 @@ This guide explains:
 ### Step 1: Generate Encryption Key
 
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 
 # Generate encryption key for PINs
 openssl rand -hex 32
@@ -26,7 +26,7 @@ Copy the output (64 character hex string).
 
 ### Step 2: Add to .env File
 
-Open `/Users/joseph/Desktop/mularpay/apps/mularpay-api/.env` and add these variables:
+Open `/Users/joseph/Desktop/raverpay/apps/raverpay-api/.env` and add these variables:
 
 ```env
 # ============================================
@@ -55,7 +55,7 @@ POLYGON_USDC_ADDRESS=0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 ### Step 3: Restart API Server
 
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm run start:dev
 ```
 
@@ -783,7 +783,7 @@ Status: Backend ✅ | Mobile ✅ | Admin Dashboard ❌
 **Venly Documentation**: https://docs.venly.io
 **Venly Portal**: https://portal.venly.io
 **Polygon Faucet**: https://faucet.polygon.technology
-**Backend Docs**: `/Users/joseph/Desktop/mularpay/CRYPTO_BACKEND_COMPLETE.md`
+**Backend Docs**: `/Users/joseph/Desktop/raverpay/CRYPTO_BACKEND_COMPLETE.md`
 **Mobile Guide**: `/Users/joseph/Desktop/raverpay/CRYPTO_WALLET_MOBILE_IMPLEMENTATION_GUIDE.md`
 
 ---

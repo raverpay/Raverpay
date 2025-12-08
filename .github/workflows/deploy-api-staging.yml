@@ -45,7 +45,7 @@ jobs:
         uses: bervProject/railway-deploy@main
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN_STAGING }}
-          service: mularpay-api-staging
+          service: raverpay-api-staging
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
           REDIS_URL: ${{ secrets.REDIS_URL_STAGING }}

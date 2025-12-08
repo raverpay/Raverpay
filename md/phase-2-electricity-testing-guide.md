@@ -16,7 +16,7 @@ export URL="http://localhost:3001/api"
 export ACCESSTOKEN="your-jwt-token-here"
 
 # For production testing
-export URL="https://mularpay-api-production.up.railway.app/api"
+export URL="https://raverpay-api-production.up.railway.app/api"
 export ACCESSTOKEN="your-production-jwt-token"
 ```
 

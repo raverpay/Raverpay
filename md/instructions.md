@@ -2,7 +2,7 @@ Mobile
 
 NOTE: I may be wron/right in things I suggest but make sure to correct me or acknowledge of correct.
 
-I want to start building the mobile app inside of mularpay/mularpay-mobile based on the fact that the mularpay/mularpay-api is ready to some extent. You can check and see everything we can do there.
+I want to start building the mobile app inside of raverpay/raverpay-mobile based on the fact that the raverpay/raverpay-api is ready to some extent. You can check and see everything we can do there.
 
 Before you write any code, I want this app to be a production world standard fintech app. So provide a mobileapp.md first on what the screens will be and also how the flow for the app will be like based on our readily available API.
 

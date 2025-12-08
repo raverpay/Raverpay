@@ -16,7 +16,7 @@ This directory should contain the MaxMind GeoLite2 City database file for IP geo
 3. **Place the file**:
    - Rename the file to `GeoLite2-City.mmdb`
    - Place it in this `data/` directory
-   - The path should be: `apps/mularpay-api/data/GeoLite2-City.mmdb`
+   - The path should be: `apps/raverpay-api/data/GeoLite2-City.mmdb`
 
 ## Alternative: Automatic Updates
 

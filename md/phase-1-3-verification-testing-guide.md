@@ -1,6 +1,6 @@
 # Phase 1.3: Email & SMS Verification Testing Guide
 
-**MularPay - Real Verification Services Testing**
+**RaverPay - Real Verification Services Testing**
 
 ---
 
@@ -13,11 +13,11 @@
 ```bash
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@expertvetteddigital.tech
-RESEND_FROM_NAME=MularPay
+RESEND_FROM_NAME=RaverPay
 
 VTPASS_MESSAGING_PUBLIC_KEY=VT_PK_xxxxxxxxxxxxx
 VTPASS_MESSAGING_SECRET_KEY=VT_SK_xxxxxxxxxxxxx
-VTPASS_SMS_SENDER=MularPay
+VTPASS_SMS_SENDER=RaverPay
 
 ENABLE_EMAIL_VERIFICATION=true
 ENABLE_SMS_VERIFICATION=true
@@ -28,7 +28,7 @@ MAX_VERIFICATION_ATTEMPTS=5
 2. **Start server**:
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm run start:dev
 ```
 
@@ -36,7 +36,7 @@ pnpm run start:dev
 
 ```bash
 curl http://localhost:3001/api
-# Should return: "Welcome to MularPay API 🇳🇬"
+# Should return: "Welcome to RaverPay API 🇳🇬"
 ```
 
 ---
@@ -482,7 +482,7 @@ curl -X GET http://localhost:3001/api/users/profile \
 
 ```bash
 # Watch logs in real-time
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm run start:dev
 
 # Look for:
@@ -556,7 +556,7 @@ curl -X GET http://localhost:3001/api/vtu/sms-balance \
 1. **Mock Mode:** If API keys are missing, services run in mock mode (logs only)
 2. **Code Expiry:** 10 minutes (configurable via env var)
 3. **Max Attempts:** 5 (configurable via env var)
-4. **VTPass Sender:** Use `VTPass` for testing, `MularPay` after approval
+4. **VTPass Sender:** Use `VTPass` for testing, `RaverPay` after approval
 5. **Email Templates:** Fully styled HTML emails
 6. **SMS Templates:** Short messages (< 160 chars)
 

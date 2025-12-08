@@ -4,7 +4,7 @@
 
 ### 1. Phone Number Formatting Fix
 
-- **File**: `apps/mularpay-api/src/payments/paystack.service.ts`
+- **File**: `apps/raverpay-api/src/payments/paystack.service.ts`
 - **Changes**:
   - Added `formatPhoneNumber()` private method to convert phone numbers to international format (2348012345678)
   - Updated `createCustomer()` to automatically format phone numbers before sending to Paystack
@@ -12,7 +12,7 @@
 
 ### 2. Virtual Accounts Service Updates
 
-- **File**: `apps/mularpay-api/src/virtual-accounts/virtual-accounts.service.ts`
+- **File**: `apps/raverpay-api/src/virtual-accounts/virtual-accounts.service.ts`
 - **Changes**:
   - Ensures phone number is always present and formatted before DVA creation
   - Updates existing Paystack customers with phone number if missing
@@ -23,7 +23,7 @@
 
 ### 3. BVN Encryption Service Fix
 
-- **File**: `apps/mularpay-api/src/utils/bvn-encryption.service.ts`
+- **File**: `apps/raverpay-api/src/utils/bvn-encryption.service.ts`
 - **Changes**:
   - Fixed `maskForLogging()` to handle invalid encrypted BVN format gracefully
   - Checks if BVN is encrypted before attempting decryption
@@ -31,7 +31,7 @@
 
 ### 4. Database Schema Updates
 
-- **File**: `apps/mularpay-api/prisma/schema.prisma`
+- **File**: `apps/raverpay-api/prisma/schema.prisma`
 - **Changes**:
   - Added `creationStatus` field (PENDING | PROCESSING | ACTIVE | FAILED)
   - Added `retryCount` field (default: 0)
@@ -41,7 +41,7 @@
 
 ### 5. Admin Virtual Accounts Service
 
-- **File**: `apps/mularpay-api/src/admin/virtual-accounts/admin-virtual-accounts.service.ts`
+- **File**: `apps/raverpay-api/src/admin/virtual-accounts/admin-virtual-accounts.service.ts`
 - **Changes**:
   - Added `getFailedDVACreations()` - Lists users with customer code + BVN but no active DVA
   - Added `createDVAForUser()` - Manually creates DVA for a user
@@ -51,7 +51,7 @@
 
 ### 6. Admin Virtual Accounts Controller
 
-- **File**: `apps/mularpay-api/src/admin/virtual-accounts/admin-virtual-accounts.controller.ts`
+- **File**: `apps/raverpay-api/src/admin/virtual-accounts/admin-virtual-accounts.controller.ts`
 - **New Endpoints**:
   - `GET /admin/virtual-accounts/failed` - Get failed DVA creations
   - `POST /admin/virtual-accounts/:userId/create` - Manually create DVA
@@ -64,7 +64,7 @@
 Run the migration to add the new fields:
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma migrate dev
 # Or manually run the SQL in: prisma/migrations/add_dva_status_tracking.sql
 ```
@@ -74,13 +74,13 @@ pnpm prisma migrate dev
 After migration:
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 ```
 
 ### 3. Admin Dashboard UI (Pending)
 
-- **Location**: `apps/mularpay-admin`
+- **Location**: `apps/raverpay-admin`
 - **Needed**:
   - Create `/dashboard/virtual-accounts/failed` page
   - Add "Failed Creations" filter to virtual accounts list
@@ -98,7 +98,7 @@ pnpm prisma generate
 
 ### 5. Notification Events (Pending)
 
-- **File**: `apps/mularpay-api/src/notifications/`
+- **File**: `apps/raverpay-api/src/notifications/`
 - **Needed**:
   - Add `VIRTUAL_ACCOUNT_CREATED` event handler
   - Add `VIRTUAL_ACCOUNT_CREATION_FAILED` event handler

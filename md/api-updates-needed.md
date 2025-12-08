@@ -1,4 +1,4 @@
-# MularPay API - Required Updates for Mobile App
+# RaverPay API - Required Updates for Mobile App
 
 **Version:** 1.0
 **Last Updated:** 2025-11-11
@@ -1170,8 +1170,8 @@ Response (Success):
     "status": "COMPLETED",
     "date": "Nov 11, 2025 - 10:30 AM",
     "balanceAfter": "₦125,450.00",
-    "merchant": "MularPay",
-    "receiptUrl": "https://api.mularpay.com/receipts/pdf/uuid"
+    "merchant": "RaverPay",
+    "receiptUrl": "https://api.raverpay.com/receipts/pdf/uuid"
   }
 }
 ```
@@ -1403,4 +1403,4 @@ For each new endpoint:
 5. ✅ Test each feature thoroughly
 6. ✅ Update mobile app as endpoints are ready
 
-Once these updates are complete, the MularPay platform will be fully production-ready! 🚀
+Once these updates are complete, the RaverPay platform will be fully production-ready! 🚀

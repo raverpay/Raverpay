@@ -9,7 +9,7 @@
 
 ### **1. Email Service (Resend)**
 
-**File:** `apps/mularpay-api/src/services/email/email.service.ts`
+**File:** `apps/raverpay-api/src/services/email/email.service.ts`
 
 **Features:**
 
@@ -25,7 +25,7 @@
 
 ### **2. SMS Service (VTPass Messaging)**
 
-**File:** `apps/mularpay-api/src/services/sms/sms.service.ts`
+**File:** `apps/raverpay-api/src/services/sms/sms.service.ts`
 
 **Features:**
 
@@ -44,14 +44,14 @@
 
 **Files:**
 
-- `apps/mularpay-api/src/services/email/templates/verification-code.template.ts`
-- `apps/mularpay-api/src/services/email/templates/welcome.template.ts`
+- `apps/raverpay-api/src/services/email/templates/verification-code.template.ts`
+- `apps/raverpay-api/src/services/email/templates/welcome.template.ts`
 
 **Features:**
 
 - ✅ Professional, branded HTML emails
 - ✅ Responsive design (mobile-friendly)
-- ✅ Gradient headers with MularPay branding
+- ✅ Gradient headers with RaverPay branding
 - ✅ Clear call-to-action buttons
 - ✅ Security tips and expiration warnings
 - ✅ Fallback plain text support
@@ -60,7 +60,7 @@
 
 ### **4. SMS Templates**
 
-**File:** `apps/mularpay-api/src/services/sms/templates/verification-code.template.ts`
+**File:** `apps/raverpay-api/src/services/sms/templates/verification-code.template.ts`
 
 **Features:**
 
@@ -74,7 +74,7 @@
 
 ### **5. Updated Users Service**
 
-**File:** `apps/mularpay-api/src/users/users.service.ts`
+**File:** `apps/raverpay-api/src/users/users.service.ts`
 
 **Enhancements:**
 
@@ -98,7 +98,7 @@
 
 ### **6. Module Updates**
 
-**File:** `apps/mularpay-api/src/users/users.module.ts`
+**File:** `apps/raverpay-api/src/users/users.module.ts`
 
 **Changes:**
 
@@ -126,12 +126,12 @@
 # Resend (Email)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@expertvetteddigital.tech
-RESEND_FROM_NAME=MularPay
+RESEND_FROM_NAME=RaverPay
 
 # VTPass Messaging (SMS)
 VTPASS_MESSAGING_PUBLIC_KEY=VT_PK_xxxxxxxxxxxxx
 VTPASS_MESSAGING_SECRET_KEY=VT_SK_xxxxxxxxxxxxx
-VTPASS_SMS_SENDER=MularPay
+VTPASS_SMS_SENDER=RaverPay
 VTPASS_USE_DND_ROUTE=false
 
 # Verification Settings
@@ -289,7 +289,7 @@ MAX_VERIFICATION_ATTEMPTS=5
 ### **Created:**
 
 ```
-apps/mularpay-api/src/services/
+apps/raverpay-api/src/services/
 ├── email/
 │   ├── email.service.ts
 │   ├── email.module.ts
@@ -313,7 +313,7 @@ md/
 ### **Modified:**
 
 ```
-apps/mularpay-api/src/
+apps/raverpay-api/src/
 ├── users/
 │   ├── users.service.ts (integrated email/SMS)
 │   └── users.module.ts (imported modules)
@@ -380,7 +380,7 @@ apps/mularpay-api/src/
 ## 📝 Important Notes
 
 1. **Domain Verification:** Ensure `expertvetteddigital.tech` is verified on Resend
-2. **Sender ID:** `MularPay` needs VTPass approval (24-48 hours)
+2. **Sender ID:** `RaverPay` needs VTPass approval (24-48 hours)
 3. **Mock Mode:** Services work without API keys (logs only)
 4. **Phone Format:** Automatically formats to international (234...)
 5. **Code Security:** Never logged in production

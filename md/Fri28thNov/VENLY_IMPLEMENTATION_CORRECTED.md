@@ -62,7 +62,7 @@ Body: {
   "secretType": "MATIC",
   "userId": "venlyUserId",
   "identifier": "optional",
-  "description": "MularPay Crypto Wallet"
+  "description": "RaverPay Crypto Wallet"
 }
 ```
 
@@ -190,7 +190,7 @@ When you sign up for Venly sandbox, you automatically get:
 
 1. **Add Environment Variables**
    ```bash
-   cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+   cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
    # Add to .env file
    ```
 

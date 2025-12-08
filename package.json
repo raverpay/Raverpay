@@ -1,9 +1,9 @@
 {
-  "name": "mularpay",
+  "name": "raverpay",
   "version": "1.0.0",
   "private": true,
   "description": "Nigerian fintech super-app: Wallet, VTU, Gift Cards, and Crypto Trading",
-  "author": "Mularpay",
+  "author": "RaverPay",
   "license": "UNLICENSED",
   "workspaces": [
     "apps/*",
@@ -12,12 +12,12 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:api": "turbo run dev --filter=@raverpay/raverpay-api",
-    "dev:mobile": "turbo run dev --filter=@raverpay/mularpay-mobile",
-    "dev:web": "turbo run dev --filter=@raverpay/mularpay-web",
+    "dev:mobile": "turbo run dev --filter=@raverpay/raverpay-mobile",
+    "dev:web": "turbo run dev --filter=@raverpay/raverpay-web",
     "dev:admin": "turbo run dev --filter=@raverpay/raverpay-admin",
     "build": "turbo run build",
     "build:api": "turbo run build --filter=@raverpay/raverpay-api",
-    "build:web": "turbo run build --filter=@raverpay/mularpay-web",
+    "build:web": "turbo run build --filter=@raverpay/raverpay-web",
     "build:admin": "turbo run build --filter=@raverpay/raverpay-admin",
     "lint": "turbo run lint",
     "test": "turbo run test",

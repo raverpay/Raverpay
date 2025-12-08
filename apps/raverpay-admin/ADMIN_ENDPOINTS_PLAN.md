@@ -1,17 +1,20 @@
-# MularPay Admin Endpoints Implementation Plan
+# RaverPay Admin Endpoints Implementation Plan
 
 ## Overview
-This document outlines all the admin endpoints that need to be implemented for the MularPay admin dashboard. The backend currently has role-based infrastructure (USER, ADMIN, SUPPORT) but NO admin endpoints or role guards.
+
+This document outlines all the admin endpoints that need to be implemented for the RaverPay admin dashboard. The backend currently has role-based infrastructure (USER, ADMIN, SUPPORT) but NO admin endpoints or role guards.
 
 ## Prerequisites to Implement
 
 ### 1. Role-Based Access Control (RBAC)
+
 - **Create RolesGuard** - Guard to check user roles
 - **Create @Roles() Decorator** - Decorator to mark endpoints with required roles
 - **Create AdminGuard** - Convenience guard for admin-only routes
 - **Update wallet unlock endpoint** - Add admin guard (currently UNPROTECTED)
 
 ### 2. Admin Module Structure
+
 ```
 src/admin/
 ├── admin.module.ts
@@ -35,6 +38,7 @@ src/admin/
 ### Base Path: `/api/admin/users`
 
 #### User Listing & Search
+
 - **GET** `/api/admin/users`
   - Query params: page, limit, search, role, status, kycTier, sortBy, sortOrder
   - Returns: Paginated list of users with key metrics
@@ -48,6 +52,7 @@ src/admin/
   - Returns: Search results matching the query
 
 #### Individual User Management
+
 - **GET** `/api/admin/users/:userId`
   - Returns: Complete user profile with related data (wallet, recent transactions, KYC status, etc.)
 
@@ -81,6 +86,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### User Activity & Audit
+
 - **GET** `/api/admin/users/:userId/audit-logs`
   - Query params: page, limit, action, startDate, endDate
   - Returns: User audit logs
@@ -96,6 +102,7 @@ src/admin/
 ### Base Path: `/api/admin/wallets`
 
 #### Wallet Listing & Monitoring
+
 - **GET** `/api/admin/wallets`
   - Query params: page, limit, minBalance, maxBalance, isLocked, sortBy
   - Returns: Paginated list of wallets
@@ -104,6 +111,7 @@ src/admin/
   - Returns: Wallet statistics (total balance across platform, locked wallets count, top balances, etc.)
 
 #### Individual Wallet Management
+
 - **GET** `/api/admin/wallets/:userId`
   - Returns: Wallet details with transaction history
 
@@ -137,6 +145,7 @@ src/admin/
 ### Base Path: `/api/admin/transactions`
 
 #### Transaction Listing & Monitoring
+
 - **GET** `/api/admin/transactions`
   - Query params: page, limit, type, status, userId, minAmount, maxAmount, startDate, endDate, provider
   - Returns: Paginated transaction list
@@ -150,6 +159,7 @@ src/admin/
   - Returns: Revenue analytics (fees collected, by transaction type)
 
 #### Individual Transaction Management
+
 - **GET** `/api/admin/transactions/:transactionId`
   - Returns: Complete transaction details with related data
 
@@ -173,6 +183,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### Pending Transactions
+
 - **GET** `/api/admin/transactions/pending`
   - Query params: page, limit, type, olderThan (minutes)
   - Returns: Pending transactions that need review
@@ -188,6 +199,7 @@ src/admin/
 ### Base Path: `/api/admin/kyc`
 
 #### KYC Listing & Review
+
 - **GET** `/api/admin/kyc/pending`
   - Returns: Users pending KYC verification
 
@@ -198,6 +210,7 @@ src/admin/
   - Returns: KYC statistics (by tier, pending count, approval rate)
 
 #### KYC Document Review
+
 - **GET** `/api/admin/kyc/:userId`
   - Returns: User KYC documents and verification status
 
@@ -240,6 +253,7 @@ src/admin/
 ### Base Path: `/api/admin/vtu`
 
 #### VTU Order Monitoring
+
 - **GET** `/api/admin/vtu/orders`
   - Query params: page, limit, serviceType, status, userId, startDate, endDate
   - Returns: Paginated VTU orders
@@ -252,6 +266,7 @@ src/admin/
   - Returns: Failed VTU orders needing attention
 
 #### Individual Order Management
+
 - **GET** `/api/admin/vtu/orders/:orderId`
   - Returns: Complete VTU order details
 
@@ -279,6 +294,7 @@ src/admin/
 ### Base Path: `/api/admin/giftcards`
 
 #### Gift Card Order Review
+
 - **GET** `/api/admin/giftcards/orders`
   - Query params: page, limit, type, status, userId, brand, startDate, endDate
   - Returns: Paginated gift card orders
@@ -291,6 +307,7 @@ src/admin/
   - Returns: Gift card statistics (buy/sell volume, by brand, approval rate)
 
 #### Order Review & Approval
+
 - **GET** `/api/admin/giftcards/:orderId`
   - Returns: Complete gift card order with uploaded images (for sell orders)
 
@@ -321,6 +338,7 @@ src/admin/
 ### Base Path: `/api/admin/crypto`
 
 #### Crypto Order Monitoring
+
 - **GET** `/api/admin/crypto/orders`
   - Query params: page, limit, type, status, asset, network, userId, startDate, endDate
   - Returns: Paginated crypto orders
@@ -333,6 +351,7 @@ src/admin/
   - Returns: Crypto statistics (volume, by asset, by type, success rate)
 
 #### Order Verification & Management
+
 - **GET** `/api/admin/crypto/:orderId`
   - Returns: Complete crypto order details
 
@@ -366,6 +385,7 @@ src/admin/
 ### Base Path: `/api/admin/virtual-accounts`
 
 #### Virtual Account Monitoring
+
 - **GET** `/api/admin/virtual-accounts`
   - Query params: page, limit, provider, isActive, userId
   - Returns: Paginated virtual accounts
@@ -377,6 +397,7 @@ src/admin/
   - Returns: Users without virtual accounts
 
 #### Account Management
+
 - **GET** `/api/admin/virtual-accounts/:userId`
   - Returns: User's virtual account details
 
@@ -401,6 +422,7 @@ src/admin/
 ### Base Path: `/api/admin/account-deletions`
 
 #### Deletion Request Management
+
 - **GET** `/api/admin/account-deletions/pending`
   - Returns: Pending account deletion requests
 
@@ -409,6 +431,7 @@ src/admin/
   - Returns: All account deletion requests
 
 #### Request Review
+
 - **GET** `/api/admin/account-deletions/:requestId`
   - Returns: Deletion request details with user info
 
@@ -438,6 +461,7 @@ src/admin/
 ### Base Path: `/api/admin/notifications`
 
 #### Bulk Notification Sending
+
 - **POST** `/api/admin/notifications/broadcast`
   - Body: { title, message, category, channels, userFilter?, scheduledFor? }
   - Sends: Notification to all users or filtered subset
@@ -450,6 +474,7 @@ src/admin/
   - Creates: Notification record
 
 #### Notification Analytics
+
 - **GET** `/api/admin/notifications/stats`
   - Query params: startDate, endDate
   - Returns: Notification statistics (sent, delivered, opened, clicked, by channel)
@@ -459,6 +484,7 @@ src/admin/
   - Returns: Failed notifications
 
 #### Notification Queue Management
+
 - **GET** `/api/admin/notifications/queue`
   - Query params: status, channel
   - Returns: Current notification queue
@@ -476,11 +502,13 @@ src/admin/
 ### Base Path: `/api/admin/analytics`
 
 #### Dashboard Analytics
+
 - **GET** `/api/admin/analytics/dashboard`
   - Query params: startDate, endDate
   - Returns: Key metrics for admin dashboard (users, transactions, revenue, active users, etc.)
 
 #### Revenue Analytics
+
 - **GET** `/api/admin/analytics/revenue`
   - Query params: startDate, endDate, groupBy
   - Returns: Revenue breakdown (by service type, total fees, trends)
@@ -490,6 +518,7 @@ src/admin/
   - Returns: Downloadable revenue report
 
 #### User Analytics
+
 - **GET** `/api/admin/analytics/users`
   - Query params: startDate, endDate, groupBy
   - Returns: User analytics (new users, active users, retention, by KYC tier)
@@ -499,6 +528,7 @@ src/admin/
   - Returns: User growth trends
 
 #### Transaction Analytics
+
 - **GET** `/api/admin/analytics/transactions`
   - Query params: startDate, endDate, groupBy, type
   - Returns: Transaction analytics (volume, count, success rate, avg transaction value)
@@ -508,6 +538,7 @@ src/admin/
   - Returns: Transaction trends over time
 
 #### Service-Specific Analytics
+
 - **GET** `/api/admin/analytics/vtu`
   - Query params: startDate, endDate
   - Returns: VTU service analytics
@@ -527,6 +558,7 @@ src/admin/
 ### Base Path: `/api/admin/audit`
 
 #### Audit Log Viewing
+
 - **GET** `/api/admin/audit/logs`
   - Query params: page, limit, userId, action, resource, startDate, endDate
   - Returns: Paginated audit logs
@@ -535,6 +567,7 @@ src/admin/
   - Returns: Detailed audit log entry
 
 #### Admin Activity
+
 - **GET** `/api/admin/audit/admin-actions`
   - Query params: page, limit, adminId, startDate, endDate
   - Returns: Admin user actions for accountability
@@ -550,6 +583,7 @@ src/admin/
 ### Base Path: `/api/admin/settings`
 
 #### System Settings
+
 - **GET** `/api/admin/settings`
   - Returns: All system configuration settings
 
@@ -562,6 +596,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### Platform Settings
+
 - **GET** `/api/admin/settings/platform`
   - Returns: Platform-wide settings (maintenance mode, feature flags, limits, etc.)
 
@@ -571,6 +606,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### Fee Configuration
+
 - **GET** `/api/admin/settings/fees`
   - Returns: Current fee structure (transaction fees, withdrawal fees, VTU margins)
 
@@ -580,6 +616,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### KYC Limits Configuration
+
 - **GET** `/api/admin/settings/kyc-limits`
   - Returns: Current KYC tier limits
 
@@ -595,6 +632,7 @@ src/admin/
 ### Base Path: `/api/admin/admins`
 
 #### Admin User Management
+
 - **GET** `/api/admin/admins`
   - Returns: List of admin and support users
 
@@ -620,6 +658,7 @@ src/admin/
 ### Base Path: `/api/admin/providers`
 
 #### Bank Management
+
 - **GET** `/api/admin/providers/banks`
   - Returns: List of supported banks
 
@@ -629,6 +668,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### VTU Provider Management
+
 - **GET** `/api/admin/providers/vtu`
   - Returns: VTU provider configurations
 
@@ -638,6 +678,7 @@ src/admin/
   - Creates: Audit log entry
 
 #### Payment Gateway Management
+
 - **GET** `/api/admin/providers/payment-gateways`
   - Returns: Payment gateway configurations (Paystack, etc.)
 
@@ -651,13 +692,16 @@ src/admin/
 ## Authentication & Authorization
 
 ### Required for All Admin Endpoints
+
 - **Authentication**: JWT token (same as user endpoints)
 - **Authorization**: User must have role `ADMIN` or `SUPPORT`
 - **Guard**: `@UseGuards(JwtAuthGuard, RolesGuard)` and `@Roles('ADMIN', 'SUPPORT')`
 - **Some endpoints**: May require `ADMIN` only (not SUPPORT)
 
 ### Audit Logging
+
 All admin actions must create an audit log entry including:
+
 - Admin user ID
 - Action performed
 - Resource affected
@@ -670,6 +714,7 @@ All admin actions must create an audit log entry including:
 ## Error Handling
 
 All admin endpoints should return consistent error responses:
+
 - **400** - Bad Request (validation errors)
 - **401** - Unauthorized (no token or invalid token)
 - **403** - Forbidden (insufficient permissions)
@@ -692,6 +737,7 @@ All admin endpoints should return consistent error responses:
 ## Implementation Priority
 
 ### Phase 1 (Critical)
+
 1. Role Guards & Decorators
 2. User Management endpoints
 3. Wallet Management (especially unlock wallet fix)
@@ -699,6 +745,7 @@ All admin endpoints should return consistent error responses:
 5. Basic Analytics Dashboard
 
 ### Phase 2 (Important)
+
 1. KYC Verification endpoints
 2. VTU Order Management
 3. Audit Logs viewing
@@ -706,6 +753,7 @@ All admin endpoints should return consistent error responses:
 5. Virtual Account Management
 
 ### Phase 3 (Enhancement)
+
 1. Gift Card Order Review
 2. Crypto Order Management
 3. Notification Management
@@ -713,6 +761,7 @@ All admin endpoints should return consistent error responses:
 5. System Configuration
 
 ### Phase 4 (Advanced)
+
 1. Admin User Management
 2. Provider Management
 3. Fee Configuration
@@ -726,6 +775,7 @@ All admin endpoints should return consistent error responses:
 **Estimated Total: 150+ Admin Endpoints**
 
 **Breakdown by Category:**
+
 - User Management: ~15 endpoints
 - Wallet Management: ~8 endpoints
 - Transaction Management: ~12 endpoints

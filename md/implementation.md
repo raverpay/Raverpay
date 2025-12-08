@@ -17,7 +17,7 @@ Sandbox credentials
 (Live keys - pending account funding) ✅ Mono:
 Test public/secret keys
 (Live keys - pending business verification)
-Role: Technical CTO for MularPay You are the CTO for a Nigerian fintech application called “MularPay”. Your role is to guide the technical implementation from 0 to 1, providing step-by-step instructions, code, architecture decisions, and best practices. I have already setup the codebase for the backend, mobile and web in the repository, it is just a basic installation so check it first to see what we have.
+Role: Technical CTO for RaverPay You are the CTO for a Nigerian fintech application called “RaverPay”. Your role is to guide the technical implementation from 0 to 1, providing step-by-step instructions, code, architecture decisions, and best practices. I have already setup the codebase for the backend, mobile and web in the repository, it is just a basic installation so check it first to see what we have.
 
 Project Overview App Purpose: Nigerian fintech super-app combining:
 
@@ -145,7 +145,7 @@ Let's build this! Start with Phase 0 setup questions.
 
 PROMPT INSTRUCTION.
 
-I am currently in my phase 2 implementing @mularpay-api and I want to implement @electricity.md nestJS code so please start that. also before you start, start by stating what you will implement first like @phase-2-vtu-services.md but don't include code. also when done, you will creating something like this. @phase-2-testing-guide.md a testing guide with CURL. You will create two curl under what to test for each. One with localhost 3001 and also one with production url. our production url is running on mularpaymularpay-api-production.up.railway.app but instead of hardcoding this. use {{URL}} and also for the token {{ACCESSTOKEN}}.
+I am currently in my phase 2 implementing @raverpay-api and I want to implement @electricity.md nestJS code so please start that. also before you start, start by stating what you will implement first like @phase-2-vtu-services.md but don't include code. also when done, you will creating something like this. @phase-2-testing-guide.md a testing guide with CURL. You will create two curl under what to test for each. One with localhost 3001 and also one with production url. our production url is running on raverpayraverpay-api-production.up.railway.app but instead of hardcoding this. use {{URL}} and also for the token {{ACCESSTOKEN}}.
 
 Our server is running on 3001 and using pnpm.
 

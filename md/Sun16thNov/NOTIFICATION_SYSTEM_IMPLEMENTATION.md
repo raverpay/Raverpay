@@ -1,4 +1,4 @@
-# MularPay Notification System Implementation Guide
+# RaverPay Notification System Implementation Guide
 
 ## 📋 Phase 1: COMPLETED ✅
 
@@ -105,7 +105,7 @@ All endpoints require JWT authentication.
 
 **To Apply Migration:**
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm prisma migrate dev
 ```
 
@@ -305,7 +305,7 @@ async handleTransferFailed(data: any) {
 
 #### Install OneSignal:
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm add onesignal-node
 ```
 
@@ -389,7 +389,7 @@ const templates = [
       New Balance: ₦{{newBalance}}
       Date: {{date}}
 
-      Thank you for using MularPay!
+      Thank you for using RaverPay!
     `,
     variables: ['firstName', 'amount', 'reference', 'newBalance', 'date'],
   },
@@ -397,7 +397,7 @@ const templates = [
     name: 'deposit-success-sms',
     eventType: 'deposit',
     channel: 'SMS',
-    bodyTemplate: 'Hi {{firstName}}! ₦{{amount}} deposited. Ref: {{reference}}. Balance: ₦{{newBalance}}. - MularPay',
+    bodyTemplate: 'Hi {{firstName}}! ₦{{amount}} deposited. Ref: {{reference}}. Balance: ₦{{newBalance}}. - RaverPay',
     variables: ['firstName', 'amount', 'reference', 'newBalance'],
   },
   // ... more templates

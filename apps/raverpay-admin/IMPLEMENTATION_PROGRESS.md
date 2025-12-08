@@ -1,8 +1,9 @@
-# MularPay Admin Dashboard - Implementation Progress
+# RaverPay Admin Dashboard - Implementation Progress
 
 ## ✅ Completed Features
 
 ### 1. Project Setup & Infrastructure
+
 - ✅ Installed all required dependencies
   - @tanstack/react-query - Server state management
   - axios - HTTP client
@@ -15,8 +16,9 @@
   - next-themes - Dark mode support
 
 ### 2. Project Structure
+
 ```
-apps/mularpay-admin/
+apps/raverpay-admin/
 ├── app/
 │   ├── (auth)/
 │   │   └── login/page.tsx          ✅ Login page
@@ -55,6 +57,7 @@ apps/mularpay-admin/
 ```
 
 ### 3. Authentication System
+
 - ✅ Login page with form validation
 - ✅ Role-based access control (ADMIN, SUPER_ADMIN, SUPPORT only)
 - ✅ JWT token management with automatic refresh
@@ -63,6 +66,7 @@ apps/mularpay-admin/
 - ✅ Logout functionality
 
 ### 4. Dashboard Layout
+
 - ✅ Responsive sidebar navigation with 15 menu items:
   - Dashboard
   - Users
@@ -84,6 +88,7 @@ apps/mularpay-admin/
 - ✅ Dark mode support
 
 ### 5. Dashboard Home Page
+
 - ✅ Real-time analytics cards:
   - Total Users (with active count)
   - Total Platform Balance
@@ -98,6 +103,7 @@ apps/mularpay-admin/
 - ✅ Error handling
 
 ### 6. API Integration
+
 - ✅ API client with authentication interceptors
 - ✅ Automatic token refresh on 401
 - ✅ Comprehensive TypeScript types for all entities:
@@ -108,6 +114,7 @@ apps/mularpay-admin/
 - ✅ React Query integration for caching & state management
 
 ### 7. UI/UX Features
+
 - ✅ Professional admin dashboard design
 - ✅ Dark/Light theme toggle
 - ✅ Toast notifications for user feedback
@@ -121,13 +128,16 @@ apps/mularpay-admin/
 The dashboard is configured to work with the following admin API endpoints:
 
 ### Authentication
+
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
 
 ### Analytics (Currently Used)
+
 - `GET /api/admin/analytics/dashboard` - Dashboard overview
 
 ### Available for Implementation
+
 - User Management (7 endpoints)
 - Transaction Management (7 endpoints)
 - Wallet Management (5 endpoints)
@@ -148,17 +158,18 @@ The dashboard is configured to work with the following admin API endpoints:
 1. Ensure the API server is running at `http://localhost:3000/api`
 2. Run the admin dashboard:
    ```bash
-   cd apps/mularpay-admin
+   cd apps/raverpay-admin
    pnpm run dev
    ```
 3. Open http://localhost:3000
 4. Login with test credentials:
-   - Email: `admin@mularpay.com`
+   - Email: `admin@raverpay.com`
    - Password: `SuperAdmin123!`
 
 ## 📝 Next Steps
 
 ### High Priority Pages
+
 1. **Users Management**
    - List users with filters & search
    - User detail page
@@ -180,6 +191,7 @@ The dashboard is configured to work with the following admin API endpoints:
    - Lock/unlock wallets
 
 ### Medium Priority
+
 5. **VTU Orders** - List, refund, retry
 6. **Gift Cards** - Review & approve sell orders
 7. **Crypto Orders** - Verify transactions
@@ -188,6 +200,7 @@ The dashboard is configured to work with the following admin API endpoints:
 10. **Analytics** - Charts & reports
 
 ### Low Priority
+
 11. **Account Deletions** - Review deletion requests
 12. **Audit Logs** - Activity tracking
 13. **Settings** - Platform configuration
@@ -196,6 +209,7 @@ The dashboard is configured to work with the following admin API endpoints:
 ## 🎨 Design System
 
 ### Colors
+
 - Primary: Custom theme colors
 - Muted: For secondary text
 - Destructive: For errors/warnings
@@ -203,10 +217,12 @@ The dashboard is configured to work with the following admin API endpoints:
 - Accent: Hover states
 
 ### Typography
+
 - Font: Geist Sans (headings) & Geist Mono (code)
 - Scales: xs, sm, base, lg, xl, 2xl, 3xl
 
 ### Components
+
 - All components follow shadcn/ui patterns
 - Fully typed with TypeScript
 - Accessible with Radix UI primitives
@@ -230,4 +246,4 @@ The dashboard is configured to work with the following admin API endpoints:
 
 ---
 
-**Generated with Claude Code** - MularPay Admin Dashboard v0.1.0
+**Generated with Claude Code** - RaverPay Admin Dashboard v0.1.0

@@ -1,6 +1,6 @@
-# MularPay Production Testing Guide
+# RaverPay Production Testing Guide
 
-**API URL:** https://mularpaymularpay-api-production.up.railway.app
+**API URL:** https://raverpayraverpay-api-production.up.railway.app
 
 ---
 
@@ -9,14 +9,14 @@
 Set your environment variables (if using Postman/Thunder Client):
 
 ```bash
-URL=https://mularpaymularpay-api-production.up.railway.app
+URL=https://raverpayraverpay-api-production.up.railway.app
 ACCESSTOKEN=<your_token_here>
 ```
 
 For command line testing:
 
 ```bash
-export URL="https://mularpaymularpay-api-production.up.railway.app"
+export URL="https://raverpayraverpay-api-production.up.railway.app"
 export ACCESSTOKEN="<your_token_here>"
 ```
 
@@ -47,7 +47,7 @@ export ACCESSTOKEN="<your_token_here>"
 curl -X POST {{URL}}/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "prod.test@mularpay.com",
+    "email": "prod.test@raverpay.com",
     "phone": "08098765432",
     "password": "TestProd@123",
     "firstName": "Production",
@@ -69,7 +69,7 @@ curl -X POST {{URL}}/api/auth/register \
 curl -X POST {{URL}}/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "identifier": "prod.test@mularpay.com",
+    "identifier": "prod.test@raverpay.com",
     "password": "TestProd@123"
   }'
 ```
@@ -228,7 +228,7 @@ curl -X POST {{URL}}/api/users/change-password \
 curl -X POST {{URL}}/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "identifier": "prod.test@mularpay.com",
+    "identifier": "prod.test@raverpay.com",
     "password": "NewTestProd@456"
   }'
 ```
@@ -694,7 +694,7 @@ curl -X POST {{URL}}/api/auth/register \
 curl -X POST {{URL}}/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "prod.test@mularpay.com",
+    "email": "prod.test@raverpay.com",
     "phone": "08012345678",
     "password": "Test@123",
     "firstName": "Duplicate",
@@ -831,7 +831,7 @@ See `md/phase-1-3-production-todo.md` for details.
 1. **Check Railway Logs:**
 
    ```
-   Go to Railway Dashboard → mularpay-api → Deployments → View Logs
+   Go to Railway Dashboard → raverpay-api → Deployments → View Logs
    ```
 
    Look for verification codes in logs

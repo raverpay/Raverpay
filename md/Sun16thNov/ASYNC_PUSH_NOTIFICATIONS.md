@@ -71,5 +71,5 @@ this.sendToChannelsAsync(notification.id, event, allowedChannels).catch(
 - [ ] Check logs for async delivery completion messages
 
 ## Related Files
-- `/Users/joseph/Desktop/mularpay/apps/mularpay-api/src/notifications/notification-dispatcher.service.ts` (Modified)
-- `/Users/joseph/Desktop/mularpay/apps/mularpay-api/src/notifications/expo-push.service.ts` (Used by dispatcher)
+- `/Users/joseph/Desktop/raverpay/apps/raverpay-api/src/notifications/notification-dispatcher.service.ts` (Modified)
+- `/Users/joseph/Desktop/raverpay/apps/raverpay-api/src/notifications/expo-push.service.ts` (Used by dispatcher)

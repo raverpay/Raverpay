@@ -175,7 +175,7 @@ Testing guide for JAMB Pin Vending, WAEC Registration, and WAEC Result Checker s
 
 ---
 
-## 🖥️ Admin Dashboard Testing (apps/mularpay-admin)
+## 🖥️ Admin Dashboard Testing (apps/raverpay-admin)
 
 ### Prerequisites
 

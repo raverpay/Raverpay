@@ -1,6 +1,6 @@
-# MularPay Deployment Guide
+# RaverPay Deployment Guide
 
-How to deploy MularPay to staging and production environments.
+How to deploy RaverPay to staging and production environments.
 
 ## Overview
 
@@ -26,6 +26,7 @@ How to deploy MularPay to staging and production environments.
 Store these in GitHub Secrets (`Settings > Secrets > Actions`):
 
 **Staging:**
+
 - `RAILWAY_TOKEN_STAGING`
 - `DATABASE_URL_STAGING`
 - `REDIS_URL_STAGING`
@@ -41,6 +42,7 @@ Store these in GitHub Secrets (`Settings > Secrets > Actions`):
 - `CLOUDINARY_API_SECRET`
 
 **Production:**
+
 - `RAILWAY_TOKEN_PRODUCTION`
 - `DATABASE_URL_PRODUCTION`
 - `REDIS_URL_PRODUCTION`
@@ -53,6 +55,7 @@ Store these in GitHub Secrets (`Settings > Secrets > Actions`):
 - `MONO_SECRET_KEY_LIVE`
 
 **Vercel:**
+
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID_WEB`
@@ -64,7 +67,7 @@ Store these in GitHub Secrets (`Settings > Secrets > Actions`):
 
 1. Create Railway project: https://railway.app/new
 2. Link GitHub repository
-3. Select `apps/mularpay-api` as root directory
+3. Select `apps/raverpay-api` as root directory
 4. Add environment variables from `.env.production.example`
 
 ### Automatic Deployment
@@ -111,10 +114,10 @@ npx prisma migrate deploy
 3. Link projects:
 
 ```bash
-cd apps/mularpay-web
+cd apps/raverpay-web
 vercel link
 
-cd apps/mularpay-admin
+cd apps/raverpay-admin
 vercel link
 ```
 
@@ -129,11 +132,11 @@ Deployments happen automatically via GitHub Actions:
 
 ```bash
 # Web
-cd apps/mularpay-web
+cd apps/raverpay-web
 vercel --prod
 
 # Admin
-cd apps/mularpay-admin
+cd apps/raverpay-admin
 vercel --prod
 ```
 
@@ -143,7 +146,7 @@ Add via Vercel Dashboard or CLI:
 
 ```bash
 vercel env add NEXT_PUBLIC_API_URL production
-# Enter value: https://api.mularpay.com/api
+# Enter value: https://api.raverpay.com/api
 ```
 
 ## 3. Deploy Mobile App (Expo)
@@ -151,7 +154,7 @@ vercel env add NEXT_PUBLIC_API_URL production
 ### Initial Setup
 
 ```bash
-cd apps/mularpay-mobile
+cd apps/raverpay-mobile
 eas login
 eas init
 ```
@@ -193,8 +196,8 @@ eas submit --platform ios
 
 ### API
 
-- [ ] Health check passes: `https://api.mularpay.com/api/health`
-- [ ] Swagger docs accessible: `https://api.mularpay.com/api/docs`
+- [ ] Health check passes: `https://api.raverpay.com/api/health`
+- [ ] Swagger docs accessible: `https://api.raverpay.com/api/docs`
 - [ ] Database connected (check logs)
 - [ ] Redis connected (check logs)
 - [ ] Webhooks configured (Paystack, VTPass)
@@ -258,7 +261,7 @@ vercel rollback
 Point your domain to Railway:
 
 ```
-CNAME api.mularpay.com -> <your-railway-domain>
+CNAME api.raverpay.com -> <your-railway-domain>
 ```
 
 ### Web
@@ -266,14 +269,14 @@ CNAME api.mularpay.com -> <your-railway-domain>
 Point your domain to Vercel:
 
 ```
-CNAME mularpay.com -> cname.vercel-dns.com
-CNAME www.mularpay.com -> cname.vercel-dns.com
+CNAME raverpay.com -> cname.vercel-dns.com
+CNAME www.raverpay.com -> cname.vercel-dns.com
 ```
 
 ### Admin
 
 ```
-CNAME admin.mularpay.com -> cname.vercel-dns.com
+CNAME admin.raverpay.com -> cname.vercel-dns.com
 ```
 
 ## 7. SSL Certificates
@@ -285,9 +288,9 @@ CNAME admin.mularpay.com -> cname.vercel-dns.com
 
 After deployment, monitor these endpoints:
 
-- API Health: `https://api.mularpay.com/api/health`
-- Web: `https://mularpay.com`
-- Admin: `https://admin.mularpay.com`
+- API Health: `https://api.raverpay.com/api/health`
+- Web: `https://raverpay.com`
+- Admin: `https://admin.raverpay.com`
 
 ## Troubleshooting
 
@@ -298,6 +301,7 @@ Check GitHub Actions logs for detailed error messages.
 ### Environment Variables Not Loading
 
 Ensure variables are set in:
+
 - Railway dashboard (for API)
 - Vercel dashboard (for Web/Admin)
 - Expo secrets (for Mobile)
@@ -334,6 +338,7 @@ Update `CORS_ORIGIN` in API environment to include your domains.
 ## Support
 
 For deployment issues:
+
 - Railway: https://railway.app/help
 - Vercel: https://vercel.com/support
 - Expo: https://expo.dev/support

@@ -1,6 +1,6 @@
 # Phase 2: VTU Services Implementation
 
-**MularPay - Virtual Top-Up & Bill Payment Services**
+**RaverPay - Virtual Top-Up & Bill Payment Services**
 
 ---
 
@@ -76,7 +76,7 @@ Phase 2 implements VTU (Virtual Top-Up) services allowing users to:
 ### Flow Diagram
 
 ```
-User → MularPay API → VTPass API → Network Provider
+User → RaverPay API → VTPass API → Network Provider
          ↓               ↓
       Wallet           Transaction
       Update           Status
@@ -144,7 +144,7 @@ enum VTUServiceType {
 
 ### Step 1: VTPass Service Integration
 
-**File:** `apps/mularpay-api/src/vtu/services/vtpass.service.ts`
+**File:** `apps/raverpay-api/src/vtu/services/vtpass.service.ts`
 
 **Methods:**
 
@@ -173,7 +173,7 @@ VTPASS_WEBHOOK_SECRET=your_webhook_secret
 
 ### Step 2: VTU Service (Business Logic)
 
-**File:** `apps/mularpay-api/src/vtu/vtu.service.ts`
+**File:** `apps/raverpay-api/src/vtu/vtu.service.ts`
 
 **Methods:**
 
@@ -319,7 +319,7 @@ async purchaseAirtime(userId: string, dto: AirtimePurchaseDto) {
 
 ### Step 3: DTOs (Data Transfer Objects)
 
-**File:** `apps/mularpay-api/src/vtu/dto/purchase-airtime.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/purchase-airtime.dto.ts`
 
 ```typescript
 import { IsString, IsNumber, Min, Max, Matches } from 'class-validator';
@@ -344,7 +344,7 @@ export class PurchaseAirtimeDto {
 }
 ```
 
-**File:** `apps/mularpay-api/src/vtu/dto/purchase-data.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/purchase-data.dto.ts`
 
 ```typescript
 import { IsString, Matches } from 'class-validator';
@@ -367,7 +367,7 @@ export class PurchaseDataDto {
 }
 ```
 
-**File:** `apps/mularpay-api/src/vtu/dto/pay-cable-tv.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/pay-cable-tv.dto.ts`
 
 ```typescript
 import { IsString, IsEnum, Matches } from 'class-validator';
@@ -391,7 +391,7 @@ export class PayCableTVDto {
 }
 ```
 
-**File:** `apps/mularpay-api/src/vtu/dto/pay-electricity.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/pay-electricity.dto.ts`
 
 ```typescript
 import { IsString, IsNumber, IsEnum, Min } from 'class-validator';
@@ -417,7 +417,7 @@ export class PayElectricityDto {
 }
 ```
 
-**File:** `apps/mularpay-api/src/vtu/dto/verify-smartcard.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/verify-smartcard.dto.ts`
 
 ```typescript
 import { IsString, Matches } from 'class-validator';
@@ -432,7 +432,7 @@ export class VerifySmartcardDto {
 }
 ```
 
-**File:** `apps/mularpay-api/src/vtu/dto/verify-meter.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/verify-meter.dto.ts`
 
 ```typescript
 import { IsString, IsEnum } from 'class-validator';
@@ -454,7 +454,7 @@ export class VerifyMeterDto {
 }
 ```
 
-**File:** `apps/mularpay-api/src/vtu/dto/get-orders.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/get-orders.dto.ts`
 
 ```typescript
 import { IsOptional, IsEnum, IsString } from 'class-validator';
@@ -487,7 +487,7 @@ export class GetOrdersDto {
 
 ### Step 4: Controller (API Endpoints)
 
-**File:** `apps/mularpay-api/src/vtu/vtu.controller.ts`
+**File:** `apps/raverpay-api/src/vtu/vtu.controller.ts`
 
 ```typescript
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
@@ -591,7 +591,7 @@ export class VTUController {
 
 ### Step 5: Webhook Handler
 
-**File:** `apps/mularpay-api/src/vtu/vtu-webhooks.controller.ts`
+**File:** `apps/raverpay-api/src/vtu/vtu-webhooks.controller.ts`
 
 ```typescript
 import { Controller, Post, Body, Headers, BadRequestException } from '@nestjs/common';
@@ -665,7 +665,7 @@ export class VTUWebhooksController {
 
 ### Step 6: Module Definition
 
-**File:** `apps/mularpay-api/src/vtu/vtu.module.ts`
+**File:** `apps/raverpay-api/src/vtu/vtu.module.ts`
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -688,7 +688,7 @@ export class VTUModule {}
 
 ### Step 7: Update AppModule
 
-**File:** `apps/mularpay-api/src/app.module.ts`
+**File:** `apps/raverpay-api/src/app.module.ts`
 
 ```typescript
 import { VTUModule } from './vtu/vtu.module';

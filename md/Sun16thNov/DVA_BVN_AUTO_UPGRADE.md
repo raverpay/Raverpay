@@ -175,7 +175,7 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 
 ## Files Modified
 
-### Backend (`apps/mularpay-api`)
+### Backend (`apps/raverpay-api`)
 ```
 src/
 ├── virtual-accounts/
@@ -188,7 +188,7 @@ src/
     └── paystack-webhook.service.ts (modified)
 ```
 
-### Frontend (`mularpay-mobileapp`)
+### Frontend (`raverpay-mobileapp`)
 ```
 src/
 └── types/

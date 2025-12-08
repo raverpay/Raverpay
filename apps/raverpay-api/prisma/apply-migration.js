@@ -6,7 +6,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const connectionString = "postgresql://postgres.oeanyukxcphqjrsljhqq:mularpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10";
+const connectionString = "postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10";
 
 async function applyMigration() {
   const client = new Client({ connectionString });

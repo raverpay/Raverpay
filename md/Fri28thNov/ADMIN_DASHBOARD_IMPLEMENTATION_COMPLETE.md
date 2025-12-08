@@ -9,7 +9,7 @@ The complete Venly Wallets admin dashboard has been successfully implemented wit
 ## ✅ What Was Implemented
 
 ### 1. Font Configuration System
-**File**: `apps/mularpay-admin/app/layout.tsx`
+**File**: `apps/raverpay-admin/app/layout.tsx`
 
 You can now easily switch between Inter, Barlow, or Geist fonts by simply uncommenting the desired option:
 
@@ -42,7 +42,7 @@ const primaryFont = Geist({
 ---
 
 ### 2. Venly Wallets API Client
-**File**: `apps/mularpay-admin/lib/api/venly-wallets.ts`
+**File**: `apps/raverpay-admin/lib/api/venly-wallets.ts`
 
 Complete TypeScript API client with all necessary types and methods:
 - `getWallets()` - Fetch paginated wallet users
@@ -58,7 +58,7 @@ Complete TypeScript API client with all necessary types and methods:
 ---
 
 ### 3. Navigation Menu
-**File**: `apps/mularpay-admin/components/dashboard/sidebar.tsx`
+**File**: `apps/raverpay-admin/components/dashboard/sidebar.tsx`
 
 Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to SUPER_ADMIN, ADMIN, and SUPPORT roles.
 
@@ -68,7 +68,7 @@ Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to S
 
 #### Page 1: Overview (Main Landing)
 **Route**: `/dashboard/venly-wallets`
-**File**: `apps/mularpay-admin/app/dashboard/venly-wallets/page.tsx`
+**File**: `apps/raverpay-admin/app/dashboard/venly-wallets/page.tsx`
 
 **Features**:
 - 4 KPI cards: Total Users, Users with Wallets, Adoption Rate, Total Wallets
@@ -85,7 +85,7 @@ Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to S
 
 #### Page 2: Exchange Rates Management (CRITICAL)
 **Route**: `/dashboard/venly-wallets/exchange-rates`
-**File**: `apps/mularpay-admin/app/dashboard/venly-wallets/exchange-rates/page.tsx`
+**File**: `apps/raverpay-admin/app/dashboard/venly-wallets/exchange-rates/page.tsx`
 
 **Features**:
 - Critical alert banner
@@ -105,7 +105,7 @@ Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to S
 
 #### Page 3: Transaction Monitoring
 **Route**: `/dashboard/venly-wallets/transactions`
-**File**: `apps/mularpay-admin/app/dashboard/venly-wallets/transactions/page.tsx`
+**File**: `apps/raverpay-admin/app/dashboard/venly-wallets/transactions/page.tsx`
 
 **Features**:
 - Search by user ID or transaction hash
@@ -128,7 +128,7 @@ Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to S
 
 #### Page 4: Conversions Monitoring
 **Route**: `/dashboard/venly-wallets/conversions`
-**File**: `apps/mularpay-admin/app/dashboard/venly-wallets/conversions/page.tsx`
+**File**: `apps/raverpay-admin/app/dashboard/venly-wallets/conversions/page.tsx`
 
 **Features**:
 - 2 stat cards: Total Volume (USD), Average Conversion
@@ -149,7 +149,7 @@ Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to S
 
 #### Page 5: Analytics Dashboard
 **Route**: `/dashboard/venly-wallets/analytics`
-**File**: `apps/mularpay-admin/app/dashboard/venly-wallets/analytics/page.tsx`
+**File**: `apps/raverpay-admin/app/dashboard/venly-wallets/analytics/page.tsx`
 
 **Features**:
 - Date range filter (start date, end date, clear filters)
@@ -204,7 +204,7 @@ Added "Venly Wallets" to the sidebar navigation with Coins icon, accessible to S
 ## 📁 File Structure
 
 ```
-apps/mularpay-admin/
+apps/raverpay-admin/
 ├── app/
 │   ├── layout.tsx (✅ Updated - Font configuration)
 │   ├── globals.css (✅ Updated - Font variables)
@@ -234,7 +234,7 @@ apps/mularpay-admin/
 ### 1. Start the Admin Dashboard
 
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-admin
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-admin
 npm run dev
 # or
 yarn dev
@@ -367,7 +367,7 @@ Created comprehensive guide: `VENLY_TESTNET_ASSETS_GUIDE.md`
 
 ### Change Colors
 
-Edit `apps/mularpay-admin/app/globals.css`:
+Edit `apps/raverpay-admin/app/globals.css`:
 
 ```css
 :root {
@@ -378,7 +378,7 @@ Edit `apps/mularpay-admin/app/globals.css`:
 
 ### Change Font
 
-Edit `apps/mularpay-admin/app/layout.tsx`:
+Edit `apps/raverpay-admin/app/layout.tsx`:
 
 ```typescript
 // Comment out Geist

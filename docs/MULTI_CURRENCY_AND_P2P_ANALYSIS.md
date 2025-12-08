@@ -8,9 +8,9 @@
 
 ## Executive Summary
 
-This document analyzes three potential features for MularPay:
+This document analyzes three potential features for RaverPay:
 
-1. **Peer-to-Peer (P2P) transfers with user tags** - Fast transfers between MularPay users
+1. **Peer-to-Peer (P2P) transfers with user tags** - Fast transfers between RaverPay users
 2. **Multi-currency support** - Operating across Nigeria, Ghana, Kenya, Côte d'Ivoire, and South Africa
 3. **International card payments in USD** - Accepting USD payments from international cards
 
@@ -30,7 +30,7 @@ This document analyzes three potential features for MularPay:
 
 ### Overview
 
-Enable instant transfers between MularPay users using unique tags (like @username) without needing bank details or Paystack verification.
+Enable instant transfers between RaverPay users using unique tags (like @username) without needing bank details or Paystack verification.
 
 ### Current State Analysis
 
@@ -322,7 +322,7 @@ async sendToUser(
    - Length: 3-20 characters
    - Format: Alphanumeric + underscores (a-z, 0-9, \_)
    - Case-insensitive but stored lowercase
-   - Reserved words: admin, support, official, mularpay, etc.
+   - Reserved words: admin, support, official, raverpay, etc.
    - Changes: Once per year? Or pay ₦500 to change?
 
 2. **P2P Limits:**
@@ -961,7 +961,7 @@ async handleChargeSuccess(webhookData: any) {
 1. Email Paystack support (support@paystack.com)
 2. Subject: "Request for International Card Payment Access"
 3. Provide:
-   - Business name: MularPay
+   - Business name: RaverPay
    - Business type: Fintech / Digital Wallet
    - Use case: "Enable users to fund wallets from international USD cards for crypto purchases and cross-border transfers"
    - Expected volume: Start with $10K/month, grow to $100K/month
@@ -995,7 +995,7 @@ async handleChargeSuccess(webhookData: any) {
   - OR **Mobile Money Operator (MMO) License** (₦2B minimum capital)
 - **Super Agent License** - For VTU services
 
-**Current Status Risk:** If MularPay doesn't have these licenses, operating is **illegal**.
+**Current Status Risk:** If RaverPay doesn't have these licenses, operating is **illegal**.
 
 **Penalty:** Up to ₦10M fine + shutdown order.
 
@@ -1020,7 +1020,7 @@ async handleChargeSuccess(webhookData: any) {
 - **Multi-currency accounts**: Require Central Bank approval
 - **USD transactions**: Domiciliary accounts only for trade/services
 
-**What This Means for MularPay:**
+**What This Means for RaverPay:**
 
 - ❌ **Cannot offer multi-currency wallets without CBN approval**
 - ❌ **Cannot facilitate cross-border P2P transfers directly**

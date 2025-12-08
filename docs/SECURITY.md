@@ -1,6 +1,6 @@
-# MularPay Security Guide
+# RaverPay Security Guide
 
-Critical security measures implemented and best practices for MularPay.
+Critical security measures implemented and best practices for RaverPay.
 
 ## 🔐 Security Principles
 
@@ -14,6 +14,7 @@ Critical security measures implemented and best practices for MularPay.
 ### 1. Authentication & Authorization
 
 #### Password Security
+
 - **Argon2** hashing (stronger than bcrypt)
 - Minimum 8 characters with complexity requirements
 - Password reset with time-limited tokens
@@ -34,12 +35,14 @@ async hashPassword(password: string): Promise<string> {
 ```
 
 #### JWT Authentication
+
 - Short-lived access tokens (15 min)
 - Long-lived refresh tokens (7 days)
 - Token rotation on refresh
 - Secure HTTP-only cookies for web
 
 #### Two-Factor Authentication (2FA)
+
 - TOTP-based (Google Authenticator, Authy)
 - Backup codes for recovery
 - Required for high-value transactions
@@ -47,6 +50,7 @@ async hashPassword(password: string): Promise<string> {
 ### 2. Transaction Security
 
 #### PIN Protection
+
 - 4-digit transaction PIN
 - Encrypted at rest using AES-256
 - Rate-limited attempts (3 tries, then lockout)
@@ -61,6 +65,7 @@ async hashPassword(password: string): Promise<string> {
 ```
 
 #### Idempotency
+
 - Unique reference for each transaction
 - Duplicate prevention via idempotency keys
 - Database constraints on reference fields
@@ -73,6 +78,7 @@ if (await this.transactionExists(reference)) {
 ```
 
 #### Double-Entry Bookkeeping
+
 - Every transaction has debit and credit entries
 - Atomic database operations (all or nothing)
 - Balance verification before debit
@@ -88,6 +94,7 @@ await prisma.$transaction([
 ### 3. Data Protection
 
 #### Encryption at Rest
+
 - Database encryption (Supabase built-in)
 - Sensitive fields encrypted (PIN, card details)
 - Encryption key management (never in code)
@@ -107,6 +114,7 @@ encryptPIN(pin: string): string {
 ```
 
 #### Encryption in Transit
+
 - HTTPS only (enforced via Helmet)
 - TLS 1.2+ required
 - HSTS headers enabled
@@ -114,6 +122,7 @@ encryptPIN(pin: string): string {
 ### 4. Input Validation
 
 #### Backend Validation
+
 ```typescript
 // Example: DTO validation with class-validator
 import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
@@ -133,11 +142,13 @@ export class RegisterDto {
 ```
 
 #### SQL Injection Prevention
+
 - Prisma ORM (parameterized queries)
 - No raw SQL with user input
 - Input sanitization
 
 #### XSS Prevention
+
 - Input sanitization
 - Output encoding
 - Content Security Policy headers
@@ -162,7 +173,7 @@ async login() { }
 ```typescript
 // Strict CORS (production)
 app.enableCors({
-  origin: ['https://mularpay.com', 'https://admin.mularpay.com'],
+  origin: ['https://raverpay.com', 'https://admin.raverpay.com'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 });
@@ -171,6 +182,7 @@ app.enableCors({
 ### 7. Webhook Security
 
 #### Signature Verification
+
 ```typescript
 // Example: Paystack webhook verification
 const hash = crypto
@@ -198,6 +210,7 @@ auditLog.create({
 ```
 
 **What to Log:**
+
 - Authentication attempts (success & failure)
 - Authorization failures
 - Sensitive operations (withdrawals, transfers)
@@ -205,6 +218,7 @@ auditLog.create({
 - Security events
 
 **What NOT to Log:**
+
 - Passwords (plain or hashed)
 - PINs
 - Credit card numbers
@@ -213,6 +227,7 @@ auditLog.create({
 ### 9. KYC & AML
 
 #### KYC Tiers
+
 ```
 Tier 0: Email only → ₦50k/day limit
 Tier 1: Email + Phone + BVN → ₦300k/day limit
@@ -221,6 +236,7 @@ Tier 3: Business verification → Unlimited
 ```
 
 #### AML Monitoring
+
 - Transaction pattern analysis
 - Velocity checks (rapid transactions)
 - Large transaction alerts
@@ -229,12 +245,14 @@ Tier 3: Business verification → Unlimited
 ### 10. Secrets Management
 
 **DO:**
+
 - Use environment variables
 - Use secret management services (GitHub Secrets)
 - Rotate secrets regularly
 - Different secrets per environment
 
 **DON'T:**
+
 - Commit secrets to Git
 - Share secrets in Slack/email
 - Use same secrets in staging/production
@@ -249,6 +267,7 @@ openssl rand -hex 16     # Encryption key
 ## 🚨 Security Checklist
 
 ### Development
+
 - [ ] All environment variables in `.env` (not committed)
 - [ ] Secrets use strong randomness
 - [ ] Input validation on all endpoints
@@ -256,6 +275,7 @@ openssl rand -hex 16     # Encryption key
 - [ ] Logging doesn't expose secrets
 
 ### Pre-Production
+
 - [ ] Security audit completed
 - [ ] Dependency vulnerabilities checked (`pnpm audit`)
 - [ ] HTTPS enforced
@@ -265,6 +285,7 @@ openssl rand -hex 16     # Encryption key
 - [ ] Database backups configured
 
 ### Production
+
 - [ ] Different secrets from staging
 - [ ] Monitoring/alerting configured (Sentry)
 - [ ] Webhook signatures verified
@@ -274,6 +295,7 @@ openssl rand -hex 16     # Encryption key
 ## 🔍 Security Testing
 
 ### Automated Tests
+
 ```bash
 # Dependency vulnerabilities
 pnpm audit
@@ -286,6 +308,7 @@ tsc --strict --noEmit
 ```
 
 ### Manual Testing
+
 - [ ] SQL injection attempts
 - [ ] XSS attempts
 - [ ] CSRF attempts
@@ -306,7 +329,7 @@ tsc --strict --noEmit
 
 ### Contact
 
-Security issues: security@mularpay.com
+Security issues: security@raverpay.com
 
 ## 📚 References
 
@@ -318,17 +341,20 @@ Security issues: security@mularpay.com
 ## Regular Security Tasks
 
 **Weekly:**
+
 - Review failed login attempts
 - Check for unusual transaction patterns
 - Monitor error logs
 
 **Monthly:**
+
 - Update dependencies (`pnpm update`)
 - Run security audit (`pnpm audit`)
 - Review access logs
 - Test backup restoration
 
 **Quarterly:**
+
 - Rotate secrets/API keys
 - Security training for team
 - Penetration testing

@@ -1,4 +1,4 @@
-# MularPay Mobile App - Complete Specification
+# RaverPay Mobile App - Complete Specification
 
 **Version:** 1.0
 **Last Updated:** 2025-11-11
@@ -27,7 +27,7 @@
 
 ## Executive Summary
 
-MularPay Mobile is a **production-grade fintech application** built with React Native/Expo that provides:
+RaverPay Mobile is a **production-grade fintech application** built with React Native/Expo that provides:
 - Digital wallet management
 - Bill payments (airtime, data, cable TV, electricity)
 - Bank transfers & withdrawals
@@ -176,7 +176,7 @@ npm install zod @hookform/resolvers
 ### Architecture Pattern: Feature-Based + Layered
 
 ```
-mularpay-mobile/
+raverpay-mobile/
 ├── app/                          # Expo Router (file-based routing)
 │   ├── (auth)/                   # Auth stack (guest only)
 │   │   ├── welcome.tsx
@@ -786,7 +786,7 @@ export default function RootLayout() {
 │      [Lottie Animation]     │
 │         (Wallet/Money)      │
 │                             │
-│      MularPay Logo          │
+│      RaverPay Logo          │
 │                             │
 │   "Your Smart Wallet for    │
 │    Everything You Need"     │
@@ -2445,7 +2445,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { secureStorage } from '@/lib/storage/secure-store';
 import { router } from 'expo-router';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.mularpay.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.raverpay.com';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -3207,7 +3207,7 @@ Response: CSV file download
 ### 2. App Store Optimization
 
 **App Name:**
-- "MularPay - Digital Wallet"
+- "RaverPay - Digital Wallet"
 
 **Subtitle:**
 - "Airtime, Bills & Transfers"

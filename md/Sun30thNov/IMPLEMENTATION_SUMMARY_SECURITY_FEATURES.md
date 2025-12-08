@@ -1,7 +1,7 @@
 # Security Features Implementation Summary
 
 **Date:** November 28, 2025
-**Project:** MularPay API & RaverPay Mobile App
+**Project:** RaverPay API & RaverPay Mobile App
 **Status:** Backend 60% Complete | Frontend 0% Complete
 
 ---
@@ -10,7 +10,7 @@
 
 ### 1. **Database Schema Updates** ✅
 
-**File:** `apps/mularpay-api/prisma/schema.prisma`
+**File:** `apps/raverpay-api/prisma/schema.prisma`
 
 **Changes:**
 - Added `Device` model for device fingerprinting and management

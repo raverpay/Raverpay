@@ -51,10 +51,10 @@ Prerequisites
 
 1. Ensure the database migration has been applied (was done earlier in this session)
 2. Start all three applications:
-   - Backend API: cd /Users/joseph/Desktop/mularpay && pnpm dev (or however you start
+   - Backend API: cd /Users/joseph/Desktop/raverpay && pnpm dev (or however you start
 
 it) - Mobile App: cd /Users/joseph/Desktop/raverpay && npm start (then press i for iOS
-or a for Android) - Admin Panel: cd /Users/joseph/Desktop/mularpay/apps/mularpay-admin && pnpm dev
+or a for Android) - Admin Panel: cd /Users/joseph/Desktop/raverpay/apps/raverpay-admin && pnpm dev
 
 ---
 
@@ -237,7 +237,7 @@ Quick Test Commands:
 
 # Start Backend API
 
-cd /Users/joseph/Desktop/mularpay && pnpm dev
+cd /Users/joseph/Desktop/raverpay && pnpm dev
 
 # Start Mobile App (in new terminal)
 
@@ -245,7 +245,7 @@ cd /Users/joseph/Desktop/raverpay && npm start
 
 # Start Admin Panel (in new terminal)
 
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-admin && pnpm dev
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-admin && pnpm dev
 
 Done! I've implemented real-time WebSocket for the mobile app. Here's what was added:
 

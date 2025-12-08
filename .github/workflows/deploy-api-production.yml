@@ -51,7 +51,7 @@ jobs:
         uses: bervProject/railway-deploy@main
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN_PRODUCTION }}
-          service: mularpay-api-production
+          service: raverpay-api-production
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
           REDIS_URL: ${{ secrets.REDIS_URL_PRODUCTION }}

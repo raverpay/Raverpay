@@ -70,7 +70,7 @@ Content-Type: application/json
 
 - `400`: Tag already taken
 - `400`: Invalid format
-- `400`: Reserved word (admin, support, mularpay, raverpay, etc.)
+- `400`: Reserved word (admin, support, raverpay, raverpay, etc.)
 - `403`: Maximum 3 changes reached
 
 ### 3. Lookup User by Tag
@@ -976,7 +976,7 @@ After implementation, track:
 3. **Instant Transfers:** No provider delays, instant balance updates
 4. **Notifications:** Already integrated with existing NotificationDispatcher
 5. **Tag Limits:** Users can change tag max 3 times (prevent abuse)
-6. **Reserved Words:** 40+ words blocked (admin, support, mularpay, raverpay, etc.)
+6. **Reserved Words:** 40+ words blocked (admin, support, raverpay, raverpay, etc.)
 7. **Tier Strategy:** TIER_0 can receive but must verify to send (fraud protection)
 
 ---

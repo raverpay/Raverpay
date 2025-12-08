@@ -101,7 +101,7 @@ rate_limit_metrics:
 - ❌ Rate limit configuration interface
 - ❌ Manual IP/user blocking interface
 
-**Recommended Location**: `apps/mularpay-admin/app/dashboard/rate-limits/`
+**Recommended Location**: `apps/raverpay-admin/app/dashboard/rate-limits/`
 
 **Pages Needed**:
 
@@ -372,7 +372,7 @@ Every time someone exceeds a rate limit:
 ### **Files Modified**
 
 ```
-apps/mularpay-api/src/
+apps/raverpay-api/src/
 ├── common/
 │   ├── guards/
 │   │   └── custom-throttler.guard.ts          (User/IP tracking)

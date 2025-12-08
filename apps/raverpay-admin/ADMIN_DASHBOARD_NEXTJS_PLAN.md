@@ -1,6 +1,7 @@
-# MularPay Admin Dashboard - Next.js Implementation Plan
+# RaverPay Admin Dashboard - Next.js Implementation Plan
 
 ## Overview
+
 This document outlines the complete web admin dashboard to be built with Next.js, mapping each page/feature to the admin endpoints defined in the backend.
 
 ---
@@ -8,39 +9,47 @@ This document outlines the complete web admin dashboard to be built with Next.js
 ## Tech Stack Recommendations
 
 ### Core Framework
+
 - **Next.js 14+** (App Router)
 - **TypeScript**
 - **React 18+**
 
 ### UI/Styling
+
 - **Tailwind CSS** - Utility-first styling
 - **shadcn/ui** - High-quality component library
 - **Radix UI** - Unstyled, accessible component primitives
 - **Lucide Icons** - Icon library
 
 ### State Management & Data Fetching
+
 - **TanStack Query (React Query)** - Server state management
 - **Zustand** - Client state management (auth, UI state)
 - **SWR** - Alternative to React Query (choose one)
 
 ### Forms & Validation
+
 - **React Hook Form** - Form management
 - **Zod** - Schema validation
 
 ### Charts & Analytics
+
 - **Recharts** - Chart library
 - **Tremor** - Dashboard-specific charts
 - **Date-fns** or **Day.js** - Date manipulation
 
 ### Tables & Data Display
+
 - **TanStack Table (React Table)** - Headless table library
 - **react-virtualized** or **react-window** - Virtual scrolling for large lists
 
 ### Authentication
+
 - **NextAuth.js** - Authentication (with custom JWT provider)
 - **HTTP-only cookies** - Secure token storage
 
 ### Additional Tools
+
 - **Axios** - HTTP client
 - **React Hot Toast** or **Sonner** - Toast notifications
 - **React Dropzone** - File uploads
@@ -96,9 +105,11 @@ admin-dashboard/
 ## 1. AUTHENTICATION
 
 ### Login Page
+
 **Route:** `/login`
 
 **Features:**
+
 - Email/password login form
 - "Remember me" option
 - Forgot password link
@@ -106,10 +117,12 @@ admin-dashboard/
 - 2FA input (if enabled)
 
 **API Endpoints Used:**
+
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
 
 **Components:**
+
 - Login form with validation
 - Error handling & display
 - Loading states
@@ -118,15 +131,18 @@ admin-dashboard/
 ---
 
 ### Forgot Password Page
+
 **Route:** `/forgot-password`
 
 **Features:**
+
 - Email input form
 - Password reset code verification
 - New password setup
 - Success confirmation
 
 **API Endpoints Used:**
+
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/verify-reset-code`
 - `POST /api/auth/reset-password`
@@ -136,9 +152,11 @@ admin-dashboard/
 ## 2. DASHBOARD HOME
 
 ### Overview Dashboard
+
 **Route:** `/dashboard`
 
 **Features:**
+
 - Key metrics cards (total users, active users, total balance, transactions today, revenue today)
 - User growth chart (last 30 days)
 - Transaction volume chart (last 7 days)
@@ -150,6 +168,7 @@ admin-dashboard/
 - Quick action buttons (view all users, view all transactions, etc.)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/analytics/dashboard`
 - `GET /api/admin/transactions?limit=10&sortBy=createdAt&sortOrder=DESC`
 - `GET /api/admin/kyc/pending`
@@ -157,6 +176,7 @@ admin-dashboard/
 - `GET /api/admin/transactions/failed`
 
 **Components:**
+
 - Stat cards with trend indicators
 - Line/bar charts
 - Quick stats table
@@ -168,9 +188,11 @@ admin-dashboard/
 ## 3. USER MANAGEMENT
 
 ### Users List Page
+
 **Route:** `/dashboard/users`
 
 **Features:**
+
 - Searchable, filterable, sortable user table
 - Filters: role, status, KYC tier, date range
 - Search: by email, phone, name, user ID
@@ -182,11 +204,13 @@ admin-dashboard/
 - User avatar display
 
 **API Endpoints Used:**
+
 - `GET /api/admin/users`
 - `GET /api/admin/users/stats`
 - `GET /api/admin/users/search`
 
 **Components:**
+
 - Data table with sorting & filtering
 - Search input with debounce
 - Filter dropdowns
@@ -197,9 +221,11 @@ admin-dashboard/
 ---
 
 ### User Detail Page
+
 **Route:** `/dashboard/users/[userId]`
 
 **Features:**
+
 - User profile overview (personal info, avatar, contact)
 - Wallet information (balance, limits, locked status)
 - KYC status & documents
@@ -218,6 +244,7 @@ admin-dashboard/
   - Delete account
 
 **API Endpoints Used:**
+
 - `GET /api/admin/users/:userId`
 - `GET /api/admin/wallets/:userId`
 - `GET /api/admin/transactions?userId=:userId`
@@ -230,6 +257,7 @@ admin-dashboard/
 - `POST /api/admin/users/:userId/reset-pin`
 
 **Components:**
+
 - Profile card
 - Info sections (collapsible)
 - Data tables
@@ -239,9 +267,11 @@ admin-dashboard/
 ---
 
 ### User Statistics Page
+
 **Route:** `/dashboard/users/statistics`
 
 **Features:**
+
 - Total users count
 - Users by role (pie chart)
 - Users by status (pie chart)
@@ -253,11 +283,13 @@ admin-dashboard/
 - Export functionality
 
 **API Endpoints Used:**
+
 - `GET /api/admin/users/stats`
 - `GET /api/admin/analytics/users`
 - `GET /api/admin/analytics/user-growth`
 
 **Components:**
+
 - Stat cards
 - Pie/donut charts
 - Bar charts
@@ -269,9 +301,11 @@ admin-dashboard/
 ## 4. WALLET MANAGEMENT
 
 ### Wallets List Page
+
 **Route:** `/dashboard/wallets`
 
 **Features:**
+
 - Wallet list table
 - Filters: balance range, locked status, KYC tier
 - Search by user email/phone/ID
@@ -281,10 +315,12 @@ admin-dashboard/
 - Quick actions: view, lock, unlock
 
 **API Endpoints Used:**
+
 - `GET /api/admin/wallets`
 - `GET /api/admin/wallets/stats`
 
 **Components:**
+
 - Data table
 - Filter controls
 - Balance display with formatting
@@ -294,9 +330,11 @@ admin-dashboard/
 ---
 
 ### Wallet Detail Page
+
 **Route:** `/dashboard/wallets/[userId]`
 
 **Features:**
+
 - Wallet overview (balance, ledger balance, currency)
 - Spending limits (daily, monthly with progress bars)
 - Lock status & reason
@@ -309,6 +347,7 @@ admin-dashboard/
   - View user profile
 
 **API Endpoints Used:**
+
 - `GET /api/admin/wallets/:userId`
 - `POST /api/admin/wallets/:userId/lock`
 - `POST /api/admin/wallets/:userId/unlock`
@@ -316,6 +355,7 @@ admin-dashboard/
 - `POST /api/admin/wallets/:userId/reset-limits`
 
 **Components:**
+
 - Wallet info cards
 - Progress bars for limits
 - Transaction table
@@ -327,9 +367,11 @@ admin-dashboard/
 ## 5. TRANSACTION MANAGEMENT
 
 ### Transactions List Page
+
 **Route:** `/dashboard/transactions`
 
 **Features:**
+
 - Comprehensive transaction table
 - Filters: type, status, date range, amount range, provider, user
 - Search by reference, user ID
@@ -340,12 +382,14 @@ admin-dashboard/
 - Action buttons per transaction: view details, reverse, retry
 
 **API Endpoints Used:**
+
 - `GET /api/admin/transactions`
 - `GET /api/admin/transactions/stats`
 - `GET /api/admin/transactions/pending`
 - `GET /api/admin/transactions/failed`
 
 **Components:**
+
 - Advanced data table
 - Multi-filter sidebar
 - Stat cards
@@ -356,9 +400,11 @@ admin-dashboard/
 ---
 
 ### Transaction Detail Page
+
 **Route:** `/dashboard/transactions/[transactionId]`
 
 **Features:**
+
 - Transaction summary (reference, type, status, amount, fees)
 - User information (name, email, link to profile)
 - Balance changes (before, after)
@@ -374,12 +420,14 @@ admin-dashboard/
   - View related order (if applicable)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/transactions/:transactionId`
 - `POST /api/admin/transactions/:transactionId/reverse`
 - `POST /api/admin/transactions/:transactionId/retry`
 - `PATCH /api/admin/transactions/:transactionId/status`
 
 **Components:**
+
 - Transaction detail cards
 - Info grid layout
 - JSON viewer for metadata
@@ -390,9 +438,11 @@ admin-dashboard/
 ---
 
 ### Transaction Analytics Page
+
 **Route:** `/dashboard/transactions/analytics`
 
 **Features:**
+
 - Transaction volume chart (by day/week/month)
 - Transaction count by type (pie chart)
 - Success rate trend
@@ -402,11 +452,13 @@ admin-dashboard/
 - Export reports
 
 **API Endpoints Used:**
+
 - `GET /api/admin/analytics/transactions`
 - `GET /api/admin/analytics/transaction-trends`
 - `GET /api/admin/analytics/revenue`
 
 **Components:**
+
 - Multiple chart types
 - Date range selector
 - Group by selector (hour, day, week, month)
@@ -417,9 +469,11 @@ admin-dashboard/
 ## 6. KYC VERIFICATION
 
 ### KYC Pending Review Page
+
 **Route:** `/dashboard/kyc/pending`
 
 **Features:**
+
 - List of users pending KYC verification
 - Group by verification type (BVN pending, NIN pending)
 - User info display (name, email, tier)
@@ -428,9 +482,11 @@ admin-dashboard/
 - View details button
 
 **API Endpoints Used:**
+
 - `GET /api/admin/kyc/pending`
 
 **Components:**
+
 - Segmented list (BVN, NIN tabs)
 - User cards
 - Quick action buttons
@@ -439,9 +495,11 @@ admin-dashboard/
 ---
 
 ### KYC Detail/Review Page
+
 **Route:** `/dashboard/kyc/[userId]`
 
 **Features:**
+
 - User profile summary
 - Current KYC tier
 - BVN verification status & data
@@ -457,6 +515,7 @@ admin-dashboard/
   - View user profile
 
 **API Endpoints Used:**
+
 - `GET /api/admin/kyc/:userId`
 - `POST /api/admin/kyc/:userId/approve-bvn`
 - `POST /api/admin/kyc/:userId/reject-bvn`
@@ -465,6 +524,7 @@ admin-dashboard/
 - `POST /api/admin/kyc/:userId/verify-tier`
 
 **Components:**
+
 - Document viewer
 - Verification status cards
 - Action buttons with modals
@@ -474,9 +534,11 @@ admin-dashboard/
 ---
 
 ### KYC Statistics Page
+
 **Route:** `/dashboard/kyc/statistics`
 
 **Features:**
+
 - KYC stats overview (by tier, pending count)
 - Approval rate chart
 - Average verification time
@@ -484,10 +546,12 @@ admin-dashboard/
 - Tier distribution (pie chart)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/kyc/stats`
 - `GET /api/admin/kyc/rejected`
 
 **Components:**
+
 - Stat cards
 - Charts
 - Data table for rejected
@@ -497,9 +561,11 @@ admin-dashboard/
 ## 7. VTU ORDER MANAGEMENT
 
 ### VTU Orders List Page
+
 **Route:** `/dashboard/vtu`
 
 **Features:**
+
 - VTU orders table
 - Filters: service type, status, provider, date range
 - Search by reference, user, recipient
@@ -508,11 +574,13 @@ admin-dashboard/
 - Quick actions: view, refund, retry
 
 **API Endpoints Used:**
+
 - `GET /api/admin/vtu/orders`
 - `GET /api/admin/vtu/orders/stats`
 - `GET /api/admin/vtu/orders/failed`
 
 **Components:**
+
 - Data table
 - Filter controls
 - Stat cards
@@ -521,9 +589,11 @@ admin-dashboard/
 ---
 
 ### VTU Order Detail Page
+
 **Route:** `/dashboard/vtu/[orderId]`
 
 **Features:**
+
 - Order summary (service type, provider, recipient, amount)
 - User information
 - Product details
@@ -536,12 +606,14 @@ admin-dashboard/
   - Mark as completed (manual)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/vtu/orders/:orderId`
 - `POST /api/admin/vtu/orders/:orderId/refund`
 - `POST /api/admin/vtu/orders/:orderId/retry`
 - `POST /api/admin/vtu/orders/:orderId/mark-completed`
 
 **Components:**
+
 - Order detail cards
 - JSON viewer for provider response
 - Action modals
@@ -550,9 +622,11 @@ admin-dashboard/
 ---
 
 ### VTU Analytics Page
+
 **Route:** `/dashboard/vtu/analytics`
 
 **Features:**
+
 - VTU volume by service type (bar chart)
 - VTU count by provider
 - Success rate by service type
@@ -560,9 +634,11 @@ admin-dashboard/
 - Popular products
 
 **API Endpoints Used:**
+
 - `GET /api/admin/analytics/vtu`
 
 **Components:**
+
 - Multiple charts
 - Stat cards
 - Top products table
@@ -572,9 +648,11 @@ admin-dashboard/
 ## 8. GIFT CARD MANAGEMENT
 
 ### Gift Card Orders List Page
+
 **Route:** `/dashboard/giftcards`
 
 **Features:**
+
 - Gift card orders table
 - Filters: type (buy/sell), status, brand, date range
 - Pending review badge/filter
@@ -582,11 +660,13 @@ admin-dashboard/
 - Quick actions: view, approve, reject
 
 **API Endpoints Used:**
+
 - `GET /api/admin/giftcards/orders`
 - `GET /api/admin/giftcards/pending-review`
 - `GET /api/admin/giftcards/stats`
 
 **Components:**
+
 - Data table
 - Filter controls
 - Stat cards
@@ -595,9 +675,11 @@ admin-dashboard/
 ---
 
 ### Gift Card Order Detail/Review Page
+
 **Route:** `/dashboard/giftcards/[orderId]`
 
 **Features:**
+
 - Order summary (type, brand, country, face value, rate, amount)
 - User information
 - Card details (for sell orders - number, PIN, images)
@@ -609,12 +691,14 @@ admin-dashboard/
   - Adjust payout amount (with reason)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/giftcards/:orderId`
 - `POST /api/admin/giftcards/:orderId/approve`
 - `POST /api/admin/giftcards/:orderId/reject`
 - `PATCH /api/admin/giftcards/:orderId/adjust-amount`
 
 **Components:**
+
 - Order detail cards
 - Image gallery/lightbox
 - Masked card details display
@@ -626,9 +710,11 @@ admin-dashboard/
 ## 9. CRYPTO ORDER MANAGEMENT
 
 ### Crypto Orders List Page
+
 **Route:** `/dashboard/crypto`
 
 **Features:**
+
 - Crypto orders table
 - Filters: type (buy/sell), asset, network, status, date range
 - Pending verification badge
@@ -636,11 +722,13 @@ admin-dashboard/
 - Quick actions: view, verify, approve, reject
 
 **API Endpoints Used:**
+
 - `GET /api/admin/crypto/orders`
 - `GET /api/admin/crypto/pending`
 - `GET /api/admin/crypto/stats`
 
 **Components:**
+
 - Data table
 - Filter controls
 - Stat cards
@@ -649,9 +737,11 @@ admin-dashboard/
 ---
 
 ### Crypto Order Detail Page
+
 **Route:** `/dashboard/crypto/[orderId]`
 
 **Features:**
+
 - Order summary (type, asset, network, amounts, rate)
 - User information
 - Wallet address (for sell orders)
@@ -665,12 +755,14 @@ admin-dashboard/
   - Reject order (with reason)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/crypto/:orderId`
 - `POST /api/admin/crypto/:orderId/verify-transaction`
 - `POST /api/admin/crypto/:orderId/approve`
 - `POST /api/admin/crypto/:orderId/reject`
 
 **Components:**
+
 - Order detail cards
 - Blockchain explorer link
 - TX hash input/display
@@ -682,9 +774,11 @@ admin-dashboard/
 ## 10. VIRTUAL ACCOUNTS
 
 ### Virtual Accounts List Page
+
 **Route:** `/dashboard/virtual-accounts`
 
 **Features:**
+
 - Virtual accounts table
 - Filters: provider, active status, user search
 - Stats (total accounts, by provider, active/inactive)
@@ -692,11 +786,13 @@ admin-dashboard/
 - Quick actions: view, deactivate, reactivate
 
 **API Endpoints Used:**
+
 - `GET /api/admin/virtual-accounts`
 - `GET /api/admin/virtual-accounts/stats`
 - `GET /api/admin/virtual-accounts/unassigned-users`
 
 **Components:**
+
 - Data table
 - Filter controls
 - Stat cards
@@ -705,9 +801,11 @@ admin-dashboard/
 ---
 
 ### Virtual Account Detail Page
+
 **Route:** `/dashboard/virtual-accounts/[userId]`
 
 **Features:**
+
 - Account details (bank name, account number, provider)
 - User information & link to profile
 - Account status
@@ -719,11 +817,13 @@ admin-dashboard/
   - View user profile
 
 **API Endpoints Used:**
+
 - `GET /api/admin/virtual-accounts/:userId`
 - `PATCH /api/admin/virtual-accounts/:accountId/deactivate`
 - `PATCH /api/admin/virtual-accounts/:accountId/reactivate`
 
 **Components:**
+
 - Account info cards
 - Transaction table
 - Action buttons with modals
@@ -731,19 +831,23 @@ admin-dashboard/
 ---
 
 ### Unassigned Users Page
+
 **Route:** `/dashboard/virtual-accounts/unassigned`
 
 **Features:**
+
 - List of users without virtual accounts
 - User information display
 - Create account button
 - Bulk creation option
 
 **API Endpoints Used:**
+
 - `GET /api/admin/virtual-accounts/unassigned-users`
 - `POST /api/admin/virtual-accounts/:userId/create`
 
 **Components:**
+
 - User list/table
 - Create account button
 - Bulk action selector
@@ -753,9 +857,11 @@ admin-dashboard/
 ## 11. ACCOUNT DELETION REQUESTS
 
 ### Deletion Requests List Page
+
 **Route:** `/dashboard/deletions`
 
 **Features:**
+
 - Deletion requests table
 - Filters: status, date range
 - Pending requests alert badge
@@ -764,10 +870,12 @@ admin-dashboard/
 - Quick actions: view, approve, reject
 
 **API Endpoints Used:**
+
 - `GET /api/admin/account-deletions`
 - `GET /api/admin/account-deletions/pending`
 
 **Components:**
+
 - Data table
 - Filter controls
 - Status badges
@@ -776,9 +884,11 @@ admin-dashboard/
 ---
 
 ### Deletion Request Detail Page
+
 **Route:** `/dashboard/deletions/[requestId]`
 
 **Features:**
+
 - Request details (reason, custom reason, date)
 - User profile summary
 - User wallet balance (warning if balance > 0)
@@ -790,12 +900,14 @@ admin-dashboard/
   - Execute deletion (if approved & scheduled)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/account-deletions/:requestId`
 - `POST /api/admin/account-deletions/:requestId/approve`
 - `POST /api/admin/account-deletions/:requestId/reject`
 - `POST /api/admin/account-deletions/:requestId/execute`
 
 **Components:**
+
 - Request detail cards
 - User summary
 - Warning alerts (balance, pending items)
@@ -807,9 +919,11 @@ admin-dashboard/
 ## 12. NOTIFICATION MANAGEMENT
 
 ### Send Notification Page
+
 **Route:** `/dashboard/notifications/send`
 
 **Features:**
+
 - Notification composer form
 - Recipient selection:
   - All users
@@ -825,10 +939,12 @@ admin-dashboard/
 - Send button
 
 **API Endpoints Used:**
+
 - `POST /api/admin/notifications/broadcast`
 - `POST /api/admin/notifications/send-to-user`
 
 **Components:**
+
 - Form with rich text editor
 - User filter/selector
 - Channel checkboxes
@@ -839,9 +955,11 @@ admin-dashboard/
 ---
 
 ### Notification Queue Page
+
 **Route:** `/dashboard/notifications/queue`
 
 **Features:**
+
 - Queued notifications table
 - Filters: status, channel
 - Retry failed notifications
@@ -849,11 +967,13 @@ admin-dashboard/
 - View notification details
 
 **API Endpoints Used:**
+
 - `GET /api/admin/notifications/queue`
 - `POST /api/admin/notifications/queue/:queueId/retry`
 - `DELETE /api/admin/notifications/queue/:queueId`
 
 **Components:**
+
 - Data table
 - Action buttons
 - Status badges
@@ -861,9 +981,11 @@ admin-dashboard/
 ---
 
 ### Notification Analytics Page
+
 **Route:** `/dashboard/notifications/analytics`
 
 **Features:**
+
 - Notification stats (sent, delivered, opened, clicked)
 - Delivery rate by channel (chart)
 - Failed notifications list
@@ -871,10 +993,12 @@ admin-dashboard/
 - Popular notification types
 
 **API Endpoints Used:**
+
 - `GET /api/admin/notifications/stats`
 - `GET /api/admin/notifications/failed`
 
 **Components:**
+
 - Stat cards
 - Charts
 - Failed notifications table
@@ -884,9 +1008,11 @@ admin-dashboard/
 ## 13. ANALYTICS & REPORTS
 
 ### Revenue Analytics Page
+
 **Route:** `/dashboard/analytics/revenue`
 
 **Features:**
+
 - Total revenue display
 - Revenue by service type (pie chart)
 - Revenue trend (line chart)
@@ -897,10 +1023,12 @@ admin-dashboard/
 - Group by selector (day, week, month)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/analytics/revenue`
 - `GET /api/admin/analytics/revenue/export`
 
 **Components:**
+
 - Revenue charts
 - Export dropdown
 - Date range picker
@@ -909,9 +1037,11 @@ admin-dashboard/
 ---
 
 ### User Analytics Page
+
 **Route:** `/dashboard/analytics/users`
 
 **Features:**
+
 - User growth chart
 - New vs returning users
 - User retention analysis
@@ -921,10 +1051,12 @@ admin-dashboard/
 - Export functionality
 
 **API Endpoints Used:**
+
 - `GET /api/admin/analytics/users`
 - `GET /api/admin/analytics/user-growth`
 
 **Components:**
+
 - Multiple charts
 - Stat cards
 - Date range selector
@@ -933,9 +1065,11 @@ admin-dashboard/
 ---
 
 ### Service Analytics Page
+
 **Route:** `/dashboard/analytics/services`
 
 **Features:**
+
 - Tabs for each service (VTU, Gift Cards, Crypto)
 - Service-specific metrics
 - Volume trends
@@ -943,11 +1077,13 @@ admin-dashboard/
 - Success rates
 
 **API Endpoints Used:**
+
 - `GET /api/admin/analytics/vtu`
 - `GET /api/admin/analytics/giftcards`
 - `GET /api/admin/analytics/crypto`
 
 **Components:**
+
 - Tab navigation
 - Service-specific charts
 - Comparison charts
@@ -957,9 +1093,11 @@ admin-dashboard/
 ## 14. AUDIT LOGS
 
 ### Audit Logs Page
+
 **Route:** `/dashboard/audit`
 
 **Features:**
+
 - Comprehensive audit log table
 - Filters: user, action, resource, date range
 - Search by user ID, resource ID
@@ -968,11 +1106,13 @@ admin-dashboard/
 - Real-time updates (optional)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/audit/logs`
 - `GET /api/admin/audit/admin-actions`
 - `GET /api/admin/audit/export`
 
 **Components:**
+
 - Advanced data table
 - Multi-filter controls
 - Search input
@@ -982,9 +1122,11 @@ admin-dashboard/
 ---
 
 ### Audit Log Detail Page
+
 **Route:** `/dashboard/audit/[logId]`
 
 **Features:**
+
 - Log entry details (action, resource, timestamp)
 - User information
 - IP address & user agent
@@ -992,9 +1134,11 @@ admin-dashboard/
 - Before/after comparison (if applicable)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/audit/logs/:logId`
 
 **Components:**
+
 - Detail cards
 - JSON viewer
 - Diff viewer (for changes)
@@ -1004,9 +1148,11 @@ admin-dashboard/
 ## 15. SYSTEM SETTINGS
 
 ### Platform Settings Page
+
 **Route:** `/dashboard/settings/platform`
 
 **Features:**
+
 - Maintenance mode toggle (with message input)
 - Feature flags management
 - Platform limits configuration
@@ -1015,11 +1161,13 @@ admin-dashboard/
 - Change history
 
 **API Endpoints Used:**
+
 - `GET /api/admin/settings/platform`
 - `PATCH /api/admin/settings/maintenance-mode`
 - `PUT /api/admin/settings/:key`
 
 **Components:**
+
 - Toggle switches
 - Form inputs
 - Save button with confirmation
@@ -1028,9 +1176,11 @@ admin-dashboard/
 ---
 
 ### Fee Configuration Page
+
 **Route:** `/dashboard/settings/fees`
 
 **Features:**
+
 - Current fee structure display
 - Fee types:
   - Transaction fees
@@ -1043,10 +1193,12 @@ admin-dashboard/
 - Save & apply changes
 
 **API Endpoints Used:**
+
 - `GET /api/admin/settings/fees`
 - `PUT /api/admin/settings/fees/:feeType`
 
 **Components:**
+
 - Fee list/table
 - Edit forms with reason input
 - Confirmation dialogs
@@ -1055,9 +1207,11 @@ admin-dashboard/
 ---
 
 ### KYC Limits Configuration Page
+
 **Route:** `/dashboard/settings/kyc-limits`
 
 **Features:**
+
 - KYC tier limits display
 - Editable limits for each tier:
   - Daily limit
@@ -1067,10 +1221,12 @@ admin-dashboard/
 - Visual representation (chart showing tier limits)
 
 **API Endpoints Used:**
+
 - `GET /api/admin/settings/kyc-limits`
 - `PUT /api/admin/settings/kyc-limits/:tier`
 
 **Components:**
+
 - Tier cards with edit functionality
 - Bar chart comparing limits
 - Form inputs
@@ -1079,9 +1235,11 @@ admin-dashboard/
 ---
 
 ### Provider Settings Page
+
 **Route:** `/dashboard/settings/providers`
 
 **Features:**
+
 - Tabs for provider categories:
   - Banks
   - VTU providers
@@ -1091,6 +1249,7 @@ admin-dashboard/
 - Test connection functionality
 
 **API Endpoints Used:**
+
 - `GET /api/admin/providers/banks`
 - `PATCH /api/admin/providers/banks/:bankCode/toggle`
 - `GET /api/admin/providers/vtu`
@@ -1099,6 +1258,7 @@ admin-dashboard/
 - `PATCH /api/admin/providers/payment-gateways/:provider/config`
 
 **Components:**
+
 - Tab navigation
 - Provider cards with toggle
 - Configuration forms
@@ -1109,9 +1269,11 @@ admin-dashboard/
 ## 16. ADMIN USER MANAGEMENT
 
 ### Admin Users List Page
+
 **Route:** `/dashboard/admins`
 
 **Features:**
+
 - Admin/support users table
 - User information (name, email, role)
 - Last login tracking
@@ -1119,9 +1281,11 @@ admin-dashboard/
 - Actions: edit permissions, remove admin access
 
 **API Endpoints Used:**
+
 - `GET /api/admin/admins`
 
 **Components:**
+
 - Data table
 - Role badges
 - Action buttons
@@ -1129,9 +1293,11 @@ admin-dashboard/
 ---
 
 ### Create Admin Page
+
 **Route:** `/dashboard/admins/create`
 
 **Features:**
+
 - Create admin form:
   - Email
   - First name
@@ -1142,9 +1308,11 @@ admin-dashboard/
 - Success confirmation
 
 **API Endpoints Used:**
+
 - `POST /api/admin/admins/create`
 
 **Components:**
+
 - Form with validation
 - Role selector
 - Permission checkboxes
@@ -1153,18 +1321,22 @@ admin-dashboard/
 ---
 
 ### Edit Admin Permissions Page
+
 **Route:** `/dashboard/admins/[userId]/permissions`
 
 **Features:**
+
 - Current permissions display
 - Permission checkboxes (grouped by category)
 - Save changes
 - Change history
 
 **API Endpoints Used:**
+
 - `PATCH /api/admin/admins/:userId/permissions`
 
 **Components:**
+
 - Permission form
 - Grouped checkboxes
 - Save button
@@ -1177,6 +1349,7 @@ admin-dashboard/
 ### Layout Components
 
 #### Sidebar Navigation
+
 - Logo
 - Navigation menu with icons
 - Active state highlighting
@@ -1186,6 +1359,7 @@ admin-dashboard/
 - Notification badge (pending items)
 
 #### Top Navigation Bar
+
 - Page title/breadcrumbs
 - Search bar (global search)
 - Notifications dropdown
@@ -1193,6 +1367,7 @@ admin-dashboard/
 - Settings link
 
 #### Dashboard Cards
+
 - Stat card component (value, label, trend, icon)
 - Reusable across all dashboard pages
 
@@ -1201,6 +1376,7 @@ admin-dashboard/
 ### Data Display Components
 
 #### Data Tables
+
 - Sortable columns
 - Filterable columns
 - Pagination
@@ -1212,6 +1388,7 @@ admin-dashboard/
 - Export functionality
 
 #### Charts
+
 - Line chart (trends over time)
 - Bar chart (comparisons)
 - Pie/Donut chart (distributions)
@@ -1225,6 +1402,7 @@ admin-dashboard/
 ### Form Components
 
 #### Input Fields
+
 - Text input
 - Number input
 - Email input
@@ -1242,6 +1420,7 @@ admin-dashboard/
 - File upload/dropzone
 
 #### Form Validation
+
 - Real-time validation with Zod
 - Error message display
 - Required field indicators
@@ -1253,6 +1432,7 @@ admin-dashboard/
 ### Modal Components
 
 #### Confirmation Modal
+
 - Title
 - Message
 - Confirm/Cancel buttons
@@ -1260,12 +1440,14 @@ admin-dashboard/
 - Error handling
 
 #### Form Modal
+
 - Form within modal
 - Validation
 - Submit & cancel
 - Success/error feedback
 
 #### Detail Modal
+
 - View-only information
 - Close button
 - Scrollable content
@@ -1275,6 +1457,7 @@ admin-dashboard/
 ### Notification Components
 
 #### Toast Notifications
+
 - Success toast
 - Error toast
 - Info toast
@@ -1283,6 +1466,7 @@ admin-dashboard/
 - Action button (undo, view details)
 
 #### Alert Banners
+
 - System-wide alerts
 - Dismissible
 - Multiple severity levels
@@ -1292,27 +1476,32 @@ admin-dashboard/
 ### Utility Components
 
 #### Loading States
+
 - Skeleton loaders for tables
 - Spinner for buttons
 - Full-page loader
 - Inline loaders
 
 #### Empty States
+
 - Illustration
 - Message
 - Call-to-action button
 
 #### Error States
+
 - Error message
 - Retry button
 - Support link
 
 #### Badge/Tag
+
 - Status badges (active, suspended, pending, etc.)
 - Count badges
 - Color variants
 
 #### Avatar
+
 - User avatar with fallback initials
 - Customizable sizes
 
@@ -1321,6 +1510,7 @@ admin-dashboard/
 ## Advanced Features
 
 ### Real-time Updates
+
 - WebSocket connection for live data
 - Real-time transaction updates
 - Live user count
@@ -1328,18 +1518,21 @@ admin-dashboard/
 - Auto-refresh for critical sections
 
 ### Search
+
 - Global search (users, transactions, orders)
 - Search suggestions/autocomplete
 - Recent searches
 - Advanced search filters
 
 ### Exports
+
 - CSV export
 - Excel export
 - PDF reports
 - Scheduled reports (email delivery)
 
 ### Accessibility
+
 - Keyboard navigation
 - Screen reader support
 - ARIA labels
@@ -1347,12 +1540,14 @@ admin-dashboard/
 - Color contrast compliance
 
 ### Responsive Design
+
 - Mobile-friendly dashboard
 - Tablet optimization
 - Desktop layouts
 - Adaptive components
 
 ### Performance Optimization
+
 - Code splitting
 - Lazy loading
 - Image optimization
@@ -1366,6 +1561,7 @@ admin-dashboard/
 ## Security Features
 
 ### Authentication & Authorization
+
 - Protected routes (redirect to login if not authenticated)
 - Role-based access control (show/hide features based on role)
 - Session management
@@ -1373,12 +1569,14 @@ admin-dashboard/
 - Secure token storage (HTTP-only cookies)
 
 ### Data Security
+
 - Sensitive data masking (BVN, NIN, card numbers, PINs)
 - Input sanitization
 - XSS prevention
 - CSRF protection
 
 ### Audit Trail
+
 - Log all admin actions
 - Track changes to settings
 - Record user actions on data
@@ -1388,21 +1586,25 @@ admin-dashboard/
 ## User Experience Enhancements
 
 ### Dark Mode
+
 - System preference detection
 - Manual toggle
 - Persistent preference
 
 ### Keyboard Shortcuts
+
 - Quick navigation (Cmd+K for search)
 - Common actions
 - Shortcut help modal
 
 ### Onboarding
+
 - Admin user guide
 - Feature tooltips
 - Help documentation links
 
 ### Customization
+
 - Dashboard widget arrangement
 - Custom date ranges
 - Saved filters
@@ -1413,16 +1615,19 @@ admin-dashboard/
 ## Integration Points
 
 ### Email Notifications
+
 - Admin action confirmations
 - Daily/weekly reports
 - Alert notifications (failed transactions, pending KYC)
 
 ### Webhooks Monitoring
+
 - View webhook delivery status
 - Retry failed webhooks
 - Webhook logs
 
 ### Third-party Integrations
+
 - Paystack dashboard link
 - VTPass dashboard link
 - Bank verification services
@@ -1432,6 +1637,7 @@ admin-dashboard/
 ## Deployment Considerations
 
 ### Environment Configuration
+
 - Development environment
 - Staging environment
 - Production environment
@@ -1439,12 +1645,14 @@ admin-dashboard/
 - Feature flags for gradual rollouts
 
 ### Monitoring & Analytics
+
 - Error tracking (Sentry)
 - Performance monitoring (Vercel Analytics)
 - User behavior analytics (PostHog, Mixpanel)
 - Uptime monitoring
 
 ### CI/CD
+
 - Automated builds
 - Testing pipeline
 - Deployment automation
@@ -1457,6 +1665,7 @@ admin-dashboard/
 **Total Pages: 50+**
 
 **Main Sections:**
+
 1. Authentication (2 pages)
 2. Dashboard Home (1 page)
 3. User Management (3 pages)
@@ -1475,6 +1684,7 @@ admin-dashboard/
 16. Admin Management (3 pages)
 
 **Key Features:**
+
 - Comprehensive data management
 - Real-time analytics
 - Advanced filtering & search
@@ -1489,4 +1699,4 @@ admin-dashboard/
 - System configuration
 - Admin user management
 
-This admin dashboard will provide complete control and visibility over the MularPay fintech platform with a modern, user-friendly interface built on Next.js.
+This admin dashboard will provide complete control and visibility over the RaverPay fintech platform with a modern, user-friendly interface built on Next.js.

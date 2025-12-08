@@ -68,7 +68,7 @@
 
 ### SQL Migration to Run on Supabase
 
-**File:** `apps/mularpay-api/prisma/migrations/add_deposit_tracking.sql`
+**File:** `apps/raverpay-api/prisma/migrations/add_deposit_tracking.sql`
 
 ```sql
 -- Add totalDeposits column
@@ -365,7 +365,7 @@ Your money is safe! To unlock your wallet and continue transacting:
 Your funds are secure and will remain in your wallet. Simply upgrade your KYC tier to regain full access.
 
 Best regards,
-MularPay Team
+RaverPay Team
 ```
 
 ### Push Notification
@@ -378,7 +378,7 @@ Body: Your deposit of ₦{{amount}} exceeded your tier limit. Upgrade now to unl
 ### SMS
 
 ```
-MularPay: Your wallet is locked due to deposit limit. Upgrade KYC to unlock. Visit app for details.
+RaverPay: Your wallet is locked due to deposit limit. Upgrade KYC to unlock. Visit app for details.
 ```
 
 ---
@@ -396,7 +396,7 @@ MularPay: Your wallet is locked due to deposit limit. Upgrade KYC to unlock. Vis
   ```
 - [ ] **Generate Prisma client:**
   ```bash
-  cd apps/mularpay-api
+  cd apps/raverpay-api
   pnpm prisma generate
   ```
 - [ ] **Build backend:**

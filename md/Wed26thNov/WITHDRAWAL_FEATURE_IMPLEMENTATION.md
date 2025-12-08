@@ -43,15 +43,15 @@ Tier Level: NULL (Global - applies to all users)
 ```
 
 #### Migration Files:
-- **Prisma Schema**: `/apps/mularpay-api/prisma/schema.prisma` - Lines 1164-1201
-- **SQL Migration**: `/apps/mularpay-api/prisma/migrations/add_withdrawal_config.sql`
+- **Prisma Schema**: `/apps/raverpay-api/prisma/schema.prisma` - Lines 1164-1201
+- **SQL Migration**: `/apps/raverpay-api/prisma/migrations/add_withdrawal_config.sql`
 
 ---
 
 ### 2. **Backend API**
 
 #### Services Updated:
-**File**: `/apps/mularpay-api/src/transactions/transactions.service.ts`
+**File**: `/apps/raverpay-api/src/transactions/transactions.service.ts`
 
 **New Methods:**
 1. `getWithdrawalConfig(kycTier?)` - Fetch config from database with tier-specific logic
@@ -80,7 +80,7 @@ Tier Level: NULL (Global - applies to all users)
 ```
 
 #### DTOs Created:
-**File**: `/apps/mularpay-api/src/transactions/dto/`
+**File**: `/apps/raverpay-api/src/transactions/dto/`
 - `create-withdrawal-config.dto.ts`
 - `update-withdrawal-config.dto.ts`
 
@@ -107,7 +107,7 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 ### 3. **Admin Dashboard**
 
 #### New Page: `/dashboard/withdrawal-config`
-**File**: `/apps/mularpay-admin/app/dashboard/withdrawal-config/page.tsx`
+**File**: `/apps/raverpay-admin/app/dashboard/withdrawal-config/page.tsx`
 
 **Features:**
 - ✅ View all withdrawal configurations
@@ -122,7 +122,7 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 - ✅ Permission-based access control
 
 **API Client**:
-**File**: `/apps/mularpay-admin/lib/api/withdrawal.ts`
+**File**: `/apps/raverpay-admin/lib/api/withdrawal.ts`
 - TypeScript interfaces for all DTOs
 - API methods for CRUD operations
 

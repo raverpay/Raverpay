@@ -26,14 +26,14 @@ SMS_PROVIDER=vtpass
 ```env
 SMS_PROVIDER=termii
 TERMII_API_KEY=your_termii_api_key_here
-TERMII_SENDER_ID=MularPay
+TERMII_SENDER_ID=RaverPay
 TERMII_BASE_URL=https://api.ng.termii.com
 ```
 
 **Getting Termii Credentials:**
 1. Sign up at [https://termii.com](https://termii.com)
 2. Get your API key from the dashboard
-3. Register your sender ID (e.g., "MularPay")
+3. Register your sender ID (e.g., "RaverPay")
 4. Add credentials to `.env`
 
 **Note:** Termii uses the `dnd` channel for transactional messages (OTP, password reset) which bypasses DND restrictions.
@@ -44,14 +44,14 @@ TERMII_BASE_URL=https://api.ng.termii.com
 SMS_PROVIDER=vtpass
 VTPASS_MESSAGING_PUBLIC_KEY=VT_PK_xxxxxxxxxxxxx
 VTPASS_MESSAGING_SECRET_KEY=VT_SK_xxxxxxxxxxxxx
-VTPASS_SMS_SENDER=MularPay
+VTPASS_SMS_SENDER=RaverPay
 VTPASS_USE_DND_ROUTE=true
 ```
 
 **Getting VTPass Credentials:**
 1. Sign up at [https://vtpass.com](https://vtpass.com)
 2. Get your messaging public and secret keys
-3. Register your sender ID (awaiting approval for "MularPay")
+3. Register your sender ID (awaiting approval for "RaverPay")
 4. Add credentials to `.env`
 
 ## Usage
@@ -127,11 +127,11 @@ export class NewProvider implements ISmsProvider {
 | `SMS_PROVIDER` | No | `termii` | SMS provider to use (`termii` or `vtpass`) |
 | `ENABLE_SMS_VERIFICATION` | No | `true` | Enable/disable SMS sending globally |
 | `TERMII_API_KEY` | Yes (for Termii) | - | Termii API key |
-| `TERMII_SENDER_ID` | No | `MularPay` | Termii sender ID |
+| `TERMII_SENDER_ID` | No | `RaverPay` | Termii sender ID |
 | `TERMII_BASE_URL` | No | `https://api.ng.termii.com` | Termii API base URL |
 | `VTPASS_MESSAGING_PUBLIC_KEY` | Yes (for VTPass) | - | VTPass public key |
 | `VTPASS_MESSAGING_SECRET_KEY` | Yes (for VTPass) | - | VTPass secret key |
-| `VTPASS_SMS_SENDER` | No | `MularPay` | VTPass sender ID |
+| `VTPASS_SMS_SENDER` | No | `RaverPay` | VTPass sender ID |
 | `VTPASS_USE_DND_ROUTE` | No | `false` | Use DND route for VTPass |
 
 ## Testing

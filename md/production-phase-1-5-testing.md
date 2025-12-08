@@ -1,6 +1,6 @@
 # Phase 1.5 Production Testing Guide
 
-**Production URL:** `https://mularpaymularpay-api-production.up.railway.app/api`
+**Production URL:** `https://raverpayraverpay-api-production.up.railway.app/api`
 
 ---
 
@@ -11,7 +11,7 @@
 
 2. **Add Webhook URL:**
    ```
-   https://mularpaymularpay-api-production.up.railway.app/api/payments/webhooks/paystack
+   https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack
    ```
 
 3. **Select Events:**
@@ -114,7 +114,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 1. User completes payment on Paystack checkout
 2. Paystack processes payment
 3. Paystack sends webhook to: 
-   https://mularpaymularpay-api-production.up.railway.app/api/payments/webhooks/paystack
+   https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack
 4. Your API receives webhook
 5. API verifies signature
 6. API credits wallet
@@ -258,7 +258,7 @@ curl -X GET {{URL}}/wallet/transactions \
 ### Check Railway Logs
 
 1. Go to: https://railway.app/dashboard
-2. Select your project: `mularpay-api-production`
+2. Select your project: `raverpay-api-production`
 3. Click "Logs" tab
 4. Look for webhook events:
    ```
@@ -325,7 +325,7 @@ curl -X GET {{URL}}/wallet/transactions \
 Replace these placeholders in commands:
 
 ```bash
-{{URL}} = https://mularpaymularpay-api-production.up.railway.app/api
+{{URL}} = https://raverpayraverpay-api-production.up.railway.app/api
 {{ACCESSTOKEN}} = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (from login/register)
 ```
 

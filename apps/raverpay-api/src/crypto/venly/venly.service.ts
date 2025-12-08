@@ -135,7 +135,7 @@ export class VenlyService {
         secretType: 'MATIC',
         userId: params.userId,
         identifier: params.identifier,
-        description: params.description || 'MularPay Crypto Wallet',
+        description: params.description || 'RaverPay Crypto Wallet',
       };
 
       const response = await this.httpClient.post<

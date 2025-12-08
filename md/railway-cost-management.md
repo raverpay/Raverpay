@@ -14,8 +14,8 @@
 
 **Your Deployment:**
 
-- **Service:** MularPay API (NestJS)
-- **URL:** https://mularpaymularpay-api-production.up.railway.app
+- **Service:** RaverPay API (NestJS)
+- **URL:** https://raverpayraverpay-api-production.up.railway.app
 - **Memory:** 1 GB allocated
 - **vCPU:** 2 vCPU
 - **Status:** Active ✅
@@ -120,7 +120,7 @@ Week 4:  $1.96-2.80 used  (✅ Lasts full 30 days + extra)
 
 ```
 1. Go to Railway Dashboard
-2. Click your service (mularpay-api)
+2. Click your service (raverpay-api)
 3. Settings → Pause Service
 4. To resume: Click "Resume Service"
 ```
@@ -128,7 +128,7 @@ Week 4:  $1.96-2.80 used  (✅ Lasts full 30 days + extra)
 **Quick Access:**
 
 ```
-Railway Dashboard → mularpay-api → Settings → Pause/Resume
+Railway Dashboard → raverpay-api → Settings → Pause/Resume
 ```
 
 **Daily Routine:**
@@ -147,7 +147,7 @@ Savings:         33% per day
 
 ```bash
 # 1. Develop and test locally
-cd /Users/joseph/Desktop/mularpay
+cd /Users/joseph/Desktop/raverpay
 pnpm dev:api
 # Test at http://localhost:3001
 
@@ -799,7 +799,7 @@ Month 6 (Launch):     $20    (Pro Plan)
 ## 🔗 Useful Links
 
 - **Railway Dashboard:** https://railway.app/dashboard
-- **Your API:** https://mularpaymularpay-api-production.up.railway.app
+- **Your API:** https://raverpayraverpay-api-production.up.railway.app
 - **Railway Docs:** https://docs.railway.app
 - **Railway Pricing:** https://railway.app/pricing
 - **Railway Discord:** https://discord.gg/railway

@@ -46,7 +46,7 @@
 
 I want to implement cashback in our app, but before that i noticed that if a user had 200 naira in their wallet and they but airtime of 100 naira, it seems we deduct 102 naira because their wallet balance after that 100 naira airtime purchase is 98 naira.
 
-Our backend api is inside /Users/joseph/Desktop/mularpay/apps/mularpay-api and using pnpm same with our admin dashboard inside of /Users/joseph/Desktop/mularpay/apps/mularpay-admin using pnpm. Our mobile app is using npm and inside of /Users/joseph/Desktop/raverpay/app
+Our backend api is inside /Users/joseph/Desktop/raverpay/apps/raverpay-api and using pnpm same with our admin dashboard inside of /Users/joseph/Desktop/raverpay/apps/raverpay-admin using pnpm. Our mobile app is using npm and inside of /Users/joseph/Desktop/raverpay/app
 
 So for our cashback, help me plan how it should work on our mobile app but from my experience using opay, moniepoint and all. On each data plan showing, we show a small card saying "#20 cashback" (based on the percentage calculation) and when each data is clicked on our confirmation dialog we current show on breakdown and also a text saying "Bonus to earn" and the amount they earn in front of it then under this another tet saying "cashback" and an amount with a toggle in the front. Probably this could be cashback they already have as a user. so lets say they already a cashback on the app which is 10 naira, once they toggle the switch infront of the cashback text it removes that from the total amount a user will pay for that data. Help me plan this very well.
 

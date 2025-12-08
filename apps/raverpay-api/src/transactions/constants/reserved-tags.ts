@@ -16,7 +16,7 @@ export const RESERVED_TAGS = [
   'staff',
 
   // Brand reserved
-  'mularpay',
+  'raverpay',
   'raverpay',
   'mular',
   'raver',

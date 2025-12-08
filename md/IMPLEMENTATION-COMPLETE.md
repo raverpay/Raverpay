@@ -8,7 +8,7 @@
 
 ## 🚀 What Was Built
 
-I've successfully implemented **production-ready email and SMS verification** for MularPay:
+I've successfully implemented **production-ready email and SMS verification** for RaverPay:
 
 ### ✅ **Email Service (Resend)**
 
@@ -60,25 +60,25 @@ I've successfully implemented **production-ready email and SMS verification** fo
 3. Find your keys (click eye icon):
    - Public Key (starts with `VT_PK_`)
    - Secret Key (starts with `VT_SK_`)
-4. Register sender ID: `MularPay` (takes 24-48 hours)
+4. Register sender ID: `RaverPay` (takes 24-48 hours)
 5. Use `VTPass` as sender for testing meanwhile
 
 ---
 
 ### **Step 2: Add Keys to `.env`** ⚙️
 
-Open `/Users/joseph/Desktop/mularpay/apps/mularpay-api/.env` and add:
+Open `/Users/joseph/Desktop/raverpay/apps/raverpay-api/.env` and add:
 
 ```bash
 # Resend (Email)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@expertvetteddigital.tech
-RESEND_FROM_NAME=MularPay
+RESEND_FROM_NAME=RaverPay
 
 # VTPass Messaging (SMS)
 VTPASS_MESSAGING_PUBLIC_KEY=VT_PK_xxxxxxxxxxxxx
 VTPASS_MESSAGING_SECRET_KEY=VT_SK_xxxxxxxxxxxxx
-VTPASS_SMS_SENDER=VTPass  # Use "MularPay" after approval
+VTPASS_SMS_SENDER=VTPass  # Use "RaverPay" after approval
 
 # Enable Services
 ENABLE_EMAIL_VERIFICATION=true
@@ -93,7 +93,7 @@ MAX_VERIFICATION_ATTEMPTS=5
 
 ```bash
 # Start server
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm run start:dev
 
 # Follow testing guide:
@@ -152,7 +152,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 ### **3. VTPass Sender ID** 📱
 
 - `VTPass`: Works immediately (for testing)
-- `MularPay`: Needs approval (24-48 hours)
+- `RaverPay`: Needs approval (24-48 hours)
 - Switch after approval
 
 ### **4. Costs** 💰

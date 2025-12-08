@@ -1,6 +1,6 @@
 # Phase 1.4: Wallet Module Implementation
 
-**MularPay - Wallet Management System**
+**RaverPay - Wallet Management System**
 
 ---
 
@@ -88,7 +88,7 @@ Phase 1.4 implements the core wallet functionality including balance management,
 ## 📁 File Structure
 
 ```
-apps/mularpay-api/src/
+apps/raverpay-api/src/
 ├── wallet/
 │   ├── wallet.module.ts
 │   ├── wallet.controller.ts

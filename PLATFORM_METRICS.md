@@ -1,6 +1,6 @@
-# 📊 MularPay Platform Metrics
+# 📊 RaverPay Platform Metrics
 
-## 🔧 Backend API (mularpay-api)
+## 🔧 Backend API (raverpay-api)
 
 - **📁 Total Files:** 247 TypeScript files
 - **📝 Lines of Code:** 42,687 lines
@@ -33,7 +33,7 @@
 
 ---
 
-## 💻 Admin Dashboard (mularpay-admin)
+## 💻 Admin Dashboard (raverpay-admin)
 
 - **📁 Total Files:** 74 TypeScript/React files
 - **📝 Lines of Code:** 21,996 lines
@@ -126,6 +126,6 @@ This represents **months of development work** powering a complete fintech platf
 
 ---
 
-**Built with ❤️ by the MularPay Team** 🚀
+**Built with ❤️ by the RaverPay Team** 🚀
 
 _Last Updated: December 4, 2025_

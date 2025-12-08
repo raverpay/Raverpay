@@ -139,10 +139,10 @@ For a ₦10,000 funding:
 
 ## 📝 Related Files Changed
 
-1. **Backend**: `/apps/mularpay-api/src/transactions/transactions.service.ts`
+1. **Backend**: `/apps/raverpay-api/src/transactions/transactions.service.ts`
    - Fixed `calculateFee()` method for deposits
 
-2. **Mobile App**: `/apps/mularpay-mobileapp/app/fund-wallet.tsx`
+2. **Mobile App**: `/apps/raverpay-mobileapp/app/fund-wallet.tsx`
    - Added dynamic fee calculation and display
 
 ---

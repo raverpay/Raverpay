@@ -1,6 +1,6 @@
 # Phase 1.4: Wallet Module Testing Guide
 
-**MularPay - Wallet Management Testing**
+**RaverPay - Wallet Management Testing**
 
 ---
 
@@ -27,7 +27,7 @@ Phase 1.4 implements wallet management including balance inquiry, transaction li
 curl -X POST {{URL}}/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "identifier": "testuser@mularpay.com",
+    "identifier": "testuser@raverpay.com",
     "password": "Test@123"
   }'
 
@@ -560,7 +560,7 @@ curl -X GET "{{URL}}/api/wallet/transactions?type=INVALID" \
 Replace `http://localhost:3001` with your Railway URL:
 
 ```bash
-export URL="https://mularpaymularpay-api-production.up.railway.app"
+export URL="https://raverpayraverpay-api-production.up.railway.app"
 export ACCESSTOKEN="<your_production_token>"
 
 # Test wallet balance

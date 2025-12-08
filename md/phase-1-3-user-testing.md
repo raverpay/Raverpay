@@ -1,6 +1,6 @@
 # Phase 1.3: User Module Testing Guide
 
-**MularPay - User Management & KYC Testing**
+**RaverPay - User Management & KYC Testing**
 
 ---
 
@@ -83,7 +83,7 @@ curl -X GET http://localhost:3001/api/users/profile \
 ```json
 {
   "id": "uuid",
-  "email": "testuser@mularpay.com",
+  "email": "testuser@raverpay.com",
   "phone": "08012345678",
   "firstName": "Test",
   "lastName": "User",
@@ -152,7 +152,7 @@ curl -X PUT http://localhost:3001/api/users/profile \
 ```json
 {
   "id": "uuid",
-  "email": "testuser@mularpay.com",
+  "email": "testuser@raverpay.com",
   "phone": "08012345678",
   "firstName": "Updated",
   "lastName": "Name",
@@ -278,7 +278,7 @@ curl -X POST http://localhost:3001/api/users/send-email-verification \
 **Check Server Logs** for the verification code:
 
 ```
-Email verification code for testuser@mularpay.com: 123456
+Email verification code for testuser@raverpay.com: 123456
 ```
 
 #### 4b. Verify Email
@@ -549,7 +549,7 @@ curl -X GET http://localhost:3001/api/users/profile \
 Replace `http://localhost:3001` with your Railway URL:
 
 ```bash
-export API_URL="https://mularpaymularpay-api-production.up.railway.app"
+export API_URL="https://raverpayraverpay-api-production.up.railway.app"
 
 # Test Get Profile
 curl -X GET $API_URL/api/users/profile \

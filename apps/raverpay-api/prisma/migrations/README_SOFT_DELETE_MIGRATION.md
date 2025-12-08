@@ -10,13 +10,13 @@ This migration adds soft delete support for user accounts:
 
 ### Step 1: Generate Prisma Client (for TypeScript types)
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 ```
 
 ### Step 2: Get Your DIRECT_URL
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 grep "DIRECT_URL" .env | head -1
 ```
 
@@ -24,7 +24,7 @@ grep "DIRECT_URL" .env | head -1
 
 ### Step 3: Apply the Migration
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 psql "$DIRECT_URL" -f prisma/migrations/add_soft_delete_support.sql
 ```
 
@@ -52,13 +52,13 @@ psql "$DIRECT_URL" -c "SELECT indexname FROM pg_indexes WHERE tablename = 'users
 
 ### Step 5: Regenerate Prisma Client
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 ```
 
 ### Step 6: Verify TypeScript Compilation
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm exec tsc --noEmit
 ```
 

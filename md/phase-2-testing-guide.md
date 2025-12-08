@@ -19,7 +19,7 @@
 ### 1. Start Server
 
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm run start:dev
 ```
 

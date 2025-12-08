@@ -189,7 +189,7 @@ POLYGON_USDC_ADDRESS=0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 ### Setup Steps
 
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 
 # 1. Generate encryption key
 openssl rand -hex 32

@@ -1,4 +1,4 @@
-# MularPay API Documentation
+# RaverPay API Documentation
 
 **Version:** 1.0
 **Base URL:** `http://localhost:3001/api` (development)
@@ -28,6 +28,7 @@
 **Base Path:** `/api/auth`
 
 ### Register User
+
 ```http
 POST /api/auth/register
 ```
@@ -35,6 +36,7 @@ POST /api/auth/register
 **Authentication:** Public
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -46,12 +48,14 @@ POST /api/auth/register
 ```
 
 **Validation:**
+
 - Email: Valid email format
 - Phone: Nigerian phone format (080xxxxxxxx, 090xxxxxxxx, 070xxxxxxxx, 081xxxxxxxx)
 - Password: Min 8 characters, must contain uppercase, lowercase, number or special character
 - All fields required
 
 **Response (201):**
+
 ```json
 {
   "message": "User registered successfully",
@@ -70,6 +74,7 @@ POST /api/auth/register
 ---
 
 ### Login
+
 ```http
 POST /api/auth/login
 ```
@@ -77,6 +82,7 @@ POST /api/auth/login
 **Authentication:** Public
 
 **Request Body:**
+
 ```json
 {
   "identifier": "user@example.com", // or phone number
@@ -85,6 +91,7 @@ POST /api/auth/login
 ```
 
 **Response (200):**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -103,6 +110,7 @@ POST /api/auth/login
 ```
 
 **Notes:**
+
 - Access token expires in 15 minutes
 - Refresh token expires in 7 days
 - Use refresh token to get new access token
@@ -110,6 +118,7 @@ POST /api/auth/login
 ---
 
 ### Refresh Token
+
 ```http
 POST /api/auth/refresh
 ```
@@ -117,6 +126,7 @@ POST /api/auth/refresh
 **Authentication:** Public
 
 **Request Body:**
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -124,6 +134,7 @@ POST /api/auth/refresh
 ```
 
 **Response (200):**
+
 ```json
 {
   "accessToken": "new_access_token",
@@ -134,6 +145,7 @@ POST /api/auth/refresh
 ---
 
 ### Get Current User
+
 ```http
 GET /api/auth/me
 ```
@@ -141,6 +153,7 @@ GET /api/auth/me
 **Authentication:** Required (JWT)
 
 **Response (200):**
+
 ```json
 {
   "id": "uuid",
@@ -161,6 +174,7 @@ GET /api/auth/me
 ---
 
 ### Logout
+
 ```http
 POST /api/auth/logout
 ```
@@ -170,6 +184,7 @@ POST /api/auth/logout
 **Description:** Revokes refresh tokens to prevent further use. Supports single-session logout (revoke specific token) or all-sessions logout (revoke all tokens for user).
 
 **Request Body (Optional):**
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -179,6 +194,7 @@ POST /api/auth/logout
 **Note:** If no `refreshToken` is provided in the body, all refresh tokens for the user will be revoked.
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -187,6 +203,7 @@ POST /api/auth/logout
 ```
 
 **Security Notes:**
+
 - Access tokens remain valid until expiry (15 minutes max)
 - Refresh tokens are immediately revoked and cannot be reused
 - Use single-session logout to keep other devices logged in
@@ -200,11 +217,13 @@ POST /api/auth/logout
 **Authentication:** All endpoints require JWT
 
 ### Get Profile
+
 ```http
 GET /api/users/profile
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": "uuid",
@@ -230,11 +249,13 @@ GET /api/users/profile
 ---
 
 ### Update Profile
+
 ```http
 PUT /api/users/profile
 ```
 
 **Request Body:** (All fields optional)
+
 ```json
 {
   "firstName": "John",
@@ -249,6 +270,7 @@ PUT /api/users/profile
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Profile updated successfully",
@@ -257,6 +279,7 @@ PUT /api/users/profile
 ```
 
 **Notes:**
+
 - Email and phone cannot be changed (verified fields)
 - Date of birth format: YYYY-MM-DD
 - Gender: MALE, FEMALE, OTHER
@@ -264,11 +287,13 @@ PUT /api/users/profile
 ---
 
 ### Change Password
+
 ```http
 POST /api/users/change-password
 ```
 
 **Request Body:**
+
 ```json
 {
   "currentPassword": "OldPass123!",
@@ -277,10 +302,12 @@ POST /api/users/change-password
 ```
 
 **Validation:**
+
 - Current password must be correct
 - New password: Min 8 chars, uppercase, lowercase, number/special
 
 **Response (200):**
+
 ```json
 {
   "message": "Password changed successfully"
@@ -290,11 +317,13 @@ POST /api/users/change-password
 ---
 
 ### Send Email Verification
+
 ```http
 POST /api/users/send-email-verification
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Verification code sent to your email",
@@ -303,6 +332,7 @@ POST /api/users/send-email-verification
 ```
 
 **Notes:**
+
 - Code expires in 10 minutes
 - 6-digit numeric code
 - Max 5 attempts before lockout
@@ -310,11 +340,13 @@ POST /api/users/send-email-verification
 ---
 
 ### Verify Email
+
 ```http
 POST /api/users/verify-email
 ```
 
 **Request Body:**
+
 ```json
 {
   "code": "123456"
@@ -322,6 +354,7 @@ POST /api/users/verify-email
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Email verified successfully",
@@ -332,17 +365,20 @@ POST /api/users/verify-email
 ```
 
 **Errors:**
+
 - 400: Invalid or expired code
 - 429: Too many attempts (locked for 15 minutes)
 
 ---
 
 ### Send Phone Verification (SMS)
+
 ```http
 POST /api/users/send-phone-verification
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Verification code sent via SMS",
@@ -351,17 +387,20 @@ POST /api/users/send-phone-verification
 ```
 
 **Notes:**
+
 - Uses VTPass SMS service
 - Same expiry and attempt rules as email
 
 ---
 
 ### Verify Phone
+
 ```http
 POST /api/users/verify-phone
 ```
 
 **Request Body:**
+
 ```json
 {
   "code": "123456"
@@ -369,6 +408,7 @@ POST /api/users/verify-phone
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Phone verified successfully",
@@ -381,17 +421,20 @@ POST /api/users/verify-phone
 ```
 
 **Notes:**
+
 - Automatically upgrades status to ACTIVE
 - Automatically upgrades KYC to TIER_1
 
 ---
 
 ### Verify BVN
+
 ```http
 POST /api/users/verify-bvn
 ```
 
 **Request Body:**
+
 ```json
 {
   "bvn": "12345678901",
@@ -400,10 +443,12 @@ POST /api/users/verify-bvn
 ```
 
 **Validation:**
+
 - BVN: Exactly 11 digits
 - Date format: YYYY-MM-DD
 
 **Response (200):**
+
 ```json
 {
   "message": "BVN verified successfully",
@@ -415,17 +460,20 @@ POST /api/users/verify-bvn
 ```
 
 **Notes:**
+
 - Automatically upgrades KYC to TIER_2
 - New limits: Daily ₦5M, Monthly ₦20M, Single ₦1M
 
 ---
 
 ### Verify NIN
+
 ```http
 POST /api/users/verify-nin
 ```
 
 **Request Body:**
+
 ```json
 {
   "nin": "12345678901",
@@ -434,10 +482,12 @@ POST /api/users/verify-nin
 ```
 
 **Validation:**
+
 - NIN: Exactly 11 digits
 - Date format: YYYY-MM-DD
 
 **Response (200):**
+
 ```json
 {
   "message": "NIN verified successfully",
@@ -449,6 +499,7 @@ POST /api/users/verify-nin
 ```
 
 **Notes:**
+
 - Automatically upgrades KYC to TIER_3
 - Unlimited transaction limits
 
@@ -460,26 +511,29 @@ POST /api/users/verify-nin
 **Authentication:** All endpoints require JWT
 
 ### Get Wallet Balance
+
 ```http
 GET /api/wallet
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": "uuid",
   "userId": "uuid",
-  "balance": 125450.00,
-  "ledgerBalance": 125450.00,
+  "balance": 125450.0,
+  "ledgerBalance": 125450.0,
   "currency": "NGN",
   "isLocked": false,
-  "dailySpent": 25000.00,
-  "monthlySpent": 150000.00,
+  "dailySpent": 25000.0,
+  "monthlySpent": 150000.0,
   "lastTransactionAt": "2025-11-11T10:00:00Z"
 }
 ```
 
 **Notes:**
+
 - Balance: Available funds
 - Ledger balance: Total balance including pending
 - Daily/monthly spent resets automatically
@@ -487,41 +541,45 @@ GET /api/wallet
 ---
 
 ### Get Wallet Limits
+
 ```http
 GET /api/wallet/limits
 ```
 
 **Response (200):**
+
 ```json
 {
   "tier": "TIER_1",
-  "dailyLimit": 300000.00,
-  "monthlyLimit": 1000000.00,
-  "singleTransactionLimit": 100000.00,
-  "dailySpent": 25000.00,
-  "monthlySpent": 150000.00,
-  "dailyRemaining": 275000.00,
-  "monthlyRemaining": 850000.00
+  "dailyLimit": 300000.0,
+  "monthlyLimit": 1000000.0,
+  "singleTransactionLimit": 100000.0,
+  "dailySpent": 25000.0,
+  "monthlySpent": 150000.0,
+  "dailyRemaining": 275000.0,
+  "monthlyRemaining": 850000.0
 }
 ```
 
 **KYC Tier Limits:**
 
-| Tier | Daily Limit | Monthly Limit | Single Transaction |
-|------|------------|---------------|-------------------|
-| TIER_0 | ₦0 | ₦0 | ₦0 |
-| TIER_1 | ₦300,000 | ₦1,000,000 | ₦100,000 |
-| TIER_2 | ₦5,000,000 | ₦20,000,000 | ₦1,000,000 |
-| TIER_3 | Unlimited | Unlimited | Unlimited |
+| Tier   | Daily Limit | Monthly Limit | Single Transaction |
+| ------ | ----------- | ------------- | ------------------ |
+| TIER_0 | ₦0          | ₦0            | ₦0                 |
+| TIER_1 | ₦300,000    | ₦1,000,000    | ₦100,000           |
+| TIER_2 | ₦5,000,000  | ₦20,000,000   | ₦1,000,000         |
+| TIER_3 | Unlimited   | Unlimited     | Unlimited          |
 
 ---
 
 ### Get Transaction History
+
 ```http
 GET /api/wallet/transactions?page=1&limit=20
 ```
 
 **Query Parameters:**
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 20, max: 100)
 - `type` (optional): DEBIT or CREDIT
@@ -530,6 +588,7 @@ GET /api/wallet/transactions?page=1&limit=20
 - `endDate` (optional): ISO date string
 
 **Response (200):**
+
 ```json
 {
   "transactions": [
@@ -537,12 +596,12 @@ GET /api/wallet/transactions?page=1&limit=20
       "id": "uuid",
       "reference": "TXN_DEP_1699876543210",
       "type": "CREDIT",
-      "amount": 10000.00,
-      "fee": 50.00,
+      "amount": 10000.0,
+      "fee": 50.0,
       "status": "COMPLETED",
       "description": "Wallet funding via card",
-      "balanceBefore": 115400.00,
-      "balanceAfter": 125450.00,
+      "balanceBefore": 115400.0,
+      "balanceAfter": 125450.0,
       "metadata": {
         "paymentMethod": "CARD",
         "provider": "PAYSTACK"
@@ -561,17 +620,20 @@ GET /api/wallet/transactions?page=1&limit=20
 ```
 
 **Transaction Types:**
+
 - CREDIT: Deposits, refunds
 - DEBIT: Withdrawals, purchases
 
 ---
 
 ### Get Single Transaction
+
 ```http
 GET /api/wallet/transactions/:id
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": "uuid",
@@ -591,11 +653,13 @@ GET /api/wallet/transactions/:id
 ---
 
 ### Lock Wallet
+
 ```http
 POST /api/wallet/lock
 ```
 
 **Request Body:**
+
 ```json
 {
   "reason": "Suspicious activity detected"
@@ -603,6 +667,7 @@ POST /api/wallet/lock
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Wallet locked successfully",
@@ -615,6 +680,7 @@ POST /api/wallet/lock
 ```
 
 **Notes:**
+
 - User can lock their own wallet
 - Prevents all transactions until unlocked
 - Admin can also lock wallets
@@ -622,11 +688,13 @@ POST /api/wallet/lock
 ---
 
 ### Unlock Wallet
+
 ```http
 POST /api/wallet/unlock
 ```
 
 **Request Body:**
+
 ```json
 {
   "userId": "uuid"
@@ -634,6 +702,7 @@ POST /api/wallet/unlock
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Wallet unlocked successfully"
@@ -641,6 +710,7 @@ POST /api/wallet/unlock
 ```
 
 **Notes:**
+
 - TODO: Implement role-based access control
 - Currently accessible to all authenticated users
 - Should be admin-only
@@ -653,23 +723,27 @@ POST /api/wallet/unlock
 **Authentication:** All endpoints require JWT
 
 ### Fund Wallet (Card)
+
 ```http
 POST /api/transactions/fund/card
 ```
 
 **Request Body:**
+
 ```json
 {
-  "amount": 10000.00,
+  "amount": 10000.0,
   "callbackUrl": "https://yourapp.com/payment-callback"
 }
 ```
 
 **Validation:**
+
 - Minimum amount: ₦100.00
 - Callback URL: Optional
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -683,6 +757,7 @@ POST /api/transactions/fund/card
 ```
 
 **Flow:**
+
 1. Call this endpoint
 2. Open authorization URL in WebView
 3. User completes payment on Paystack
@@ -692,14 +767,17 @@ POST /api/transactions/fund/card
 ---
 
 ### Verify Payment
+
 ```http
 GET /api/transactions/verify/:reference
 ```
 
 **Parameters:**
+
 - `reference`: Transaction reference from fund/card response
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -707,8 +785,8 @@ GET /api/transactions/verify/:reference
   "transaction": {
     "id": "uuid",
     "reference": "TXN_DEP_1699876543210",
-    "amount": 10000.00,
-    "fee": 50.00,
+    "amount": 10000.0,
+    "fee": 50.0,
     "status": "COMPLETED",
     "gatewayResponse": "Approved"
   }
@@ -716,22 +794,26 @@ GET /api/transactions/verify/:reference
 ```
 
 **Possible Statuses:**
+
 - `success`: Payment completed
 - `failed`: Payment failed
 - `pending`: Payment processing
 
 **Notes:**
+
 - Poll this endpoint after payment redirect
 - Webhook also updates status asynchronously
 
 ---
 
 ### Get Virtual Account
+
 ```http
 GET /api/transactions/virtual-account
 ```
 
 **Response (200):**
+
 ```json
 {
   "bank": "Wema Bank",
@@ -742,6 +824,7 @@ GET /api/transactions/virtual-account
 ```
 
 **Notes:**
+
 - Virtual account is created on first call
 - Transfers to this account automatically credit wallet
 - No fees for bank transfers
@@ -750,11 +833,13 @@ GET /api/transactions/virtual-account
 ---
 
 ### Get Banks List
+
 ```http
 GET /api/transactions/banks
 ```
 
 **Response (200):**
+
 ```json
 {
   "banks": [
@@ -771,17 +856,20 @@ GET /api/transactions/banks
 ```
 
 **Notes:**
+
 - Returns all Nigerian banks supported by Paystack
 - Use bank code for account resolution and withdrawals
 
 ---
 
 ### Resolve Account Number
+
 ```http
 POST /api/transactions/resolve-account
 ```
 
 **Request Body:**
+
 ```json
 {
   "accountNumber": "0123456789",
@@ -790,10 +878,12 @@ POST /api/transactions/resolve-account
 ```
 
 **Validation:**
+
 - Account number: Exactly 10 digits
 - Bank code: Valid bank code from banks list
 
 **Response (200):**
+
 ```json
 {
   "accountNumber": "0123456789",
@@ -804,6 +894,7 @@ POST /api/transactions/resolve-account
 ```
 
 **Use Cases:**
+
 - Verify account before saving
 - Display account name on withdrawal screen
 - Prevent typos in account numbers
@@ -811,14 +902,16 @@ POST /api/transactions/resolve-account
 ---
 
 ### Withdraw Funds
+
 ```http
 POST /api/transactions/withdraw
 ```
 
 **Request Body:**
+
 ```json
 {
-  "amount": 5000.00,
+  "amount": 5000.0,
   "accountNumber": "0123456789",
   "accountName": "JOHN DOE",
   "bankCode": "058",
@@ -827,12 +920,14 @@ POST /api/transactions/withdraw
 ```
 
 **Validation:**
+
 - Minimum amount: ₦100.00
 - Account must be resolved first
 - Sufficient wallet balance
 - Within KYC limits
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -840,8 +935,8 @@ POST /api/transactions/withdraw
   "transaction": {
     "id": "uuid",
     "reference": "TXN_WTD_1699876543210",
-    "amount": 5000.00,
-    "fee": 25.00,
+    "amount": 5000.0,
+    "fee": 25.0,
     "status": "PENDING",
     "recipient": {
       "accountNumber": "0123456789",
@@ -853,6 +948,7 @@ POST /api/transactions/withdraw
 ```
 
 **Notes:**
+
 - Fee: ₦25 per withdrawal
 - Status will be updated via webhook
 - Usually completes within 5 minutes
@@ -866,11 +962,13 @@ POST /api/transactions/withdraw
 **Authentication:** Signature verification (x-paystack-signature header)
 
 ### Paystack Webhook
+
 ```http
 POST /api/payments/webhooks/paystack
 ```
 
 **Headers:**
+
 ```
 x-paystack-signature: signature_hash
 ```
@@ -878,7 +976,9 @@ x-paystack-signature: signature_hash
 **Webhook Events:**
 
 #### 1. charge.success
+
 Card payment or bank transfer successful
+
 ```json
 {
   "event": "charge.success",
@@ -895,7 +995,9 @@ Card payment or bank transfer successful
 ```
 
 #### 2. transfer.success
+
 Withdrawal completed
+
 ```json
 {
   "event": "transfer.success",
@@ -908,7 +1010,9 @@ Withdrawal completed
 ```
 
 #### 3. transfer.failed
+
 Withdrawal failed
+
 ```json
 {
   "event": "transfer.failed",
@@ -920,7 +1024,9 @@ Withdrawal failed
 ```
 
 #### 4. transfer.reversed
+
 Withdrawal reversed (refunds user)
+
 ```json
 {
   "event": "transfer.reversed",
@@ -932,7 +1038,9 @@ Withdrawal reversed (refunds user)
 ```
 
 #### 5. dedicatedaccount.assign.success
+
 Virtual account assigned
+
 ```json
 {
   "event": "dedicatedaccount.assign.success",
@@ -952,11 +1060,13 @@ Virtual account assigned
 ```
 
 **Response:**
+
 ```json
 { "status": "success" }
 ```
 
 **Notes:**
+
 - All webhooks are processed asynchronously
 - Failed webhooks are retried by Paystack
 - Signature verification prevents spoofing
@@ -969,11 +1079,13 @@ Virtual account assigned
 **Authentication:** All endpoints require JWT
 
 ### Get Airtime Providers
+
 ```http
 GET /api/vtu/airtime/providers
 ```
 
 **Response (200):**
+
 ```json
 {
   "providers": [
@@ -988,11 +1100,13 @@ GET /api/vtu/airtime/providers
 ---
 
 ### Purchase Airtime
+
 ```http
 POST /api/vtu/airtime/purchase
 ```
 
 **Request Body:**
+
 ```json
 {
   "network": "MTN",
@@ -1002,11 +1116,13 @@ POST /api/vtu/airtime/purchase
 ```
 
 **Validation:**
+
 - Amount: ₦50 - ₦50,000
 - Phone: Valid Nigerian number
 - Network: MTN, GLO, AIRTEL, 9MOBILE
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1016,7 +1132,7 @@ POST /api/vtu/airtime/purchase
     "reference": "VTU_AIR_1699876543210",
     "serviceType": "AIRTIME",
     "provider": "MTN",
-    "amount": 500.00,
+    "amount": 500.0,
     "phone": "08012345678",
     "status": "COMPLETED",
     "token": null
@@ -1027,14 +1143,17 @@ POST /api/vtu/airtime/purchase
 ---
 
 ### Get Data Plans
+
 ```http
 GET /api/vtu/data/plans/:network
 ```
 
 **Parameters:**
+
 - `network`: MTN, GLO, AIRTEL, 9MOBILE
 
 **Response (200):**
+
 ```json
 {
   "network": "MTN",
@@ -1053,14 +1172,17 @@ GET /api/vtu/data/plans/:network
 ---
 
 ### Get SME Data Plans
+
 ```http
 GET /api/vtu/data/sme-plans/:network
 ```
 
 **Parameters:**
+
 - `network`: MTN, GLO, AIRTEL, 9MOBILE
 
 **Response (200):**
+
 ```json
 {
   "network": "MTN",
@@ -1077,6 +1199,7 @@ GET /api/vtu/data/sme-plans/:network
 ```
 
 **Notes:**
+
 - SME plans are cheaper than regular plans
 - Same validity period
 - Works on all data-enabled SIM cards
@@ -1084,11 +1207,13 @@ GET /api/vtu/data/sme-plans/:network
 ---
 
 ### Purchase Data
+
 ```http
 POST /api/vtu/data/purchase
 ```
 
 **Request Body:**
+
 ```json
 {
   "network": "MTN",
@@ -1099,6 +1224,7 @@ POST /api/vtu/data/purchase
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1108,7 +1234,7 @@ POST /api/vtu/data/purchase
     "reference": "VTU_DATA_1699876543210",
     "serviceType": "DATA",
     "provider": "MTN",
-    "amount": 500.00,
+    "amount": 500.0,
     "phone": "08012345678",
     "productCode": "mtn-1gb",
     "status": "COMPLETED"
@@ -1119,14 +1245,17 @@ POST /api/vtu/data/purchase
 ---
 
 ### Get Cable TV Plans
+
 ```http
 GET /api/vtu/cable-tv/plans/:provider
 ```
 
 **Parameters:**
+
 - `provider`: DSTV, GOTV, STARTIMES
 
 **Response (200):**
+
 ```json
 {
   "provider": "DSTV",
@@ -1145,11 +1274,13 @@ GET /api/vtu/cable-tv/plans/:provider
 ---
 
 ### Verify Smartcard
+
 ```http
 POST /api/vtu/cable-tv/verify
 ```
 
 **Request Body:**
+
 ```json
 {
   "provider": "DSTV",
@@ -1158,9 +1289,11 @@ POST /api/vtu/cable-tv/verify
 ```
 
 **Validation:**
+
 - Smartcard: Exactly 10 digits
 
 **Response (200):**
+
 ```json
 {
   "valid": true,
@@ -1174,11 +1307,13 @@ POST /api/vtu/cable-tv/verify
 ---
 
 ### Pay Cable TV
+
 ```http
 POST /api/vtu/cable-tv/pay
 ```
 
 **Request Body:**
+
 ```json
 {
   "provider": "DSTV",
@@ -1191,10 +1326,12 @@ POST /api/vtu/cable-tv/pay
 ```
 
 **Subscription Types:**
+
 - `change`: Change package
 - `renew`: Renew current package (productCode optional)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1204,7 +1341,7 @@ POST /api/vtu/cable-tv/pay
     "reference": "VTU_CABLE_1699876543210",
     "serviceType": "CABLE_TV",
     "provider": "DSTV",
-    "amount": 10500.00,
+    "amount": 10500.0,
     "smartcardNumber": "1234567890",
     "status": "COMPLETED"
   }
@@ -1214,11 +1351,13 @@ POST /api/vtu/cable-tv/pay
 ---
 
 ### Get Electricity Providers
+
 ```http
 GET /api/vtu/electricity/providers
 ```
 
 **Response (200):**
+
 ```json
 {
   "providers": [
@@ -1232,11 +1371,13 @@ GET /api/vtu/electricity/providers
 ---
 
 ### Verify Meter Number
+
 ```http
 POST /api/vtu/electricity/verify
 ```
 
 **Request Body:**
+
 ```json
 {
   "disco": "eko-electric",
@@ -1246,10 +1387,12 @@ POST /api/vtu/electricity/verify
 ```
 
 **Validation:**
+
 - Meter number: 10-13 digits
 - Meter type: prepaid or postpaid
 
 **Response (200):**
+
 ```json
 {
   "valid": true,
@@ -1263,11 +1406,13 @@ POST /api/vtu/electricity/verify
 ---
 
 ### Pay Electricity
+
 ```http
 POST /api/vtu/electricity/pay
 ```
 
 **Request Body:**
+
 ```json
 {
   "disco": "eko-electric",
@@ -1279,9 +1424,11 @@ POST /api/vtu/electricity/pay
 ```
 
 **Validation:**
+
 - Minimum amount: ₦1,000
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1291,7 +1438,7 @@ POST /api/vtu/electricity/pay
     "reference": "VTU_ELEC_1699876543210",
     "serviceType": "ELECTRICITY",
     "provider": "EKO_ELECTRIC",
-    "amount": 5000.00,
+    "amount": 5000.0,
     "meterNumber": "12345678901",
     "status": "COMPLETED",
     "token": "1234-5678-9012-3456"
@@ -1300,6 +1447,7 @@ POST /api/vtu/electricity/pay
 ```
 
 **Notes:**
+
 - Token is returned for prepaid meters
 - Load token on your meter after purchase
 - Postpaid payments have no token
@@ -1307,11 +1455,13 @@ POST /api/vtu/electricity/pay
 ---
 
 ### Pay Showmax
+
 ```http
 POST /api/vtu/showmax/pay
 ```
 
 **Request Body:**
+
 ```json
 {
   "phoneNumber": "08012345678",
@@ -1320,6 +1470,7 @@ POST /api/vtu/showmax/pay
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1328,7 +1479,7 @@ POST /api/vtu/showmax/pay
     "id": "uuid",
     "reference": "VTU_SHOW_1699876543210",
     "serviceType": "SHOWMAX",
-    "amount": 2900.00,
+    "amount": 2900.0,
     "phone": "08012345678",
     "status": "COMPLETED"
   }
@@ -1338,11 +1489,13 @@ POST /api/vtu/showmax/pay
 ---
 
 ### Get International Countries
+
 ```http
 GET /api/vtu/international/countries
 ```
 
 **Response (200):**
+
 ```json
 {
   "countries": [
@@ -1358,11 +1511,13 @@ GET /api/vtu/international/countries
 ---
 
 ### Get International Product Types
+
 ```http
 GET /api/vtu/international/product-types/:countryCode
 ```
 
 **Response (200):**
+
 ```json
 {
   "productTypes": [
@@ -1377,11 +1532,13 @@ GET /api/vtu/international/product-types/:countryCode
 ---
 
 ### Get International Operators
+
 ```http
 GET /api/vtu/international/operators/:countryCode/:productTypeId
 ```
 
 **Response (200):**
+
 ```json
 {
   "operators": [
@@ -1397,11 +1554,13 @@ GET /api/vtu/international/operators/:countryCode/:productTypeId
 ---
 
 ### Get International Variations
+
 ```http
 GET /api/vtu/international/variations/:operatorId/:productTypeId
 ```
 
 **Response (200):**
+
 ```json
 {
   "variations": [
@@ -1418,11 +1577,13 @@ GET /api/vtu/international/variations/:operatorId/:productTypeId
 ---
 
 ### Purchase International Airtime
+
 ```http
 POST /api/vtu/international/purchase
 ```
 
 **Request Body:**
+
 ```json
 {
   "billersCode": "+12345678901",
@@ -1436,6 +1597,7 @@ POST /api/vtu/international/purchase
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1444,7 +1606,7 @@ POST /api/vtu/international/purchase
     "id": "uuid",
     "reference": "VTU_INT_1699876543210",
     "serviceType": "INTERNATIONAL_AIRTIME",
-    "amount": 7500.00,
+    "amount": 7500.0,
     "recipientNumber": "+12345678901",
     "status": "COMPLETED"
   }
@@ -1454,11 +1616,13 @@ POST /api/vtu/international/purchase
 ---
 
 ### Get VTU Orders
+
 ```http
 GET /api/vtu/orders?page=1&limit=20
 ```
 
 **Query Parameters:**
+
 - `page` (optional): Page number
 - `limit` (optional): Items per page
 - `serviceType` (optional): AIRTIME, DATA, CABLE_TV, ELECTRICITY, etc.
@@ -1467,6 +1631,7 @@ GET /api/vtu/orders?page=1&limit=20
 - `endDate` (optional): ISO date
 
 **Response (200):**
+
 ```json
 {
   "orders": [
@@ -1475,7 +1640,7 @@ GET /api/vtu/orders?page=1&limit=20
       "reference": "VTU_DATA_1699876543210",
       "serviceType": "DATA",
       "provider": "MTN",
-      "amount": 500.00,
+      "amount": 500.0,
       "phone": "08012345678",
       "productCode": "mtn-1gb",
       "status": "COMPLETED",
@@ -1494,18 +1659,20 @@ GET /api/vtu/orders?page=1&limit=20
 ---
 
 ### Get Order by ID
+
 ```http
 GET /api/vtu/orders/:orderId
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": "uuid",
   "reference": "VTU_DATA_1699876543210",
   "serviceType": "DATA",
   "provider": "MTN",
-  "amount": 500.00,
+  "amount": 500.0,
   "phone": "08012345678",
   "productCode": "mtn-1gb",
   "status": "COMPLETED",
@@ -1520,6 +1687,7 @@ GET /api/vtu/orders/:orderId
 ---
 
 ### Get Order by Reference
+
 ```http
 GET /api/vtu/orders/reference/:reference
 ```
@@ -1529,11 +1697,13 @@ GET /api/vtu/orders/reference/:reference
 ---
 
 ### Retry Failed Order
+
 ```http
 POST /api/vtu/orders/:orderId/retry
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1546,6 +1716,7 @@ POST /api/vtu/orders/:orderId/retry
 ```
 
 **Notes:**
+
 - Only failed orders can be retried
 - No additional charge (uses original payment)
 - Funds already deducted on first attempt
@@ -1558,11 +1729,13 @@ POST /api/vtu/orders/:orderId/retry
 **Authentication:** Signature verification (x-vtpass-signature header)
 
 ### VTPass Webhook
+
 ```http
 POST /api/vtu/webhooks/vtpass
 ```
 
 **Headers:**
+
 ```
 x-vtpass-signature: signature_hash
 ```
@@ -1570,6 +1743,7 @@ x-vtpass-signature: signature_hash
 **Webhook Events:**
 
 #### 1. transaction.success
+
 ```json
 {
   "event": "transaction.success",
@@ -1582,6 +1756,7 @@ x-vtpass-signature: signature_hash
 ```
 
 #### 2. transaction.failed
+
 ```json
 {
   "event": "transaction.failed",
@@ -1593,6 +1768,7 @@ x-vtpass-signature: signature_hash
 ```
 
 #### 3. transaction.pending
+
 ```json
 {
   "event": "transaction.pending",
@@ -1604,11 +1780,13 @@ x-vtpass-signature: signature_hash
 ```
 
 **Response:**
+
 ```json
 { "status": "success" }
 ```
 
 **Notes:**
+
 - Failed transactions automatically refund user
 - Webhook updates order status asynchronously
 
@@ -1617,6 +1795,7 @@ x-vtpass-signature: signature_hash
 ## Health Check
 
 ### API Welcome
+
 ```http
 GET /api
 ```
@@ -1624,9 +1803,10 @@ GET /api
 **Authentication:** None
 
 **Response (200):**
+
 ```json
 {
-  "message": "Welcome to MularPay API",
+  "message": "Welcome to RaverPay API",
   "version": "1.0",
   "documentation": "/api/docs"
 }
@@ -1635,6 +1815,7 @@ GET /api
 ---
 
 ### Health Check
+
 ```http
 GET /api/health
 ```
@@ -1642,6 +1823,7 @@ GET /api/health
 **Authentication:** None
 
 **Response (200):**
+
 ```json
 {
   "status": "ok",
@@ -1660,11 +1842,13 @@ GET /api/health
 **Authentication:** All endpoints require JWT
 
 ### Set Transaction PIN
+
 ```http
 POST /api/users/set-pin
 ```
 
 **Request Body:**
+
 ```json
 {
   "pin": "1234",
@@ -1673,11 +1857,13 @@ POST /api/users/set-pin
 ```
 
 **Validation:**
+
 - 4-digit numeric PIN
 - PINs must match
 - Cannot be 0000, 1234, 1111, etc.
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1689,11 +1875,13 @@ POST /api/users/set-pin
 ---
 
 ### Verify Transaction PIN
+
 ```http
 POST /api/users/verify-pin
 ```
 
 **Request Body:**
+
 ```json
 {
   "pin": "1234"
@@ -1701,6 +1889,7 @@ POST /api/users/verify-pin
 ```
 
 **Response (200):**
+
 ```json
 {
   "valid": true
@@ -1708,6 +1897,7 @@ POST /api/users/verify-pin
 ```
 
 **Error Responses:**
+
 - `400 Bad Request` - "Invalid PIN. X attempts remaining"
 - `400 Bad Request` - "Too many failed attempts. Try again in 30 minutes"
 - `400 Bad Request` - "PIN not set. Please set a PIN first"
@@ -1715,11 +1905,13 @@ POST /api/users/verify-pin
 ---
 
 ### Change Transaction PIN
+
 ```http
 POST /api/users/change-pin
 ```
 
 **Request Body:**
+
 ```json
 {
   "currentPin": "1234",
@@ -1729,6 +1921,7 @@ POST /api/users/change-pin
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1737,6 +1930,7 @@ POST /api/users/change-pin
 ```
 
 **Notes:**
+
 - PIN must be different from current PIN
 - Weak PINs (0000, 1111, 1234, etc.) are rejected
 - Current PIN is verified before change
@@ -1749,11 +1943,13 @@ POST /api/users/change-pin
 **Authentication:** None (Public endpoints)
 
 ### Request Password Reset (Forgot Password)
+
 ```http
 POST /api/auth/forgot-password
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com"
@@ -1761,6 +1957,7 @@ POST /api/auth/forgot-password
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Reset code sent to your email",
@@ -1771,11 +1968,13 @@ POST /api/auth/forgot-password
 ---
 
 #### Verify Reset Code
+
 ```http
 POST /api/auth/verify-reset-code
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -1784,6 +1983,7 @@ POST /api/auth/verify-reset-code
 ```
 
 **Response (200):**
+
 ```json
 {
   "valid": true,
@@ -1794,11 +1994,13 @@ POST /api/auth/verify-reset-code
 ---
 
 #### Reset Password
+
 ```http
 POST /api/auth/reset-password
 ```
 
 **Request Body:**
+
 ```json
 {
   "resetToken": "temp_token_abc123",
@@ -1807,6 +2009,7 @@ POST /api/auth/reset-password
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1815,6 +2018,7 @@ POST /api/auth/reset-password
 ```
 
 **Notes:**
+
 - Password must meet strength requirements (8+ chars, uppercase, lowercase, number/special char)
 - Reset token expires in 15 minutes
 - User is notified via email after successful reset
@@ -1827,6 +2031,7 @@ POST /api/auth/reset-password
 **Authentication:** All endpoints require JWT
 
 ### Upload Avatar
+
 ```http
 POST /api/users/upload-avatar
 ```
@@ -1834,11 +2039,13 @@ POST /api/users/upload-avatar
 **Content-Type:** `multipart/form-data`
 
 **Request Body:**
+
 ```
 file: <image file>
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1847,6 +2054,7 @@ file: <image file>
 ```
 
 **Notes:**
+
 - Uses Cloudinary for image storage
 - Accepted formats: JPG, JPEG, PNG, WebP
 - Max file size: 5MB
@@ -1854,6 +2062,7 @@ file: <image file>
 - Old avatar automatically deleted when uploading new one
 
 **Validation Errors:**
+
 - `400 Bad Request` - "Only image files are allowed (JPEG, JPG, PNG, WebP)"
 - `400 Bad Request` - "File size must not exceed 5MB"
 - `400 Bad Request` - "No file uploaded"
@@ -1861,11 +2070,13 @@ file: <image file>
 ---
 
 ### Delete Avatar
+
 ```http
 DELETE /api/users/avatar
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -1874,6 +2085,7 @@ DELETE /api/users/avatar
 ```
 
 **Notes:**
+
 - Deletes avatar from Cloudinary
 - Sets user.avatar to null in database
 - Returns error if no avatar exists
@@ -1886,17 +2098,20 @@ DELETE /api/users/avatar
 **Authentication:** All endpoints require JWT
 
 ### Get Notifications
+
 ```http
 GET /api/notifications?page=1&limit=20&type=TRANSACTION
 ```
 
 **Query Parameters:**
+
 - `page` (optional): Page number
 - `limit` (optional): Items per page
 - `type` (optional): TRANSACTION, KYC, SECURITY, PROMOTIONAL
 - `unreadOnly` (optional): true/false
 
 **Response (200):**
+
 ```json
 {
   "notifications": [
@@ -1925,11 +2140,13 @@ GET /api/notifications?page=1&limit=20&type=TRANSACTION
 ---
 
 #### Mark Notification as Read
+
 ```http
 PUT /api/notifications/:id/read
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Notification marked as read"
@@ -1939,11 +2156,13 @@ PUT /api/notifications/:id/read
 ---
 
 #### Mark All as Read
+
 ```http
 PUT /api/notifications/read-all
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "All notifications marked as read",
@@ -1954,11 +2173,13 @@ PUT /api/notifications/read-all
 ---
 
 #### Delete Notification
+
 ```http
 DELETE /api/notifications/:id
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Notification deleted"
@@ -1972,6 +2193,7 @@ DELETE /api/notifications/:id
 All endpoints follow a consistent error format:
 
 **4xx Client Errors:**
+
 ```json
 {
   "statusCode": 400,
@@ -1984,6 +2206,7 @@ All endpoints follow a consistent error format:
 ```
 
 **5xx Server Errors:**
+
 ```json
 {
   "statusCode": 500,
@@ -1993,6 +2216,7 @@ All endpoints follow a consistent error format:
 ```
 
 **Common Status Codes:**
+
 - 200: Success
 - 201: Created
 - 400: Bad Request (validation error)
@@ -2008,11 +2232,13 @@ All endpoints follow a consistent error format:
 ## Rate Limiting
 
 **Default Limits:**
+
 - Authentication endpoints: 5 requests per minute
 - OTP endpoints: 3 requests per 15 minutes
 - General endpoints: 100 requests per minute
 
 **Headers:**
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -2065,6 +2291,7 @@ X-RateLimit-Reset: 1699876543
 ### Additional Security Features (Phase 3)
 
 All withdrawal and VTU purchase endpoints now require PIN verification:
+
 - `POST /api/transactions/withdraw` - Requires `pin` field
 - `POST /api/vtu/airtime/purchase` - Requires `pin` field
 - `POST /api/vtu/data/purchase` - Requires `pin` field
@@ -2087,4 +2314,4 @@ All withdrawal and VTU purchase endpoints now require PIN verification:
 
 **Last Updated:** 2025-11-11
 **API Version:** 1.0
-**Contact:** support@mularpay.com
+**Contact:** support@raverpay.com

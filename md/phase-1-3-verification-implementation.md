@@ -1,6 +1,6 @@
 # Phase 1.3: Email & SMS Verification Implementation
 
-**MularPay - Real Verification Services Integration**
+**RaverPay - Real Verification Services Integration**
 
 ---
 
@@ -71,14 +71,14 @@ TTL: Automatic
 
 1. In Resend dashboard, go to **API Keys**
 2. Click **"Create API Key"**
-3. Name it: `MularPay Production`
+3. Name it: `RaverPay Production`
 4. Copy the key (starts with `re_`)
 5. Save it securely!
 
 #### Step 5: Configure Sending Email
 
 - **From Email:** `noreply@expertvetteddigital.tech`
-- **From Name:** `MularPay`
+- **From Name:** `RaverPay`
 - **Reply-To:** `support@expertvetteddigital.tech` (optional)
 
 ---
@@ -97,7 +97,7 @@ TTL: Automatic
 
 1. In VTPass Messaging Dashboard
 2. Go to **Sender IDs**
-3. Register: `MularPay` (your app name)
+3. Register: `RaverPay` (your app name)
 4. Wait for approval (usually 24-48 hours)
 5. Meanwhile, you can use `VTPass` as sender for testing
 
@@ -114,7 +114,7 @@ TTL: Automatic
 #### Step 1: Install Dependencies
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm add resend
 ```
 
@@ -124,12 +124,12 @@ pnpm add resend
 # Add to .env
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@expertvetteddigital.tech
-RESEND_FROM_NAME=MularPay
+RESEND_FROM_NAME=RaverPay
 
 # VTPass Messaging
 VTPASS_MESSAGING_PUBLIC_KEY=VT_PK_xxxxxxxxxxxxx
 VTPASS_MESSAGING_SECRET_KEY=VT_SK_xxxxxxxxxxxxx
-VTPASS_SMS_SENDER=MularPay
+VTPASS_SMS_SENDER=RaverPay
 
 # Verification Settings
 VERIFICATION_CODE_EXPIRY_MINUTES=10
@@ -139,7 +139,7 @@ MAX_VERIFICATION_ATTEMPTS=3
 #### Step 3: Create Services Structure
 
 ```
-apps/mularpay-api/src/
+apps/raverpay-api/src/
 ├── services/
 │   ├── email/
 │   │   ├── email.module.ts
@@ -272,9 +272,9 @@ Once email/SMS verification works:
    - Use https://dnschecker.org to verify
 
 3. **VTPass Sender ID:**
-   - `MularPay` needs approval (24-48 hours)
+   - `RaverPay` needs approval (24-48 hours)
    - Use `VTPass` for immediate testing
-   - Once approved, switch to `MularPay`
+   - Once approved, switch to `RaverPay`
 
 4. **Rate Limiting:**
    - Prevent SMS/email bombing

@@ -1,14 +1,14 @@
-# MularPay Phase 1 Progress Report
+# RaverPay Phase 1 Progress Report
 
 **Date:** November 9, 2025  
 **Status:** Phase 1.2 Complete ✅  
-**Repository:** https://github.com/joestackss/MularPay-Fintech
+**Repository:** https://github.com/joestackss/RaverPay-Fintech
 
 ---
 
 ## 📋 Overview
 
-This document tracks the progress of MularPay fintech application development, including completed features and testing instructions.
+This document tracks the progress of RaverPay fintech application development, including completed features and testing instructions.
 
 ---
 
@@ -59,8 +59,8 @@ This document tracks the progress of MularPay fintech application development, i
 
 **Files Created:**
 
-- `apps/mularpay-api/src/prisma/prisma.service.ts`
-- `apps/mularpay-api/src/prisma/prisma.module.ts`
+- `apps/raverpay-api/src/prisma/prisma.service.ts`
+- `apps/raverpay-api/src/prisma/prisma.module.ts`
 
 **API Endpoints:**
 
@@ -130,7 +130,7 @@ src/auth/
 1. **Start the API:**
 
 ```bash
-cd /Users/joseph/Desktop/mularpay
+cd /Users/joseph/Desktop/raverpay
 pnpm dev:api
 ```
 
@@ -482,7 +482,7 @@ lsof -ti:3001
 kill -9 $(lsof -t -i:3001)
 
 # Restart API
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm start:dev
 ```
 
@@ -490,13 +490,13 @@ pnpm start:dev
 
 ```bash
 # Check .env file exists
-ls apps/mularpay-api/.env
+ls apps/raverpay-api/.env
 
 # Verify DATABASE_URL and DIRECT_URL are set
-cat apps/mularpay-api/.env | grep DATABASE_URL
+cat apps/raverpay-api/.env | grep DATABASE_URL
 
 # Test Prisma connection
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma db push
 ```
 
@@ -517,7 +517,7 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 ## 📚 Environment Variables
 
-Ensure these are set in `apps/mularpay-api/.env`:
+Ensure these are set in `apps/raverpay-api/.env`:
 
 ```env
 # Database
@@ -582,7 +582,7 @@ PORT=3001
 2. `feat: Complete Authentication Module (Phase 1.2)`
 
 **View on GitHub:**  
-https://github.com/joestackss/MularPay-Fintech/commits/main
+https://github.com/joestackss/RaverPay-Fintech/commits/main
 
 ---
 

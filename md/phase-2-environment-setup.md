@@ -25,7 +25,7 @@
 
 ## 📝 Environment Variables
 
-Add these to your `/Users/joseph/Desktop/mularpay/apps/mularpay-api/.env` file:
+Add these to your `/Users/joseph/Desktop/raverpay/apps/raverpay-api/.env` file:
 
 ```env
 # ==================== VTPass Configuration ====================
@@ -96,7 +96,7 @@ open https://sandbox.vtpass.com
 Copy your keys and update the `.env` file:
 
 ```bash
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 
 # Edit .env file
 nano .env
@@ -136,7 +136,7 @@ https://abc123.ngrok-free.app/api/vtu/webhooks/vtpass
 
 **Webhook URL:**
 ```
-https://mularpaymularpay-api-production.up.railway.app/api/vtu/webhooks/vtpass
+https://raverpayraverpay-api-production.up.railway.app/api/vtu/webhooks/vtpass
 ```
 
 ### Configure in VTPass Dashboard
@@ -158,7 +158,7 @@ https://mularpaymularpay-api-production.up.railway.app/api/vtu/webhooks/vtpass
 
 ```bash
 # Start your server
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm run start:dev
 ```
 
@@ -221,7 +221,7 @@ If you get this, your API keys are working! ✅
 ### Issue 1: "VTPass API keys not configured"
 
 **Solution:**
-1. Check `.env` file exists in `/Users/joseph/Desktop/mularpay/apps/mularpay-api/`
+1. Check `.env` file exists in `/Users/joseph/Desktop/raverpay/apps/raverpay-api/`
 2. Verify keys are set correctly
 3. No quotes around values
 4. No spaces

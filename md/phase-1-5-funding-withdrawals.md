@@ -1,6 +1,6 @@
 # Phase 1.5: Funding & Withdrawals Implementation
 
-**MularPay - Wallet Funding & Withdrawal System**
+**RaverPay - Wallet Funding & Withdrawal System**
 
 ---
 
@@ -108,7 +108,7 @@ Phase 1.5 implements the core financial operations: funding wallets and withdraw
 ## 📁 File Structure
 
 ```
-apps/mularpay-api/src/
+apps/raverpay-api/src/
 ├── transactions/
 │   ├── transactions.module.ts
 │   ├── transactions.controller.ts
@@ -148,7 +148,7 @@ Content-Type: application/json
 
 {
   "amount": 5000,
-  "callbackUrl": "https://app.mularpay.com/callback"
+  "callbackUrl": "https://app.raverpay.com/callback"
 }
 ```
 
@@ -194,7 +194,7 @@ Authorization: Bearer {token}
 ```json
 {
   "accountNumber": "1234567890",
-  "accountName": "MularPay/JOSEPH STACKS",
+  "accountName": "RaverPay/JOSEPH STACKS",
   "bankName": "Wema Bank",
   "bankCode": "035",
   "isPermanent": true

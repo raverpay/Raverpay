@@ -14,7 +14,7 @@ Sometimes `prisma migrate` or `prisma db push` fails due to:
 Even if migration fails, always generate the Prisma client to get TypeScript types:
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 ```
 
@@ -64,7 +64,7 @@ ALTER TABLE new_table
 Extract your database connection string:
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 grep "DIRECT_URL" .env | head -1
 ```
 
@@ -75,7 +75,7 @@ grep "DIRECT_URL" .env | head -1
 ### Step 4: Execute SQL Script
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 psql "postgresql://user:password@host:5432/database" -f your_migration.sql
 ```
 
@@ -101,7 +101,7 @@ psql "your_connection_string" -c "SELECT column_name, data_type, column_default 
 After database changes are applied:
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 ```
 
@@ -110,7 +110,7 @@ This ensures Prisma client is in sync with the actual database schema.
 ### Step 7: Verify Backend Compilation
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm exec tsc --noEmit
 ```
 

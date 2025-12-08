@@ -1,4 +1,4 @@
-// Shared types and utilities across all MularPay apps
+// Shared types and utilities across all RaverPay apps
 
 // ============================================
 // USER & AUTH TYPES

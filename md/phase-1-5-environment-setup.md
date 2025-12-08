@@ -55,7 +55,7 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxxx"  # Optional, for frontend
 
 2. **Start your API server:**
    ```bash
-   cd apps/mularpay-api
+   cd apps/raverpay-api
    pnpm run start:dev
    ```
 
@@ -77,7 +77,7 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxxx"  # Optional, for frontend
 
 1. **Update webhook URL in Paystack:**
    - URL: `https://your-production-domain.com/api/payments/webhooks/paystack`
-   - Example: `https://mularpaymularpay-api-production.up.railway.app/api/payments/webhooks/paystack`
+   - Example: `https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack`
 
 2. **Test webhook:**
    - Paystack will send a test event

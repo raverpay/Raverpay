@@ -4,8 +4,8 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'apps/mularpay-web/**'
-      - 'apps/mularpay-admin/**'
+      - 'apps/raverpay-web/**'
+      - 'apps/raverpay-admin/**'
       - 'packages/**'
 
 jobs:
@@ -32,15 +32,15 @@ jobs:
 
       - name: Pull Vercel Environment Information (Web)
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/mularpay-web
+        working-directory: apps/raverpay-web
 
       - name: Build Web App
         run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/mularpay-web
+        working-directory: apps/raverpay-web
 
       - name: Deploy Web to Vercel
         run: vercel deploy ${{ github.ref == 'refs/heads/main' && '--prod' || '--prebuilt' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/mularpay-web
+        working-directory: apps/raverpay-web
 
   deploy-admin:
     runs-on: ubuntu-latest
@@ -65,12 +65,12 @@ jobs:
 
       - name: Pull Vercel Environment Information (Admin)
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/mularpay-admin
+        working-directory: apps/raverpay-admin
 
       - name: Build Admin App
         run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/mularpay-admin
+        working-directory: apps/raverpay-admin
 
       - name: Deploy Admin to Vercel
         run: vercel deploy ${{ github.ref == 'refs/heads/main' && '--prod' || '--prebuilt' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/mularpay-admin
+        working-directory: apps/raverpay-admin

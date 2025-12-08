@@ -18,7 +18,7 @@
 
 ```bash
 # Navigate to API directory
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 
 # Start development server
 pnpm run start:dev
@@ -45,7 +45,7 @@ curl http://localhost:3001/api
 **Expected response:**
 
 ```
-Welcome to MularPay API 🇳🇬
+Welcome to RaverPay API 🇳🇬
 ```
 
 ✅ If you see this, server is running correctly!
@@ -146,7 +146,7 @@ After saving, Paystack should show a "Test Webhook URL" button.
 curl -X POST http://localhost:3001/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "ngrok.test@mularpay.com",
+    "email": "ngrok.test@raverpay.com",
     "phone": "08011223344",
     "password": "Test@12345",
     "firstName": "Ngrok",
@@ -160,7 +160,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "identifier": "ngrok.test@mularpay.com",
+    "identifier": "ngrok.test@raverpay.com",
     "password": "Test@12345"
   }'
 ```
@@ -546,7 +546,7 @@ Watch for:
 1. **Check `PAYSTACK_SECRET_KEY` in `.env`:**
 
    ```bash
-   cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+   cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
    grep PAYSTACK_SECRET_KEY .env
    ```
 
@@ -578,7 +578,7 @@ Watch for:
 2. **Check database directly** (use Prisma Studio):
 
    ```bash
-   cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+   cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
    pnpm prisma studio
    ```
 
@@ -603,7 +603,7 @@ Watch for:
 2. **Check if code has syntax errors:**
 
    ```bash
-   cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+   cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
    pnpm run build
    ```
 
@@ -629,7 +629,7 @@ Watch for:
 
 2. **Or use Railway for testing** (permanent URL):
    ```
-   https://mularpaymularpay-api-production.up.railway.app/api/payments/webhooks/paystack
+   https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack
    ```
 
 ---
@@ -676,7 +676,7 @@ Use this checklist for each test session:
 
 ```bash
 # Terminal 1: Start server
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api && pnpm run start:dev
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api && pnpm run start:dev
 
 # Terminal 2: Start ngrok
 ngrok http 3001

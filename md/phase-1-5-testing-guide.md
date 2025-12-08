@@ -1,6 +1,6 @@
 # Phase 1.5 Testing Guide - Funding & Withdrawals
 
-**Prerequisites:** https://mularpaymularpay-api-production.up.railway.app/api/payments/webhooks/paystack
+**Prerequisites:** https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack
 
 - Paystack test keys configured in `.env`
 - Server running on `http://localhost:3001/api`
@@ -75,7 +75,7 @@ curl -X GET {{URL}}/transactions/virtual-account \
 ```json
 {
   "accountNumber": "1234567890",
-  "accountName": "MularPay/JOSEPH STACKS",
+  "accountName": "RaverPay/JOSEPH STACKS",
   "bankName": "Wema Bank",
   "bankCode": "035",
   "isPermanent": true,
@@ -455,7 +455,7 @@ curl -X POST {{URL}}/transactions/withdraw \
 
 ```bash
 # Terminal 1: Start server
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm run start:dev
 
 # Terminal 2: Start ngrok

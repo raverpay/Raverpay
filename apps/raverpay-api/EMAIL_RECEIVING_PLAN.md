@@ -346,5 +346,5 @@ This approach:
 - ✅ Extensible for future roles
 - ✅ Consistent with current architecture
 
-  cd apps/mularpay-api
-  psql "postgresql://postgres.oeanyukxcphqjrsljhqq:mularpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10" -f prisma/migrations/add_inbound_email_system.sql
+  cd apps/raverpay-api
+  psql "postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10" -f prisma/migrations/add_inbound_email_system.sql

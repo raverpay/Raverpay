@@ -1,10 +1,10 @@
-# MularPay API
+# RaverPay API
 
 A comprehensive fintech backend API built with NestJS, providing digital wallet services, VTU (Virtual Top-Up) purchases, and payment processing for Nigerian users.
 
 ## Overview
 
-MularPay API is a complete financial technology platform that enables users to manage digital wallets, purchase airtime and data bundles, pay bills, and perform financial transactions securely. The platform implements a tiered KYC (Know Your Customer) system with progressive transaction limits.
+RaverPay API is a complete financial technology platform that enables users to manage digital wallets, purchase airtime and data bundles, pay bills, and perform financial transactions securely. The platform implements a tiered KYC (Know Your Customer) system with progressive transaction limits.
 
 ## Core Features
 
@@ -165,7 +165,7 @@ Four-tier verification system with progressive limits:
 ### Transaction Types Supported
 - Deposits (card, bank transfer)
 - Withdrawals (bank transfer)
-- P2P transfers (between MularPay users)
+- P2P transfers (between RaverPay users)
 - VTU purchases (airtime, data, cable TV, electricity)
 - Subscription payments
 - Refunds

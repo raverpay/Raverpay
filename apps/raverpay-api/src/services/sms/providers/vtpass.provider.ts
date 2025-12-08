@@ -44,7 +44,7 @@ export class VTPassProvider implements ISmsProvider {
       '',
     );
     this.sender =
-      this.configService.get<string>('VTPASS_SMS_SENDER') || 'MularPay';
+      this.configService.get<string>('VTPASS_SMS_SENDER') || 'RaverPay';
     this.enabled =
       this.configService.get<string>('ENABLE_SMS_VERIFICATION') === 'true';
     this.useDndRoute =
@@ -176,7 +176,7 @@ export class VTPassProvider implements ISmsProvider {
 
     try {
       const formattedPhone = this.formatPhoneNumber(phone);
-      const message = `Hi ${firstName}! Your MularPay password reset code is: ${code}. Valid for 10 minutes. Never share this code. - MularPay`;
+      const message = `Hi ${firstName}! Your RaverPay password reset code is: ${code}. Valid for 10 minutes. Never share this code. - RaverPay`;
 
       const endpoint = this.useDndRoute
         ? '/v2/api/sms/dnd-fallback'
@@ -250,7 +250,7 @@ export class VTPassProvider implements ISmsProvider {
 
     try {
       const formattedPhone = this.formatPhoneNumber(phone);
-      const message = `Hi ${firstName}! Your ${transactionDetails.type} of ₦${transactionDetails.amount} was successful. Ref: ${transactionDetails.reference}. - MularPay`;
+      const message = `Hi ${firstName}! Your ${transactionDetails.type} of ₦${transactionDetails.amount} was successful. Ref: ${transactionDetails.reference}. - RaverPay`;
 
       const params = new URLSearchParams();
       params.append('sender', this.sender);

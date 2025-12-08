@@ -8,7 +8,7 @@ This document describes the locked accounts management interface that allows adm
 
 ### 1. Locked Accounts Management Page
 
-**Location:** `apps/mularpay-admin/app/dashboard/rate-limits/locked-accounts/page.tsx`
+**Location:** `apps/raverpay-admin/app/dashboard/rate-limits/locked-accounts/page.tsx`
 
 #### Key Features:
 
@@ -43,7 +43,7 @@ This document describes the locked accounts management interface that allows adm
 
 ### 2. Backend API Endpoint
 
-**Location:** `apps/mularpay-api/src/admin/users/admin-users.controller.ts`
+**Location:** `apps/raverpay-api/src/admin/users/admin-users.controller.ts`
 
 #### Endpoint Details:
 
@@ -83,7 +83,7 @@ PATCH /api/admin/users/:userId/unlock
 
 ### 3. Service Layer Integration
 
-**Location:** `apps/mularpay-api/src/admin/users/admin-users.service.ts`
+**Location:** `apps/raverpay-api/src/admin/users/admin-users.service.ts`
 
 #### New Method: `unlockRateLimitAccount`
 
@@ -210,13 +210,13 @@ PATCH /api/admin/users/:userId/unlock
 
 ### Created:
 
-1. `apps/mularpay-admin/app/dashboard/rate-limits/locked-accounts/page.tsx` - Management UI
+1. `apps/raverpay-admin/app/dashboard/rate-limits/locked-accounts/page.tsx` - Management UI
 
 ### Modified:
 
-1. `apps/mularpay-api/src/admin/users/admin-users.controller.ts` - Added unlock endpoint
-2. `apps/mularpay-api/src/admin/users/admin-users.service.ts` - Added unlock service method and AccountLockingService injection
-3. `apps/mularpay-admin/app/dashboard/rate-limits/page.tsx` - Added locked accounts alert card
+1. `apps/raverpay-api/src/admin/users/admin-users.controller.ts` - Added unlock endpoint
+2. `apps/raverpay-api/src/admin/users/admin-users.service.ts` - Added unlock service method and AccountLockingService injection
+3. `apps/raverpay-admin/app/dashboard/rate-limits/page.tsx` - Added locked accounts alert card
 
 ## Dependencies
 

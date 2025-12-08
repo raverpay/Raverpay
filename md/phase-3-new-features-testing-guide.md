@@ -1,4 +1,4 @@
-# MularPay API - Phase 3 New Features Testing Guide
+# RaverPay API - Phase 3 New Features Testing Guide
 
 **Version:** 1.0
 **Date:** 2025-11-11
@@ -60,7 +60,7 @@ PAYSTACK_SECRET_KEY=your-paystack-key
 
 ```bash
 # 1. Navigate to API directory
-cd /Users/joseph/Desktop/mularpay/apps/mularpay-api
+cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 
 # 2. Install dependencies (if not already done)
 pnpm install
@@ -1020,10 +1020,10 @@ LIMIT 10;
 For issues or questions:
 - **Documentation:** `/docs/API_ENDPOINTS.md`
 - **GitHub Issues:** https://github.com/your-repo/issues
-- **Email:** support@mularpay.com
+- **Email:** support@raverpay.com
 
 ---
 
 **Last Updated:** 2025-11-11
 **Version:** 1.0
-**Author:** MularPay Development Team
+**Author:** RaverPay Development Team

@@ -132,7 +132,7 @@ Here's the complete flow for a new sandbox account:
 
 #### **Step 6: Configure Your App**
 
-Add to `apps/mularpay-api/.env`:
+Add to `apps/raverpay-api/.env`:
 
 ```env
 # Polygon Amoy Testnet Token Addresses
@@ -143,7 +143,7 @@ POLYGON_AMOY_USDC_ADDRESS=0x...your-usdc-contract-address
 #### **Step 7: Restart & Sync**
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm run start:dev
 
 # Then sync wallet

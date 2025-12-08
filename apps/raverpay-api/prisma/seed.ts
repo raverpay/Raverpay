@@ -17,7 +17,7 @@ async function seedSuperAdmin() {
   }
 
   // Get environment variables or use defaults
-  const email = process.env.SUPER_ADMIN_EMAIL || 'admin@mularpay.com';
+  const email = process.env.SUPER_ADMIN_EMAIL || 'admin@raverpay.com';
   const password = process.env.SUPER_ADMIN_PASSWORD || 'SuperAdmin123!';
   const firstName = process.env.SUPER_ADMIN_FIRST_NAME || 'Super';
   const lastName = process.env.SUPER_ADMIN_LAST_NAME || 'Admin';
@@ -74,20 +74,20 @@ async function seedHelpCenter() {
   const collections = [
     {
       title: 'Getting Started',
-      description: 'Learn the basics of using MularPay',
+      description: 'Learn the basics of using RaverPay',
       icon: 'rocket',
       order: 1,
       articles: [
         {
           title: 'How to Create an Account',
           slug: 'how-to-create-an-account',
-          content: `# How to Create an Account\n\nCreating your MularPay account is quick and easy:\n\n1. **Download the App**: Get MularPay from the App Store or Google Play Store.\n\n2. **Sign Up**: Tap "Sign Up" and enter your phone number.\n\n3. **Verify Phone**: Enter the OTP sent to your phone.\n\n4. **Set Up Profile**: Enter your name and email address.\n\n5. **Create PIN**: Set a secure 4-digit transaction PIN.\n\n6. **Complete KYC**: Verify your identity to unlock all features.\n\nThat's it! Your account is ready to use.`,
+          content: `# How to Create an Account\n\nCreating your RaverPay account is quick and easy:\n\n1. **Download the App**: Get RaverPay from the App Store or Google Play Store.\n\n2. **Sign Up**: Tap "Sign Up" and enter your phone number.\n\n3. **Verify Phone**: Enter the OTP sent to your phone.\n\n4. **Set Up Profile**: Enter your name and email address.\n\n5. **Create PIN**: Set a secure 4-digit transaction PIN.\n\n6. **Complete KYC**: Verify your identity to unlock all features.\n\nThat's it! Your account is ready to use.`,
           order: 1,
         },
         {
           title: 'How to Fund Your Wallet',
           slug: 'how-to-fund-wallet',
-          content: `# How to Fund Your Wallet\n\nThere are multiple ways to add money to your MularPay wallet:\n\n## Bank Transfer\n1. Go to your wallet and tap "Fund Wallet"\n2. Copy your unique virtual account number\n3. Transfer from any bank to this account\n4. Funds reflect instantly\n\n## Card Payment\n1. Tap "Fund with Card"\n2. Enter your card details\n3. Complete payment via Paystack\n4. Funds are added immediately\n\n## USSD\n1. Dial *919*amount*virtual account number#\n2. Complete the transfer`,
+          content: `# How to Fund Your Wallet\n\nThere are multiple ways to add money to your RaverPay wallet:\n\n## Bank Transfer\n1. Go to your wallet and tap "Fund Wallet"\n2. Copy your unique virtual account number\n3. Transfer from any bank to this account\n4. Funds reflect instantly\n\n## Card Payment\n1. Tap "Fund with Card"\n2. Enter your card details\n3. Complete payment via Paystack\n4. Funds are added immediately\n\n## USSD\n1. Dial *919*amount*virtual account number#\n2. Complete the transfer`,
           order: 2,
         },
         {
@@ -107,13 +107,13 @@ async function seedHelpCenter() {
         {
           title: 'How to Buy Airtime',
           slug: 'how-to-buy-airtime',
-          content: `# How to Buy Airtime\n\n1. Open MularPay and tap "Airtime"\n2. Select your network (MTN, Airtel, Glo, 9Mobile)\n3. Enter the phone number or select from contacts\n4. Enter the amount\n5. Tap "Buy Airtime"\n6. Confirm with your PIN\n\n**Tips:**\n- You can buy for yourself or others\n- Save frequent numbers for quick recharge\n- Enjoy instant delivery\n- Get cashback on purchases over ₦500`,
+          content: `# How to Buy Airtime\n\n1. Open RaverPay and tap "Airtime"\n2. Select your network (MTN, Airtel, Glo, 9Mobile)\n3. Enter the phone number or select from contacts\n4. Enter the amount\n5. Tap "Buy Airtime"\n6. Confirm with your PIN\n\n**Tips:**\n- You can buy for yourself or others\n- Save frequent numbers for quick recharge\n- Enjoy instant delivery\n- Get cashback on purchases over ₦500`,
           order: 1,
         },
         {
           title: 'How to Buy Data',
           slug: 'how-to-buy-data',
-          content: `# How to Buy Data\n\n1. Open MularPay and tap "Data"\n2. Select your network\n3. Choose a data plan\n4. Enter the phone number\n5. Tap "Buy Data"\n6. Confirm with your PIN\n\n**Available Plans:**\n- Daily plans (1-7 days)\n- Weekly plans\n- Monthly plans\n- SME Data (reseller)\n\n**Note:** Data is delivered instantly to your line.`,
+          content: `# How to Buy Data\n\n1. Open RaverPay and tap "Data"\n2. Select your network\n3. Choose a data plan\n4. Enter the phone number\n5. Tap "Buy Data"\n6. Confirm with your PIN\n\n**Available Plans:**\n- Daily plans (1-7 days)\n- Weekly plans\n- Monthly plans\n- SME Data (reseller)\n\n**Note:** Data is delivered instantly to your line.`,
           order: 2,
         },
         {
@@ -211,7 +211,7 @@ async function seedHelpCenter() {
         {
           title: 'Refund Policy',
           slug: 'refund-policy',
-          content: `# MularPay Refund Policy\n\n**Automatic Refunds:**\nFailed transactions are automatically refunded within 5-30 minutes.\n\n**Manual Refund Requests:**\nFor disputed transactions:\n1. Contact support within 7 days\n2. Provide transaction details\n3. Allow 24-48 hours for investigation\n4. Eligible refunds processed within 24 hours\n\n**Eligible for Refund:**\n- Failed transactions\n- Double charges\n- Services not delivered\n- Technical errors\n\n**Not Eligible:**\n- Successful transactions\n- User error (wrong number)\n- Transactions over 30 days old`,
+          content: `# RaverPay Refund Policy\n\n**Automatic Refunds:**\nFailed transactions are automatically refunded within 5-30 minutes.\n\n**Manual Refund Requests:**\nFor disputed transactions:\n1. Contact support within 7 days\n2. Provide transaction details\n3. Allow 24-48 hours for investigation\n4. Eligible refunds processed within 24 hours\n\n**Eligible for Refund:**\n- Failed transactions\n- Double charges\n- Services not delivered\n- Technical errors\n\n**Not Eligible:**\n- Successful transactions\n- User error (wrong number)\n- Transactions over 30 days old`,
           order: 1,
         },
         {
@@ -231,7 +231,7 @@ async function seedHelpCenter() {
         {
           title: 'App Not Loading',
           slug: 'app-not-loading',
-          content: `# App Not Loading?\n\n**Try These Steps:**\n\n1. **Check Internet Connection**\n   - Switch between WiFi and mobile data\n   - Try airplane mode on/off\n\n2. **Force Close & Reopen**\n   - Close the app completely\n   - Wait a few seconds\n   - Reopen the app\n\n3. **Clear Cache**\n   - Go to phone Settings\n   - Find MularPay in Apps\n   - Clear cache (not data)\n\n4. **Update the App**\n   - Check App Store/Play Store for updates\n   - Install latest version\n\n5. **Reinstall App**\n   - Last resort\n   - Uninstall and reinstall\n   - Log in with your credentials`,
+          content: `# App Not Loading?\n\n**Try These Steps:**\n\n1. **Check Internet Connection**\n   - Switch between WiFi and mobile data\n   - Try airplane mode on/off\n\n2. **Force Close & Reopen**\n   - Close the app completely\n   - Wait a few seconds\n   - Reopen the app\n\n3. **Clear Cache**\n   - Go to phone Settings\n   - Find RaverPay in Apps\n   - Clear cache (not data)\n\n4. **Update the App**\n   - Check App Store/Play Store for updates\n   - Install latest version\n\n5. **Reinstall App**\n   - Last resort\n   - Uninstall and reinstall\n   - Log in with your credentials`,
           order: 1,
         },
         {
@@ -257,7 +257,7 @@ async function seedHelpCenter() {
         {
           title: 'How to Contact Support',
           slug: 'contact-support',
-          content: `# How to Contact MularPay Support\n\n**In-App Chat (Fastest)**\n1. Tap the Help icon in the app\n2. Start a conversation\n3. Our bot will assist or connect you to an agent\n4. Average response time: 5 minutes\n\n**Email**\nsupport@mularpay.com\nResponse time: 24 hours\n\n**Social Media**\n- Twitter: @mularpay\n- Instagram: @mularpay\n- Facebook: MularPay\n\n**Support Hours:**\nMonday - Sunday\n8:00 AM - 10:00 PM WAT`,
+          content: `# How to Contact RaverPay Support\n\n**In-App Chat (Fastest)**\n1. Tap the Help icon in the app\n2. Start a conversation\n3. Our bot will assist or connect you to an agent\n4. Average response time: 5 minutes\n\n**Email**\nsupport@raverpay.com\nResponse time: 24 hours\n\n**Social Media**\n- Twitter: @raverpay\n- Instagram: @raverpay\n- Facebook: RaverPay\n\n**Support Hours:**\nMonday - Sunday\n8:00 AM - 10:00 PM WAT`,
           order: 1,
         },
         {

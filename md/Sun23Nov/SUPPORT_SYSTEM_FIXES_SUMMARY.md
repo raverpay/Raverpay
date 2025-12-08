@@ -1,6 +1,6 @@
 # Support System Fixes Summary
 
-This document summarizes all the fixes and improvements made to the MularPay support system across the API, Admin Dashboard, and Mobile App.
+This document summarizes all the fixes and improvements made to the RaverPay support system across the API, Admin Dashboard, and Mobile App.
 
 ---
 

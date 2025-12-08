@@ -135,7 +135,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 #### **Step 6: Configure App**
 
-Add to `apps/mularpay-api/.env`:
+Add to `apps/raverpay-api/.env`:
 
 ```env
 # Polygon Amoy Testnet Token Addresses
@@ -146,7 +146,7 @@ POLYGON_AMOY_USDC_ADDRESS=0x...your-usdc-contract
 #### **Step 7: Restart & Sync**
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm run start:dev
 
 # Sync wallet

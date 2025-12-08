@@ -1,6 +1,6 @@
 # Phase 1.3: Production Implementation TODO
 
-**MularPay - User Management & KYC Production Readiness**
+**RaverPay - User Management & KYC Production Readiness**
 
 ---
 
@@ -402,7 +402,7 @@ RESEND_API_KEY=re_xxxxxxxxxxxxx
 
 # SMS Service (Termii)
 TERMII_API_KEY=TL_xxxxxxxxxxxxx
-TERMII_SENDER_ID=MularPay
+TERMII_SENDER_ID=RaverPay
 
 # BVN and NIN Verification (Mono)
 MONO_SECRET_KEY=sk_test_xxxxxxxxxxxxx
@@ -432,7 +432,7 @@ MAX_VERIFICATION_ATTEMPTS=5
 Create service wrappers:
 
 ```
-apps/mularpay-api/src/
+apps/raverpay-api/src/
 ├── services/
 │   ├── email/
 │   │   ├── email.service.ts          # Abstract interface

@@ -8,7 +8,7 @@
 # ==============================================
 VTPASS_MESSAGING_PUBLIC_KEY=VT_PK_xxxxxxxxxxxxx
 VTPASS_MESSAGING_SECRET_KEY=VT_SK_xxxxxxxxxxxxx
-VTPASS_SMS_SENDER=MularPay
+VTPASS_SMS_SENDER=RaverPay
 VTPASS_USE_DND_ROUTE=false
 
 # ==============================================
@@ -16,7 +16,7 @@ VTPASS_USE_DND_ROUTE=false
 # ==============================================
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@expertvetteddigital.tech
-RESEND_FROM_NAME=MularPay
+RESEND_FROM_NAME=RaverPay
 
 # ==============================================
 # VERIFICATION SETTINGS - NEW!
@@ -91,7 +91,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 ## ⚠️ **Important Notes**
 
 1. **Mock Mode**: If keys are missing, services run in MOCK mode (logs only)
-2. **Sender ID**: `MularPay` needs VTPass approval (24-48 hours)
+2. **Sender ID**: `RaverPay` needs VTPass approval (24-48 hours)
    - Use `VTPass` as sender for immediate testing
 3. **DNS**: Resend domain verification takes 5-60 minutes
 4. **Cost**: Test thoroughly in sandbox before going live!

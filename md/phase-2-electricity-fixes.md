@@ -115,7 +115,7 @@ Consider validating against the actual minimum amount returned from verification
 
 ### Change 1: Fix Verification Method
 
-**File:** `apps/mularpay-api/src/vtu/services/vtpass.service.ts`
+**File:** `apps/raverpay-api/src/vtu/services/vtpass.service.ts`
 
 **Method:** `verifyCustomer` (Lines 208-222)
 
@@ -126,7 +126,7 @@ Add support for passing `type` as a separate parameter for electricity verificat
 
 ### Change 2: Fix Meter Verification ServiceID
 
-**File:** `apps/mularpay-api/src/vtu/services/vtpass.service.ts`
+**File:** `apps/raverpay-api/src/vtu/services/vtpass.service.ts`
 
 **Method:** `verifyMeterNumber` (Lines 229-236)
 
@@ -139,7 +139,7 @@ Add support for passing `type` as a separate parameter for electricity verificat
 
 ### Change 3: Fix Electricity Payment ServiceID
 
-**File:** `apps/mularpay-api/src/vtu/services/vtpass.service.ts`
+**File:** `apps/raverpay-api/src/vtu/services/vtpass.service.ts`
 
 **Method:** `payElectricity` (Lines 426-461)
 
@@ -153,7 +153,7 @@ Add support for passing `type` as a separate parameter for electricity verificat
 
 ### Change 4: Enhance Response Handling
 
-**File:** `apps/mularpay-api/src/vtu/vtu.service.ts`
+**File:** `apps/raverpay-api/src/vtu/vtu.service.ts`
 
 **Method:** `payElectricityBill` (Lines 923-1071)
 
@@ -167,8 +167,8 @@ Add support for passing `type` as a separate parameter for electricity verificat
 
 ### Change 5: Add Meter Number Validation
 
-**File:** `apps/mularpay-api/src/vtu/dto/verify-meter.dto.ts`
-**File:** `apps/mularpay-api/src/vtu/dto/pay-electricity.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/verify-meter.dto.ts`
+**File:** `apps/raverpay-api/src/vtu/dto/pay-electricity.dto.ts`
 
 **Change:**
 Add validation decorator to ensure meter numbers are numeric and have appropriate length (11-13 digits).
@@ -177,7 +177,7 @@ Add validation decorator to ensure meter numbers are numeric and have appropriat
 
 ### Change 6: Update Validation Response
 
-**File:** `apps/mularpay-api/src/vtu/vtu.service.ts`
+**File:** `apps/raverpay-api/src/vtu/vtu.service.ts`
 
 **Method:** `validateMeterNumber` (Lines 119-142)
 

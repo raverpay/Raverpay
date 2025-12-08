@@ -8,7 +8,7 @@ The app rating system has been successfully implemented across the backend API a
 
 ## 🏗️ What Was Built
 
-### **Backend API (`apps/mularpay-api`)**
+### **Backend API (`apps/raverpay-api`)**
 
 #### 1. **Database Schema**
 
@@ -32,7 +32,7 @@ src/app-config/
 - **GET** `/app-config/rating-prompt` - Public endpoint for mobile app to fetch config
 - **PATCH** `/app-config/rating-prompt` - Admin-only endpoint to update config
 
-### **Admin Dashboard (`apps/mularpay-admin`)**
+### **Admin Dashboard (`apps/raverpay-admin`)**
 
 #### 1. **API Client**
 
@@ -77,7 +77,7 @@ model AppRatingConfig {
 ### **1. Run Database Migration**
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 
 # Make the script executable (if not already)
 chmod +x run-rating-migration.sh
@@ -95,7 +95,7 @@ psql $DATABASE_URL -f prisma/migrations/add_app_rating_config.sql
 ### **2. Generate Prisma Client**
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 ```
 
@@ -104,14 +104,14 @@ pnpm prisma generate
 **API Server:**
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm dev
 ```
 
 **Admin Dashboard:**
 
 ```bash
-cd apps/mularpay-admin
+cd apps/raverpay-admin
 pnpm dev
 ```
 
@@ -327,7 +327,7 @@ psql $DATABASE_URL -c "DROP TABLE app_rating_config CASCADE;"
 
 ```bash
 # Regenerate Prisma Client
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm prisma generate
 
 # Restart TypeScript server in VS Code

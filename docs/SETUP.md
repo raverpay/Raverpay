@@ -1,6 +1,6 @@
-# MularPay Setup Guide
+# RaverPay Setup Guide
 
-Complete setup instructions for the MularPay fintech application.
+Complete setup instructions for the RaverPay fintech application.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Complete setup instructions for the MularPay fintech application.
 
 ```bash
 git clone <repository-url>
-cd MularPay-Fintech
+cd RaverPay-Fintech
 ```
 
 ## 2. Install Dependencies
@@ -30,7 +30,7 @@ This will install dependencies for all apps and packages in the monorepo.
 ### API (.env)
 
 ```bash
-cd apps/mularpay-api
+cd apps/raverpay-api
 cp .env.example .env
 ```
 
@@ -52,15 +52,15 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxx"
 Repeat for each app:
 
 ```bash
-cd apps/mularpay-web
+cd apps/raverpay-web
 cp .env.example .env
 # Edit .env
 
-cd apps/mularpay-admin
+cd apps/raverpay-admin
 cp .env.example .env
 # Edit .env
 
-cd apps/mularpay-mobile
+cd apps/raverpay-mobile
 cp .env.example .env
 # Edit .env
 ```

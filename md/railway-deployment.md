@@ -1,6 +1,6 @@
-# Railway Deployment Guide - MularPay API
+# Railway Deployment Guide - RaverPay API
 
-**Deploy your MularPay API to Railway and get a public URL accessible from anywhere in the world!**
+**Deploy your RaverPay API to Railway and get a public URL accessible from anywhere in the world!**
 
 ---
 
@@ -38,7 +38,7 @@
 
 1. Click **"New Project"**
 2. Select **"Deploy from GitHub repo"**
-3. Choose your repository: **`MularPay-Fintech`**
+3. Choose your repository: **`RaverPay-Fintech`**
 4. Railway will detect your monorepo
 
 ---
@@ -47,12 +47,12 @@
 
 1. Railway will ask which service to deploy
 2. Click **"Add a service"** → **"GitHub Repo"**
-3. Select: `apps/mularpay-api` as the root directory
+3. Select: `apps/raverpay-api` as the root directory
 
 **Or manually configure:**
 
 - Click **"Settings"** in your service
-- Set **Root Directory**: `apps/mularpay-api`
+- Set **Root Directory**: `apps/raverpay-api`
 - Set **Build Command**: `pnpm install && pnpm prisma:generate && pnpm build`
 - Set **Start Command**: `pnpm start:prod`
 
@@ -66,9 +66,9 @@ Click **"Variables"** tab and add these:
 
 ```bash
 # Database (use your Supabase credentials)
-DATABASE_URL=postgresql://postgres.oeanyukxcphqjrsljhqq:mularpay2025@aws-1-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DATABASE_URL=postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 
-DIRECT_URL=postgresql://postgres.oeanyukxcphqjrsljhqq:mularpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres
+DIRECT_URL=postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres
 
 # JWT Secrets
 JWT_SECRET=yieimEN8XJ4FGSqmqnxAJRZXojJRaTyUzZ16xhJQSRc=
@@ -147,7 +147,7 @@ Once deployed:
 3. Click **"Generate Domain"**
 4. Railway will give you a URL like:
    ```
-   https://mularpay-api-production.up.railway.app
+   https://raverpay-api-production.up.railway.app
    ```
 
 **✅ Your API is now live!**
@@ -180,7 +180,7 @@ curl https://YOUR-RAILWAY-URL.railway.app/api/health | python3 -m json.tool
 curl -X POST https://YOUR-RAILWAY-URL.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@mularpay.com",
+    "email": "test@raverpay.com",
     "phone": "08012345678",
     "password": "Test@1234",
     "firstName": "Test",
@@ -196,7 +196,7 @@ curl -X POST https://YOUR-RAILWAY-URL.railway.app/api/auth/register \
 curl -X POST https://YOUR-RAILWAY-URL.railway.app/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "identifier": "test@mularpay.com",
+    "identifier": "test@raverpay.com",
     "password": "Test@1234"
   }' | python3 -m json.tool
 ```
@@ -270,7 +270,7 @@ railway logs
 
 ```bash
 # Test build locally first
-cd apps/mularpay-api
+cd apps/raverpay-api
 pnpm build
 ```
 
@@ -365,7 +365,7 @@ Want to use your own domain?
 
 1. Buy a domain (Namecheap, GoDaddy, etc.)
 2. In Railway → Settings → Domains → Custom Domain
-3. Add your domain: `api.mularpay.com`
+3. Add your domain: `api.raverpay.com`
 4. Update DNS records as Railway instructs
 5. Railway provisions SSL automatically
 
@@ -445,7 +445,7 @@ GET  https://YOUR-RAILWAY-URL.railway.app/api/auth/me
 - **Railway Dashboard:** https://railway.app/dashboard
 - **Railway Docs:** https://docs.railway.app
 - **Your Supabase:** https://supabase.com/dashboard
-- **GitHub Repo:** https://github.com/joestackss/MularPay-Fintech
+- **GitHub Repo:** https://github.com/joestackss/RaverPay-Fintech
 
 ---
 
