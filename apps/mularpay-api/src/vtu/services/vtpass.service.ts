@@ -700,6 +700,7 @@ export class VTPassService {
 
   async purchaseWAECRegistration(data: {
     phone: string;
+    variationCode: string;
     reference: string;
     quantity?: number;
   }) {
@@ -707,7 +708,7 @@ export class VTPassService {
       request_id: data.reference,
       serviceID: this.EDUCATION_SERVICE_MAP['waec-registration'], // Use mapped ID with typo
       billersCode: data.phone,
-      variation_code: 'waec-registraion', // VTPass typo
+      variation_code: data.variationCode, // Use provided variation code
       phone: data.phone,
     };
 
@@ -741,6 +742,7 @@ export class VTPassService {
 
   async purchaseWAECResult(data: {
     phone: string;
+    variationCode: string;
     reference: string;
     quantity?: number;
   }) {
@@ -748,7 +750,7 @@ export class VTPassService {
       request_id: data.reference,
       serviceID: 'waec',
       billersCode: data.phone,
-      variation_code: 'waecdirect',
+      variation_code: data.variationCode,
       phone: data.phone,
     };
 

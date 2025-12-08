@@ -2515,7 +2515,7 @@ export class VTUService {
           data: {
             reference,
             userId,
-            type: 'VTU_DATA',
+            type: 'VTU_EDUCATION',
             amount: new Decimal(amount),
             fee: new Decimal(fee),
             cashbackRedeemed: new Decimal(cashbackRedeemed),
@@ -2597,7 +2597,7 @@ export class VTUService {
             : 'JAMB PIN purchase failed. Wallet refunded.',
       };
 
-      // 18. Update order async
+      // 18. Update order and transaction metadata async
       this.prisma.vTUOrder
         .update({
           where: { id: order.id },
@@ -2617,6 +2617,28 @@ export class VTUService {
         .catch((error) =>
           this.logger.error('Failed to update order status', error),
         );
+
+      // Update transaction metadata with PIN
+      if (vtpassResult.status === 'success' && vtpassResult.token) {
+        this.prisma.transaction
+          .update({
+            where: { reference },
+            data: {
+              metadata: {
+                serviceType: 'JAMB',
+                provider: 'JAMB',
+                recipient: dto.profileId,
+                orderId: order.id,
+                cashbackToEarn: cashbackToEarn.cashbackAmount,
+                cashbackRedeemed,
+                pin: vtpassResult.token,
+              },
+            },
+          })
+          .catch((error) =>
+            this.logger.error('Failed to update transaction metadata', error),
+          );
+      }
 
       // 19. Handle failure
       if (vtpassResult.status !== 'success') {
@@ -2802,7 +2824,7 @@ export class VTUService {
           data: {
             reference,
             userId,
-            type: 'VTU_DATA',
+            type: 'VTU_EDUCATION',
             amount: new Decimal(amount),
             fee: new Decimal(fee),
             cashbackRedeemed: new Decimal(cashbackRedeemed),
@@ -2837,6 +2859,7 @@ export class VTUService {
       try {
         vtpassResult = await this.vtpassService.purchaseWAECRegistration({
           phone: dto.phone,
+          variationCode: dto.variationCode,
           reference,
         });
       } catch (error) {
@@ -2902,6 +2925,28 @@ export class VTUService {
         .catch((error) =>
           this.logger.error('Failed to update order status', error),
         );
+
+      // Update transaction metadata with token
+      if (vtpassResult.status === 'success' && vtpassResult.token) {
+        this.prisma.transaction
+          .update({
+            where: { reference },
+            data: {
+              metadata: {
+                serviceType: 'WAEC_REGISTRATION',
+                provider: 'WAEC',
+                recipient: dto.phone,
+                orderId: order.id,
+                cashbackToEarn: cashbackToEarn.cashbackAmount,
+                cashbackRedeemed,
+                token: vtpassResult.token,
+              },
+            },
+          })
+          .catch((error) =>
+            this.logger.error('Failed to update transaction metadata', error),
+          );
+      }
 
       // Handle failure/success async (similar to JAMB)
       if (vtpassResult.status !== 'success') {
@@ -3073,7 +3118,7 @@ export class VTUService {
           data: {
             reference,
             userId,
-            type: 'VTU_DATA',
+            type: 'VTU_EDUCATION',
             amount: new Decimal(amount),
             fee: new Decimal(fee),
             cashbackRedeemed: new Decimal(cashbackRedeemed),
@@ -3108,6 +3153,7 @@ export class VTUService {
       try {
         vtpassResult = await this.vtpassService.purchaseWAECResult({
           phone: dto.phone,
+          variationCode: dto.variationCode,
           reference,
         });
       } catch (error) {
@@ -3173,6 +3219,28 @@ export class VTUService {
         .catch((error) =>
           this.logger.error('Failed to update order status', error),
         );
+
+      // Update transaction metadata with cards
+      if (vtpassResult.status === 'success' && vtpassResult.token) {
+        this.prisma.transaction
+          .update({
+            where: { reference },
+            data: {
+              metadata: {
+                serviceType: 'WAEC_RESULT',
+                provider: 'WAEC',
+                recipient: dto.phone,
+                orderId: order.id,
+                cashbackToEarn: cashbackToEarn.cashbackAmount,
+                cashbackRedeemed,
+                cards: vtpassResult.token,
+              },
+            },
+          })
+          .catch((error) =>
+            this.logger.error('Failed to update transaction metadata', error),
+          );
+      }
 
       // Handle failure/success async
       if (vtpassResult.status !== 'success') {
