@@ -1,5 +1,5 @@
 {
-  "name": "@mularpay/shared",
+  "name": "@raverpay/shared",
   "version": "1.0.0",
   "private": true,
   "main": "./dist/index.js",

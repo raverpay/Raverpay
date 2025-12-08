@@ -6,9 +6,9 @@ cmds = ["pnpm install --no-frozen-lockfile"]
 
 [phases.build]
 cmds = [
-    "pnpm install --filter @mularpay/raverpay-api",
-    "pnpm --filter @mularpay/raverpay-api prisma:generate",
-    "pnpm --filter @mularpay/raverpay-api build"
+    "pnpm install --filter @raverpay/raverpay-api",
+    "pnpm --filter @raverpay/raverpay-api prisma:generate",
+    "pnpm --filter @raverpay/raverpay-api build"
 ]
 
 [start]

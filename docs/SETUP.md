@@ -90,6 +90,7 @@ pnpm dev
 ```
 
 This starts:
+
 - API: http://localhost:3001
 - Web: http://localhost:3000
 - Admin: http://localhost:3002
@@ -127,6 +128,7 @@ curl http://localhost:3001/api/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "ok",
@@ -139,6 +141,7 @@ Expected response:
 ### Test Database Connection
 
 Open Prisma Studio:
+
 ```bash
 pnpm prisma:studio
 ```
@@ -177,7 +180,7 @@ pnpm prisma:generate
 
 ```bash
 # Reset database (⚠️ deletes all data)
-pnpm --filter @mularpay/mularpay-api exec prisma migrate reset
+pnpm --filter @raverpay/raverpay-api exec prisma migrate reset
 ```
 
 ### Module Not Found
@@ -197,6 +200,7 @@ pnpm install
 ## Support
 
 For issues, check:
+
 - GitHub Issues
 - README.md
 - Individual app documentation

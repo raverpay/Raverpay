@@ -36,13 +36,13 @@ jobs:
         run: pnpm lint
 
       - name: Build shared packages
-        run: pnpm --filter @mularpay/shared build
+        run: pnpm --filter @raverpay/shared build
 
       - name: Type check
-        run: pnpm --filter @mularpay/mularpay-api exec tsc --noEmit
+        run: pnpm --filter @raverpay/raverpay-api exec tsc --noEmit
 
       - name: Run tests (API)
-        run: pnpm --filter @mularpay/mularpay-api test
+        run: pnpm --filter @raverpay/raverpay-api test
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
           REDIS_URL: redis://localhost:6379

@@ -4,7 +4,7 @@ on:
   push:
     branches: [develop]
     paths:
-      - 'apps/mularpay-api/**'
+      - 'apps/raverpay-api/**'
       - 'packages/**'
       - '.github/workflows/deploy-api-staging.yml'
 
@@ -31,15 +31,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @mularpay/shared build
+        run: pnpm --filter @raverpay/shared build
 
       - name: Generate Prisma Client
-        run: pnpm --filter @mularpay/mularpay-api prisma:generate
+        run: pnpm --filter @raverpay/raverpay-api prisma:generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
 
       - name: Build API
-        run: pnpm --filter @mularpay/mularpay-api build
+        run: pnpm --filter @raverpay/raverpay-api build
 
       - name: Deploy to Railway (Staging)
         uses: bervProject/railway-deploy@main
