@@ -133,24 +133,40 @@ export class CryptoBalanceService {
    * Uses official Venly API response format
    */
   private async updateTokenBalances(walletId: string, tokenBalances: any[]) {
+    // this.logger.debug(
+    //   `Received tokenBalances: ${JSON.stringify(tokenBalances, null, 2)}`,
+    // );
+
     // Check if we're in testnet mode
     const isTestnet = process.env.VENLY_ENV === 'sandbox';
 
-    const USDT_ADDRESS = isTestnet
-      ? process.env.POLYGON_AMOY_USDT_ADDRESS?.toLowerCase() || null
-      : process.env.POLYGON_USDT_ADDRESS?.toLowerCase() ||
-        '0xc2132d05d31c914a87c6611c10748aeb04b58e8f';
-    const USDC_ADDRESS = isTestnet
-      ? process.env.POLYGON_AMOY_USDC_ADDRESS?.toLowerCase() || null
-      : process.env.POLYGON_USDC_ADDRESS?.toLowerCase() ||
-        '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
-
     for (const tokenBalance of tokenBalances) {
       const tokenAddress = tokenBalance.tokenAddress.toLowerCase();
+      const tokenSymbol = tokenBalance.symbol.toUpperCase();
 
-      // Check which tokens this address matches (could be both if using same contract for testing)
-      const matchesUSDT = USDT_ADDRESS && tokenAddress === USDT_ADDRESS;
-      const matchesUSDC = USDC_ADDRESS && tokenAddress === USDC_ADDRESS;
+      let matchesUSDT = false;
+      let matchesUSDC = false;
+
+      if (isTestnet) {
+        // For testnet, match by symbol instead of address
+        matchesUSDT = tokenSymbol === 'USDT';
+        matchesUSDC = tokenSymbol === 'USDC';
+      } else {
+        // For mainnet, match by address
+        const USDT_ADDRESS =
+          process.env.POLYGON_USDT_ADDRESS?.toLowerCase() ||
+          '0xc2132d05d31c914a87c6611c10748aeb04b58e8f';
+        const USDC_ADDRESS =
+          process.env.POLYGON_USDC_ADDRESS?.toLowerCase() ||
+          '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
+
+        matchesUSDT = tokenAddress === USDT_ADDRESS;
+        matchesUSDC = tokenAddress === USDC_ADDRESS;
+      }
+
+      // this.logger.debug(
+      //   `Token ${tokenBalance.tokenAddress}, symbol: ${tokenBalance.symbol}, matchesUSDT: ${matchesUSDT}, matchesUSDC: ${matchesUSDC}`,
+      // );
 
       // Skip if doesn't match any configured token
       if (!matchesUSDT && !matchesUSDC) {

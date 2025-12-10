@@ -305,7 +305,19 @@ export class NotificationDispatcherService {
       // Check if this is a P2P transfer event
       const p2pEventTypes = ['p2p_transfer_received', 'p2p_transfer_sent'];
 
-      if (vtuEventTypes.includes(event.eventType)) {
+      // Check if this is a crypto transaction event
+      const cryptoEventTypes = [
+        'crypto_sent',
+        'crypto_received',
+        'crypto_send_pending',
+        'crypto_send_completed',
+        'crypto_send_failed',
+      ];
+
+      if (cryptoEventTypes.includes(event.eventType)) {
+        // Use crypto-specific template
+        emailSent = await this.sendCryptoTransactionEmail(user, event);
+      } else if (vtuEventTypes.includes(event.eventType)) {
         // Use VTU-specific template
         emailSent = await this.sendVTUTransactionEmail(user, event);
       } else if (withdrawalEventTypes.includes(event.eventType)) {
@@ -567,6 +579,53 @@ export class NotificationDispatcherService {
       deviceType: (event.data?.deviceType as string) || 'unknown',
       deviceModel: event.data?.deviceModel as string | undefined,
       osVersion: event.data?.osVersion as string | undefined,
+    });
+  }
+
+  /**
+   * Send crypto transaction email with proper template
+   *
+   * @param user - User data
+   * @param event - Notification event
+   * @returns Whether email was sent successfully
+   */
+  private async sendCryptoTransactionEmail(
+    user: { email: string; firstName: string },
+    event: NotificationEvent,
+  ): Promise<boolean> {
+    // Determine transaction type and status
+    const transactionType =
+      event.eventType === 'crypto_received' ? 'RECEIVE' : 'SEND';
+
+    const statusMap = {
+      crypto_send_pending: 'PENDING' as const,
+      crypto_send_completed: 'COMPLETED' as const,
+      crypto_send_failed: 'FAILED' as const,
+      crypto_sent: 'COMPLETED' as const,
+      crypto_received: 'COMPLETED' as const,
+    };
+
+    const status = statusMap[event.eventType] || 'PENDING';
+
+    return await this.emailService.sendCryptoTransactionEmail(user.email, {
+      userName: user.firstName,
+      transactionType,
+      tokenSymbol: (event.data?.tokenSymbol as string) || 'USDT',
+      amount: (event.data?.amount as string) || '0',
+      usdValue: (event.data?.usdValue as string) || '0',
+      address: (event.data?.address as string) || 'N/A',
+      transactionHash: (event.data?.transactionHash as string) || 'N/A',
+      network: (event.data?.network as string) || 'MATIC',
+      status,
+      timestamp:
+        (event.data?.timestamp as string) ||
+        new Date().toLocaleString('en-NG', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }),
+      memo: event.data?.memo as string | undefined,
+      gasFee: event.data?.gasFee as string | undefined,
+      gasFeeUsd: event.data?.gasFeeUsd as string | undefined,
     });
   }
 

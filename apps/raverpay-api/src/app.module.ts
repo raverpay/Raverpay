@@ -33,6 +33,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    // Configure ConfigModule to load environment variables from .env file
+    ConfigModule.forRoot({
+      isGlobal: true, // Make ConfigModule available globally
+      envFilePath: '.env', // Path to .env file (relative to process.cwd())
+    }),
     ScheduleModule.forRoot(), // Enable cron jobs
     // Global rate limiting with Redis storage for distributed tracking
     ThrottlerModule.forRootAsync({

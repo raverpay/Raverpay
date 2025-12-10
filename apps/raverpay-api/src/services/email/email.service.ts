@@ -9,6 +9,7 @@ import { withdrawalTransactionEmailTemplate } from './templates/withdrawal-trans
 import { walletLockedTemplate } from './templates/wallet-locked.template';
 import { deviceVerificationTemplate } from './templates/device-verification.template';
 import { p2pTransferEmailTemplate } from './templates/p2p-transfer.template';
+import { cryptoTransactionEmailTemplate } from './templates/crypto-transaction.template';
 
 @Injectable()
 export class EmailService {
@@ -792,6 +793,72 @@ export class EmailService {
       return true;
     } catch (error) {
       this.logger.error(`Error sending P2P transfer email to ${email}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send crypto transaction email (sent or received)
+   */
+  async sendCryptoTransactionEmail(
+    email: string,
+    data: {
+      userName: string;
+      transactionType: 'SEND' | 'RECEIVE';
+      tokenSymbol: string;
+      amount: string;
+      usdValue: string;
+      address: string;
+      transactionHash: string;
+      network: string;
+      status: 'PENDING' | 'COMPLETED' | 'FAILED';
+      timestamp: string;
+      memo?: string;
+      gasFee?: string;
+      gasFeeUsd?: string;
+    },
+  ): Promise<boolean> {
+    if (!this.enabled) {
+      this.logger.log(
+        `📧 [MOCK] Crypto transaction email to ${email}: ${data.transactionType} ${data.status}`,
+      );
+      return true;
+    }
+
+    if (!this.resend) {
+      this.logger.warn(
+        `📧 [MOCK] Would send crypto transaction email to ${email}`,
+      );
+      return true;
+    }
+
+    try {
+      const { html, subject } = cryptoTransactionEmailTemplate(data);
+
+      const result = await this.resend.emails.send({
+        from: `${this.fromName} <${this.fromEmail}>`,
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (result.error) {
+        this.logger.error(
+          `Failed to send crypto transaction email to ${email}:`,
+          result.error,
+        );
+        return false;
+      }
+
+      this.logger.log(
+        `✅ Crypto transaction email sent to ${email} (ID: ${result.data?.id})`,
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Error sending crypto transaction email to ${email}:`,
+        error,
+      );
       return false;
     }
   }

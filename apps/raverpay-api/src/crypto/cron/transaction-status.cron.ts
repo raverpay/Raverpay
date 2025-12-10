@@ -1,0 +1,190 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { PrismaService } from '../../prisma/prisma.service';
+import { VenlyService } from '../venly/venly.service';
+import { CryptoSendService } from '../services/crypto-send.service';
+import { CryptoTransactionStatus } from '@prisma/client';
+
+/**
+ * Transaction Status Check Cron Job
+ *
+ * Periodically checks pending crypto transactions and updates their status.
+ * This serves as a fallback mechanism in case webhooks fail or are missed.
+ *
+ * Runs every 5 minutes to check transactions that have been pending for more than 2 minutes.
+ */
+@Injectable()
+export class TransactionStatusCron {
+  private readonly logger = new Logger(TransactionStatusCron.name);
+  private isRunning = false;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly venly: VenlyService,
+    private readonly cryptoSend: CryptoSendService,
+  ) {}
+
+  /**
+   * Check pending transactions every 5 minutes
+   * Only checks transactions older than 2 minutes to avoid race conditions with webhooks
+   */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async checkPendingTransactions() {
+    if (this.isRunning) {
+      this.logger.log('Previous job still running, skipping...');
+      return;
+    }
+
+    this.isRunning = true;
+
+    try {
+      this.logger.log('Starting pending transaction status check...');
+
+      // Find transactions that have been pending for more than 2 minutes
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+
+      const pendingTransactions = await this.prisma.cryptoTransaction.findMany({
+        where: {
+          status: CryptoTransactionStatus.PENDING,
+          submittedAt: {
+            lt: twoMinutesAgo, // Only check transactions older than 2 minutes
+          },
+        },
+        take: 50, // Process max 50 transactions at a time
+        orderBy: {
+          submittedAt: 'asc', // Check oldest first
+        },
+      });
+
+      if (pendingTransactions.length === 0) {
+        this.logger.log('No pending transactions to check');
+        return;
+      }
+
+      this.logger.log(
+        `Found ${pendingTransactions.length} pending transactions to check`,
+      );
+
+      let checkedCount = 0;
+      let updatedCount = 0;
+
+      // Check each transaction status
+      for (const transaction of pendingTransactions) {
+        try {
+          // Get transaction status from Venly
+          const status = await this.venly.getTransactionStatus(
+            'MATIC', // secretType for Polygon
+            transaction.transactionHash,
+          );
+
+          checkedCount++;
+
+          // Update transaction based on status
+          if (status.status === 'SUCCEEDED') {
+            this.logger.log(
+              `Transaction ${transaction.transactionHash} succeeded`,
+            );
+
+            // Use the same handler as webhook
+            await this.cryptoSend.handleTransactionSuccess(
+              transaction.transactionHash,
+              {
+                result: status,
+                eventType: 'TRANSACTION_SUCCEEDED',
+              },
+            );
+
+            updatedCount++;
+          } else if (status.status === 'FAILED') {
+            this.logger.log(
+              `Transaction ${transaction.transactionHash} failed`,
+            );
+
+            // Use the same handler as webhook
+            await this.cryptoSend.handleTransactionFailure(
+              transaction.transactionHash,
+              {
+                result: status,
+                eventType: 'TRANSACTION_FAILED',
+              },
+            );
+
+            updatedCount++;
+          } else {
+            this.logger.log(
+              `Transaction ${transaction.transactionHash} still pending`,
+            );
+          }
+
+          // Small delay to avoid rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        } catch (error) {
+          this.logger.error(
+            `Failed to check transaction ${transaction.transactionHash}`,
+            error,
+          );
+          // Continue with next transaction
+        }
+      }
+
+      this.logger.log(
+        `Transaction status check complete: ${checkedCount} checked, ${updatedCount} updated`,
+      );
+    } catch (error) {
+      this.logger.error('Error in transaction status check cron', error);
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
+  /**
+   * Check a specific transaction immediately (can be called manually)
+   */
+  async checkTransactionStatus(transactionHash: string): Promise<void> {
+    try {
+      this.logger.log(`Manually checking transaction: ${transactionHash}`);
+
+      const transaction = await this.prisma.cryptoTransaction.findUnique({
+        where: { transactionHash },
+      });
+
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+
+      if (transaction.status !== CryptoTransactionStatus.PENDING) {
+        this.logger.log(`Transaction already ${transaction.status}`);
+        return;
+      }
+
+      // Get transaction status from Venly
+      const status = await this.venly.getTransactionStatus(
+        'MATIC',
+        transactionHash,
+      );
+
+      // Update transaction based on status
+      if (status.status === 'SUCCEEDED') {
+        await this.cryptoSend.handleTransactionSuccess(transactionHash, {
+          result: status,
+          eventType: 'TRANSACTION_SUCCEEDED',
+        });
+      } else if (status.status === 'FAILED') {
+        await this.cryptoSend.handleTransactionFailure(transactionHash, {
+          result: status,
+          eventType: 'TRANSACTION_FAILED',
+        });
+      }
+
+      this.logger.log(
+        `Transaction ${transactionHash} status: ${status.status}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to check transaction status for ${transactionHash}`,
+        error,
+      );
+      throw error;
+    }
+  }
+}

@@ -131,6 +131,19 @@ export class CryptoController {
     return this.cryptoService.getTransactionDetails(userId, transactionId);
   }
 
+  /**
+   * Manually check transaction status (force update from blockchain)
+   * POST /v1/crypto/transactions/:id/check-status
+   */
+  @Post('transactions/:id/check-status')
+  @UseGuards(JwtAuthGuard)
+  async checkTransactionStatus(
+    @GetUser('id') userId: string,
+    @Param('id') transactionId: string,
+  ) {
+    return this.cryptoService.checkTransactionStatus(userId, transactionId);
+  }
+
   // ============================================
   // CONVERSIONS (Crypto → Naira)
   // ============================================

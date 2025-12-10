@@ -18,12 +18,14 @@ import { PriceService } from './services/price.service';
 // Cron jobs
 import { BalanceSyncCron } from './cron/balance-sync.cron';
 import { PriceUpdateCron } from './cron/price-update.cron';
+import { TransactionStatusCron } from './cron/transaction-status.cron';
 
 // Dependencies
 import { PrismaModule } from '../prisma/prisma.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, NotificationsModule],
   controllers: [CryptoController],
   providers: [
     // Main service
@@ -45,6 +47,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     // Cron jobs
     BalanceSyncCron,
     PriceUpdateCron,
+    TransactionStatusCron,
   ],
   exports: [
     CryptoService,

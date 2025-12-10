@@ -87,6 +87,13 @@ export class CryptoService {
     return this.cryptoSend.getTransaction(userId, transactionId);
   }
 
+  async checkTransactionStatus(userId: string, transactionId: string) {
+    return this.cryptoSend.checkAndUpdateTransactionStatus(
+      userId,
+      transactionId,
+    );
+  }
+
   // ============================================
   // CONVERSION OPERATIONS
   // ============================================
@@ -145,20 +152,44 @@ export class CryptoService {
 
   async handleVenlyWebhook(payload: any) {
     try {
-      this.logger.log(`Received Venly webhook: ${payload.eventType}`);
+      this.logger.log(
+        `Received Venly webhook: ${payload.eventType || 'UNKNOWN'}`,
+      );
+      this.logger.debug(`Webhook payload: ${JSON.stringify(payload)}`);
 
-      // Log webhook for debugging
-      // await this.prisma.cryptoWebhookLog.create({
-      //   data: {
-      //     eventType: payload.eventType,
-      //     payload: payload,
-      //     transactionHash: payload.transactionHash,
-      //     processed: false,
-      //   },
-      // });
+      // Extract transaction hash from different possible payload structures
+      const transactionHash =
+        payload.transactionHash || payload.result?.hash || payload.hash || null;
 
-      // Handle different webhook events
-      // TODO: Implement webhook processing logic
+      if (!transactionHash) {
+        this.logger.warn('No transaction hash found in webhook payload');
+        return { success: false, error: 'No transaction hash provided' };
+      }
+
+      // Handle transaction status updates
+      if (
+        payload.eventType === 'TRANSACTION_SUCCEEDED' ||
+        payload.status === 'SUCCEEDED' ||
+        payload.result?.status === 'SUCCEEDED'
+      ) {
+        await this.cryptoSend.handleTransactionSuccess(
+          transactionHash,
+          payload,
+        );
+      } else if (
+        payload.eventType === 'TRANSACTION_FAILED' ||
+        payload.status === 'FAILED' ||
+        payload.result?.status === 'FAILED'
+      ) {
+        await this.cryptoSend.handleTransactionFailure(
+          transactionHash,
+          payload,
+        );
+      } else {
+        this.logger.log(
+          `Unhandled webhook event type: ${payload.eventType || 'UNKNOWN'}`,
+        );
+      }
 
       return { success: true };
     } catch (error) {
