@@ -6,12 +6,15 @@
 
 **RaverPay Fintech** is a comprehensive fintech platform designed for the Nigerian market, offering:
 
-- 💰 **Wallet System**: Fund wallet, withdraw, transfer
-- 📱 **VTU Services**: Airtime & Data purchase (MTN, Glo, Airtel, 9Mobile)
-- 🎁 **Gift Card Trading**: Buy/sell gift cards (Amazon, Apple, Steam, etc.)
-- ₿ **Crypto Trading**: Buy/sell Bitcoin, Ethereum, USDT
-- 🔐 **Secure KYC**: Tiered verification system (BVN, ID cards)
-- 👨‍💼 **Admin Dashboard**: Comprehensive management tools
+- 💰 **Wallet System**: Fund wallet, withdraw, transfer, P2P payments
+- 📱 **VTU Services**: Airtime & Data purchase, Cable TV, Electricity bills
+- 🎁 **Gift Card Trading**: Buy/sell gift cards (admin-managed)
+- ₿ **Crypto Trading**: Buy/sell Bitcoin, Ethereum, USDT with Venly integration
+- 🔐 **Secure KYC**: Tiered verification system with BVN/NIN validation
+- 👨‍💼 **Admin Dashboard**: Comprehensive management tools (basic scaffold)
+- 📧 **Notifications**: Email, SMS, push, and in-app notifications
+- 🎫 **Cashback System**: Earn rewards on transactions
+- 🎧 **Support System**: Ticketing, live chat, help center
 
 ## 🏗️ Architecture
 
@@ -20,10 +23,9 @@ This is a **monorepo** containing:
 ```
 RaverPay-fintech/
 ├── apps/
-│   ├── api/          # NestJS backend API
-│   ├── mobile/       # React Native (Expo) mobile app
-│   ├── web/          # Next.js web application
-│   └── admin/        # Next.js admin dashboard
+│   ├── raverpay-api/          # NestJS backend API
+│   ├── raverpay-web/          # Next.js web application (basic scaffold)
+│   └── raverpay-admin/        # Next.js admin dashboard (basic scaffold)
 ├── packages/
 │   ├── shared/       # Shared types and utilities
 │   └── config/       # Shared configuration
@@ -44,7 +46,7 @@ RaverPay-fintech/
 
 ### Mobile
 
-- **Framework**: React Native + Expo
+- **Framework**: React Native + Expo (planned)
 - **Router**: Expo Router
 - **State**: Zustand + React Query
 - **Forms**: React Hook Form + Zod
@@ -62,7 +64,10 @@ RaverPay-fintech/
 - **Payments**: Paystack
 - **VTU**: VTPass
 - **Bank Verification**: Mono
+- **Crypto Wallets**: Venly
 - **Media Storage**: Cloudinary
+- **Email**: Resend
+- **SMS**: VTPass Messaging
 - **Monitoring**: Sentry (planned)
 
 ## 🛠️ Getting Started
@@ -80,7 +85,7 @@ RaverPay-fintech/
 
    ```bash
    git clone <repository-url>
-   cd -RaverPay-fintech
+   cd RaverPay-fintech
    ```
 
 2. **Install dependencies**
@@ -92,15 +97,14 @@ RaverPay-fintech/
 3. **Set up environment variables**
 
    Copy `.env.example` files in each app and fill in your credentials:
-   - `apps/api/.env`
-   - `apps/mobile/.env`
-   - `apps/web/.env`
-   - `apps/admin/.env`
+   - `apps/raverpay-api/.env`
+   - `apps/raverpay-web/.env`
+   - `apps/raverpay-admin/.env`
 
 4. **Set up database**
 
    ```bash
-   cd apps/api
+   cd apps/raverpay-api
    pnpm prisma:generate
    pnpm prisma:migrate
    pnpm prisma:seed
@@ -113,9 +117,6 @@ RaverPay-fintech/
    ```bash
    # API (Port 3001)
    pnpm dev:api
-
-   # Mobile (Expo)
-   pnpm dev:mobile
 
    # Web (Port 3000)
    pnpm dev:web
@@ -153,25 +154,66 @@ See the [docs/](./docs) folder for detailed documentation:
 - Database schema
 - Basic authentication
 
-### Phase 1: Backend Core (In Progress)
+### Phase 1: Backend Core ✅
 
-- User authentication
-- Wallet system
-- Transaction management
+- User authentication & JWT
+- User management & KYC verification
+- Wallet system with balance tracking
+- Transaction management (deposits, withdrawals, transfers)
+- Paystack payment integration
+- Virtual accounts for funding
+- Email & SMS verification services
+- Device management & security
+- Rate limiting & audit logging
+- Notification system (email, SMS, push, in-app)
+- Support ticketing & conversations
+- Cashback system
+- P2P transfers
 
-### Phase 2: Mobile MVP
+### Phase 2: VTU Services ✅
 
-- User registration/login
-- Wallet UI
-- Airtime/Data purchase
-
-### Phase 3: VTU Integration
-
-- Paystack integration
+- Airtime purchase (local & international)
+- Data bundle subscriptions
+- Cable TV payments (DStv, GOtv, StarTimes, Showmax)
+- Electricity bill payments (all DISCOs)
 - VTPass integration
-- Transaction processing
+- Order tracking & webhooks
 
-### Phase 4-9: See [docs/ROADMAP.md](./docs/ROADMAP.md)
+### Phase 3: Crypto Trading ✅
+
+- Crypto wallet management (Venly integration)
+- Buy/sell Bitcoin, Ethereum, USDT
+- Crypto balance tracking
+- Transaction monitoring
+- Exchange rate management
+- Webhook handling for crypto transactions
+
+### Phase 4: Gift Card Trading (Admin Only)
+
+- Gift card order management
+- Admin approval system
+- Rate management
+
+### Phase 5: Mobile App (Planned)
+
+- React Native + Expo implementation
+- User authentication screens
+- Wallet dashboard
+- VTU service interfaces
+- Transaction history
+- Push notifications
+
+### Phase 6: Web App (Basic Scaffold)
+
+- Next.js application structure
+- Basic routing setup
+
+### Phase 7: Admin Dashboard (Basic Scaffold)
+
+- Next.js admin interface
+- User management
+- Transaction monitoring
+- System configuration
 
 ## 🧪 Testing
 
@@ -191,7 +233,7 @@ pnpm --filter @RaverPay/api test:cov
 ### API (Railway)
 
 ```bash
-cd apps/api
+cd apps/raverpay-api
 pnpm build
 # Deploy to Railway
 ```
@@ -199,7 +241,11 @@ pnpm build
 ### Web/Admin (Vercel)
 
 ```bash
-cd apps/web
+cd apps/raverpay-web
+pnpm build
+# Deploy to Vercel
+
+cd apps/raverpay-admin
 pnpm build
 # Deploy to Vercel
 ```
@@ -212,12 +258,47 @@ The app uses **PostgreSQL** with **Prisma ORM**.
 
 Key models:
 
-- `User` - User accounts with KYC tiers
-- `Wallet` - User wallets with balance tracking
-- `Transaction` - Double-entry transaction logs
-- `VTUOrder` - Airtime/Data purchases
-- `GiftCardOrder` - Gift card trades
-- `CryptoOrder` - Crypto trades
+- `User` - User accounts with KYC tiers, authentication, and profile data
+- `Wallet` - User wallets with balance tracking (Naira, Crypto, USD)
+- `Transaction` - Double-entry transaction logs with full audit trail
+- `RefreshToken` - JWT refresh token management
+- `Device` - Device tracking for security
+- `BankAccount` - User bank account information
+- `VirtualAccount` - Paystack virtual accounts for funding
+- `VTUOrder` - Airtime, data, cable TV, and electricity purchases
+- `CryptoOrder` - Cryptocurrency buy/sell orders
+- `CryptoTransaction` - Detailed crypto transaction records
+- `CryptoBalance` - Real-time crypto wallet balances
+- `CryptoConversion` - Crypto to Naira conversion tracking
+- `GiftCardOrder` - Gift card trading orders
+- `Notification` - User notifications (email, SMS, push, in-app)
+- `NotificationPreference` - User notification settings
+- `AuditLog` - Comprehensive audit logging
+- `Conversation` - Support chat conversations
+- `Message` - Support chat messages
+- `Ticket` - Support tickets
+- `CashbackWallet` - User cashback balance tracking
+- `CashbackTransaction` - Cashback earnings and redemptions
+- `P2PTransfer` - Peer-to-peer money transfers
+- `RateLimitViolation` - Rate limiting tracking
+- `DailyTransactionLimit` - Daily spending limits per user
+- `SavedRecipient` - Saved VTU recipients
+- `AccountDeletionRequest` - Account deletion workflow
+- `InboundEmail` - Email processing for support
+- `HelpCollection` & `HelpArticle` - Help center content
+- `CannedResponse` - Support agent response templates
+- `SystemConfig` - System-wide configuration
+- `AppRatingConfig` - App rating prompt settings
+- `ExchangeRate` - Currency exchange rates
+- `CryptoPrice` - Cryptocurrency price data
+- `VenlyUser` - Venly wallet integration
+- `EmailRouting` - Email routing rules
+- `WithdrawalConfig` - Withdrawal fee configuration
+- `CryptoWebhookLog` - Crypto webhook processing logs
+- `NotificationTemplate` - Notification template management
+- `NotificationQueue` - Queued notifications
+- `NotificationLog` - Notification delivery logs
+- `RateLimitMetrics` - Rate limiting analytics
 
 See [DATABASE.md](./docs/DATABASE.md) for full schema.
 
@@ -232,6 +313,9 @@ Critical variables:
 - `JWT_SECRET` - JWT signing secret
 - `PAYSTACK_SECRET_KEY` - Paystack API key
 - `VTPASS_API_KEY` - VTPass API key
+- `RESEND_API_KEY` - Email service API key
+- `VENLY_CLIENT_ID` - Venly crypto wallet API key
+- `CLOUDINARY_CLOUD_NAME` - Media storage credentials
 
 ## 🤝 Contributing
 
