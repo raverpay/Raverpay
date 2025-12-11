@@ -81,6 +81,28 @@ export class AdminEmailsController {
   }
 
   /**
+   * Manually process an email from Resend by email ID
+   * POST /api/admin/emails/process-from-resend
+   *
+   * Use this to recover emails from missed webhook events
+   * Requires ADMIN or SUPER_ADMIN role
+   *
+   * NOTE: This route MUST be defined before the :id routes to prevent
+   * 'process-from-resend' from being matched as an ID parameter
+   */
+  @Post('process-from-resend')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async processEmailFromResend(
+    @Body('emailId') emailId: string,
+    @GetUser('id') userId: string,
+  ) {
+    this.logger.log(
+      `Admin ${userId} manually processing email ${emailId} from Resend`,
+    );
+    return this.webhookService.manuallyProcessEmail(emailId);
+  }
+
+  /**
    * Get email by ID
    * GET /api/admin/emails/:id
    */
@@ -188,24 +210,5 @@ export class AdminEmailsController {
       userId,
       toEmail || 'raverpay@outlook.com',
     );
-  }
-
-  /**
-   * Manually process an email from Resend by email ID
-   * POST /api/admin/emails/process-from-resend
-   *
-   * Use this to recover emails from missed webhook events
-   * Requires ADMIN or SUPER_ADMIN role
-   */
-  @Post('process-from-resend')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  async processEmailFromResend(
-    @Body('emailId') emailId: string,
-    @GetUser('id') userId: string,
-  ) {
-    this.logger.log(
-      `Admin ${userId} manually processing email ${emailId} from Resend`,
-    );
-    return this.webhookService.manuallyProcessEmail(emailId);
   }
 }

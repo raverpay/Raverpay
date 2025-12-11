@@ -568,22 +568,36 @@ export class AdminEmailsService {
         );
       }
 
-      const attachmentsData = attachmentsResponse;
-
       // Find the matching attachment in the response
       // Check both possible array locations (API response varies)
-      const attachmentsList = Array.isArray(attachmentsData.data)
-        ? attachmentsData.data
-        : Array.isArray(attachmentsData)
-          ? attachmentsData
+      const attachmentsList = Array.isArray(attachmentsResponse.data)
+        ? attachmentsResponse.data
+        : Array.isArray(attachmentsResponse.data.data)
+          ? attachmentsResponse.data.data
           : [];
+
+      this.logger.debug(
+        `Attachments response structure: ${JSON.stringify({
+          hasData: !!attachmentsResponse.data,
+          dataIsArray: Array.isArray(attachmentsResponse.data),
+          hasDataData: !!(attachmentsResponse.data as any)?.data,
+          dataDataIsArray: Array.isArray(
+            (attachmentsResponse.data as any)?.data,
+          ),
+          attachmentsCount: attachmentsList.length,
+          attachmentIds: attachmentsList.map((a: any) => a.id),
+          lookingFor: attachmentId,
+        })}`,
+      );
 
       const resendAttachment = attachmentsList.find(
         (att: any) => att.id === attachmentId,
       );
 
       if (!resendAttachment) {
-        throw new NotFoundException('Attachment not found in Resend');
+        throw new NotFoundException(
+          `Attachment not found in Resend. Available IDs: ${attachmentsList.map((a: any) => a.id).join(', ') || 'none'}. Looking for: ${attachmentId}`,
+        );
       }
 
       // Download the attachment content from the download URL
