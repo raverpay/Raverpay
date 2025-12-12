@@ -186,7 +186,7 @@ jobs:
       - name: Deploy raverpay-api to Railway
         run: |
           cd apps/raverpay-api
-          railway up --service raverpay-api --detach
+          railway up --service @raverpay/raverpay-api --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
