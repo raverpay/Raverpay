@@ -1,22 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, use } from 'react';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import {
-  Send,
-  ArrowLeft,
-  MoreVertical,
-  User,
-  X,
-  MessageSquare,
-  FileText,
-} from 'lucide-react';
+import { Send, ArrowLeft, MoreVertical, User, X, MessageSquare, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supportApi } from '@/lib/api/support';
@@ -50,17 +37,10 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatRelativeTime, getApiErrorMessage, cn } from '@/lib/utils';
-import {
-  ConversationStatus,
-  SenderType,
-  Message,
-  CannedResponse,
-} from '@/types/support';
+import { ConversationStatus, SenderType, Message, CannedResponse } from '@/types/support';
 
 function MessageBubble({ message }: { message: Message }) {
-  const isAgent =
-    message.senderType === SenderType.AGENT ||
-    message.senderType === SenderType.BOT;
+  const isAgent = message.senderType === SenderType.AGENT || message.senderType === SenderType.BOT;
   const isSystem = message.senderType === SenderType.SYSTEM;
 
   if (isSystem) {
@@ -80,7 +60,7 @@ function MessageBubble({ message }: { message: Message }) {
           'max-w-[70%] rounded-2xl px-4 py-2',
           isAgent
             ? 'bg-primary text-primary-foreground rounded-br-none'
-            : 'bg-muted rounded-bl-none'
+            : 'bg-muted rounded-bl-none',
         )}
       >
         {message.senderType === SenderType.BOT && (
@@ -90,7 +70,7 @@ function MessageBubble({ message }: { message: Message }) {
         <div
           className={cn(
             'text-xs mt-1',
-            isAgent ? 'text-primary-foreground/70' : 'text-muted-foreground'
+            isAgent ? 'text-primary-foreground/70' : 'text-muted-foreground',
           )}
         >
           {formatRelativeTime(message.createdAt)}
@@ -100,11 +80,7 @@ function MessageBubble({ message }: { message: Message }) {
   );
 }
 
-export default function ConversationDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ConversationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -137,9 +113,7 @@ export default function ConversationDetailPage({
         limit: 50,
       }),
     getNextPageParam: (lastPage) =>
-      lastPage.meta.page < lastPage.meta.totalPages
-        ? lastPage.meta.page + 1
-        : undefined,
+      lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined,
     initialPageParam: 1,
     refetchInterval: 5000, // Poll every 5 seconds
   });
@@ -157,8 +131,7 @@ export default function ConversationDetailPage({
 
   // Mutations
   const sendMessageMutation = useMutation({
-    mutationFn: (content: string) =>
-      supportApi.sendMessage(resolvedParams.id, { content }),
+    mutationFn: (content: string) => supportApi.sendMessage(resolvedParams.id, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['conversation-messages', resolvedParams.id],
@@ -186,8 +159,7 @@ export default function ConversationDetailPage({
   });
 
   const transferMutation = useMutation({
-    mutationFn: (agentId: string) =>
-      supportApi.transferConversation(resolvedParams.id, agentId),
+    mutationFn: (agentId: string) => supportApi.transferConversation(resolvedParams.id, agentId),
     onSuccess: () => {
       setShowTransferDialog(false);
       toast.success('Conversation transferred');
@@ -201,8 +173,7 @@ export default function ConversationDetailPage({
   });
 
   // Flatten messages and reverse for chronological order
-  const messages: Message[] =
-    messagesData?.pages.flatMap((page) => page.data).reverse() || [];
+  const messages: Message[] = messagesData?.pages.flatMap((page) => page.data).reverse() || [];
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -247,8 +218,7 @@ export default function ConversationDetailPage({
   const isUnassigned = !assignedAgentId;
 
   // Can send if: super admin, assigned agent, or conversation is unassigned
-  const canSendMessages =
-    isConversationActive && (isSuperAdmin || isAssignedAgent || isUnassigned);
+  const canSendMessages = isConversationActive && (isSuperAdmin || isAssignedAgent || isUnassigned);
 
   // Get the name of the assigned agent for display
   const assignedAgentName = conversation?.ticket?.assignedAgent
@@ -283,9 +253,7 @@ export default function ConversationDetailPage({
               <div className="font-medium">
                 {conversation?.user?.firstName} {conversation?.user?.lastName}
               </div>
-              <div className="text-sm text-muted-foreground">
-                {conversation?.user?.email}
-              </div>
+              <div className="text-sm text-muted-foreground">{conversation?.user?.email}</div>
             </div>
           </div>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
@@ -373,7 +341,8 @@ export default function ConversationDetailPage({
               {isUnassigned && (
                 <Alert className="mb-3">
                   <AlertDescription>
-                    This conversation is unassigned. Sending a message will automatically assign it to you.
+                    This conversation is unassigned. Sending a message will automatically assign it
+                    to you.
                   </AlertDescription>
                 </Alert>
               )}
@@ -439,7 +408,8 @@ export default function ConversationDetailPage({
             <div className="p-4 border-t bg-muted">
               <Alert variant="destructive">
                 <AlertDescription>
-                  This conversation is assigned to <strong>{assignedAgentName}</strong>. You cannot send messages.
+                  This conversation is assigned to <strong>{assignedAgentName}</strong>. You cannot
+                  send messages.
                 </AlertDescription>
               </Alert>
             </div>
@@ -481,9 +451,7 @@ export default function ConversationDetailPage({
               )}
               {conversation?.transactionContext && (
                 <div>
-                  <div className="text-xs text-muted-foreground">
-                    Transaction Context
-                  </div>
+                  <div className="text-xs text-muted-foreground">Transaction Context</div>
                   <div className="text-sm bg-muted p-2 rounded mt-1">
                     <div>Type: {conversation.transactionContext.transactionType}</div>
                     {conversation.transactionContext.amount && (
@@ -508,9 +476,7 @@ export default function ConversationDetailPage({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Transfer Conversation</DialogTitle>
-            <DialogDescription>
-              Select an agent to transfer this conversation to.
-            </DialogDescription>
+            <DialogDescription>Select an agent to transfer this conversation to.</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Select value={selectedAgent} onValueChange={setSelectedAgent}>
@@ -520,18 +486,14 @@ export default function ConversationDetailPage({
               <SelectContent>
                 {agents?.map((agent) => (
                   <SelectItem key={agent.id} value={agent.id}>
-                    {agent.firstName} {agent.lastName} ({agent.activeChats} active
-                    chats)
+                    {agent.firstName} {agent.lastName} ({agent.activeChats} active chats)
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowTransferDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setShowTransferDialog(false)}>
               Cancel
             </Button>
             <Button

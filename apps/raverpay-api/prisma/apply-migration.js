@@ -6,7 +6,8 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const connectionString = "postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10";
+const connectionString =
+  'postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10';
 
 async function applyMigration() {
   const client = new Client({ connectionString });
@@ -17,7 +18,10 @@ async function applyMigration() {
     console.log('✅ Connected successfully!\n');
 
     // Read the migration file
-    const migrationPath = path.join(__dirname, 'prisma/migrations/add_saved_recipients.sql');
+    const migrationPath = path.join(
+      __dirname,
+      'prisma/migrations/add_saved_recipients.sql',
+    );
     const sql = fs.readFileSync(migrationPath, 'utf8');
 
     console.log('📊 Applying migration...');
@@ -27,7 +31,7 @@ async function applyMigration() {
     // Verify table was created
     console.log('🔍 Verifying table creation...');
     const result = await client.query(
-      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'saved_recipients'"
+      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'saved_recipients'",
     );
 
     if (result.rows.length > 0) {
@@ -52,7 +56,6 @@ async function applyMigration() {
     } else {
       console.log('❌ Table was not created. Please check the migration file.');
     }
-
   } catch (error) {
     console.error('❌ Error applying migration:', error.message);
     console.error('\nFull error:', error);

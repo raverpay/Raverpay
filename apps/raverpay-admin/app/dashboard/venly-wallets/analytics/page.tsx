@@ -124,9 +124,7 @@ export default function AnalyticsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {getCompletedPercentage()}%
-              </div>
+              <div className="text-2xl font-bold text-green-600">{getCompletedPercentage()}%</div>
             </CardContent>
           </Card>
 
@@ -144,10 +142,12 @@ export default function AnalyticsPage() {
                 {analytics.conversions.totalCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                ${parseFloat(analytics.conversions.totalVolumeUSD).toLocaleString('en-US', {
+                $
+                {parseFloat(analytics.conversions.totalVolumeUSD).toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })} total volume
+                })}{' '}
+                total volume
               </p>
             </CardContent>
           </Card>
@@ -174,7 +174,9 @@ export default function AnalyticsPage() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{item.type.replace('_', ' ')}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">{item.count.toLocaleString()}</span>
+                          <span className="text-muted-foreground">
+                            {item.count.toLocaleString()}
+                          </span>
                           <span className="font-medium">{percentage.toFixed(1)}%</span>
                         </div>
                       </div>
@@ -228,7 +230,9 @@ export default function AnalyticsPage() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{item.status}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">{item.count.toLocaleString()}</span>
+                          <span className="text-muted-foreground">
+                            {item.count.toLocaleString()}
+                          </span>
                           <span className="font-medium">{percentage.toFixed(1)}%</span>
                         </div>
                       </div>
@@ -261,21 +265,24 @@ export default function AnalyticsPage() {
           ) : analytics && analytics.dailyVolume.length > 0 ? (
             <div className="space-y-2">
               <div className="grid grid-cols-7 gap-2">
-                {analytics.dailyVolume.slice(0, 28).reverse().map((item) => (
-                  <div key={item.date} className="space-y-1">
-                    <div className="text-xs text-center text-muted-foreground">
-                      {new Date(item.date).getDate()}
+                {analytics.dailyVolume
+                  .slice(0, 28)
+                  .reverse()
+                  .map((item) => (
+                    <div key={item.date} className="space-y-1">
+                      <div className="text-xs text-center text-muted-foreground">
+                        {new Date(item.date).getDate()}
+                      </div>
+                      <div
+                        className="bg-primary rounded-sm transition-all hover:bg-primary/80"
+                        style={{
+                          height: `${Math.max((item.count / 10) * 100, 10)}px`,
+                        }}
+                        title={`${item.count} transactions - $${item.volume}`}
+                      />
+                      <div className="text-xs text-center font-medium">{item.count}</div>
                     </div>
-                    <div
-                      className="bg-primary rounded-sm transition-all hover:bg-primary/80"
-                      style={{
-                        height: `${Math.max((item.count / 10) * 100, 10)}px`,
-                      }}
-                      title={`${item.count} transactions - $${item.volume}`}
-                    />
-                    <div className="text-xs text-center font-medium">{item.count}</div>
-                  </div>
-                ))}
+                  ))}
               </div>
               <p className="text-xs text-muted-foreground text-center mt-4">
                 Hover over bars to see details
@@ -307,7 +314,8 @@ export default function AnalyticsPage() {
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Total Volume (USD)</p>
                 <p className="text-2xl font-bold">
-                  ${parseFloat(analytics.conversions.totalVolumeUSD).toLocaleString('en-US', {
+                  $
+                  {parseFloat(analytics.conversions.totalVolumeUSD).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -316,7 +324,8 @@ export default function AnalyticsPage() {
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Average Amount</p>
                 <p className="text-2xl font-bold">
-                  ${parseFloat(analytics.conversions.averageAmountUSD).toLocaleString('en-US', {
+                  $
+                  {parseFloat(analytics.conversions.averageAmountUSD).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}

@@ -2,7 +2,9 @@
 const Redis = require('ioredis');
 
 // Your current REDIS_URL from .env
-const REDIS_URL = process.env.REDIS_URL || 'rediss://default:AXHIAAIncDIxYjkzYTY3Mzg5OGU0MDBlYWE1YzBiYWZjNmI5NzAzMnAyMjkxMjg@select-malamute-29128.upstash.io:6379';
+const REDIS_URL =
+  process.env.REDIS_URL ||
+  'rediss://default:AXHIAAIncDIxYjkzYTY3Mzg5OGU0MDBlYWE1YzBiYWZjNmI5NzAzMnAyMjkxMjg@select-malamute-29128.upstash.io:6379';
 
 console.log('Testing Redis connection...');
 console.log('URL:', REDIS_URL.replace(/:[^:@]*@/, ':****@'));
@@ -13,7 +15,10 @@ console.log('\nParsed connection details:');
 console.log('- Host:', url.hostname);
 console.log('- Port:', url.port);
 console.log('- Username:', url.username);
-console.log('- Password:', url.password ? url.password.substring(0, 10) + '...' : 'none');
+console.log(
+  '- Password:',
+  url.password ? url.password.substring(0, 10) + '...' : 'none',
+);
 console.log('- Protocol:', url.protocol);
 
 // Try connecting
@@ -28,18 +33,22 @@ const redis = new Redis({
 
 redis.on('connect', () => {
   console.log('\n✅ Successfully connected to Redis!');
-  redis.set('test', 'hello').then(() => {
-    console.log('✅ SET test=hello');
-    return redis.get('test');
-  }).then((value) => {
-    console.log('✅ GET test =', value);
-    redis.disconnect();
-    process.exit(0);
-  }).catch((err) => {
-    console.error('❌ Error during test:', err.message);
-    redis.disconnect();
-    process.exit(1);
-  });
+  redis
+    .set('test', 'hello')
+    .then(() => {
+      console.log('✅ SET test=hello');
+      return redis.get('test');
+    })
+    .then((value) => {
+      console.log('✅ GET test =', value);
+      redis.disconnect();
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('❌ Error during test:', err.message);
+      redis.disconnect();
+      process.exit(1);
+    });
 });
 
 redis.on('error', (err) => {

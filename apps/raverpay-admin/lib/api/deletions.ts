@@ -10,14 +10,21 @@ export interface DeletionStatistics {
 }
 
 export const deletionsApi = {
-  getAll: async (params?: Record<string, unknown>): Promise<PaginatedResponse<AccountDeletionRequest>> => {
-    const response = await apiClient.get<PaginatedResponse<AccountDeletionRequest>>('/admin/deletions', {
-      params,
-    });
+  getAll: async (
+    params?: Record<string, unknown>,
+  ): Promise<PaginatedResponse<AccountDeletionRequest>> => {
+    const response = await apiClient.get<PaginatedResponse<AccountDeletionRequest>>(
+      '/admin/deletions',
+      {
+        params,
+      },
+    );
     return response.data;
   },
 
-  getPending: async (params?: Record<string, unknown>): Promise<PaginatedResponse<AccountDeletionRequest>> => {
+  getPending: async (
+    params?: Record<string, unknown>,
+  ): Promise<PaginatedResponse<AccountDeletionRequest>> => {
     const response = await apiClient.get<PaginatedResponse<AccountDeletionRequest>>(
       '/admin/deletions/pending',
       { params },

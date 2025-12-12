@@ -2,12 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  TrendingUp,
-  Users,
-  Wallet,
-  DollarSign,
-} from 'lucide-react';
+import { TrendingUp, Users, Wallet, DollarSign } from 'lucide-react';
 
 import { analyticsApi } from '@/lib/api/analytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -227,9 +222,7 @@ export default function AnalyticsPage() {
                       >
                         <div>
                           <p className="font-medium">{item.type}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {item.count} transactions
-                          </p>
+                          <p className="text-sm text-muted-foreground">{item.count} transactions</p>
                         </div>
                         <p className="font-bold">{formatCurrency(item.revenue)}</p>
                       </div>
@@ -266,10 +259,7 @@ export default function AnalyticsPage() {
                     <h4 className="text-sm font-medium mb-3">By KYC Tier</h4>
                     <div className="space-y-2">
                       {userGrowthData.byKYCTier.map((item) => (
-                        <div
-                          key={item.tier}
-                          className="flex items-center justify-between py-2"
-                        >
+                        <div key={item.tier} className="flex items-center justify-between py-2">
                           <span className="text-sm">{item.tier}</span>
                           <span className="font-medium">{item.count}</span>
                         </div>
@@ -283,10 +273,7 @@ export default function AnalyticsPage() {
                     <h4 className="text-sm font-medium mb-3">By Status</h4>
                     <div className="space-y-2">
                       {userGrowthData.byStatus.map((item) => (
-                        <div
-                          key={item.status}
-                          className="flex items-center justify-between py-2"
-                        >
+                        <div key={item.status} className="flex items-center justify-between py-2">
                           <span className="text-sm">{item.status}</span>
                           <span className="font-medium">{item.count}</span>
                         </div>
@@ -337,10 +324,7 @@ export default function AnalyticsPage() {
                     <h4 className="text-sm font-medium mb-3">By Status</h4>
                     <div className="space-y-2">
                       {transactionTrendsData.byStatus.map((item) => (
-                        <div
-                          key={item.status}
-                          className="flex items-center justify-between py-2"
-                        >
+                        <div key={item.status} className="flex items-center justify-between py-2">
                           <span className="text-sm">{item.status}</span>
                           <span className="font-medium">{item.count}</span>
                         </div>

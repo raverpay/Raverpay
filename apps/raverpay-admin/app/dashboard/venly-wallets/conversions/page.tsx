@@ -67,7 +67,8 @@ export default function ConversionsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${parseFloat(conversionsData.stats.totalVolumeUSD).toLocaleString('en-US', {
+                $
+                {parseFloat(conversionsData.stats.totalVolumeUSD).toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -86,7 +87,8 @@ export default function ConversionsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${parseFloat(conversionsData.stats.averageConversionUSD).toLocaleString('en-US', {
+                $
+                {parseFloat(conversionsData.stats.averageConversionUSD).toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -181,13 +183,15 @@ export default function ConversionsPage() {
                           })}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          ${parseFloat(conversion.usdValue).toLocaleString('en-US', {
+                          $
+                          {parseFloat(conversion.usdValue).toLocaleString('en-US', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          ₦{parseFloat(conversion.exchangeRate).toLocaleString('en-NG', {
+                          ₦
+                          {parseFloat(conversion.exchangeRate).toLocaleString('en-NG', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}

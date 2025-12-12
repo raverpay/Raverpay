@@ -3,28 +3,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  BookOpen,
-  FolderOpen,
-  Eye,
-  FileText,
-  Search,
-} from 'lucide-react';
+import { Plus, Pencil, Trash2, BookOpen, FolderOpen, Eye, FileText, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { helpApi } from '@/lib/api/help';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,10 +65,8 @@ export default function HelpCenterPage() {
 
   // Collections state
   const [showCollectionDialog, setShowCollectionDialog] = useState(false);
-  const [editingCollection, setEditingCollection] =
-    useState<HelpCollection | null>(null);
-  const [deletingCollection, setDeletingCollection] =
-    useState<HelpCollection | null>(null);
+  const [editingCollection, setEditingCollection] = useState<HelpCollection | null>(null);
+  const [deletingCollection, setDeletingCollection] = useState<HelpCollection | null>(null);
   const [collectionForm, setCollectionForm] = useState<CollectionFormData>({
     title: '',
     description: '',
@@ -94,9 +77,7 @@ export default function HelpCenterPage() {
   // Articles state
   const [showArticleDialog, setShowArticleDialog] = useState(false);
   const [editingArticle, setEditingArticle] = useState<HelpArticle | null>(null);
-  const [deletingArticle, setDeletingArticle] = useState<HelpArticle | null>(
-    null
-  );
+  const [deletingArticle, setDeletingArticle] = useState<HelpArticle | null>(null);
   const [articleForm, setArticleForm] = useState<ArticleFormData>({
     title: '',
     content: '',
@@ -117,13 +98,7 @@ export default function HelpCenterPage() {
   });
 
   const { data: articlesData, isLoading: loadingArticles } = useQuery({
-    queryKey: [
-      'help-articles',
-      articlesPage,
-      debouncedSearch,
-      collectionFilter,
-      statusFilter,
-    ],
+    queryKey: ['help-articles', articlesPage, debouncedSearch, collectionFilter, statusFilter],
     queryFn: () =>
       helpApi.getArticles({
         page: articlesPage,
@@ -360,9 +335,7 @@ export default function HelpCenterPage() {
                           <FolderOpen className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <CardTitle className="text-base">
-                            {collection.title}
-                          </CardTitle>
+                          <CardTitle className="text-base">{collection.title}</CardTitle>
                           <CardDescription>
                             {collection._count?.articles || 0} articles
                           </CardDescription>
@@ -399,10 +372,7 @@ export default function HelpCenterPage() {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FolderOpen className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No collections yet</p>
-                <Button
-                  variant="link"
-                  onClick={() => setShowCollectionDialog(true)}
-                >
+                <Button variant="link" onClick={() => setShowCollectionDialog(true)}>
                   Create your first collection
                 </Button>
               </CardContent>
@@ -425,10 +395,7 @@ export default function HelpCenterPage() {
                     className="pl-10"
                   />
                 </div>
-                <Select
-                  value={collectionFilter}
-                  onValueChange={setCollectionFilter}
-                >
+                <Select value={collectionFilter} onValueChange={setCollectionFilter}>
                   <SelectTrigger className="w-full md:w-[200px]">
                     <SelectValue placeholder="Collection" />
                   </SelectTrigger>
@@ -481,19 +448,11 @@ export default function HelpCenterPage() {
                       <TableBody>
                         {articlesData.data.map((article) => (
                           <TableRow key={article.id}>
-                            <TableCell className="font-medium">
-                              {article.title}
-                            </TableCell>
-                            <TableCell>
-                              {article.collection?.title || 'N/A'}
-                            </TableCell>
+                            <TableCell className="font-medium">{article.title}</TableCell>
+                            <TableCell>{article.collection?.title || 'N/A'}</TableCell>
                             <TableCell>
                               <Badge
-                                variant={
-                                  article.status === 'PUBLISHED'
-                                    ? 'success'
-                                    : 'secondary'
-                                }
+                                variant={article.status === 'PUBLISHED' ? 'success' : 'secondary'}
                               >
                                 {article.status}
                               </Badge>
@@ -506,9 +465,7 @@ export default function HelpCenterPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      publishArticleMutation.mutate(article.id)
-                                    }
+                                    onClick={() => publishArticleMutation.mutate(article.id)}
                                     disabled={publishArticleMutation.isPending}
                                   >
                                     Publish
@@ -517,9 +474,7 @@ export default function HelpCenterPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      unpublishArticleMutation.mutate(article.id)
-                                    }
+                                    onClick={() => unpublishArticleMutation.mutate(article.id)}
                                     disabled={unpublishArticleMutation.isPending}
                                   >
                                     Unpublish
@@ -561,10 +516,7 @@ export default function HelpCenterPage() {
                 <div className="flex flex-col items-center justify-center py-12">
                   <FileText className="h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No articles found</p>
-                  <Button
-                    variant="link"
-                    onClick={() => setShowArticleDialog(true)}
-                  >
+                  <Button variant="link" onClick={() => setShowArticleDialog(true)}>
                     Create your first article
                   </Button>
                 </div>
@@ -587,9 +539,7 @@ export default function HelpCenterPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingCollection ? 'Edit Collection' : 'Create Collection'}
-            </DialogTitle>
+            <DialogTitle>{editingCollection ? 'Edit Collection' : 'Create Collection'}</DialogTitle>
             <DialogDescription>
               {editingCollection
                 ? 'Update the collection details'
@@ -603,9 +553,7 @@ export default function HelpCenterPage() {
                 id="col-title"
                 placeholder="e.g., Getting Started"
                 value={collectionForm.title}
-                onChange={(e) =>
-                  setCollectionForm({ ...collectionForm, title: e.target.value })
-                }
+                onChange={(e) => setCollectionForm({ ...collectionForm, title: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -629,9 +577,7 @@ export default function HelpCenterPage() {
                 id="col-icon"
                 placeholder="e.g., rocket"
                 value={collectionForm.icon}
-                onChange={(e) =>
-                  setCollectionForm({ ...collectionForm, icon: e.target.value })
-                }
+                onChange={(e) => setCollectionForm({ ...collectionForm, icon: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -687,13 +633,9 @@ export default function HelpCenterPage() {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              {editingArticle ? 'Edit Article' : 'Create Article'}
-            </DialogTitle>
+            <DialogTitle>{editingArticle ? 'Edit Article' : 'Create Article'}</DialogTitle>
             <DialogDescription>
-              {editingArticle
-                ? 'Update the article details'
-                : 'Add a new help article'}
+              {editingArticle ? 'Update the article details' : 'Add a new help article'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -703,9 +645,7 @@ export default function HelpCenterPage() {
                 id="art-title"
                 placeholder="e.g., How to reset your password"
                 value={articleForm.title}
-                onChange={(e) =>
-                  setArticleForm({ ...articleForm, title: e.target.value })
-                }
+                onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -713,9 +653,7 @@ export default function HelpCenterPage() {
                 <Label htmlFor="art-collection">Collection</Label>
                 <Select
                   value={articleForm.collectionId}
-                  onValueChange={(value) =>
-                    setArticleForm({ ...articleForm, collectionId: value })
-                  }
+                  onValueChange={(value) => setArticleForm({ ...articleForm, collectionId: value })}
                 >
                   <SelectTrigger id="art-collection">
                     <SelectValue placeholder="Select a collection" />
@@ -753,9 +691,7 @@ export default function HelpCenterPage() {
                 id="art-content"
                 placeholder="Write your article content here..."
                 value={articleForm.content}
-                onChange={(e) =>
-                  setArticleForm({ ...articleForm, content: e.target.value })
-                }
+                onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
                 rows={12}
               />
             </div>

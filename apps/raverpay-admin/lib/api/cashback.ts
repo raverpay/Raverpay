@@ -52,9 +52,7 @@ export const getAllConfigs = async (): Promise<CashbackConfig[]> => {
 /**
  * Create a new cashback configuration
  */
-export const createConfig = async (
-  data: CreateCashbackConfigDto,
-): Promise<CashbackConfig> => {
+export const createConfig = async (data: CreateCashbackConfigDto): Promise<CashbackConfig> => {
   const response = await apiClient.post('/cashback/admin/config', data);
   return response.data;
 };

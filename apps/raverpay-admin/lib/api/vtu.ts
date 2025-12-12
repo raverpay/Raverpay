@@ -1,5 +1,11 @@
 import apiClient from '../api-client';
-import { VTUOrder, PaginatedResponse, VTUStatistics, VTURefundResult, VTPassBalance } from '@/types';
+import {
+  VTUOrder,
+  PaginatedResponse,
+  VTUStatistics,
+  VTURefundResult,
+  VTPassBalance,
+} from '@/types';
 
 export const vtuApi = {
   getBalance: async (): Promise<VTPassBalance> => {
@@ -39,12 +45,9 @@ export const vtuApi = {
   },
 
   refund: async (orderId: string, reason: string): Promise<VTURefundResult> => {
-    const response = await apiClient.post<VTURefundResult>(
-      `/admin/vtu/orders/${orderId}/refund`,
-      {
-        reason,
-      },
-    );
+    const response = await apiClient.post<VTURefundResult>(`/admin/vtu/orders/${orderId}/refund`, {
+      reason,
+    });
     return response.data;
   },
 

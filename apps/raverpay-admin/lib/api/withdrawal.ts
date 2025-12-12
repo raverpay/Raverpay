@@ -61,9 +61,7 @@ export const getConfigById = async (id: string): Promise<WithdrawalConfig> => {
 /**
  * Create a new withdrawal configuration
  */
-export const createConfig = async (
-  data: CreateWithdrawalConfigDto,
-): Promise<WithdrawalConfig> => {
+export const createConfig = async (data: CreateWithdrawalConfigDto): Promise<WithdrawalConfig> => {
   const response = await apiClient.post('/admin/transactions/withdrawal-configs', data);
   return response.data;
 };

@@ -66,7 +66,11 @@ async function seedHelpCenter() {
   // Check if help collections already exist
   const existingCollections = await prisma.helpCollection.count();
   if (existingCollections > 0) {
-    console.log('✅ Help Center already seeded with', existingCollections, 'collections');
+    console.log(
+      '✅ Help Center already seeded with',
+      existingCollections,
+      'collections',
+    );
     return;
   }
 

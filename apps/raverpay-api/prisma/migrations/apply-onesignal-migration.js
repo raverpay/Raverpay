@@ -6,7 +6,8 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const connectionString = "postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10";
+const connectionString =
+  'postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10';
 
 async function applyMigration() {
   const client = new Client({ connectionString });
@@ -17,7 +18,10 @@ async function applyMigration() {
     console.log('✅ Connected successfully!\n');
 
     // Read the migration file
-    const migrationPath = path.join(__dirname, 'prisma/migrations/add_onesignal_fields.sql');
+    const migrationPath = path.join(
+      __dirname,
+      'prisma/migrations/add_onesignal_fields.sql',
+    );
     const sql = fs.readFileSync(migrationPath, 'utf8');
 
     console.log('🔧 Applying OneSignal migration...');
@@ -43,11 +47,14 @@ async function applyMigration() {
       console.log('   1. Generate Prisma Client: pnpm prisma generate');
       console.log('   2. Create backend endpoint to save OneSignal player ID');
       console.log('   3. Update mobile app to send player ID after login');
-      console.log('   4. Implement OneSignal service for sending push notifications');
+      console.log(
+        '   4. Implement OneSignal service for sending push notifications',
+      );
     } else {
-      console.log('\n⚠️  Not all columns were added. Please check for errors above.');
+      console.log(
+        '\n⚠️  Not all columns were added. Please check for errors above.',
+      );
     }
-
   } catch (error) {
     console.error('❌ Error applying migration:', error.message);
     console.error('\nFull error:', error);

@@ -8,13 +8,7 @@ import { toast } from 'sonner';
 
 import { supportApi } from '@/lib/api/support';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -77,13 +71,7 @@ export default function TicketsPage() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
   const { data: ticketsData, isLoading } = useQuery({
-    queryKey: [
-      'support-tickets',
-      page,
-      debouncedSearch,
-      statusFilter,
-      priorityFilter,
-    ],
+    queryKey: ['support-tickets', page, debouncedSearch, statusFilter, priorityFilter],
     queryFn: () =>
       supportApi.getTickets({
         page,
@@ -120,9 +108,7 @@ export default function TicketsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Support Tickets</h2>
-          <p className="text-muted-foreground">
-            Manage and resolve customer support tickets
-          </p>
+          <p className="text-muted-foreground">Manage and resolve customer support tickets</p>
         </div>
         <Button variant="outline" className="gap-2">
           <Download className="h-4 w-4" />
@@ -134,9 +120,7 @@ export default function TicketsPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Open
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Open</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.openTickets || 0}</div>
@@ -144,14 +128,10 @@ export default function TicketsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              In Progress
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.inProgressTickets || 0}
-            </div>
+            <div className="text-2xl font-bold">{stats?.inProgressTickets || 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -171,9 +151,7 @@ export default function TicketsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.avgResolutionTime || 0}h
-            </div>
+            <div className="text-2xl font-bold">{stats?.avgResolutionTime || 0}h</div>
           </CardContent>
         </Card>
       </div>
@@ -182,9 +160,7 @@ export default function TicketsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Tickets Queue</CardTitle>
-          <CardDescription>
-            View and manage all support tickets
-          </CardDescription>
+          <CardDescription>View and manage all support tickets</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filters */}
@@ -206,9 +182,7 @@ export default function TicketsPage() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value={TicketStatus.OPEN}>Open</SelectItem>
-                <SelectItem value={TicketStatus.IN_PROGRESS}>
-                  In Progress
-                </SelectItem>
+                <SelectItem value={TicketStatus.IN_PROGRESS}>In Progress</SelectItem>
                 <SelectItem value={TicketStatus.RESOLVED}>Resolved</SelectItem>
                 <SelectItem value={TicketStatus.CLOSED}>Closed</SelectItem>
               </SelectContent>
@@ -255,12 +229,8 @@ export default function TicketsPage() {
                   <TableBody>
                     {ticketsData.data.map((ticket) => (
                       <TableRow key={ticket.id}>
-                        <TableCell className="font-medium">
-                          #{ticket.ticketNumber}
-                        </TableCell>
-                        <TableCell className="max-w-[200px] truncate">
-                          {ticket.title}
-                        </TableCell>
+                        <TableCell className="font-medium">#{ticket.ticketNumber}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">{ticket.title}</TableCell>
                         <TableCell>
                           {ticket.user?.firstName} {ticket.user?.lastName}
                         </TableCell>
@@ -279,14 +249,10 @@ export default function TicketsPage() {
                           {ticket.assignedAgent ? (
                             `${ticket.assignedAgent.firstName} ${ticket.assignedAgent.lastName}`
                           ) : (
-                            <span className="text-muted-foreground">
-                              Unassigned
-                            </span>
+                            <span className="text-muted-foreground">Unassigned</span>
                           )}
                         </TableCell>
-                        <TableCell>
-                          {formatRelativeTime(ticket.createdAt)}
-                        </TableCell>
+                        <TableCell>{formatRelativeTime(ticket.createdAt)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {!ticket.assignedAgentId && (
@@ -299,9 +265,7 @@ export default function TicketsPage() {
                                 <UserPlus className="h-4 w-4" />
                               </Button>
                             )}
-                            <Link
-                              href={`/dashboard/support/tickets/${ticket.id}`}
-                            >
+                            <Link href={`/dashboard/support/tickets/${ticket.id}`}>
                               <Button variant="ghost" size="sm">
                                 <Eye className="h-4 w-4" />
                               </Button>

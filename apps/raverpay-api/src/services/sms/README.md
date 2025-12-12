@@ -31,6 +31,7 @@ TERMII_BASE_URL=https://api.ng.termii.com
 ```
 
 **Getting Termii Credentials:**
+
 1. Sign up at [https://termii.com](https://termii.com)
 2. Get your API key from the dashboard
 3. Register your sender ID (e.g., "RaverPay")
@@ -49,6 +50,7 @@ VTPASS_USE_DND_ROUTE=true
 ```
 
 **Getting VTPass Credentials:**
+
 1. Sign up at [https://vtpass.com](https://vtpass.com)
 2. Get your messaging public and secret keys
 3. Register your sender ID (awaiting approval for "RaverPay")
@@ -113,7 +115,11 @@ Example:
 
 ```typescript
 export class NewProvider implements ISmsProvider {
-  async sendVerificationCode(phone: string, code: string, firstName: string): Promise<boolean> {
+  async sendVerificationCode(
+    phone: string,
+    code: string,
+    firstName: string,
+  ): Promise<boolean> {
     // Implementation
   }
   // ... implement other methods
@@ -122,17 +128,17 @@ export class NewProvider implements ISmsProvider {
 
 ## Environment Variables Reference
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `SMS_PROVIDER` | No | `termii` | SMS provider to use (`termii` or `vtpass`) |
-| `ENABLE_SMS_VERIFICATION` | No | `true` | Enable/disable SMS sending globally |
-| `TERMII_API_KEY` | Yes (for Termii) | - | Termii API key |
-| `TERMII_SENDER_ID` | No | `RaverPay` | Termii sender ID |
-| `TERMII_BASE_URL` | No | `https://api.ng.termii.com` | Termii API base URL |
-| `VTPASS_MESSAGING_PUBLIC_KEY` | Yes (for VTPass) | - | VTPass public key |
-| `VTPASS_MESSAGING_SECRET_KEY` | Yes (for VTPass) | - | VTPass secret key |
-| `VTPASS_SMS_SENDER` | No | `RaverPay` | VTPass sender ID |
-| `VTPASS_USE_DND_ROUTE` | No | `false` | Use DND route for VTPass |
+| Variable                      | Required         | Default                     | Description                                |
+| ----------------------------- | ---------------- | --------------------------- | ------------------------------------------ |
+| `SMS_PROVIDER`                | No               | `termii`                    | SMS provider to use (`termii` or `vtpass`) |
+| `ENABLE_SMS_VERIFICATION`     | No               | `true`                      | Enable/disable SMS sending globally        |
+| `TERMII_API_KEY`              | Yes (for Termii) | -                           | Termii API key                             |
+| `TERMII_SENDER_ID`            | No               | `RaverPay`                  | Termii sender ID                           |
+| `TERMII_BASE_URL`             | No               | `https://api.ng.termii.com` | Termii API base URL                        |
+| `VTPASS_MESSAGING_PUBLIC_KEY` | Yes (for VTPass) | -                           | VTPass public key                          |
+| `VTPASS_MESSAGING_SECRET_KEY` | Yes (for VTPass) | -                           | VTPass secret key                          |
+| `VTPASS_SMS_SENDER`           | No               | `RaverPay`                  | VTPass sender ID                           |
+| `VTPASS_USE_DND_ROUTE`        | No               | `false`                     | Use DND route for VTPass                   |
 
 ## Testing
 

@@ -9,6 +9,7 @@ RaverPay API is a complete financial technology platform that enables users to m
 ## Core Features
 
 ### Authentication & Security
+
 - User registration with email and phone verification
 - JWT-based authentication with refresh token support
 - Secure password management with Argon2 hashing
@@ -18,6 +19,7 @@ RaverPay API is a complete financial technology platform that enables users to m
 - Session management with token revocation
 
 ### User Management
+
 - Comprehensive user profiles (personal information, address, date of birth)
 - Profile picture upload and management via Cloudinary
 - Email and phone number verification with OTP
@@ -26,29 +28,35 @@ RaverPay API is a complete financial technology platform that enables users to m
 - User role management (USER, ADMIN, SUPPORT)
 
 ### KYC (Know Your Customer) System
+
 Four-tier verification system with progressive limits:
 
 **Tier 0 - Unverified**
+
 - Daily Limit: ₦50,000
 - Monthly Limit: ₦50,000
 - Requirements: Sign up only
 
 **Tier 1 - Basic**
+
 - Daily Limit: ₦300,000
 - Monthly Limit: ₦1,000,000
 - Requirements: Email and phone verification
 
 **Tier 2 - Advanced**
+
 - Daily Limit: ₦5,000,000
 - Monthly Limit: ₦5,000,000
 - Requirements: BVN (Bank Verification Number) verification
 
 **Tier 3 - Premium**
+
 - Daily Limit: Unlimited
 - Monthly Limit: Unlimited
 - Requirements: NIN (National Identification Number) verification
 
 ### Digital Wallet
+
 - Real-time balance tracking with double-entry bookkeeping
 - Ledger balance (includes pending transactions)
 - Daily and monthly spending limit enforcement
@@ -57,12 +65,15 @@ Four-tier verification system with progressive limits:
 - Support for multiple transaction types
 
 ### Wallet Funding
+
 **Card Payments:**
+
 - Secure card payment via Paystack integration
 - Real-time payment verification
 - Automated webhook handling for instant crediting
 
 **Virtual Accounts (Dedicated NUBAN):**
+
 - Unique bank account number per user
 - Automatic bank transfer detection
 - BVN verification required for virtual account creation
@@ -70,6 +81,7 @@ Four-tier verification system with progressive limits:
 - Requery functionality for pending transfers
 
 ### Withdrawals
+
 - Bank transfer to any Nigerian bank
 - Account name resolution and verification
 - Transaction PIN required for authorization
@@ -80,12 +92,14 @@ Four-tier verification system with progressive limits:
 ### VTU Services (Virtual Top-Up)
 
 **Airtime Purchase:**
+
 - All major Nigerian networks (MTN, GLO, Airtel, 9Mobile)
 - Instant delivery
 - Support for self-recharge and third-party recharge
 - Recipient management
 
 **Data Bundles:**
+
 - Regular and SME data plans
 - Multiple validity periods (7 days, 30 days, 365 days)
 - Plan sizes from 500MB to 10GB
@@ -93,6 +107,7 @@ Four-tier verification system with progressive limits:
 - Automatic token/code delivery
 
 **Cable TV Subscriptions:**
+
 - DStv, GOtv, and StarTimes support
 - Smart card validation before payment
 - Customer name verification
@@ -100,6 +115,7 @@ Four-tier verification system with progressive limits:
 - Automatic renewal tracking
 
 **Electricity Bills:**
+
 - Support for all Nigerian DISCOs (power distribution companies)
 - Prepaid and postpaid meter support
 - Meter number validation
@@ -108,17 +124,20 @@ Four-tier verification system with progressive limits:
 - Flexible amount selection
 
 **Showmax:**
+
 - Monthly subscription plans
 - Multiple tier options
 - Automated subscription management
 
 **International Airtime & Data:**
+
 - Multi-country support
 - Multiple telecom operators per country
 - Flexible denomination options
 - Real-time exchange rate handling
 
 ### Order Management
+
 - Complete order history with status tracking
 - Order filtering by service type and date range
 - Retry mechanism for failed orders
@@ -126,13 +145,16 @@ Four-tier verification system with progressive limits:
 - Saved recipients for quick repeat purchases
 
 ### Notifications System
+
 **Multi-Channel Delivery:**
+
 - Email notifications via Resend
 - SMS notifications via Termii/VTPass
 - Push notifications via OneSignal
 - In-app notifications
 
 **Notification Categories:**
+
 - Transaction alerts (credits, debits, failures)
 - Security notifications (login, password changes, PIN changes)
 - KYC updates (verification status)
@@ -140,6 +162,7 @@ Four-tier verification system with progressive limits:
 - System announcements
 
 **User Preferences:**
+
 - Per-channel enable/disable toggles
 - Frequency controls (immediate, daily digest, weekly digest, never)
 - Quiet hours/Do Not Disturb scheduling
@@ -147,7 +170,9 @@ Four-tier verification system with progressive limits:
 - Timezone support
 
 ### Payment Processing
+
 **Paystack Integration:**
+
 - Card payments for wallet funding
 - Bank transfers via virtual accounts
 - Withdrawal processing
@@ -155,6 +180,7 @@ Four-tier verification system with progressive limits:
 - Webhook handling for automated processing
 
 **VTPass Integration:**
+
 - Airtime and data purchases
 - Cable TV subscriptions
 - Electricity bill payments
@@ -163,6 +189,7 @@ Four-tier verification system with progressive limits:
 - Webhook notifications for transaction status
 
 ### Transaction Types Supported
+
 - Deposits (card, bank transfer)
 - Withdrawals (bank transfer)
 - P2P transfers (between RaverPay users)
@@ -172,6 +199,7 @@ Four-tier verification system with progressive limits:
 - Fee deductions
 
 ### Audit & Compliance
+
 - Transaction audit trail
 - KYC compliance tracking
 - Account deletion logging
@@ -181,12 +209,14 @@ Four-tier verification system with progressive limits:
 ## Technology Stack
 
 ### Core Framework
+
 - **NestJS** - Progressive Node.js framework
 - **TypeScript** - Type-safe development
 - **PostgreSQL** - Primary database
 - **Prisma ORM** - Database toolkit and ORM
 
 ### Security
+
 - **JWT** - JSON Web Tokens for authentication
 - **Argon2** - Password hashing
 - **Crypto** - BVN/NIN encryption
@@ -194,6 +224,7 @@ Four-tier verification system with progressive limits:
 - **CORS** - Cross-origin resource sharing
 
 ### External Services
+
 - **Paystack** - Payment processing, virtual accounts, transfers, BVN verification
 - **VTPass** - VTU services (airtime, data, bills, SMS)
 - **Cloudinary** - Image storage and CDN
@@ -202,6 +233,7 @@ Four-tier verification system with progressive limits:
 - **OneSignal** - Push notifications
 
 ### Additional Tools
+
 - **Redis** - Caching (partial implementation)
 - **Class Validator** - DTO validation
 - **Class Transformer** - Object transformation
@@ -209,6 +241,7 @@ Four-tier verification system with progressive limits:
 ## API Endpoints Summary
 
 ### Authentication (8 endpoints)
+
 - User registration
 - Login/logout
 - Token refresh
@@ -217,6 +250,7 @@ Four-tier verification system with progressive limits:
 - User profile retrieval
 
 ### User Management (14 endpoints)
+
 - Profile CRUD operations
 - Avatar upload/delete
 - Password and PIN management
@@ -225,6 +259,7 @@ Four-tier verification system with progressive limits:
 - Account deletion requests
 
 ### Wallet & Transactions (10 endpoints)
+
 - Wallet balance and limits
 - Transaction history
 - Wallet lock/unlock
@@ -232,12 +267,14 @@ Four-tier verification system with progressive limits:
 - Funding and withdrawal
 
 ### Virtual Accounts (4 endpoints)
+
 - Virtual account creation
 - Account details retrieval
 - Provider management
 - Balance requery
 
 ### VTU Services (25+ endpoints)
+
 - Product catalogs (airtime, data, cable TV, electricity, international)
 - Account/meter validation
 - Purchase endpoints for all services
@@ -245,6 +282,7 @@ Four-tier verification system with progressive limits:
 - Saved recipients
 
 ### Notifications (9 endpoints)
+
 - Notification retrieval and filtering
 - Read/unread management
 - Notification deletion
@@ -252,6 +290,7 @@ Four-tier verification system with progressive limits:
 - OneSignal integration
 
 ### Webhooks (3 endpoints)
+
 - Paystack webhook handler
 - VTPass webhook handler
 - Payment status updates
@@ -259,6 +298,7 @@ Four-tier verification system with progressive limits:
 ## Key Features
 
 ### Security Features
+
 - Encrypted BVN and NIN storage
 - Transaction PIN for sensitive operations
 - Wallet locking mechanism for fraud prevention
@@ -267,6 +307,7 @@ Four-tier verification system with progressive limits:
 - Login blocking for users with pending deletion
 
 ### Business Logic
+
 - Double-entry bookkeeping for accurate balance tracking
 - Automatic refunds on failed transactions
 - Transaction fee calculation and deduction
@@ -275,6 +316,7 @@ Four-tier verification system with progressive limits:
 - Saved recipient management
 
 ### Developer Experience
+
 - Comprehensive error handling
 - Validation at DTO level
 - Clear API response structures
@@ -285,6 +327,7 @@ Four-tier verification system with progressive limits:
 ## Planned Features (Not Yet Implemented)
 
 ### Gift Card Trading
+
 - Buy gift cards (Amazon, Apple, Steam, etc.)
 - Sell gift cards for cash
 - Admin review workflow
@@ -292,6 +335,7 @@ Four-tier verification system with progressive limits:
 - Database models exist but no API implementation
 
 ### Crypto Trading
+
 - Buy cryptocurrency (BTC, ETH, USDT)
 - Sell cryptocurrency
 - Multi-network support (BTC, ETH, TRC20, BEP20)
@@ -312,6 +356,7 @@ Four-tier verification system with progressive limits:
 ## Database Architecture
 
 ### Key Models
+
 - User (with KYC, verification, and security fields)
 - Wallet (balance tracking, spending limits)
 - Transaction (double-entry bookkeeping)
@@ -326,6 +371,7 @@ Four-tier verification system with progressive limits:
 - SavedRecipient (beneficiary management)
 
 ### Data Integrity
+
 - Unique constraints on email, phone, BVN, NIN
 - Foreign key relationships with cascade rules
 - Indexed fields for query performance
@@ -335,6 +381,7 @@ Four-tier verification system with progressive limits:
 ## Webhook Integrations
 
 ### Paystack Webhooks
+
 - `charge.success` - Payment confirmed
 - `transfer.success` - Withdrawal completed
 - `transfer.failed` - Withdrawal failed (auto-refund)
@@ -342,6 +389,7 @@ Four-tier verification system with progressive limits:
 - `dedicatedaccount.assign.success` - Virtual account created
 
 ### VTPass Webhooks
+
 - `transaction.success` - VTU order completed
 - `transaction.failed` - VTU order failed
 - `transaction.pending` - VTU order pending

@@ -1,7 +1,9 @@
 # Soft Delete Migration - Application Instructions
 
 ## Overview
+
 This migration adds soft delete support for user accounts:
+
 - Adds `deletedAt` field to `users` table
 - Adds `DELETED` status to `UserStatus` enum
 - Creates indexes for efficient querying
@@ -9,12 +11,14 @@ This migration adds soft delete support for user accounts:
 ## Applying the Migration
 
 ### Step 1: Generate Prisma Client (for TypeScript types)
+
 ```bash
 cd apps/raverpay-api
 pnpm prisma generate
 ```
 
 ### Step 2: Get Your DIRECT_URL
+
 ```bash
 cd apps/raverpay-api
 grep "DIRECT_URL" .env | head -1
@@ -23,12 +27,14 @@ grep "DIRECT_URL" .env | head -1
 **Important:** Use `DIRECT_URL`, not `DATABASE_URL` (DIRECT_URL uses port 5432, DATABASE_URL uses pooled connection)
 
 ### Step 3: Apply the Migration
+
 ```bash
 cd apps/raverpay-api
 psql "$DIRECT_URL" -f prisma/migrations/add_soft_delete_support.sql
 ```
 
 Or with explicit connection string:
+
 ```bash
 psql "postgresql://user:password@host:5432/database" -f prisma/migrations/add_soft_delete_support.sql
 ```
@@ -36,27 +42,32 @@ psql "postgresql://user:password@host:5432/database" -f prisma/migrations/add_so
 ### Step 4: Verify Migration Applied
 
 Check if DELETED status exists:
+
 ```bash
 psql "$DIRECT_URL" -c "SELECT enumlabel FROM pg_enum WHERE enumtypid = (SELECT oid FROM pg_type WHERE typname = 'UserStatus') AND enumlabel = 'DELETED';"
 ```
 
 Check if deletedAt column exists:
+
 ```bash
 psql "$DIRECT_URL" -c "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'deletedAt';"
 ```
 
 Check indexes:
+
 ```bash
 psql "$DIRECT_URL" -c "SELECT indexname FROM pg_indexes WHERE tablename = 'users' AND indexname LIKE '%deletedAt%';"
 ```
 
 ### Step 5: Regenerate Prisma Client
+
 ```bash
 cd apps/raverpay-api
 pnpm prisma generate
 ```
 
 ### Step 6: Verify TypeScript Compilation
+
 ```bash
 cd apps/raverpay-api
 pnpm exec tsc --noEmit
@@ -80,6 +91,7 @@ Should show 0 errors if everything is correct.
 ## After Migration
 
 The `DeletionSchedulerService` will automatically:
+
 - Run every hour via cron job
 - Process approved deletion requests where `scheduledFor <= now`
 - Soft delete user accounts (anonymize data, set deletedAt, update status to DELETED)
@@ -105,4 +117,3 @@ ALTER TABLE users DROP COLUMN IF EXISTS "deletedAt";
 - Uses `IF NOT EXISTS` for all operations
 - Follows lowercase_underscore table naming convention
 - Compatible with the Prisma migration workaround process
-

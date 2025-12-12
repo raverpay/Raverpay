@@ -8,13 +8,7 @@ import { toast } from 'sonner';
 
 import { supportApi, GetEmailsParams } from '@/lib/api/support';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,7 +68,14 @@ export default function EmailsPage() {
   };
 
   const { data: emailsData, isLoading } = useQuery({
-    queryKey: ['support-emails', page, debouncedSearch, targetEmailFilter, targetRoleFilter, processedFilter],
+    queryKey: [
+      'support-emails',
+      page,
+      debouncedSearch,
+      targetEmailFilter,
+      targetRoleFilter,
+      processedFilter,
+    ],
     queryFn: () => supportApi.getEmails(queryParams),
   });
 
@@ -134,9 +135,7 @@ export default function EmailsPage() {
               <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.total - stats.unprocessed}
-              </div>
+              <div className="text-2xl font-bold">{stats.total - stats.unprocessed}</div>
             </CardContent>
           </Card>
           <Card>
@@ -146,9 +145,7 @@ export default function EmailsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.byRole.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Different roles
-              </p>
+              <p className="text-xs text-muted-foreground">Different roles</p>
             </CardContent>
           </Card>
         </div>
@@ -173,10 +170,7 @@ export default function EmailsPage() {
                 />
               </div>
             </div>
-            <Select
-              value={targetEmailFilter}
-              onValueChange={setTargetEmailFilter}
-            >
+            <Select value={targetEmailFilter} onValueChange={setTargetEmailFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
                 <SelectValue placeholder="Target Email" />
               </SelectTrigger>
@@ -190,10 +184,7 @@ export default function EmailsPage() {
                 <SelectItem value="partnerships@raverpay.com">Partnerships</SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={targetRoleFilter}
-              onValueChange={setTargetRoleFilter}
-            >
+            <Select value={targetRoleFilter} onValueChange={setTargetRoleFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
                 <SelectValue placeholder="Target Role" />
               </SelectTrigger>
@@ -204,10 +195,7 @@ export default function EmailsPage() {
                 <SelectItem value={UserRole.SUPER_ADMIN}>Super Admin</SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={processedFilter}
-              onValueChange={setProcessedFilter}
-            >
+            <Select value={processedFilter} onValueChange={setProcessedFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -225,9 +213,7 @@ export default function EmailsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Emails</CardTitle>
-          <CardDescription>
-            {emailsData?.meta?.total || 0} total emails
-          </CardDescription>
+          <CardDescription>{emailsData?.meta?.total || 0} total emails</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -237,9 +223,7 @@ export default function EmailsPage() {
               ))}
             </div>
           ) : !emailsData?.data || emailsData.data.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No emails found
-            </div>
+            <div className="text-center py-8 text-muted-foreground">No emails found</div>
           ) : (
             <>
               <Table>
@@ -259,17 +243,11 @@ export default function EmailsPage() {
                     <TableRow key={email.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">
-                            {email.fromName || email.from}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {email.from}
-                          </div>
+                          <div className="font-medium">{email.fromName || email.from}</div>
+                          <div className="text-sm text-muted-foreground">{email.from}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-[300px] truncate">
-                        {email.subject}
-                      </TableCell>
+                      <TableCell className="max-w-[300px] truncate">{email.subject}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {email.targetEmail}
                       </TableCell>
@@ -293,9 +271,7 @@ export default function EmailsPage() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell>
-                        {formatRelativeTime(email.receivedAt)}
-                      </TableCell>
+                      <TableCell>{formatRelativeTime(email.receivedAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Link href={`/dashboard/support/emails/${email.id}`}>
@@ -307,9 +283,7 @@ export default function EmailsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                markProcessedMutation.mutate(email.id)
-                              }
+                              onClick={() => markProcessedMutation.mutate(email.id)}
                               disabled={markProcessedMutation.isPending}
                             >
                               Mark Processed
@@ -339,4 +313,3 @@ export default function EmailsPage() {
     </div>
   );
 }
-

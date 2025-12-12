@@ -1,15 +1,15 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { User } from '@/types'
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { User } from '@/types';
 
 interface AuthState {
-  user: User | null
-  accessToken: string | null
-  refreshToken: string | null
-  isAuthenticated: boolean
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void
-  clearAuth: () => void
-  updateUser: (user: User) => void
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  clearAuth: () => void;
+  updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -21,32 +21,32 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (user, accessToken, refreshToken) => {
         // Also store in localStorage for API client
-        localStorage.setItem('accessToken', accessToken)
-        localStorage.setItem('refreshToken', refreshToken)
-        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('user', JSON.stringify(user));
 
         set({
           user,
           accessToken,
           refreshToken,
           isAuthenticated: true,
-        })
+        });
       },
       clearAuth: () => {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        localStorage.removeItem('user')
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
 
         set({
           user: null,
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
-        })
+        });
       },
       updateUser: (user) => {
-        localStorage.setItem('user', JSON.stringify(user))
-        set({ user })
+        localStorage.setItem('user', JSON.stringify(user));
+        set({ user });
       },
     }),
     {
@@ -57,6 +57,6 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
-)
+    },
+  ),
+);

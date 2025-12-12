@@ -6,7 +6,8 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const connectionString = "postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10";
+const connectionString =
+  'postgresql://postgres.oeanyukxcphqjrsljhqq:raverpay2025@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?connect_timeout=10';
 
 async function fixMigration() {
   const client = new Client({ connectionString });
@@ -17,7 +18,10 @@ async function fixMigration() {
     console.log('✅ Connected successfully!\n');
 
     // Read the fix migration file
-    const migrationPath = path.join(__dirname, 'prisma/migrations/fix_service_type_enum.sql');
+    const migrationPath = path.join(
+      __dirname,
+      'prisma/migrations/fix_service_type_enum.sql',
+    );
     const sql = fs.readFileSync(migrationPath, 'utf8');
 
     console.log('🔧 Applying fix migration...');
@@ -41,9 +45,10 @@ async function fixMigration() {
       console.log('   1. Restart your dev server (Ctrl+C, then: pnpm dev)');
       console.log('   2. Test the saved recipients feature');
     } else {
-      console.log('\n⚠️  Column type was not updated. Please check for errors above.');
+      console.log(
+        '\n⚠️  Column type was not updated. Please check for errors above.',
+      );
     }
-
   } catch (error) {
     console.error('❌ Error applying fix:', error.message);
     console.error('\nFull error:', error);

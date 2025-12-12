@@ -4,14 +4,7 @@ import { useState, use } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  User,
-  Clock,
-  Calendar,
-  MessageSquare,
-  CheckCircle,
-} from 'lucide-react';
+import { ArrowLeft, User, Clock, Calendar, MessageSquare, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supportApi } from '@/lib/api/support';
@@ -19,13 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -74,11 +61,7 @@ function getPriorityBadgeVariant(priority: TicketPriority) {
   }
 }
 
-export default function TicketDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -104,8 +87,7 @@ export default function TicketDetailPage({
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: (status: TicketStatus) =>
-      supportApi.updateTicketStatus(resolvedParams.id, status),
+    mutationFn: (status: TicketStatus) => supportApi.updateTicketStatus(resolvedParams.id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', resolvedParams.id] });
       toast.success('Ticket status updated');
@@ -132,8 +114,7 @@ export default function TicketDetailPage({
   });
 
   const resolveMutation = useMutation({
-    mutationFn: (resolution: string) =>
-      supportApi.resolveTicket(resolvedParams.id, resolution),
+    mutationFn: (resolution: string) => supportApi.resolveTicket(resolvedParams.id, resolution),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', resolvedParams.id] });
       setShowResolveDialog(false);
@@ -168,8 +149,7 @@ export default function TicketDetailPage({
   }
 
   const isResolved =
-    ticket.status === TicketStatus.RESOLVED ||
-    ticket.status === TicketStatus.CLOSED;
+    ticket.status === TicketStatus.RESOLVED || ticket.status === TicketStatus.CLOSED;
 
   return (
     <div className="space-y-6">
@@ -180,27 +160,18 @@ export default function TicketDetailPage({
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-2xl font-bold">
-              Ticket #{ticket.ticketNumber}
-            </h2>
+            <h2 className="text-2xl font-bold">Ticket #{ticket.ticketNumber}</h2>
             <p className="text-muted-foreground">{ticket.title}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {!ticket.assignedAgentId && (
-            <Button
-              onClick={() => assignMutation.mutate()}
-              disabled={assignMutation.isPending}
-            >
+            <Button onClick={() => assignMutation.mutate()} disabled={assignMutation.isPending}>
               Assign to Me
             </Button>
           )}
           {!isResolved && (
-            <Button
-              variant="outline"
-              onClick={() => setShowResolveDialog(true)}
-              className="gap-2"
-            >
+            <Button variant="outline" onClick={() => setShowResolveDialog(true)} className="gap-2">
               <CheckCircle className="h-4 w-4" />
               Resolve
             </Button>
@@ -218,9 +189,7 @@ export default function TicketDetailPage({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <div className="text-sm text-muted-foreground mb-1">
-                  Description
-                </div>
+                <div className="text-sm text-muted-foreground mb-1">Description</div>
                 <p className="whitespace-pre-wrap">{ticket.description}</p>
               </div>
 
@@ -247,14 +216,10 @@ export default function TicketDetailPage({
             <Card>
               <CardHeader>
                 <CardTitle>Related Conversation</CardTitle>
-                <CardDescription>
-                  View the chat history for this ticket
-                </CardDescription>
+                <CardDescription>View the chat history for this ticket</CardDescription>
               </CardHeader>
               <CardContent>
-                <Link
-                  href={`/dashboard/support/conversations/${ticket.conversationId}`}
-                >
+                <Link href={`/dashboard/support/conversations/${ticket.conversationId}`}>
                   <Button variant="outline" className="gap-2">
                     <MessageSquare className="h-4 w-4" />
                     View Conversation
@@ -277,9 +242,7 @@ export default function TicketDetailPage({
                 <div className="text-sm text-muted-foreground mb-2">Status</div>
                 <Select
                   value={ticket.status}
-                  onValueChange={(value) =>
-                    updateStatusMutation.mutate(value as TicketStatus)
-                  }
+                  onValueChange={(value) => updateStatusMutation.mutate(value as TicketStatus)}
                   disabled={updateStatusMutation.isPending || isResolved}
                 >
                   <SelectTrigger>
@@ -287,26 +250,18 @@ export default function TicketDetailPage({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={TicketStatus.OPEN}>Open</SelectItem>
-                    <SelectItem value={TicketStatus.IN_PROGRESS}>
-                      In Progress
-                    </SelectItem>
-                    <SelectItem value={TicketStatus.RESOLVED}>
-                      Resolved
-                    </SelectItem>
+                    <SelectItem value={TicketStatus.IN_PROGRESS}>In Progress</SelectItem>
+                    <SelectItem value={TicketStatus.RESOLVED}>Resolved</SelectItem>
                     <SelectItem value={TicketStatus.CLOSED}>Closed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Priority
-                </div>
+                <div className="text-sm text-muted-foreground mb-2">Priority</div>
                 <Select
                   value={ticket.priority}
-                  onValueChange={(value) =>
-                    updatePriorityMutation.mutate(value as TicketPriority)
-                  }
+                  onValueChange={(value) => updatePriorityMutation.mutate(value as TicketPriority)}
                   disabled={updatePriorityMutation.isPending || isResolved}
                 >
                   <SelectTrigger>
@@ -322,9 +277,7 @@ export default function TicketDetailPage({
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Category
-                </div>
+                <div className="text-sm text-muted-foreground mb-2">Category</div>
                 <Badge variant="outline">{ticket.category}</Badge>
               </div>
             </CardContent>
@@ -376,8 +329,7 @@ export default function TicketDetailPage({
                   </div>
                   <div>
                     <div className="font-medium">
-                      {ticket.assignedAgent.firstName}{' '}
-                      {ticket.assignedAgent.lastName}
+                      {ticket.assignedAgent.firstName} {ticket.assignedAgent.lastName}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {ticket.assignedAgent.email}
@@ -423,9 +375,7 @@ export default function TicketDetailPage({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Resolve Ticket</DialogTitle>
-            <DialogDescription>
-              Provide a resolution summary for this ticket.
-            </DialogDescription>
+            <DialogDescription>Provide a resolution summary for this ticket.</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Textarea
@@ -436,10 +386,7 @@ export default function TicketDetailPage({
             />
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowResolveDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setShowResolveDialog(false)}>
               Cancel
             </Button>
             <Button

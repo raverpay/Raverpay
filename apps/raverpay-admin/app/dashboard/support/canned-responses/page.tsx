@@ -7,13 +7,7 @@ import { toast } from 'sonner';
 
 import { supportApi } from '@/lib/api/support';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -41,11 +35,8 @@ interface CannedResponseFormData {
 export default function CannedResponsesPage() {
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingResponse, setEditingResponse] = useState<CannedResponse | null>(
-    null
-  );
-  const [deletingResponse, setDeletingResponse] =
-    useState<CannedResponse | null>(null);
+  const [editingResponse, setEditingResponse] = useState<CannedResponse | null>(null);
+  const [deletingResponse, setDeletingResponse] = useState<CannedResponse | null>(null);
   const [formData, setFormData] = useState<CannedResponseFormData>({
     title: '',
     content: '',
@@ -59,8 +50,7 @@ export default function CannedResponsesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CannedResponseFormData) =>
-      supportApi.createCannedResponse(data),
+    mutationFn: (data: CannedResponseFormData) => supportApi.createCannedResponse(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['canned-responses'] });
       setShowCreateDialog(false);
@@ -141,7 +131,7 @@ export default function CannedResponsesPage() {
       acc[category].push(response);
       return acc;
     },
-    {} as Record<string, CannedResponse[]>
+    {} as Record<string, CannedResponse[]>,
   );
 
   return (
@@ -169,52 +159,44 @@ export default function CannedResponsesPage() {
         </div>
       ) : responses && responses.length > 0 ? (
         <div className="space-y-6">
-          {Object.entries(groupedResponses || {}).map(
-            ([category, categoryResponses]) => (
-              <div key={category}>
-                <h3 className="text-lg font-semibold mb-4">{category}</h3>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {categoryResponses.map((response) => (
-                    <Card key={response.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-start justify-between">
-                          <CardTitle className="text-base">
-                            {response.title}
-                          </CardTitle>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(response)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeletingResponse(response)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+          {Object.entries(groupedResponses || {}).map(([category, categoryResponses]) => (
+            <div key={category}>
+              <h3 className="text-lg font-semibold mb-4">{category}</h3>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {categoryResponses.map((response) => (
+                  <Card key={response.id}>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-base">{response.title}</CardTitle>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(response)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeletingResponse(response)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
-                        {response.shortcut && (
-                          <Badge variant="outline" className="w-fit">
-                            /{response.shortcut}
-                          </Badge>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground line-clamp-4">
-                          {response.content}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                      </div>
+                      {response.shortcut && (
+                        <Badge variant="outline" className="w-fit">
+                          /{response.shortcut}
+                        </Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-4">
+                        {response.content}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            )
-          )}
+            </div>
+          ))}
         </div>
       ) : (
         <Card>
@@ -257,9 +239,7 @@ export default function CannedResponsesPage() {
                 id="title"
                 placeholder="e.g., Greeting"
                 value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -268,25 +248,19 @@ export default function CannedResponsesPage() {
                 id="category"
                 placeholder="e.g., General, Refunds, Technical"
                 value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="shortcut">
                 Shortcut (optional)
-                <span className="text-muted-foreground ml-2 text-xs">
-                  Type /shortcut to use
-                </span>
+                <span className="text-muted-foreground ml-2 text-xs">Type /shortcut to use</span>
               </Label>
               <Input
                 id="shortcut"
                 placeholder="e.g., greet"
                 value={formData.shortcut}
-                onChange={(e) =>
-                  setFormData({ ...formData, shortcut: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, shortcut: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -295,9 +269,7 @@ export default function CannedResponsesPage() {
                 id="content"
                 placeholder="Enter the response content..."
                 value={formData.content}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 rows={6}
               />
             </div>

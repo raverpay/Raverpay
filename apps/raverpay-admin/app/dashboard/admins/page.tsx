@@ -130,7 +130,12 @@ export default function AdminsPage() {
   });
 
   const handleCreate = () => {
-    if (!createForm.email || !createForm.firstName || !createForm.lastName || !createForm.password) {
+    if (
+      !createForm.email ||
+      !createForm.firstName ||
+      !createForm.lastName ||
+      !createForm.password
+    ) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -195,9 +200,7 @@ export default function AdminsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Admin</DialogTitle>
-              <DialogDescription>
-                Add a new administrator to the platform.
-              </DialogDescription>
+              <DialogDescription>Add a new administrator to the platform.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
@@ -206,9 +209,7 @@ export default function AdminsPage() {
                   <Input
                     id="firstName"
                     value={createForm.firstName}
-                    onChange={(e) =>
-                      setCreateForm({ ...createForm, firstName: e.target.value })
-                    }
+                    onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
                     placeholder="John"
                   />
                 </div>
@@ -217,9 +218,7 @@ export default function AdminsPage() {
                   <Input
                     id="lastName"
                     value={createForm.lastName}
-                    onChange={(e) =>
-                      setCreateForm({ ...createForm, lastName: e.target.value })
-                    }
+                    onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
                     placeholder="Doe"
                   />
                 </div>
@@ -230,9 +229,7 @@ export default function AdminsPage() {
                   id="email"
                   type="email"
                   value={createForm.email}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, email: e.target.value })
-                  }
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
                   placeholder="admin@example.com"
                 />
               </div>
@@ -241,9 +238,7 @@ export default function AdminsPage() {
                 <Input
                   id="phone"
                   value={createForm.phone}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, phone: e.target.value })
-                  }
+                  onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
                   placeholder="+234..."
                 />
               </div>
@@ -253,9 +248,7 @@ export default function AdminsPage() {
                   id="password"
                   type="password"
                   value={createForm.password}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, password: e.target.value })
-                  }
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
                   placeholder="Enter password"
                 />
               </div>
@@ -301,9 +294,7 @@ export default function AdminsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {adminsData?.meta?.totalItems || 0}
-            </div>
+            <div className="text-2xl font-bold">{adminsData?.meta?.totalItems || 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -463,9 +454,7 @@ export default function AdminsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Admin</DialogTitle>
-            <DialogDescription>
-              Update admin user information and permissions.
-            </DialogDescription>
+            <DialogDescription>Update admin user information and permissions.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -474,9 +463,7 @@ export default function AdminsPage() {
                 <Input
                   id="editFirstName"
                   value={editForm.firstName}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, firstName: e.target.value })
-                  }
+                  onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -484,9 +471,7 @@ export default function AdminsPage() {
                 <Input
                   id="editLastName"
                   value={editForm.lastName}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, lastName: e.target.value })
-                  }
+                  onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
                 />
               </div>
             </div>
@@ -495,18 +480,14 @@ export default function AdminsPage() {
               <Input
                 id="editPhone"
                 value={editForm.phone}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, phone: e.target.value })
-                }
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="editRole">Role</Label>
               <Select
                 value={editForm.role}
-                onValueChange={(value) =>
-                  setEditForm({ ...editForm, role: value as UserRole })
-                }
+                onValueChange={(value) => setEditForm({ ...editForm, role: value as UserRole })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
