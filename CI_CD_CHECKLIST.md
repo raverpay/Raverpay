@@ -263,3 +263,11 @@ Once you've completed Steps 1-4 above and pushed to GitHub, your CI/CD pipeline 
 
 **Time to complete setup:** ~10-15 minutes
 **Time saved on every deployment:** Countless hours + peace of mind! 🎉
+
+## 🚀 Before you commit in the future, always run:
+
+pnpm format # Auto-format everything
+pnpm format:check # Verify it's formatted
+pnpm lint # Check for errors
+pnpm typecheck # Check TypeScript
+pnpm test # Run tests

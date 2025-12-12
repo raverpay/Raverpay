@@ -743,7 +743,7 @@ export class ResendWebhookService {
 
     try {
       // Process attachments if any
-      let processedAttachments: any[] = [];
+      const processedAttachments: any[] = [];
       if (attachmentsMetadata && attachmentsMetadata.length > 0) {
         try {
           // Create a new Resend instance for attachments API
@@ -753,11 +753,10 @@ export class ResendWebhookService {
           );
 
           // Fetch attachments list
-          const attachmentsResponse = await (
-            resendClient as any
-          ).emails.receiving.attachments.list({
-            emailId: emailId,
-          });
+          const attachmentsResponse =
+            await resendClient.emails.receiving.attachments.list({
+              emailId: emailId,
+            });
 
           if (!attachmentsResponse.error && attachmentsResponse.data) {
             // Check both possible array locations (API response varies)

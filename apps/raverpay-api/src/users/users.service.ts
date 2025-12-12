@@ -1013,7 +1013,7 @@ export class UsersService {
 
     // Determine KYC tier upgrade
     // After phone verification, upgrade to TIER_2
-    let newKycTier: KYCTier = KYCTier.TIER_2;
+    const newKycTier: KYCTier = KYCTier.TIER_2;
 
     // Update user
     await this.prisma.user.update({

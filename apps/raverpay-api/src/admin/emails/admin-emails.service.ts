@@ -619,11 +619,10 @@ export class AdminEmailsService {
       );
 
       // Use the SDK with type assertion to access the attachments API
-      const attachmentsResponse = await (
-        resendClient as any
-      ).emails.receiving.attachments.list({
-        emailId: email.emailId,
-      });
+      const attachmentsResponse =
+        await resendClient.emails.receiving.attachments.list({
+          emailId: email.emailId,
+        });
 
       if (attachmentsResponse.error || !attachmentsResponse.data) {
         throw new BadRequestException(
@@ -643,10 +642,8 @@ export class AdminEmailsService {
         `Attachments response structure: ${JSON.stringify({
           hasData: !!attachmentsResponse.data,
           dataIsArray: Array.isArray(attachmentsResponse.data),
-          hasDataData: !!(attachmentsResponse.data as any)?.data,
-          dataDataIsArray: Array.isArray(
-            (attachmentsResponse.data as any)?.data,
-          ),
+          hasDataData: !!attachmentsResponse.data?.data,
+          dataDataIsArray: Array.isArray(attachmentsResponse.data?.data),
           attachmentsCount: attachmentsList.length,
           attachmentIds: attachmentsList.map((a: any) => a.id),
           lookingFor: attachmentId,
@@ -725,7 +722,7 @@ export class AdminEmailsService {
       const emailData = emailResponse.data;
 
       // Fetch and process attachments if any
-      let processedAttachments: any[] = [];
+      const processedAttachments: any[] = [];
       if (email.attachments && Array.isArray(email.attachments)) {
         try {
           // Create a new Resend instance and use it with type casting
@@ -735,11 +732,10 @@ export class AdminEmailsService {
           );
 
           // Use the SDK with type assertion to access the attachments API
-          const attachmentsResponse = await (
-            resendClient as any
-          ).emails.receiving.attachments.list({
-            emailId: email.emailId,
-          });
+          const attachmentsResponse =
+            await resendClient.emails.receiving.attachments.list({
+              emailId: email.emailId,
+            });
 
           if (
             !attachmentsResponse.error &&
