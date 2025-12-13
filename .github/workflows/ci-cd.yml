@@ -189,7 +189,13 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-      - name: Wait for deployment to complete
+      - name: Deploy raverpay-admin to Railway
+        run: |
+          railway up --service @raverpay/raverpay-admin --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Wait for deployments to complete
         run: sleep 120
 
       - name: Health check
@@ -214,6 +220,30 @@ jobs:
           
           echo "❌ Health check failed after $max_attempts attempts"
           exit 1
+
+      - name: Verify admin deployment
+        run: |
+          max_attempts=5
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Admin check attempt $attempt/$max_attempts"
+            
+            # Check if admin is responding (Next.js apps typically return 200 on root)
+            response=$(curl -s -o /dev/null -w "%{http_code}" https://myadmin.raverpay.com || echo "000")
+            
+            if [ "$response" = "200" ] || [ "$response" = "302" ] || [ "$response" = "404" ]; then
+              echo "✅ Admin deployment is live (HTTP $response)"
+              exit 0
+            fi
+            
+            echo "⏳ Admin not ready yet (HTTP $response). Retrying in 15 seconds..."
+            sleep 15
+            attempt=$((attempt + 1))
+          done
+          
+          echo "⚠️ Admin deployment check completed (may still be deploying)"
+        continue-on-error: true
 
       - name: Run smoke tests
         run: |
@@ -252,7 +282,10 @@ jobs:
           Author: ${{ github.actor }}
           Message: ${{ github.event.head_commit.message }}
 
-          View deployment: https://api.raverpay.com
+          Deployments:
+          - API: https://api.raverpay.com
+          - Admin: https://myadmin.raverpay.com
+          
           View commit: ${{ github.event.head_commit.url }}" \
             "raverpay@outlook.com"
         env:

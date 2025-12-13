@@ -33,7 +33,10 @@
     "deploy:admin": "cd apps/raverpay-admin && railway up",
     "deploy:web": "cd apps/raverpay-web && railway up",
     "deploy:all": "pnpm deploy:api && pnpm deploy:admin && pnpm deploy:web",
-    "test:email": "node scripts/test-email.js"
+    "test:email": "node scripts/test-email.js",
+    "precommit": "bash scripts/precommit.sh",
+    "test:smoke:local": "bash scripts/smoke-tests-local.sh",
+    "check:all": "pnpm precommit && pnpm test:smoke:local"
   },
   "engines": {
     "node": ">=18.0.0",
