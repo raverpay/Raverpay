@@ -13,7 +13,12 @@ import { UsersService } from '../users/users.service';
 import { WalletService } from '../wallet/wallet.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { LimitsService, TransactionLimitType } from '../limits/limits.service';
-import { TransactionType, TransactionStatus, KYCTier } from '@prisma/client';
+import {
+  TransactionType,
+  TransactionStatus,
+  KYCTier,
+  Prisma,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import {
   FeeCalculation,
@@ -1406,52 +1411,12 @@ export class TransactionsService {
       throw new BadRequestException('Amount must be greater than ₦0');
     }
 
-    // 5. Check sender's wallet
-    const senderWallet = await this.prisma.wallet.findUnique({
-      where: {
-        userId_type: {
-          userId: senderId,
-          type: 'NAIRA',
-        },
-      },
-    });
-
-    if (!senderWallet) {
-      throw new NotFoundException('Sender wallet not found');
-    }
-
-    if (senderWallet.isLocked) {
-      throw new ForbiddenException('Your wallet is locked');
-    }
-
-    // 6. Check receiver's wallet exists
-    const receiverWallet = await this.prisma.wallet.findUnique({
-      where: {
-        userId_type: {
-          userId: receiver.id,
-          type: 'NAIRA',
-        },
-      },
-    });
-
-    if (!receiverWallet) {
-      throw new NotFoundException('Recipient wallet not found');
-    }
-
-    // Note: We do NOT prevent transfers to locked wallets
-    // Money is always accepted, receiver just can't withdraw until they unlock
-    // This is consistent with DVA deposit behavior
-
-    // 7. Calculate fee (free for P2P transfers)
+    // 5. Calculate fee (free for P2P transfers)
     const fee = 0;
     const totalDebit = amount + fee;
 
-    // 8. Check balance
-    if (senderWallet.balance.lt(totalDebit)) {
-      throw new BadRequestException(
-        `Insufficient balance. You have ₦${senderWallet.balance.toString()} but need ₦${totalDebit.toLocaleString()}`,
-      );
-    }
+    // Note: Wallet reads and balance checks are now done INSIDE the transaction
+    // with pessimistic locking (SELECT FOR UPDATE) to prevent race conditions
 
     // 9. Check sender's daily P2P transfer limit
     const limitCheck = await this.limitsService.checkDailyLimit(
@@ -1495,100 +1460,220 @@ export class TransactionsService {
     // 10. Generate reference
     const reference = this.generateReference('p2p');
 
-    // 11. Execute transfer atomically
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Debit sender
-      const newSenderBalance = senderWallet.balance.minus(totalDebit);
-      await tx.wallet.update({
-        where: { id: senderWallet.id },
-        data: {
-          balance: newSenderBalance,
-          ledgerBalance: newSenderBalance,
-        },
-      });
+    // 11. Execute transfer atomically with pessimistic locking and serializable isolation
+    // Retry logic for serialization conflicts (expected with concurrent requests)
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+    let result: any = null;
 
-      // Credit receiver (and lock if deposit limit exceeded)
-      const newReceiverBalance = receiverWallet.balance.plus(amount);
-      await tx.wallet.update({
-        where: { id: receiverWallet.id },
-        data: {
-          balance: newReceiverBalance,
-          ledgerBalance: newReceiverBalance,
-          // Lock receiver's wallet if deposit limit exceeded
-          ...(shouldLockReceiverWallet && {
-            isLocked: true,
-            lockedReason: receiverLockReason,
-          }),
-        },
-      });
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        result = await this.prisma.$transaction(
+          async (tx) => {
+            // Lock and read sender wallet WITHIN transaction (SELECT FOR UPDATE)
+            // Note: Raw queries return Decimal as string/number, so we need to convert
+            const lockedSenderWallets = await tx.$queryRaw<
+              Array<{
+                id: string;
+                userId: string;
+                balance: string | number | Decimal;
+                ledgerBalance: string | number | Decimal;
+                isLocked: boolean;
+                type: string;
+              }>
+            >`
+              SELECT * FROM wallets 
+              WHERE "userId" = ${senderId} AND type = 'NAIRA'
+              FOR UPDATE
+            `;
 
-      // Create sender transaction (debit)
-      const senderTxn = await tx.transaction.create({
-        data: {
-          reference: `${reference}_DEBIT`,
-          userId: senderId,
-          type: TransactionType.TRANSFER,
-          status: TransactionStatus.COMPLETED,
-          amount: new Decimal(amount),
-          fee: new Decimal(fee),
-          totalAmount: new Decimal(totalDebit),
-          balanceBefore: senderWallet.balance,
-          balanceAfter: newSenderBalance,
-          currency: 'NGN',
-          description: `Sent ₦${amount.toLocaleString()} to @${receiver.tag}`,
-          metadata: {
-            recipientTag: receiver.tag,
-            recipientId: receiver.id,
-            recipientName: `${receiver.firstName} ${receiver.lastName}`,
-            message,
-            transferType: 'p2p',
+            if (!lockedSenderWallets || lockedSenderWallets.length === 0) {
+              throw new NotFoundException('Sender wallet not found');
+            }
+
+            const senderWallet = lockedSenderWallets[0];
+
+            if (senderWallet.isLocked) {
+              throw new ForbiddenException('Your wallet is locked');
+            }
+
+            // Check balance with fresh, locked data
+            // Convert balance to Decimal (raw query returns string/number)
+            const senderBalance =
+              senderWallet.balance instanceof Decimal
+                ? senderWallet.balance
+                : new Decimal(senderWallet.balance.toString());
+            if (senderBalance.lt(totalDebit)) {
+              throw new BadRequestException(
+                `Insufficient balance. You have ₦${senderBalance.toString()} but need ₦${totalDebit.toLocaleString()}`,
+              );
+            }
+
+            // Lock and read receiver wallet WITHIN transaction (SELECT FOR UPDATE)
+            const lockedReceiverWallets = await tx.$queryRaw<
+              Array<{
+                id: string;
+                userId: string;
+                balance: string | number | Decimal;
+                ledgerBalance: string | number | Decimal;
+                type: string;
+              }>
+            >`
+              SELECT * FROM wallets 
+              WHERE "userId" = ${receiver.id} AND type = 'NAIRA'
+              FOR UPDATE
+            `;
+
+            if (!lockedReceiverWallets || lockedReceiverWallets.length === 0) {
+              throw new NotFoundException('Recipient wallet not found');
+            }
+
+            const receiverWallet = lockedReceiverWallets[0];
+
+            // Debit sender using locked, fresh balance
+            const newSenderBalance = senderBalance.minus(totalDebit);
+            await tx.wallet.update({
+              where: { id: senderWallet.id },
+              data: {
+                balance: newSenderBalance,
+                ledgerBalance: newSenderBalance,
+              },
+            });
+
+            // Credit receiver (and lock if deposit limit exceeded) using locked, fresh balance
+            // Convert balance to Decimal (raw query returns string/number)
+            const receiverBalance =
+              receiverWallet.balance instanceof Decimal
+                ? receiverWallet.balance
+                : new Decimal(receiverWallet.balance.toString());
+            const newReceiverBalance = receiverBalance.plus(amount);
+            await tx.wallet.update({
+              where: { id: receiverWallet.id },
+              data: {
+                balance: newReceiverBalance,
+                ledgerBalance: newReceiverBalance,
+                // Lock receiver's wallet if deposit limit exceeded
+                ...(shouldLockReceiverWallet && {
+                  isLocked: true,
+                  lockedReason: receiverLockReason,
+                }),
+              },
+            });
+
+            // Create sender transaction (debit)
+            const senderTxn = await tx.transaction.create({
+              data: {
+                reference: `${reference}_DEBIT`,
+                userId: senderId,
+                type: TransactionType.TRANSFER,
+                status: TransactionStatus.COMPLETED,
+                amount: new Decimal(amount),
+                fee: new Decimal(fee),
+                totalAmount: new Decimal(totalDebit),
+                balanceBefore: senderBalance,
+                balanceAfter: newSenderBalance,
+                currency: 'NGN',
+                description: `Sent ₦${amount.toLocaleString()} to @${receiver.tag}`,
+                metadata: {
+                  recipientTag: receiver.tag,
+                  recipientId: receiver.id,
+                  recipientName: `${receiver.firstName} ${receiver.lastName}`,
+                  message,
+                  transferType: 'p2p',
+                },
+              },
+            });
+
+            // Create receiver transaction (credit)
+            const receiverTxn = await tx.transaction.create({
+              data: {
+                reference: `${reference}_CREDIT`,
+                userId: receiver.id,
+                type: TransactionType.DEPOSIT,
+                status: TransactionStatus.COMPLETED,
+                amount: new Decimal(amount),
+                fee: new Decimal(0),
+                totalAmount: new Decimal(amount),
+                balanceBefore: receiverBalance,
+                balanceAfter: newReceiverBalance,
+                currency: 'NGN',
+                description: `Received ₦${amount.toLocaleString()} from @${sender.tag || sender.firstName}${shouldLockReceiverWallet ? ' (Wallet locked - limit exceeded)' : ''}`,
+                metadata: {
+                  senderTag: sender.tag,
+                  senderId: sender.id,
+                  senderName: `${sender.firstName} ${sender.lastName}`,
+                  message,
+                  transferType: 'p2p',
+                  limitExceeded: shouldLockReceiverWallet,
+                  lockedWallet: shouldLockReceiverWallet,
+                },
+              },
+            });
+
+            // Create P2P transfer record
+            const p2pTransfer = await tx.p2PTransfer.create({
+              data: {
+                reference,
+                senderId: sender.id,
+                receiverId: receiver.id,
+                amount: new Decimal(amount),
+                fee: new Decimal(fee),
+                status: TransactionStatus.COMPLETED,
+                message,
+                senderTransactionId: senderTxn.id,
+                receiverTransactionId: receiverTxn.id,
+              },
+            });
+
+            return {
+              senderTxn,
+              receiverTxn,
+              p2pTransfer,
+              receiverWalletId: receiverWallet.id,
+            };
           },
-        },
-      });
-
-      // Create receiver transaction (credit)
-      const receiverTxn = await tx.transaction.create({
-        data: {
-          reference: `${reference}_CREDIT`,
-          userId: receiver.id,
-          type: TransactionType.DEPOSIT,
-          status: TransactionStatus.COMPLETED,
-          amount: new Decimal(amount),
-          fee: new Decimal(0),
-          totalAmount: new Decimal(amount),
-          balanceBefore: receiverWallet.balance,
-          balanceAfter: newReceiverBalance,
-          currency: 'NGN',
-          description: `Received ₦${amount.toLocaleString()} from @${sender.tag || sender.firstName}${shouldLockReceiverWallet ? ' (Wallet locked - limit exceeded)' : ''}`,
-          metadata: {
-            senderTag: sender.tag,
-            senderId: sender.id,
-            senderName: `${sender.firstName} ${sender.lastName}`,
-            message,
-            transferType: 'p2p',
-            limitExceeded: shouldLockReceiverWallet,
-            lockedWallet: shouldLockReceiverWallet,
+          {
+            isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+            maxWait: 10000, // Wait up to 10 seconds for lock
+            timeout: 20000, // Transaction timeout after 20 seconds
           },
-        },
-      });
+        );
 
-      // Create P2P transfer record
-      const p2pTransfer = await tx.p2PTransfer.create({
-        data: {
-          reference,
-          senderId: sender.id,
-          receiverId: receiver.id,
-          amount: new Decimal(amount),
-          fee: new Decimal(fee),
-          status: TransactionStatus.COMPLETED,
-          message,
-          senderTransactionId: senderTxn.id,
-          receiverTransactionId: receiverTxn.id,
-        },
-      });
+        // Success - break out of retry loop
+        break;
+      } catch (error: any) {
+        lastError = error;
 
-      return { senderTxn, receiverTxn, p2pTransfer };
-    });
+        // Check if it's a serialization conflict (expected with concurrent requests)
+        const isSerializationConflict =
+          error?.code === 'P2010' &&
+          error?.meta?.code === '40001' &&
+          error?.meta?.message?.includes('could not serialize access');
+
+        if (isSerializationConflict && attempt < maxRetries) {
+          // Exponential backoff: 50ms, 100ms, 200ms
+          const backoffMs = 50 * Math.pow(2, attempt - 1);
+          this.logger.warn(
+            `[P2P] Serialization conflict on attempt ${attempt}/${maxRetries}, retrying in ${backoffMs}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+          continue;
+        }
+
+        // Not a serialization conflict or max retries reached - throw error
+        throw error;
+      }
+    }
+
+    if (!result) {
+      throw lastError || new Error('Transaction failed after retries');
+    }
+
+    // Invalidate wallet and transaction caches for both users
+    await this.walletService.invalidateWalletCache(senderId);
+    await this.walletService.invalidateTransactionCache(senderId);
+    await this.walletService.invalidateWalletCache(receiver.id);
+    await this.walletService.invalidateTransactionCache(receiver.id);
 
     // 12. Update daily limits (async, non-blocking)
     // Increment sender's P2P transfer spending
@@ -1642,7 +1727,7 @@ export class TransactionsService {
             userId: receiver.id,
             action: 'WALLET_LOCKED',
             resource: 'WALLET',
-            resourceId: receiverWallet.id,
+            resourceId: result.receiverWalletId,
             ipAddress: '0.0.0.0',
             userAgent: 'SYSTEM',
             metadata: {

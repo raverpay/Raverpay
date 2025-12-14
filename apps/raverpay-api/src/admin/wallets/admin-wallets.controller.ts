@@ -14,6 +14,7 @@ import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Idempotent } from '../../common/decorators/idempotent.decorator';
 import { AdminWalletsService } from './admin-wallets.service';
 import { AdjustWalletDto } from '../dto';
 
@@ -104,6 +105,7 @@ export class AdminWalletsController {
    */
   @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 10 balance adjustments per hour
   @Post(':userId/adjust')
+  @Idempotent()
   async adjustBalance(
     @Request() req,
     @Param('userId') userId: string,

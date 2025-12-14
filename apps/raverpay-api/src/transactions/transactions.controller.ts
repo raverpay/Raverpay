@@ -10,6 +10,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { TransactionsService } from './transactions.service';
 import {
   FundWalletDto,
@@ -30,6 +31,7 @@ export class TransactionsController {
   @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 10 card funding attempts per hour per user
   @Post('fund/card')
   @UseGuards(JwtAuthGuard)
+  @Idempotent()
   async fundViaCard(@GetUser('id') userId: string, @Body() dto: FundWalletDto) {
     return this.transactionsService.initializeCardPayment(
       userId,
@@ -104,6 +106,7 @@ export class TransactionsController {
   @Throttle({ default: { limit: 5, ttl: 3600000 } }) // 5 withdrawals per hour per user
   @Post('withdraw')
   @UseGuards(JwtAuthGuard)
+  @Idempotent()
   async withdraw(@GetUser('id') userId: string, @Body() dto: WithdrawFundsDto) {
     return this.transactionsService.withdrawFunds(
       userId,
@@ -160,6 +163,7 @@ export class TransactionsController {
   @Throttle({ default: { limit: 20, ttl: 3600000 } }) // 20 P2P transfers per hour per user
   @Post('send')
   @UseGuards(JwtAuthGuard)
+  @Idempotent()
   async sendToUser(@GetUser('id') userId: string, @Body() dto: SendToUserDto) {
     return this.transactionsService.sendToUser(
       userId,

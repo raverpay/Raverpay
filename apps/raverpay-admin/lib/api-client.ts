@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { generateIdempotencyKey, requiresIdempotencyKey } from './utils/idempotency';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -12,13 +13,32 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: 30000, // 30 seconds
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and idempotency keys
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add idempotency key for POST/PUT/PATCH requests to idempotent endpoints
+    const endpoint = config.url || '';
+    const method = config.method?.toUpperCase() || '';
+    if (
+      (method === 'POST' || method === 'PUT' || method === 'PATCH') &&
+      requiresIdempotencyKey(endpoint) &&
+      !config.headers['Idempotency-Key'] &&
+      !config.headers['idempotency-key']
+    ) {
+      try {
+        const idempotencyKey = generateIdempotencyKey();
+        config.headers['Idempotency-Key'] = idempotencyKey;
+      } catch (error) {
+        console.warn(`Failed to generate idempotency key for ${endpoint}:`, error);
+        // Continue without idempotency key (fail open)
+      }
+    }
+
     return config;
   },
   (error) => {

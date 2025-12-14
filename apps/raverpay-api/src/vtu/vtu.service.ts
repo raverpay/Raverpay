@@ -25,7 +25,7 @@ import {
   PurchaseWAECRegistrationDto,
   PurchaseWAECResultDto,
 } from './dto';
-import { VTUServiceType, TransactionStatus } from '@prisma/client';
+import { VTUServiceType, TransactionStatus, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 interface VTPassPurchaseResult {
@@ -370,20 +370,17 @@ export class VTUService {
     const fee = this.calculateFee(dto.amount, 'AIRTIME');
     const total = dto.amount + fee - cashbackRedeemed;
 
-    // 6. Check balance
-    await this.checkWalletBalance(userId, total);
-
-    // 7. Check duplicate
+    // 6. Check duplicate
     await this.checkDuplicateOrder(userId, 'AIRTIME', dto.phone, dto.amount);
 
-    // 8. Lock wallet
+    // 7. Lock wallet
     await this.lockWalletForTransaction(userId);
 
     try {
-      // 9. Generate reference
+      // 8. Generate reference
       const reference = this.generateReference('AIRTIME');
 
-      // 10. Create order
+      // 9. Create order
       const order = await this.prisma.vTUOrder.create({
         data: {
           reference,
@@ -400,58 +397,120 @@ export class VTUService {
         },
       });
 
-      // 11. Get wallet balance before transaction
-      const wallet = await this.prisma.wallet.findFirst({
-        where: {
-          userId,
-          type: 'NAIRA',
-        },
-      });
-      const balanceBefore = wallet!.balance;
-      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+      // 10. Debit wallet and create transaction with pessimistic locking and serializable isolation
+      const maxRetries = 3;
+      let retryCount = 0;
+      let result: { balanceBefore: Decimal; balanceAfter: Decimal };
 
-      // 12. Debit wallet and create transaction
-      await this.prisma.$transaction([
-        this.prisma.wallet.update({
-          where: {
-            userId_type: {
-              userId,
-              type: 'NAIRA',
-            },
-          },
-          data: {
-            balance: { decrement: new Decimal(total) },
-            ledgerBalance: { decrement: new Decimal(total) },
-            dailySpent: { increment: new Decimal(dto.amount) },
-            monthlySpent: { increment: new Decimal(dto.amount) },
-          },
-        }),
-        this.prisma.transaction.create({
-          data: {
-            reference,
-            userId,
-            type: 'VTU_AIRTIME',
-            amount: new Decimal(dto.amount),
-            fee: new Decimal(fee),
-            cashbackRedeemed: new Decimal(cashbackRedeemed),
-            totalAmount: new Decimal(total),
-            balanceBefore,
-            balanceAfter,
-            status: 'COMPLETED',
-            description: `${dto.network.toUpperCase()} Airtime - ${dto.phone}`,
-            metadata: {
-              serviceType: 'AIRTIME',
-              provider: dto.network.toUpperCase(),
-              recipient: dto.phone,
-              orderId: order.id,
-              cashbackToEarn: cashbackToEarn.cashbackAmount,
-              cashbackRedeemed,
-            },
-          },
-        }),
-      ]);
+      while (retryCount < maxRetries) {
+        try {
+          result = await this.prisma.$transaction(
+            async (tx) => {
+              // Lock wallet with SELECT FOR UPDATE
+              const walletRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>
+              >`
+                SELECT id, balance, "ledgerBalance"
+                FROM "wallets"
+                WHERE "userId" = ${userId} AND type = 'NAIRA'
+                FOR UPDATE
+              `;
 
-      // 13. Redeem cashback from user's cashback wallet (before calling VTPass)
+              if (!walletRows || walletRows.length === 0) {
+                throw new NotFoundException('Wallet not found');
+              }
+
+              const wallet = walletRows[0];
+              const balanceBefore = new Decimal(wallet.balance.toString());
+              const balanceAfter = balanceBefore.minus(new Decimal(total));
+
+              // Check balance inside transaction
+              if (balanceBefore.lessThan(total)) {
+                throw new BadRequestException(
+                  `Insufficient balance. Required: ₦${total.toFixed(2)}, Available: ₦${balanceBefore.toFixed(2)}`,
+                );
+              }
+
+              // Update wallet
+              await tx.wallet.update({
+                where: {
+                  userId_type: {
+                    userId,
+                    type: 'NAIRA',
+                  },
+                },
+                data: {
+                  balance: { decrement: new Decimal(total) },
+                  ledgerBalance: { decrement: new Decimal(total) },
+                  dailySpent: { increment: new Decimal(dto.amount) },
+                  monthlySpent: { increment: new Decimal(dto.amount) },
+                },
+              });
+
+              // Create transaction
+              await tx.transaction.create({
+                data: {
+                  reference,
+                  userId,
+                  type: 'VTU_AIRTIME',
+                  amount: new Decimal(dto.amount),
+                  fee: new Decimal(fee),
+                  cashbackRedeemed: new Decimal(cashbackRedeemed),
+                  totalAmount: new Decimal(total),
+                  balanceBefore,
+                  balanceAfter,
+                  status: 'COMPLETED',
+                  description: `${dto.network.toUpperCase()} Airtime - ${dto.phone}`,
+                  metadata: {
+                    serviceType: 'AIRTIME',
+                    provider: dto.network.toUpperCase(),
+                    recipient: dto.phone,
+                    orderId: order.id,
+                    cashbackToEarn: cashbackToEarn.cashbackAmount,
+                    cashbackRedeemed,
+                  },
+                },
+              });
+
+              return { balanceBefore, balanceAfter };
+            },
+            {
+              isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+              maxWait: 10000, // 10 seconds
+              timeout: 20000, // 20 seconds
+            },
+          );
+
+          // Success, break out of retry loop
+          break;
+        } catch (error: any) {
+          // Check if it's a serialization conflict
+          if (
+            error.code === 'P2010' ||
+            error.code === '40001' ||
+            (error.message && error.message.includes('serialization'))
+          ) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw new BadRequestException(
+                'Transaction conflict. Please try again.',
+              );
+            }
+            // Exponential backoff
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 100),
+            );
+            continue;
+          }
+          // Not a serialization conflict, throw immediately
+          throw error;
+        }
+      }
+
+      // 11. Invalidate wallet cache after successful transaction
+      await this.walletService.invalidateWalletCache(userId);
+
+      // 12. Redeem cashback from user's cashback wallet (before calling VTPass)
       if (cashbackRedeemed > 0) {
         await this.cashbackService.redeemCashback(
           userId,
@@ -723,20 +782,17 @@ export class VTUService {
     const fee = this.calculateFee(amount, 'DATA');
     const total = amount + fee - cashbackRedeemed;
 
-    // 6. Check balance
-    await this.checkWalletBalance(userId, total);
-
-    // 5. Check duplicate
+    // 6. Check duplicate
     await this.checkDuplicateOrder(userId, 'DATA', dto.phone, amount);
 
-    // 6. Lock wallet
+    // 7. Lock wallet
     await this.lockWalletForTransaction(userId);
 
     try {
-      // 7. Generate reference
+      // 8. Generate reference
       const reference = this.generateReference('DATA');
 
-      // 8. Create order
+      // 9. Create order
       const order = await this.prisma.vTUOrder.create({
         data: {
           reference,
@@ -753,58 +809,120 @@ export class VTUService {
         },
       });
 
-      // 9. Get wallet balance before transaction
-      const walletData = await this.prisma.wallet.findFirst({
-        where: {
-          userId,
-          type: 'NAIRA',
-        },
-      });
-      const balanceBefore = walletData!.balance;
-      const balanceAfter = new Decimal(balanceBefore).minus(new Decimal(total));
+      // 10. Debit wallet and create transaction with pessimistic locking and serializable isolation
+      const maxRetries = 3;
+      let retryCount = 0;
+      let result: { balanceBefore: Decimal; balanceAfter: Decimal };
 
-      // 10. Debit wallet and create transaction
-      await this.prisma.$transaction([
-        this.prisma.wallet.update({
-          where: {
-            userId_type: {
-              userId,
-              type: 'NAIRA',
+      while (retryCount < maxRetries) {
+        try {
+          result = await this.prisma.$transaction(
+            async (tx) => {
+              // Lock wallet with SELECT FOR UPDATE
+              const walletRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>
+              >`
+                SELECT id, balance, "ledgerBalance"
+                FROM "wallets"
+                WHERE "userId" = ${userId} AND type = 'NAIRA'
+                FOR UPDATE
+              `;
+
+              if (!walletRows || walletRows.length === 0) {
+                throw new NotFoundException('Wallet not found');
+              }
+
+              const wallet = walletRows[0];
+              const balanceBefore = new Decimal(wallet.balance.toString());
+              const balanceAfter = balanceBefore.minus(new Decimal(total));
+
+              // Check balance inside transaction
+              if (balanceBefore.lessThan(total)) {
+                throw new BadRequestException(
+                  `Insufficient balance. Required: ₦${total.toFixed(2)}, Available: ₦${balanceBefore.toFixed(2)}`,
+                );
+              }
+
+              // Update wallet
+              await tx.wallet.update({
+                where: {
+                  userId_type: {
+                    userId,
+                    type: 'NAIRA',
+                  },
+                },
+                data: {
+                  balance: { decrement: new Decimal(total) },
+                  ledgerBalance: { decrement: new Decimal(total) },
+                  dailySpent: { increment: new Decimal(amount) },
+                  monthlySpent: { increment: new Decimal(amount) },
+                },
+              });
+
+              // Create transaction
+              await tx.transaction.create({
+                data: {
+                  reference,
+                  userId,
+                  type: 'VTU_DATA',
+                  amount: new Decimal(amount),
+                  fee: new Decimal(fee),
+                  cashbackRedeemed: new Decimal(cashbackRedeemed),
+                  totalAmount: new Decimal(total),
+                  balanceBefore,
+                  balanceAfter,
+                  status: 'COMPLETED',
+                  description: `${dto.network.toUpperCase()} Data - ${product.name}`,
+                  metadata: {
+                    serviceType: 'DATA',
+                    provider: dto.network.toUpperCase(),
+                    recipient: dto.phone,
+                    productCode: dto.productCode,
+                    productName: product.name,
+                    orderId: order.id,
+                    cashbackToEarn: cashbackToEarn.cashbackAmount,
+                    cashbackRedeemed,
+                  },
+                },
+              });
+
+              return { balanceBefore, balanceAfter };
             },
-          },
-          data: {
-            balance: { decrement: new Decimal(total) },
-            ledgerBalance: { decrement: new Decimal(total) },
-            dailySpent: { increment: new Decimal(amount) },
-            monthlySpent: { increment: new Decimal(amount) },
-          },
-        }),
-        this.prisma.transaction.create({
-          data: {
-            reference,
-            userId,
-            type: 'VTU_DATA',
-            amount: new Decimal(amount),
-            fee: new Decimal(fee),
-            cashbackRedeemed: new Decimal(cashbackRedeemed),
-            totalAmount: new Decimal(total),
-            balanceBefore,
-            balanceAfter,
-            status: 'COMPLETED',
-            description: `${dto.network.toUpperCase()} Data - ${product.name}`,
-            metadata: {
-              serviceType: 'DATA',
-              provider: dto.network.toUpperCase(),
-              recipient: dto.phone,
-              productCode: dto.productCode,
-              productName: product.name,
-              orderId: order.id,
-              cashbackToEarn: cashbackToEarn.cashbackAmount,
-              cashbackRedeemed,
+            {
+              isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+              maxWait: 10000, // 10 seconds
+              timeout: 20000, // 20 seconds
             },
-          },
-        }),
-      ]);
+          );
+
+          // Success, break out of retry loop
+          break;
+        } catch (error: any) {
+          // Check if it's a serialization conflict
+          if (
+            error.code === 'P2010' ||
+            error.code === '40001' ||
+            (error.message && error.message.includes('serialization'))
+          ) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw new BadRequestException(
+                'Transaction conflict. Please try again.',
+              );
+            }
+            // Exponential backoff
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 100),
+            );
+            continue;
+          }
+          // Not a serialization conflict, throw immediately
+          throw error;
+        }
+      }
+
+      // 11. Invalidate wallet cache after successful transaction
+      await this.walletService.invalidateWalletCache(userId);
 
       // 11. Redeem cashback from user's cashback wallet (before calling VTPass)
       // Note: This MUST be synchronous to ensure cashback is deducted before VTPass call

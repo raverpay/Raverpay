@@ -29,6 +29,8 @@ import { RedisThrottlerStorage } from './common/storage/redis-throttler.storage'
 import { RateLimitLoggerInterceptor } from './common/interceptors/rate-limit-logger.interceptor';
 import { AccountLockingService } from './common/services/account-locking.service';
 import { AccountLockGuard } from './common/guards/account-lock.guard';
+import { IdempotencyService } from './common/services/idempotency.service';
+import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -84,6 +86,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   providers: [
     AppService,
     AccountLockingService,
+    IdempotencyService,
     // Apply custom throttler guard globally (tracks by user ID or IP)
     {
       provide: APP_GUARD,
@@ -98,6 +101,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     {
       provide: APP_INTERCEPTOR,
       useClass: RateLimitLoggerInterceptor,
+    },
+    // Handle idempotency keys (only applies to endpoints with @Idempotent() decorator)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: IdempotencyInterceptor,
     },
   ],
 })

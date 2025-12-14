@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BVNEncryptionService } from '../utils/bvn-encryption.service';
 import { WalletService } from '../wallet/wallet.service';
+import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 /**
  * Paystack Webhook Service
@@ -74,71 +76,111 @@ export class PaystackWebhookService {
     }
 
     try {
-      // Credit user's wallet using a transaction
-      await this.prisma.$transaction(async (tx) => {
-        // Get current wallet balance
-        const wallet = await tx.wallet.findFirst({
-          where: {
-            userId: virtualAccount.userId,
-            type: 'NAIRA',
-          },
-        });
+      // Credit user's wallet using a transaction with pessimistic locking and serializable isolation
+      const maxRetries = 3;
+      let retryCount = 0;
 
-        if (!wallet) {
-          throw new Error(`Wallet not found for user ${virtualAccount.userId}`);
+      while (retryCount < maxRetries) {
+        try {
+          await this.prisma.$transaction(
+            async (tx) => {
+              // Lock wallet with SELECT FOR UPDATE
+              const walletRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal; userId: string }>
+              >`
+                SELECT id, balance, "userId"
+                FROM "wallets"
+                WHERE "userId" = ${virtualAccount.userId} AND type = 'NAIRA'
+                FOR UPDATE
+              `;
+
+              if (!walletRows || walletRows.length === 0) {
+                throw new BadRequestException(
+                  `Wallet not found for user ${virtualAccount.userId}`,
+                );
+              }
+
+              const wallet = walletRows[0];
+              const balanceBefore = new Decimal(wallet.balance.toString());
+              const fee = new Decimal(paystackFeeInNaira); // Paystack DVA fee (1% capped at ₦300)
+              const totalAmount = new Decimal(netAmount); // Net amount after fee deduction
+              const balanceAfter = balanceBefore.plus(totalAmount);
+
+              // Create transaction record
+              await tx.transaction.create({
+                data: {
+                  userId: virtualAccount.userId,
+                  type: 'DEPOSIT',
+                  amount: new Decimal(amountInNaira), // Original amount sent
+                  fee,
+                  totalAmount, // Net amount credited
+                  balanceBefore,
+                  balanceAfter,
+                  currency: 'NGN',
+                  status: 'COMPLETED',
+                  reference,
+                  description: `Wallet funding via bank transfer (Fee: ₦${paystackFeeInNaira.toFixed(2)})`,
+                  channel: 'BANK_TRANSFER',
+                  provider: 'paystack',
+                  metadata: {
+                    accountNumber,
+                    senderName: authorization?.sender_name,
+                    senderBank: authorization?.sender_bank,
+                    senderAccountNumber:
+                      authorization?.sender_bank_account_number,
+                    grossAmount: amountInNaira,
+                    paystackFee: paystackFeeInNaira,
+                    netAmount: netAmount,
+                  },
+                },
+              });
+
+              // Update wallet balance
+              await tx.wallet.update({
+                where: {
+                  userId_type: {
+                    userId: virtualAccount.userId,
+                    type: 'NAIRA',
+                  },
+                },
+                data: {
+                  balance: balanceAfter,
+                  ledgerBalance: balanceAfter,
+                },
+              });
+            },
+            {
+              isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+              maxWait: 10000, // 10 seconds
+              timeout: 20000, // 20 seconds
+            },
+          );
+
+          // Success, break out of retry loop
+          break;
+        } catch (error: any) {
+          // Check if it's a serialization conflict
+          if (
+            error.code === 'P2010' ||
+            error.code === '40001' ||
+            (error.message && error.message.includes('serialization'))
+          ) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw new BadRequestException(
+                'Transaction conflict. Please try again.',
+              );
+            }
+            // Exponential backoff
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 100),
+            );
+            continue;
+          }
+          // Not a serialization conflict, throw immediately
+          throw error;
         }
-
-        const balanceBefore = Number(wallet.balance);
-        const fee = paystackFeeInNaira; // Paystack DVA fee (1% capped at ₦300)
-        const totalAmount = netAmount; // Net amount after fee deduction
-        const balanceAfter = balanceBefore + netAmount;
-
-        // Create transaction record
-        await tx.transaction.create({
-          data: {
-            userId: virtualAccount.userId,
-            type: 'DEPOSIT',
-            amount: amountInNaira, // Original amount sent
-            fee,
-            totalAmount, // Net amount credited
-            balanceBefore,
-            balanceAfter,
-            currency: 'NGN',
-            status: 'COMPLETED',
-            reference,
-            description: `Wallet funding via bank transfer (Fee: ₦${paystackFeeInNaira.toFixed(2)})`,
-            channel: 'BANK_TRANSFER',
-            provider: 'paystack',
-            metadata: {
-              accountNumber,
-              senderName: authorization?.sender_name,
-              senderBank: authorization?.sender_bank,
-              senderAccountNumber: authorization?.sender_bank_account_number,
-              grossAmount: amountInNaira,
-              paystackFee: paystackFeeInNaira,
-              netAmount: netAmount,
-            },
-          },
-        });
-
-        // Update wallet balance
-        await tx.wallet.update({
-          where: {
-            userId_type: {
-              userId: virtualAccount.userId,
-              type: 'NAIRA',
-            },
-          },
-          data: {
-            balance: {
-              increment: netAmount,
-            },
-            ledgerBalance: {
-              increment: netAmount,
-            },
-          },
-        });
-      });
+      }
 
       // Invalidate wallet and transaction caches
       await this.walletService.invalidateWalletCache(virtualAccount.userId);
@@ -321,7 +363,7 @@ export class PaystackWebhookService {
           userId: user.id,
           eventType: 'bvn_verification_failed',
           category: 'KYC',
-          channels: ['EMAIL', 'SMS', 'IN_APP'],
+          channels: ['EMAIL', 'PUSH', 'IN_APP'],
           title: 'BVN Verification Failed',
           message: `We couldn't verify your BVN. ${reason || 'Please check your details and try again.'}`,
           data: {
