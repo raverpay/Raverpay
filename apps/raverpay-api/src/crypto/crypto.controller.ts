@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { CryptoService } from './crypto.service';
 import {
   CreateCryptoWalletDto,
@@ -167,6 +168,7 @@ export class CryptoController {
    */
   @Post('convert')
   @UseGuards(JwtAuthGuard)
+  @Idempotent()
   async requestConversion(
     @GetUser('id') userId: string,
     @Body() dto: ConvertCryptoDto,

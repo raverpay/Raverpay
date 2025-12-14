@@ -13,6 +13,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { VTUService } from './vtu.service';
 import {
   PurchaseAirtimeDto,
@@ -130,6 +131,7 @@ export class VTUController {
   @Throttle({ default: { limit: 30, ttl: 3600000 } }) // 30 airtime purchases per hour
   @Post('airtime/purchase')
   @HttpCode(HttpStatus.CREATED)
+  @Idempotent()
   purchaseAirtime(
     @GetUser('id') userId: string,
     @Body() dto: PurchaseAirtimeDto,
@@ -140,6 +142,7 @@ export class VTUController {
   @Throttle({ default: { limit: 30, ttl: 3600000 } }) // 30 data purchases per hour
   @Post('data/purchase')
   @HttpCode(HttpStatus.CREATED)
+  @Idempotent()
   purchaseData(@GetUser('id') userId: string, @Body() dto: PurchaseDataDto) {
     return this.vtuService.purchaseDataBundle(userId, dto);
   }
