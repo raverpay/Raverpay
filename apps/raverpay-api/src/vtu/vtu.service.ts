@@ -407,9 +407,11 @@ export class VTUService {
           result = await this.prisma.$transaction(
             async (tx) => {
               // Lock wallet with SELECT FOR UPDATE
-              const walletRows = await tx.$queryRaw<Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>>`
+              const walletRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>
+              >`
                 SELECT id, balance, "ledgerBalance"
-                FROM "Wallet"
+                FROM "wallets"
                 WHERE "userId" = ${userId} AND type = 'NAIRA'
                 FOR UPDATE
               `;
@@ -817,9 +819,11 @@ export class VTUService {
           result = await this.prisma.$transaction(
             async (tx) => {
               // Lock wallet with SELECT FOR UPDATE
-              const walletRows = await tx.$queryRaw<Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>>`
+              const walletRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>
+              >`
                 SELECT id, balance, "ledgerBalance"
-                FROM "Wallet"
+                FROM "wallets"
                 WHERE "userId" = ${userId} AND type = 'NAIRA'
                 FOR UPDATE
               `;

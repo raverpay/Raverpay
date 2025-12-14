@@ -44,6 +44,7 @@ import { TransactionsModule } from '../transactions/transactions.module';
 import { SupportModule } from '../support/support.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
+import { WalletModule } from '../wallet/wallet.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { WebhooksModule } from '../webhooks/webhooks.module';
     VTUModule,
     SupportModule,
     WebhooksModule,
+    WalletModule,
     forwardRef(() => TransactionsModule),
   ],
   controllers: [

@@ -1,15 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, TransactionStatus } from '@prisma/client';
 import { AdjustWalletDto } from '../dto';
 import { Decimal } from '@prisma/client/runtime/library';
 import { NotificationDispatcherService } from '../../notifications/notification-dispatcher.service';
+import { WalletService } from '../../wallet/wallet.service';
 
 @Injectable()
 export class AdminWalletsService {
   constructor(
     private prisma: PrismaService,
     private notificationDispatcher: NotificationDispatcherService,
+    private walletService: WalletService,
   ) {}
 
   /**
@@ -175,93 +181,155 @@ export class AdminWalletsService {
     userId: string,
     dto: AdjustWalletDto,
   ) {
-    const wallet = await this.prisma.wallet.findFirst({
-      where: {
-        userId,
-        type: 'NAIRA',
-      },
-    });
-
-    if (!wallet) {
-      throw new NotFoundException('Wallet not found');
-    }
-
     const amount = new Decimal(dto.amount);
-    const newBalance =
-      dto.type === 'credit'
-        ? new Decimal(wallet.balance).plus(amount)
-        : new Decimal(wallet.balance).minus(amount);
 
-    if (newBalance.lessThan(0)) {
-      throw new Error('Insufficient balance for debit');
+    // Perform adjustment in a transaction with pessimistic locking and serializable isolation
+    const maxRetries = 3;
+    let retryCount = 0;
+    let result: { wallet: any; transaction: any; walletId: string } | undefined;
+
+    while (retryCount < maxRetries) {
+      try {
+        result = await this.prisma.$transaction(
+          async (tx) => {
+            // Lock wallet with SELECT FOR UPDATE
+            const walletRows = await tx.$queryRaw<
+              Array<{ id: string; balance: Decimal; ledgerBalance: Decimal }>
+            >`
+              SELECT id, balance, "ledgerBalance"
+              FROM "wallets"
+              WHERE "userId" = ${userId} AND type = 'NAIRA'
+              FOR UPDATE
+            `;
+
+            if (!walletRows || walletRows.length === 0) {
+              throw new NotFoundException('Wallet not found');
+            }
+
+            const wallet = walletRows[0];
+            const balanceBefore = new Decimal(wallet.balance.toString());
+            const balanceAfter =
+              dto.type === 'credit'
+                ? balanceBefore.plus(amount)
+                : balanceBefore.minus(amount);
+
+            // Check balance inside transaction
+            if (balanceAfter.lessThan(0)) {
+              throw new BadRequestException(
+                `Insufficient balance for debit. Current balance: ₦${balanceBefore.toFixed(2)}, Required: ₦${amount.toFixed(2)}`,
+              );
+            }
+
+            // Update wallet
+            const updatedWallet = await tx.wallet.update({
+              where: {
+                userId_type: {
+                  userId,
+                  type: 'NAIRA',
+                },
+              },
+              data: {
+                balance: balanceAfter,
+                ledgerBalance: balanceAfter,
+              },
+            });
+
+            // Create transaction record
+            const transaction = await tx.transaction.create({
+              data: {
+                userId,
+                type: dto.type === 'credit' ? 'DEPOSIT' : 'WITHDRAWAL',
+                status: TransactionStatus.COMPLETED,
+                amount,
+                fee: new Decimal(0),
+                totalAmount: amount,
+                balanceBefore,
+                balanceAfter,
+                currency: 'NGN',
+                description: `Admin ${dto.type} - ${dto.reason}`,
+                narration: dto.reason,
+                reference: `ADMIN_${dto.type.toUpperCase()}_${Date.now()}`,
+                metadata: {
+                  adjustedBy: adminUserId,
+                  reason: dto.reason,
+                  type: dto.type,
+                },
+              },
+            });
+
+            // Create audit log
+            await tx.auditLog.create({
+              data: {
+                userId: adminUserId,
+                action: 'ADJUST_WALLET_BALANCE',
+                resource: 'Wallet',
+                resourceId: wallet.id,
+                metadata: {
+                  userId,
+                  type: dto.type,
+                  amount: amount.toString(),
+                  reason: dto.reason,
+                  previousBalance: balanceBefore.toString(),
+                  newBalance: balanceAfter.toString(),
+                },
+              },
+            });
+
+            return {
+              wallet: updatedWallet,
+              transaction,
+              walletId: wallet.id,
+            };
+          },
+          {
+            isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+            maxWait: 10000, // 10 seconds
+            timeout: 20000, // 20 seconds
+          },
+        );
+
+        // Success, break out of retry loop
+        break;
+      } catch (error: any) {
+        // Check if it's a serialization conflict
+        if (
+          error.code === 'P2010' ||
+          error.code === '40001' ||
+          (error.message && error.message.includes('serialization'))
+        ) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            throw new BadRequestException(
+              'Transaction conflict. Please try again.',
+            );
+          }
+          // Exponential backoff
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, retryCount) * 100),
+          );
+          continue;
+        }
+        // Not a serialization conflict, throw immediately
+        throw error;
+      }
     }
 
-    // Perform adjustment in a transaction
-    const result = await this.prisma.$transaction(async (prisma) => {
-      // Update wallet
-      const updatedWallet = await prisma.wallet.update({
-        where: {
-          userId_type: {
-            userId,
-            type: 'NAIRA',
-          },
-        },
-        data: {
-          balance: newBalance,
-          ledgerBalance: newBalance,
-        },
-      });
+    if (!result) {
+      throw new BadRequestException(
+        'Failed to adjust wallet balance after retries.',
+      );
+    }
 
-      // Create transaction record
-      const transaction = await prisma.transaction.create({
-        data: {
-          userId,
-          type: dto.type === 'credit' ? 'DEPOSIT' : 'WITHDRAWAL',
-          status: TransactionStatus.COMPLETED,
-          amount,
-          fee: new Decimal(0),
-          totalAmount: amount,
-          balanceBefore: wallet.balance,
-          balanceAfter: newBalance,
-          currency: 'NGN',
-          description: `Admin ${dto.type} - ${dto.reason}`,
-          narration: dto.reason,
-          reference: `ADMIN_${dto.type.toUpperCase()}_${Date.now()}`,
-          metadata: {
-            adjustedBy: adminUserId,
-            reason: dto.reason,
-            type: dto.type,
-          },
-        },
-      });
-
-      // Create audit log
-      await prisma.auditLog.create({
-        data: {
-          userId: adminUserId,
-          action: 'ADJUST_WALLET_BALANCE',
-          resource: 'Wallet',
-          resourceId: wallet.id,
-          metadata: {
-            userId,
-            type: dto.type,
-            amount: amount.toString(),
-            reason: dto.reason,
-            previousBalance: wallet.balance.toString(),
-            newBalance: newBalance.toString(),
-          },
-        },
-      });
-
-      return {
-        wallet: updatedWallet,
-        transaction,
-      };
-    });
+    // Invalidate wallet cache after successful transaction
+    await this.walletService.invalidateWalletCache(userId);
+    await this.walletService.invalidateTransactionCache(userId);
 
     // TODO: Send notification to user
 
-    return result;
+    return {
+      wallet: result.wallet,
+      transaction: result.transaction,
+    };
   }
 
   /**

@@ -2,11 +2,13 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CryptoWalletService } from './crypto-wallet.service';
 import { CryptoBalanceService } from './crypto-balance.service';
+import { WalletService } from '../../wallet/wallet.service';
 import {
   ConversionStatus,
   WalletType,
   TransactionType,
   TransactionStatus,
+  Prisma,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -29,6 +31,7 @@ export class ConversionService {
     private readonly prisma: PrismaService,
     private readonly cryptoWallet: CryptoWalletService,
     private readonly cryptoBalance: CryptoBalanceService,
+    private readonly walletService: WalletService,
   ) {}
 
   /**
@@ -180,81 +183,141 @@ export class ConversionService {
     }
 
     try {
-      await this.prisma.$transaction(async (tx) => {
-        // 1. Deduct from crypto wallet (just tracking, not actual blockchain transfer)
-        const cryptoBalance = await tx.cryptoBalance.findFirst({
-          where: {
-            walletId: cryptoWalletId,
-            tokenSymbol: conversion.tokenSymbol,
-          },
-        });
+      const maxRetries = 3;
+      let retryCount = 0;
 
-        if (!cryptoBalance) {
-          throw new Error('Token balance not found');
+      while (retryCount < maxRetries) {
+        try {
+          await this.prisma.$transaction(
+            async (tx) => {
+              // 1. Lock crypto balance with SELECT FOR UPDATE
+              const cryptoBalanceRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal }>
+              >`
+                SELECT id, balance
+                FROM "CryptoBalance"
+                WHERE "walletId" = ${cryptoWalletId} AND "tokenSymbol" = ${conversion.tokenSymbol}
+                FOR UPDATE
+              `;
+
+              if (!cryptoBalanceRows || cryptoBalanceRows.length === 0) {
+                throw new BadRequestException('Token balance not found');
+              }
+
+              const cryptoBalance = cryptoBalanceRows[0];
+              const balanceBefore = new Decimal(
+                cryptoBalance.balance.toString(),
+              );
+              const newCryptoBalance = balanceBefore.minus(
+                conversion.cryptoAmount,
+              );
+
+              // Check balance inside transaction
+              if (newCryptoBalance.lessThan(0)) {
+                throw new BadRequestException('Insufficient crypto balance');
+              }
+
+              await tx.cryptoBalance.update({
+                where: { id: cryptoBalance.id },
+                data: {
+                  balance: newCryptoBalance,
+                },
+              });
+
+              // 2. Lock Naira wallet with SELECT FOR UPDATE
+              const nairaWalletRows = await tx.$queryRaw<
+                Array<{ id: string; balance: Decimal; userId: string }>
+              >`
+                SELECT id, balance, "userId"
+                FROM "wallets"
+                WHERE id = ${nairaWalletId}
+                FOR UPDATE
+              `;
+
+              if (!nairaWalletRows || nairaWalletRows.length === 0) {
+                throw new BadRequestException('Naira wallet not found');
+              }
+
+              const nairaWallet = nairaWalletRows[0];
+              const nairaBalanceBefore = new Decimal(
+                nairaWallet.balance.toString(),
+              );
+              const newNairaBalance = nairaBalanceBefore.plus(
+                conversion.netNaira,
+              );
+
+              await tx.wallet.update({
+                where: { id: nairaWalletId },
+                data: {
+                  balance: newNairaBalance,
+                  ledgerBalance: newNairaBalance,
+                },
+              });
+
+              // 3. Create Naira transaction record
+              const nairaTransaction = await tx.transaction.create({
+                data: {
+                  reference: `${conversion.reference}_NAIRA`,
+                  userId: conversion.userId,
+                  type: TransactionType.CRYPTO_TO_NAIRA,
+                  status: TransactionStatus.COMPLETED,
+                  amount: conversion.netNaira,
+                  fee: conversion.feeAmount,
+                  totalAmount: conversion.nairaAmount,
+                  balanceBefore: nairaBalanceBefore,
+                  balanceAfter: newNairaBalance,
+                  currency: 'NGN',
+                  description: `Converted ${conversion.cryptoAmount} ${conversion.tokenSymbol} to Naira`,
+                  completedAt: new Date(),
+                },
+              });
+
+              // 4. Update conversion status
+              await tx.cryptoConversion.update({
+                where: { id: conversionId },
+                data: {
+                  status: ConversionStatus.COMPLETED,
+                  nairaTransactionId: nairaTransaction.id,
+                  completedAt: new Date(),
+                },
+              });
+            },
+            {
+              isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+              maxWait: 10000, // 10 seconds
+              timeout: 20000, // 20 seconds
+            },
+          );
+
+          // Success, break out of retry loop
+          break;
+        } catch (error: any) {
+          // Check if it's a serialization conflict
+          if (
+            error.code === 'P2010' ||
+            error.code === '40001' ||
+            (error.message && error.message.includes('serialization'))
+          ) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw new BadRequestException(
+                'Transaction conflict. Please try again.',
+              );
+            }
+            // Exponential backoff
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 100),
+            );
+            continue;
+          }
+          // Not a serialization conflict, throw immediately
+          throw error;
         }
+      }
 
-        const newCryptoBalance =
-          Number(cryptoBalance.balance) - Number(conversion.cryptoAmount);
-
-        if (newCryptoBalance < 0) {
-          throw new BadRequestException('Insufficient balance');
-        }
-
-        await tx.cryptoBalance.update({
-          where: { id: cryptoBalance.id },
-          data: {
-            balance: new Decimal(newCryptoBalance),
-          },
-        });
-
-        // 2. Credit Naira wallet
-        const nairaWallet = await tx.wallet.findFirst({
-          where: { id: nairaWalletId },
-        });
-
-        if (!nairaWallet) {
-          throw new Error('Naira wallet not found');
-        }
-
-        const newNairaBalance =
-          Number(nairaWallet.balance) + Number(conversion.netNaira);
-
-        await tx.wallet.update({
-          where: { id: nairaWalletId },
-          data: {
-            balance: new Decimal(newNairaBalance),
-            ledgerBalance: new Decimal(newNairaBalance),
-          },
-        });
-
-        // 3. Create Naira transaction record
-        const nairaTransaction = await tx.transaction.create({
-          data: {
-            reference: `${conversion.reference}_NAIRA`,
-            userId: conversion.userId,
-            type: TransactionType.CRYPTO_TO_NAIRA,
-            status: TransactionStatus.COMPLETED,
-            amount: conversion.netNaira,
-            fee: conversion.feeAmount,
-            totalAmount: conversion.nairaAmount,
-            balanceBefore: nairaWallet.balance,
-            balanceAfter: new Decimal(newNairaBalance),
-            currency: 'NGN',
-            description: `Converted ${conversion.cryptoAmount} ${conversion.tokenSymbol} to Naira`,
-            completedAt: new Date(),
-          },
-        });
-
-        // 4. Update conversion status
-        await tx.cryptoConversion.update({
-          where: { id: conversionId },
-          data: {
-            status: ConversionStatus.COMPLETED,
-            nairaTransactionId: nairaTransaction.id,
-            completedAt: new Date(),
-          },
-        });
-      });
+      // Invalidate caches after successful transaction
+      await this.walletService.invalidateWalletCache(conversion.userId);
+      await this.walletService.invalidateTransactionCache(conversion.userId);
 
       this.logger.log(
         `Conversion processed successfully: ${conversion.reference}`,
