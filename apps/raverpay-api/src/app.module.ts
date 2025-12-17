@@ -18,6 +18,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { SupportModule } from './support/support.module';
 import { CashbackModule } from './cashback/cashback.module';
 import { CryptoModule } from './crypto/crypto.module';
+import { CircleModule } from './circle/circle.module';
 import { DeviceModule } from './device/device.module';
 import { LimitsModule } from './limits/limits.module';
 import { AppConfigModule } from './app-config/app-config.module';
@@ -75,7 +76,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     WebhooksModule,
     VTUModule,
     CashbackModule, // Cashback rewards system
-    CryptoModule, // Crypto wallet system
+    CryptoModule, // Crypto wallet system (Venly)
+    CircleModule, // Circle USDC wallet system
     CloudinaryModule,
     NotificationsModule,
     SupportModule, // Support system (chat, tickets, help center)
