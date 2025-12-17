@@ -68,3 +68,13 @@ export function getApiErrorMessage(error: unknown, fallbackMessage = 'An error o
 
   return fallbackMessage;
 }
+
+/**
+ * Truncate a blockchain address for display
+ * @example truncateAddress('0x1234567890abcdef1234567890abcdef12345678') => '0x1234...5678'
+ */
+export function truncateAddress(address: string, startChars = 6, endChars = 4): string {
+  if (!address) return '';
+  if (address.length <= startChars + endChars) return address;
+  return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
+}
