@@ -5,6 +5,7 @@ This document explains how to set up Circle webhooks for the RaverPay applicatio
 ## Overview
 
 Circle sends webhook notifications for:
+
 - **Transaction updates** - When transactions change state (pending → confirmed → complete)
 - **Wallet state changes** - When wallets are created, frozen, or unfrozen
 - **CCTP transfer progress** - Cross-chain transfer state updates
@@ -12,11 +13,21 @@ Circle sends webhook notifications for:
 ## Webhook Endpoint
 
 Your webhook endpoint is:
+
+**Production:**
+
 ```
-POST https://your-api-domain.com/api/circle/webhooks
+POST https://api.raverpay.com/api/circle/webhooks
 ```
 
-For development/testing:
+**Development (ngrok):**
+
+```
+POST https://9bd10726e499.ngrok-free.app/api/circle/webhooks
+```
+
+**Local:**
+
 ```
 POST http://localhost:3001/api/circle/webhooks
 ```
@@ -33,8 +44,8 @@ POST http://localhost:3001/api/circle/webhooks
 
 1. Click **Add Subscription**
 2. Enter your webhook URL:
-   - Production: `https://api.raverpay.com/api/circle/webhooks`
-   - Staging: `https://staging-api.raverpay.com/api/circle/webhooks`
+   - **Production:** `https://api.raverpay.com/api/circle/webhooks`
+   - **Development:** `https://9bd10726e499.ngrok-free.app/api/circle/webhooks`
 3. Select the events you want to receive:
    - `transactions.updated` - Transaction state changes
    - `wallets.updated` - Wallet state changes
@@ -43,6 +54,7 @@ POST http://localhost:3001/api/circle/webhooks
 ### Step 3: Get Your Webhook Secret
 
 After creating the subscription:
+
 1. Circle will provide a **webhook secret**
 2. Add this to your `.env` file:
    ```env
@@ -65,6 +77,7 @@ Circle signs webhooks using HMAC-SHA256. The signature is included in the `x-cir
 ## Supported Webhook Events
 
 ### Transaction Events
+
 - `transaction.created` - New transaction initiated
 - `transaction.pending` - Transaction is being processed
 - `transaction.confirmed` - Transaction confirmed on blockchain
@@ -73,10 +86,12 @@ Circle signs webhooks using HMAC-SHA256. The signature is included in the `x-cir
 - `transaction.cancelled` - Transaction cancelled
 
 ### Wallet Events
+
 - `wallet.created` - New wallet created
 - `wallet.updated` - Wallet state changed
 
 ### CCTP Events (Cross-Chain)
+
 - `cctp.burn_pending` - USDC burn initiated
 - `cctp.burn_complete` - USDC burned on source chain
 - `cctp.attestation_pending` - Waiting for Circle attestation
@@ -95,20 +110,30 @@ Circle signs webhooks using HMAC-SHA256. The signature is included in the `x-cir
 
 ### Using ngrok for Local Development
 
-1. Install ngrok: `brew install ngrok` (macOS) or download from ngrok.com
+Your current ngrok development URL is:
+
+```
+https://9bd10726e499.ngrok-free.app/api/circle/webhooks
+```
+
+**Steps:**
+
+1. Ensure ngrok is running and forwarding to port 3001
 2. Start your API: `cd apps/raverpay-api && pnpm start:dev`
-3. Start ngrok tunnel: `ngrok http 3001`
-4. Use the ngrok HTTPS URL in Circle Console
-5. Example: `https://abc123.ngrok.io/api/circle/webhooks`
+3. Use the ngrok URL in Circle Console for testing
+
+**Note:** If ngrok URL changes, update Circle Console webhook subscription accordingly.
 
 ### Webhook Logs
 
 Check webhook logs in the admin dashboard:
+
 ```
 /dashboard/circle-wallets/webhooks
 ```
 
 Or query the database:
+
 ```sql
 SELECT * FROM "CircleWebhookLog" ORDER BY "createdAt" DESC LIMIT 20;
 ```
@@ -162,11 +187,12 @@ CIRCLE_API_BASE_URL=https://api.circle.com/v1/w3s
 ## Support
 
 For Circle-specific issues:
+
 - [Circle Developer Docs](https://developers.circle.com/w3s)
 - [Circle Support](https://support.circle.com)
 
 For RaverPay issues:
+
 - Check API logs
 - Review webhook logs in admin dashboard
 - Contact development team
-
