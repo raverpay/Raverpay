@@ -253,7 +253,7 @@ export class AuthService {
       //     },
       //   });
 
-      //   // Send OTP notification via email
+      //   // Send OTP notification via email and SMS
       //   this.notificationDispatcher
       //     .sendNotification({
       //       userId: user.id,
