@@ -29,6 +29,7 @@ import {
   Coins,
   ChevronLeft,
   ChevronRight,
+  CircleDollarSign,
 } from 'lucide-react';
 
 interface NavItem {
@@ -91,6 +92,12 @@ const navigation: NavItem[] = [
     name: 'Venly Wallets',
     href: '/dashboard/venly-wallets',
     icon: Coins,
+    roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
+  },
+  {
+    name: 'Circle USDC',
+    href: '/dashboard/circle-wallets',
+    icon: CircleDollarSign,
     roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
   },
   {

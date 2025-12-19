@@ -90,6 +90,9 @@ model User {
   virtualAccounts        VirtualAccount[]
   vtuOrders              VTUOrder[]
   wallets                Wallet[]
+  circleWallets          CircleWallet[]
+  circleTransactions     CircleTransaction[]
+  circleCCTPTransfers    CircleCCTPTransfer[]
 
   @@index([email])
   @@index([phone])
@@ -1044,6 +1047,170 @@ model VenlyUser {
   @@map("venly_users")
 }
 
+// ============================================
+// CIRCLE INTEGRATION MODELS
+// ============================================
+
+model CircleWalletSet {
+  id              String         @id @default(uuid())
+  circleWalletSetId String       @unique
+  name            String?
+  custodyType     String         @default("DEVELOPER")
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  circleWallets   CircleWallet[]
+
+  @@index([circleWalletSetId])
+  @@index([isActive])
+  @@map("circle_wallet_sets")
+}
+
+model CircleWallet {
+  id               String              @id @default(uuid())
+  userId           String
+  circleWalletId   String              @unique
+  walletSetId      String
+  address          String
+  blockchain       String
+  accountType      CircleAccountType   @default(SCA)
+  state            CircleWalletState   @default(LIVE)
+  name             String?
+  refId            String?
+  custodyType      String              @default("DEVELOPER")
+  scaCore          String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletSet        CircleWalletSet     @relation(fields: [walletSetId], references: [id], onDelete: Cascade)
+  circleTransactions CircleTransaction[]
+
+  @@unique([userId, blockchain])
+  @@index([circleWalletId])
+  @@index([userId])
+  @@index([walletSetId])
+  @@index([address])
+  @@index([blockchain])
+  @@index([state])
+  @@map("circle_wallets")
+}
+
+model CircleTransaction {
+  id                    String                    @id @default(uuid())
+  reference             String                    @unique
+  circleTransactionId   String                    @unique
+  userId                String
+  walletId              String
+  type                  CircleTransactionType
+  state                 CircleTransactionState    @default(INITIATED)
+  sourceAddress         String?
+  destinationAddress    String
+  tokenId               String?
+  tokenAddress          String?
+  blockchain            String
+  amounts               String[]
+  feeLevel              String?
+  gasLimit              String?
+  gasPrice              String?
+  maxFee                String?
+  priorityFee           String?
+  transactionHash       String?
+  blockNumber           Int?
+  blockHash             String?
+  networkFee            String?
+  networkFeeUsd         String?
+  refId                 String?
+  errorCode             String?
+  errorMessage          String?
+  errorReason           String?
+  firstConfirmDate      DateTime?
+  estimatedCompleteDate DateTime?
+  completedDate         DateTime?
+  cancelledDate         DateTime?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet                CircleWallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([circleTransactionId])
+  @@index([userId])
+  @@index([walletId])
+  @@index([state])
+  @@index([type])
+  @@index([transactionHash])
+  @@index([createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("circle_transactions")
+}
+
+model CircleWebhookLog {
+  id              String    @id @default(uuid())
+  subscriptionId  String?
+  notificationId  String?   @unique
+  eventType       String
+  payload         Json
+  signature       String?
+  isValid         Boolean   @default(true)
+  processed       Boolean   @default(false)
+  processedAt     DateTime?
+  error           String?
+  retryCount      Int       @default(0)
+  lastRetryAt     DateTime?
+  entityId        String?
+  walletId        String?
+  transactionId   String?
+  receivedAt      DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+
+  @@index([eventType])
+  @@index([processed])
+  @@index([receivedAt])
+  @@index([entityId])
+  @@index([walletId])
+  @@index([transactionId])
+  @@map("circle_webhook_logs")
+}
+
+model CircleCCTPTransfer {
+  id                    String               @id @default(uuid())
+  reference             String               @unique
+  userId                String
+  sourceWalletId        String
+  sourceChain           String
+  destinationChain      String
+  destinationAddress    String
+  amount                String
+  burnTransactionId     String?
+  burnTransactionHash   String?
+  attestationHash       String?
+  attestationStatus     String?
+  mintTransactionId     String?
+  mintTransactionHash   String?
+  state                 CCTPTransferState    @default(INITIATED)
+  transferType          String               @default("STANDARD")
+  feeAmount             String?
+  errorCode             String?
+  errorMessage          String?
+  initiatedAt           DateTime             @default(now())
+  burnConfirmedAt       DateTime?
+  attestationReceivedAt DateTime?
+  mintConfirmedAt       DateTime?
+  completedAt           DateTime?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sourceWalletId])
+  @@index([state])
+  @@index([sourceChain])
+  @@index([destinationChain])
+  @@index([burnTransactionHash])
+  @@index([mintTransactionHash])
+  @@index([createdAt])
+  @@map("circle_cctp_transfers")
+}
+
 model P2PTransfer {
   id                    String   @id @default(uuid())
   reference             String   @unique
@@ -1343,4 +1510,51 @@ enum ConversionStatus {
   COMPLETED
   FAILED
   REJECTED
+}
+
+// ============================================
+// CIRCLE INTEGRATION ENUMS
+// ============================================
+
+enum CircleAccountType {
+  SCA
+  EOA
+}
+
+enum CircleWalletState {
+  LIVE
+  FROZEN
+}
+
+enum CircleTransactionType {
+  TRANSFER
+  CONTRACT_EXECUTION
+  CCTP_BURN
+  CCTP_MINT
+}
+
+enum CircleTransactionState {
+  INITIATED
+  QUEUED
+  SENT
+  CONFIRMED
+  COMPLETE
+  FAILED
+  CANCELLED
+  DENIED
+  STUCK
+  CLEARED
+}
+
+enum CCTPTransferState {
+  INITIATED
+  BURN_PENDING
+  BURN_CONFIRMED
+  ATTESTATION_PENDING
+  ATTESTATION_RECEIVED
+  MINT_PENDING
+  MINT_CONFIRMED
+  COMPLETED
+  FAILED
+  CANCELLED
 }

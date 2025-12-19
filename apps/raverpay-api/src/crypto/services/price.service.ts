@@ -36,70 +36,75 @@ export class PriceService {
   }
 
   /**
-   * Update all token prices from CoinGecko
+   * Update all token prices from CoinGecko - COMMENTED OUT (not using CoinGecko)
    */
   async updateAllPrices() {
-    try {
-      // Build list of IDs to fetch (include MATIC alternatives)
-      const ids = [
-        ...this.MATIC_ALTERNATIVE_IDS,
-        this.TOKEN_IDS.USDT,
-        this.TOKEN_IDS.USDC,
-      ].join(',');
+    // CoinGecko price fetching disabled
+    this.logger.warn('CoinGecko price fetching is disabled');
+    return;
 
-      const response = await this.httpClient.get('/simple/price', {
-        params: {
-          ids,
-          vs_currencies: 'usd',
-        },
-      });
+    // COMMENTED OUT - CoinGecko API calls
+    // try {
+    //   // Build list of IDs to fetch (include MATIC alternatives)
+    //   const ids = [
+    //     ...this.MATIC_ALTERNATIVE_IDS,
+    //     this.TOKEN_IDS.USDT,
+    //     this.TOKEN_IDS.USDC,
+    //   ].join(',');
 
-      const prices = response.data as Record<string, { usd?: number }>;
+    //   const response = await this.httpClient.get('/simple/price', {
+    //     params: {
+    //       ids,
+    //       vs_currencies: 'usd',
+    //     },
+    //   });
 
-      // Update USDT
-      const usdtPrice = prices[this.TOKEN_IDS.USDT];
-      if (usdtPrice?.usd) {
-        await this.savePrice('USDT', usdtPrice.usd);
-      } else {
-        this.logger.warn(
-          `No price data found for USDT (${this.TOKEN_IDS.USDT})`,
-        );
-      }
+    //   const prices = response.data as Record<string, { usd?: number }>;
 
-      // Update USDC
-      const usdcPrice = prices[this.TOKEN_IDS.USDC];
-      if (usdcPrice?.usd) {
-        await this.savePrice('USDC', usdcPrice.usd);
-      } else {
-        this.logger.warn(
-          `No price data found for USDC (${this.TOKEN_IDS.USDC})`,
-        );
-      }
+    //   // Update USDT
+    //   const usdtPrice = prices[this.TOKEN_IDS.USDT];
+    //   if (usdtPrice?.usd) {
+    //     await this.savePrice('USDT', usdtPrice.usd);
+    //   } else {
+    //     this.logger.warn(
+    //       `No price data found for USDT (${this.TOKEN_IDS.USDT})`,
+    //     );
+    //   }
 
-      // Update MATIC - try alternative IDs
-      let maticPrice: number | null = null;
-      let maticIdUsed: string | null = null;
+    //   // Update USDC
+    //   const usdcPrice = prices[this.TOKEN_IDS.USDC];
+    //   if (usdcPrice?.usd) {
+    //     await this.savePrice('USDC', usdcPrice.usd);
+    //   } else {
+    //     this.logger.warn(
+    //       `No price data found for USDC (${this.TOKEN_IDS.USDC})`,
+    //     );
+    //   }
 
-      for (const id of this.MATIC_ALTERNATIVE_IDS) {
-        const priceData = prices[id];
-        if (priceData?.usd !== undefined) {
-          maticPrice = priceData.usd;
-          maticIdUsed = id;
-          break;
-        }
-      }
+    //   // Update MATIC - try alternative IDs
+    //   let maticPrice: number | null = null;
+    //   let maticIdUsed: string | null = null;
 
-      if (maticPrice !== null) {
-        await this.savePrice('MATIC', maticPrice);
-      } else {
-        this.logger.warn(
-          `No price data found for MATIC. Tried IDs: ${this.MATIC_ALTERNATIVE_IDS.join(', ')}`,
-        );
-      }
-    } catch (error) {
-      this.logger.error('Failed to update prices from CoinGecko', error);
-      // Don't throw - allow retries via cron
-    }
+    //   for (const id of this.MATIC_ALTERNATIVE_IDS) {
+    //     const priceData = prices[id];
+    //     if (priceData?.usd !== undefined) {
+    //       maticPrice = priceData.usd;
+    //       maticIdUsed = id;
+    //       break;
+    //     }
+    //   }
+
+    //   if (maticPrice !== null) {
+    //     await this.savePrice('MATIC', maticPrice);
+    //   } else {
+    //     this.logger.warn(
+    //       `No price data found for MATIC. Tried IDs: ${this.MATIC_ALTERNATIVE_IDS.join(', ')}`,
+    //     );
+    //   }
+    // } catch (error) {
+    //   this.logger.error('Failed to update prices from CoinGecko', error);
+    //   // Don't throw - allow retries via cron
+    // }
   }
 
   /**

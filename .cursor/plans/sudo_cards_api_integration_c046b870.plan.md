@@ -78,14 +78,14 @@ graph TB
         MC[Card Creation Flow]
         MT[Transaction History]
     end
-    
+
     subgraph "Admin Dashboard"
         AD[Card Programs Management]
         AC[Cardholders Management]
         ACards[Cards Management]
         AT[Transactions View]
     end
-    
+
     subgraph "Backend API"
         SC[Sudo Cards Service]
         SW[Sudo Webhook Handler]
@@ -93,17 +93,17 @@ graph TB
         CP[Card Programs Controller]
         CH[Cardholders Controller]
     end
-    
+
     subgraph "Sudo API"
         SA[Sudo API]
         SV[Sudo Vault API]
         SWH[Sudo Webhooks]
     end
-    
+
     subgraph "Database"
         DB[(Prisma Database)]
     end
-    
+
     MA --> CC
     MC --> CC
     MT --> CC
@@ -111,16 +111,16 @@ graph TB
     AC --> CH
     ACards --> CC
     AT --> CC
-    
+
     CC --> SC
     CP --> SC
     CH --> SC
     SW --> SC
-    
+
     SC --> SA
     SC --> SV
     SWH --> SW
-    
+
     SC --> DB
     SW --> DB
 ```
@@ -173,7 +173,7 @@ graph TB
 - Create `sudo-transactions.service.ts` (fetch transactions, get transaction details)
 - Create `sudo-vault.service.ts` (vault endpoint for retrieving sensitive card data)
 - Create `sudo-fee.service.ts` (calculate and track fees - card creation, funding, transactions)
-  - Methods: 
+  - Methods:
     - `getSudoCost(feeType, brand, currency, amount?)` - Get Sudo's cost from `SudoCost` database
     - `calculateSudoCost(feeType, brand, currency, amount?)` - Calculate Sudo cost (handles percentage/fixed, applies to amount if needed)
     - `getMarkupConfig(feeType, brand, currency)` - Get markup configuration from `SudoFeeConfig` database
@@ -290,7 +290,7 @@ graph TB
 #### 2.1 API Client (`apps/raverpay-admin/lib/api/sudo.ts`)
 
 - Create API functions following existing pattern (admins.ts, crypto.ts)
-- Functions: 
+- Functions:
   - Sudo Cost Management (admin only): `getSudoCosts`, `getSudoCost`, `createSudoCost`, `updateSudoCost`, `deleteSudoCost`
   - Markup Configuration (admin only): `getFeeConfigs`, `getFeeConfig`, `createFeeConfig`, `updateFeeConfig`, `deleteFeeConfig`
   - Statistics: `getFeeStats`
@@ -341,7 +341,7 @@ graph TB
 #### 3.1 API Service (`apps/raverpaymobile/src/services/sudo.service.ts`)
 
 - Create service following pattern from `crypto.service.ts`, `support.service.ts`
-- Functions: 
+- Functions:
   - Fee Calculation: `getCardCreationFee(brand, currency)`, `getFundingFeeQuote(brand, currency, amount)`, `calculateFee(feeType, brand, currency, amount?)`
   - Cards: `getCards`, `createCard`, `getCardDetails`, `freezeCard`, `unfreezeCard`, `terminateCard`, `updateSpendingControls`, `fundCard`, `getCardTransactions`, `getCardAuthorizations`, `getCardToken` (for Secure Proxy)
 - Use existing `apiClient` from `lib/api/client.ts`
@@ -637,8 +637,7 @@ Based on Sudo pricing documentation, here are the costs:
 2. User enters funding amount (in USD)
 3. Check USD wallet balance
 4. If sufficient: Deduct from USD wallet → Fund card (RaverPay pays funding fee)
-5. If insufficient: 
-
+5. If insufficient:
    - Show conversion prompt
    - User converts NGN → USD
    - After conversion, proceed with funding
@@ -830,7 +829,7 @@ Based on Sudo pricing documentation, here are the costs:
 **What users can do:**
 
 - **View My Cards**: See all their cards in one place
-  - Card display showing masked card number (e.g., 5063 21** **** 3531)
+  - Card display showing masked card number (e.g., 5063 21** \*\*** 3531)
   - Card brand logo (Verve, Visa, MasterCard, AfriGo)
   - Expiry date
   - Current status (Active, Frozen, Terminated)
@@ -935,7 +934,7 @@ Based on Sudo pricing documentation, here are the costs:
 
 **What users can do with their cards:**
 
-- **Use Virtual Cards Online**: 
+- **Use Virtual Cards Online**:
   - Copy card details (number, CVV, expiry) for online purchases
   - Use card at any merchant that accepts the card brand
   - View transaction immediately after purchase
@@ -1018,20 +1017,17 @@ Before implementing the integration, you need to create card programs in the Sud
 3. **Description** (Optional): Additional details about the program
 
 4. **Funding Source**: Choose one of:
-
    - Default funding source (funds from customer wallet)
    - Account funding source (funds from your settlement account)
    - Gateway funding source (real-time approval via webhook - requires webhook URL)
 
 5. **Card Brand**: Select from:
-
    - Verve
    - Visa (virtual only)
    - MasterCard (virtual only)
    - AfriGo
 
-6. **Card Type**: 
-
+6. **Card Type**:
    - Virtual Card (for online use)
    - Physical Card (for ATM/POS use - requires card mapping)
 
@@ -1042,11 +1038,10 @@ Before implementing the integration, you need to create card programs in the Sud
 9. **Debit Account**: Your settlement account ID (must be created first in Sudo Dashboard)
 
 10. **Spending Controls** (Optional but recommended):
-
     - **Channels**: Enable/disable ATM, POS, Web, Mobile
     - **Allowed Categories**: Specific merchant categories to allow (empty = all allowed)
     - **Blocked Categories**: Merchant categories to block
-    - **Spending Limits**: 
+    - **Spending Limits**:
       - Amount (e.g., 100000 for NGN 100,000)
       - Interval: daily, weekly, monthly, yearly, per_authorization, all_time
       - Categories: Specific categories this limit applies to (empty = all categories)

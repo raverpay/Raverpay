@@ -211,89 +211,89 @@ export class AuthService {
         deviceInfo,
       );
 
-      if (!deviceCheck.authorized) {
-        // New device detected, register it
-        const device = await this.deviceService.registerNewDevice(
-          user.id,
-          deviceInfo,
-        );
-        deviceId = device.deviceId;
+      // if (!deviceCheck.authorized) {
+      //   // New device detected, register it
+      //   const device = await this.deviceService.registerNewDevice(
+      //     user.id,
+      //     deviceInfo,
+      //   );
+      //   deviceId = device.deviceId;
 
-        this.logger.log(
-          `[Login] New device detected for ${user.email}, OTP verification required`,
-        );
+      //   this.logger.log(
+      //     `[Login] New device detected for ${user.email}, OTP verification required`,
+      //   );
 
-        // Generate device verification code
-        const verificationCode = randomInt(100000, 999999).toString();
+      //   // Generate device verification code
+      //   const verificationCode = randomInt(100000, 999999).toString();
 
-        // Store verification code with expiry
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
+      //   // Store verification code with expiry
+      //   const expiresAt = new Date();
+      //   expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
 
-        await this.prisma.systemConfig.upsert({
-          where: { key: `device_verification_${user.id}_${device.deviceId}` },
-          create: {
-            key: `device_verification_${user.id}_${device.deviceId}`,
-            value: JSON.stringify({
-              code: verificationCode,
-              expiresAt: expiresAt.toISOString(),
-              attempts: 0,
-              deviceId: device.deviceId,
-              createdAt: new Date().toISOString(),
-            }),
-          },
-          update: {
-            value: JSON.stringify({
-              code: verificationCode,
-              expiresAt: expiresAt.toISOString(),
-              attempts: 0,
-              deviceId: device.deviceId,
-              createdAt: new Date().toISOString(),
-            }),
-          },
-        });
+      //   await this.prisma.systemConfig.upsert({
+      //     where: { key: `device_verification_${user.id}_${device.deviceId}` },
+      //     create: {
+      //       key: `device_verification_${user.id}_${device.deviceId}`,
+      //       value: JSON.stringify({
+      //         code: verificationCode,
+      //         expiresAt: expiresAt.toISOString(),
+      //         attempts: 0,
+      //         deviceId: device.deviceId,
+      //         createdAt: new Date().toISOString(),
+      //       }),
+      //     },
+      //     update: {
+      //       value: JSON.stringify({
+      //         code: verificationCode,
+      //         expiresAt: expiresAt.toISOString(),
+      //         attempts: 0,
+      //         deviceId: device.deviceId,
+      //         createdAt: new Date().toISOString(),
+      //       }),
+      //     },
+      //   });
 
-        // Send OTP notification via email and SMS
-        this.notificationDispatcher
-          .sendNotification({
-            userId: user.id,
-            eventType: 'device_verification_required',
-            category: 'SECURITY',
-            channels: ['EMAIL'],
-            title: 'Device Verification Required',
-            message: `Your verification code is ${verificationCode}. This code will expire in 10 minutes.`,
-            data: {
-              code: verificationCode,
-              deviceName: deviceInfo.deviceName,
-              deviceType: deviceInfo.deviceType,
-              deviceModel: deviceInfo.deviceModel,
-              osVersion: deviceInfo.osVersion,
-              expiresIn: '10 minutes',
-            },
-          })
-          .catch((error) => {
-            this.logger.error(
-              'Failed to send device verification notification',
-              error,
-            );
-            // Don't fail the login flow if notification fails
-          });
+      //   // Send OTP notification via email
+      //   this.notificationDispatcher
+      //     .sendNotification({
+      //       userId: user.id,
+      //       eventType: 'device_verification_required',
+      //       category: 'SECURITY',
+      //       channels: ['EMAIL'],
+      //       title: 'Device Verification Required',
+      //       message: `Your verification code is ${verificationCode}. This code will expire in 10 minutes.`,
+      //       data: {
+      //         code: verificationCode,
+      //         deviceName: deviceInfo.deviceName,
+      //         deviceType: deviceInfo.deviceType,
+      //         deviceModel: deviceInfo.deviceModel,
+      //         osVersion: deviceInfo.osVersion,
+      //         expiresIn: '10 minutes',
+      //       },
+      //     })
+      //     .catch((error) => {
+      //       this.logger.error(
+      //         'Failed to send device verification notification',
+      //         error,
+      //       );
+      //       // Don't fail the login flow if notification fails
+      //     });
 
-        // Return special response indicating OTP verification needed
-        return {
-          requiresDeviceVerification: true,
-          deviceId: device.deviceId,
-          message:
-            'New device detected. Please verify with OTP sent to your email/phone.',
-          user: {
-            id: user.id,
-            email: user.email,
-            phone: user.phone,
-            firstName: user.firstName,
-            lastName: user.lastName,
-          },
-        };
-      }
+      //   // Return special response indicating OTP verification needed
+      //   return {
+      //     requiresDeviceVerification: true,
+      //     deviceId: device.deviceId,
+      //     message:
+      //       'New device detected. Please verify with OTP sent to your email/phone.',
+      //     user: {
+      //       id: user.id,
+      //       email: user.email,
+      //       phone: user.phone,
+      //       firstName: user.firstName,
+      //       lastName: user.lastName,
+      //     },
+      //   };
+      // }
 
       deviceId = deviceCheck.device?.deviceId;
     }
