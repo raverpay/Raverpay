@@ -115,7 +115,9 @@ export default function CircleWalletsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalWalletSets?.toLocaleString() || '0'}</div>
+            <div className="text-2xl font-bold">
+              {stats?.totalWalletSets?.toLocaleString() || '0'}
+            </div>
           </CardContent>
         </Card>
 
@@ -376,4 +378,3 @@ export default function CircleWalletsPage() {
     </div>
   );
 }
-

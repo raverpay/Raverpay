@@ -120,14 +120,14 @@ export class ConversionService {
         throw new BadRequestException('Naira wallet not found');
       }
 
-      // Verify PIN
-      const venlyUser = await this.prisma.venlyUser.findUnique({
-        where: { userId },
-      });
+      // Verify PIN - COMMENTED OUT (not using Venly anymore, using Circle)
+      // const venlyUser = await this.prisma.venlyUser.findUnique({
+      //   where: { userId },
+      // });
 
-      if (!venlyUser) {
-        throw new BadRequestException('Crypto wallet not properly initialized');
-      }
+      // if (!venlyUser) {
+      //   throw new BadRequestException('Crypto wallet not properly initialized');
+      // }
 
       // Create conversion record
       const conversion = await this.prisma.cryptoConversion.create({

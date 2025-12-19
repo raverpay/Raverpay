@@ -4,7 +4,8 @@ import { CryptoBalanceService } from './services/crypto-balance.service';
 import { CryptoSendService } from './services/crypto-send.service';
 import { ConversionService } from './services/conversion.service';
 import { ExchangeRateService } from './services/exchange-rate.service';
-import { PriceService } from './services/price.service';
+// PriceService - COMMENTED OUT (not using CoinGecko price fetching)
+// import { PriceService } from './services/price.service';
 import {
   CreateCryptoWalletDto,
   SendCryptoDto,
@@ -26,7 +27,8 @@ export class CryptoService {
     private readonly cryptoSend: CryptoSendService,
     private readonly conversion: ConversionService,
     private readonly exchangeRate: ExchangeRateService,
-    private readonly price: PriceService,
+    // PriceService - COMMENTED OUT (not using CoinGecko price fetching)
+    // private readonly price: PriceService,
   ) {}
 
   // ============================================
@@ -150,51 +152,52 @@ export class CryptoService {
   // WEBHOOK HANDLER
   // ============================================
 
-  async handleVenlyWebhook(payload: any) {
-    try {
-      this.logger.log(
-        `Received Venly webhook: ${payload.eventType || 'UNKNOWN'}`,
-      );
-      this.logger.debug(`Webhook payload: ${JSON.stringify(payload)}`);
+  // Venly webhook handler - COMMENTED OUT (not using Venly anymore, using Circle)
+  // async handleVenlyWebhook(payload: any) {
+  //   try {
+  //     this.logger.log(
+  //       `Received Venly webhook: ${payload.eventType || 'UNKNOWN'}`,
+  //     );
+  //     this.logger.debug(`Webhook payload: ${JSON.stringify(payload)}`);
 
-      // Extract transaction hash from different possible payload structures
-      const transactionHash =
-        payload.transactionHash || payload.result?.hash || payload.hash || null;
+  //     // Extract transaction hash from different possible payload structures
+  //     const transactionHash =
+  //       payload.transactionHash || payload.result?.hash || payload.hash || null;
 
-      if (!transactionHash) {
-        this.logger.warn('No transaction hash found in webhook payload');
-        return { success: false, error: 'No transaction hash provided' };
-      }
+  //     if (!transactionHash) {
+  //       this.logger.warn('No transaction hash found in webhook payload');
+  //       return { success: false, error: 'No transaction hash provided' };
+  //     }
 
-      // Handle transaction status updates
-      if (
-        payload.eventType === 'TRANSACTION_SUCCEEDED' ||
-        payload.status === 'SUCCEEDED' ||
-        payload.result?.status === 'SUCCEEDED'
-      ) {
-        await this.cryptoSend.handleTransactionSuccess(
-          transactionHash,
-          payload,
-        );
-      } else if (
-        payload.eventType === 'TRANSACTION_FAILED' ||
-        payload.status === 'FAILED' ||
-        payload.result?.status === 'FAILED'
-      ) {
-        await this.cryptoSend.handleTransactionFailure(
-          transactionHash,
-          payload,
-        );
-      } else {
-        this.logger.log(
-          `Unhandled webhook event type: ${payload.eventType || 'UNKNOWN'}`,
-        );
-      }
+  //     // Handle transaction status updates
+  //     if (
+  //       payload.eventType === 'TRANSACTION_SUCCEEDED' ||
+  //       payload.status === 'SUCCEEDED' ||
+  //       payload.result?.status === 'SUCCEEDED'
+  //     ) {
+  //       await this.cryptoSend.handleTransactionSuccess(
+  //         transactionHash,
+  //         payload,
+  //       );
+  //     } else if (
+  //       payload.eventType === 'TRANSACTION_FAILED' ||
+  //       payload.status === 'FAILED' ||
+  //       payload.result?.status === 'FAILED'
+  //     ) {
+  //       await this.cryptoSend.handleTransactionFailure(
+  //         transactionHash,
+  //         payload,
+  //       );
+  //     } else {
+  //       this.logger.log(
+  //         `Unhandled webhook event type: ${payload.eventType || 'UNKNOWN'}`,
+  //       );
+  //     }
 
-      return { success: true };
-    } catch (error) {
-      this.logger.error('Failed to process Venly webhook', error);
-      return { success: false, error: error.message };
-    }
-  }
+  //     return { success: true };
+  //   } catch (error) {
+  //     this.logger.error('Failed to process Venly webhook', error);
+  //     return { success: false, error: error.message };
+  //   }
+  // }
 }

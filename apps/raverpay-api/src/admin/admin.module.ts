@@ -29,8 +29,9 @@ import { AdminAuditLogsController } from './audit-logs/admin-audit-logs.controll
 import { AdminAuditLogsService } from './audit-logs/admin-audit-logs.service';
 import { AdminAdminsController } from './admins/admin-admins.controller';
 import { AdminAdminsService } from './admins/admin-admins.service';
-import { AdminVenlyWalletsController } from './venly-wallets/admin-venly-wallets.controller';
-import { AdminVenlyWalletsService } from './venly-wallets/admin-venly-wallets.service';
+// Venly admin - COMMENTED OUT (not using Venly anymore, using Circle)
+// import { AdminVenlyWalletsController } from './venly-wallets/admin-venly-wallets.controller';
+// import { AdminVenlyWalletsService } from './venly-wallets/admin-venly-wallets.service';
 import { AdminEmailsController } from './emails/admin-emails.controller';
 import { AdminEmailsService } from './emails/admin-emails.service';
 import { RateLimitsController } from './rate-limits/rate-limits.controller';
@@ -73,7 +74,7 @@ import { WalletModule } from '../wallet/wallet.module';
     AdminAdvancedAnalyticsController,
     AdminAuditLogsController,
     AdminAdminsController,
-    AdminVenlyWalletsController,
+    // AdminVenlyWalletsController, // COMMENTED OUT (not using Venly anymore, using Circle)
     AdminEmailsController,
     RateLimitsController,
   ],
@@ -93,7 +94,7 @@ import { WalletModule } from '../wallet/wallet.module';
     AdminAdvancedAnalyticsService,
     AdminAuditLogsService,
     AdminAdminsService,
-    AdminVenlyWalletsService,
+    // AdminVenlyWalletsService, // COMMENTED OUT (not using Venly anymore, using Circle)
     AdminEmailsService,
     RateLimitsService,
     AccountLockingService,

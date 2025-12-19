@@ -1,25 +1,25 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
+import { CircleTransactionState, CircleTransactionType } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CircleApiClient } from '../circle-api.client';
-import { CircleConfigService } from '../config/circle.config.service';
-import { EntitySecretService } from '../entity/entity-secret.service';
-import { CircleWalletService } from '../wallets/circle-wallet.service';
 import {
-  CreateTransferRequest,
-  CreateTransferResponse,
-  CircleTransaction,
   CircleBlockchain,
   CircleFeeLevel,
+  CircleTransaction,
+  CreateTransferRequest,
+  CreateTransferResponse,
   EstimateFeeRequest,
   EstimateFeeResponse,
 } from '../circle.types';
-import { CircleTransactionState, CircleTransactionType } from '@prisma/client';
-import { randomUUID } from 'crypto';
+import { CircleConfigService } from '../config/circle.config.service';
+import { EntitySecretService } from '../entity/entity-secret.service';
+import { CircleWalletService } from '../wallets/circle-wallet.service';
 
 /**
  * Circle Transaction Service
@@ -117,7 +117,7 @@ export class CircleTransactionService {
       const transaction = response.data;
 
       // Save to database
-      await this.prisma.circleTransaction.create({
+      const dbTransaction = await this.prisma.circleTransaction.create({
         data: {
           reference,
           circleTransactionId: transaction.id,
@@ -140,7 +140,7 @@ export class CircleTransactionService {
       );
 
       return {
-        transactionId: transaction.id,
+        transactionId: dbTransaction.id, // Return database ID, not Circle transaction ID
         reference,
         state: transaction.state,
       };

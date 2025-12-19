@@ -91,7 +91,7 @@ export class CircleWalletService {
         count: 1,
         metadata: [
           {
-            name: name || `RaverPay USDC`,
+            name: name || `Raverpay USDC`,
             refId: userId,
           },
         ],

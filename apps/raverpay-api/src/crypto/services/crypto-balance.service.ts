@@ -4,7 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { VenlyService } from '../venly/venly.service';
+// Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+// import { VenlyService } from '../venly/venly.service';
 import { CryptoWalletService } from './crypto-wallet.service';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -18,7 +19,8 @@ export class CryptoBalanceService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly venly: VenlyService,
+    // Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+    // private readonly venly: VenlyService,
     private readonly cryptoWallet: CryptoWalletService,
   ) {}
 
@@ -30,28 +32,31 @@ export class CryptoBalanceService {
     try {
       const wallet = await this.cryptoWallet.getCryptoWallet(userId);
 
+      // Venly integration - COMMENTED OUT (not using Venly anymore, using Circle)
       if (!wallet.venlyWalletId) {
-        throw new Error('Venly wallet ID not found');
+        throw new Error(
+          'Venly wallet ID not found - Venly integration disabled',
+        );
       }
 
-      // Get native balance (MATIC) from Venly
-      const nativeBalance = await this.venly.getWalletBalance(
-        wallet.venlyWalletId,
-      );
+      // Get native balance (MATIC) from Venly - COMMENTED OUT
+      // const nativeBalance = await this.venly.getWalletBalance(
+      //   wallet.venlyWalletId,
+      // );
 
-      // Get token balances (USDT, USDC) from Venly
-      const tokenBalances = await this.venly.getTokenBalances(
-        wallet.venlyWalletId,
-      );
+      // Get token balances (USDT, USDC) from Venly - COMMENTED OUT
+      // const tokenBalances = await this.venly.getTokenBalances(
+      //   wallet.venlyWalletId,
+      // );
 
-      // Update MATIC balance
-      await this.updateNativeBalance(wallet.id, nativeBalance);
+      // Update MATIC balance - COMMENTED OUT (requires Venly)
+      // await this.updateNativeBalance(wallet.id, nativeBalance);
 
-      // Update token balances (USDT, USDC)
-      await this.updateTokenBalances(wallet.id, tokenBalances);
+      // Update token balances (USDT, USDC) - COMMENTED OUT (requires Venly)
+      // await this.updateTokenBalances(wallet.id, tokenBalances);
 
-      // Update USD values from CoinGecko (Venly returns 0 for testnet tokens)
-      await this.updateUsdValues(wallet.id);
+      // Update USD values from CoinGecko - COMMENTED OUT (not using CoinGecko)
+      // await this.updateUsdValues(wallet.id);
 
       // Return updated balances
       return this.getBalances(wallet.id);

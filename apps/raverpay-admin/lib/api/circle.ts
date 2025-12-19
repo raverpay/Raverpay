@@ -196,7 +196,9 @@ export const circleApi = {
   },
 
   // Wallets
-  getWallets: async (params?: Record<string, unknown>): Promise<PaginatedResponse<CircleWallet>> => {
+  getWallets: async (
+    params?: Record<string, unknown>,
+  ): Promise<PaginatedResponse<CircleWallet>> => {
     const response = await apiClient.get<PaginatedResponse<CircleWallet>>('/admin/circle/wallets', {
       params,
     });
@@ -278,4 +280,3 @@ export const circleApi = {
     return response.data.data;
   },
 };
-

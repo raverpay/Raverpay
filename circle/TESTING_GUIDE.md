@@ -55,6 +55,7 @@ Before testing transfers, you need testnet USDC tokens. Here's how to get them:
    - Choose **"Polygon Amoy"** from the network dropdown
 
 3. **Enter Your Wallet Address**
+
    ```
    0x69476b0a0cb611faf8e9be80274b3b6ce63f54f4
    ```
@@ -100,7 +101,7 @@ If Circle's faucet isn't available:
 ### Test Flow Overview
 
 ```
-Login → View Dashboard → Create/View Wallet → Fund Wallet → Send USDC → 
+Login → View Dashboard → Create/View Wallet → Fund Wallet → Send USDC →
 View Transactions → Cross-Chain Transfer → Check Balance
 ```
 
@@ -109,6 +110,7 @@ View Transactions → Cross-Chain Transfer → Check Balance
 ### Step 1: Login to Mobile App
 
 **Action:**
+
 1. Open RaverPay mobile app
 2. Enter credentials:
    - Email: `codeswithjoseph@gmail.com`
@@ -116,6 +118,7 @@ View Transactions → Cross-Chain Transfer → Check Balance
 3. Tap "Login"
 
 **Expected Result:**
+
 - ✅ Login successful
 - ✅ Redirected to home screen
 - ✅ User balance displayed
@@ -127,6 +130,7 @@ View Transactions → Cross-Chain Transfer → Check Balance
 ### Step 2: Navigate to Circle Wallet
 
 **Action:**
+
 1. On home screen, scroll down
 2. Find **"USDC Wallet"** card
 3. Tap on the card
@@ -136,11 +140,13 @@ View Transactions → Cross-Chain Transfer → Check Balance
 1. Tap **"USDC"** quick action button in the quick actions row
 
 **Expected Result:**
+
 - ✅ Navigated to Circle wallet dashboard (`/circle`)
 - ✅ Wallet information displayed
 - ✅ Balance shows (0 USDC initially)
 
 **What You'll See:**
+
 ```
 Circle Wallet Dashboard
 ├── Wallet Card
@@ -159,16 +165,19 @@ Circle Wallet Dashboard
 ### Step 3: View Wallet Details
 
 **Action:**
+
 1. On Circle wallet dashboard
 2. Observe wallet information
 
 **Expected Result:**
+
 - ✅ Wallet address displayed (truncated)
 - ✅ Network badge shows "MATIC-AMOY"
 - ✅ Balance shows "0.00 USDC" (before funding)
 - ✅ QR code visible
 
 **Verify:**
+
 - Tap address to copy
 - Toast notification: "Address copied"
 
@@ -177,16 +186,19 @@ Circle Wallet Dashboard
 ### Step 4: Get Receive Address
 
 **Action:**
+
 1. Tap **"Receive"** button
 2. View receive screen
 
 **Expected Result:**
+
 - ✅ Full wallet address displayed
 - ✅ QR code generated
 - ✅ Network information shown
 - ✅ Copy button works
 
 **What You'll See:**
+
 ```
 Receive USDC
 ├── QR Code (scannable)
@@ -197,6 +209,7 @@ Receive USDC
 ```
 
 **Action:**
+
 - Tap "Copy Address"
 - Use this address to fund from faucet (see "Getting Testnet USDC" section above)
 
@@ -205,6 +218,7 @@ Receive USDC
 ### Step 5: Fund Your Wallet
 
 **Action:**
+
 1. Copy your wallet address from receive screen
 2. Go to Circle's faucet: https://faucet.circle.com/
 3. Select "Polygon Amoy"
@@ -213,15 +227,18 @@ Receive USDC
 6. Wait 1-2 minutes
 
 **Expected Result:**
+
 - ✅ Transaction confirmed on blockchain
 - ✅ Balance updates in app (may need to refresh)
 
 **Verify Balance:**
+
 1. Return to Circle wallet dashboard
 2. Pull down to refresh
 3. Balance should show ~10 USDC
 
 **Troubleshooting:**
+
 - If balance doesn't update, wait 2-3 minutes and refresh again
 - Check transaction on explorer: https://amoy.polygonscan.com/address/YOUR_ADDRESS
 
@@ -230,6 +247,7 @@ Receive USDC
 ### Step 6: Send USDC
 
 **Action:**
+
 1. Tap **"Send"** button
 2. Fill in the send form:
    - **To Address**: `0x742d35Cc6634C0532925a3b844Bc454e4438f44e` (example)
@@ -240,6 +258,7 @@ Receive USDC
 5. Tap **"Confirm Send"**
 
 **Expected Result:**
+
 - ✅ Transaction initiated
 - ✅ Loading indicator appears
 - ✅ Success message: "Transaction submitted"
@@ -247,6 +266,7 @@ Receive USDC
 - ✅ Redirected to transaction details
 
 **Transaction Details Screen Shows:**
+
 ```
 Transaction Details
 ├── Status: PENDING → COMPLETE
@@ -259,6 +279,7 @@ Transaction Details
 ```
 
 **Wait Time:**
+
 - Transaction should complete in 15-30 seconds
 - Status will auto-update via webhooks
 
@@ -267,11 +288,13 @@ Transaction Details
 ### Step 7: View Transaction History
 
 **Action:**
+
 1. Return to Circle wallet dashboard
 2. Scroll to **"Recent Transactions"** section
 3. Or tap **"View All Transactions"**
 
 **Expected Result:**
+
 - ✅ Transaction list displayed
 - ✅ Each transaction shows:
   - Type (Send/Receive)
@@ -281,6 +304,7 @@ Transaction Details
   - Network icon
 
 **Transaction Item Shows:**
+
 ```
 📤 Send
 1.5 USDC
@@ -294,6 +318,7 @@ MATIC-AMOY
 ### Step 8: Test Cross-Chain Transfer (CCTP)
 
 **Action:**
+
 1. Tap **"Bridge"** button on dashboard
 2. Fill in CCTP form:
    - **From Network**: MATIC-AMOY
@@ -308,6 +333,7 @@ MATIC-AMOY
 5. Tap **"Confirm Bridge"**
 
 **Expected Result:**
+
 - ✅ CCTP transfer initiated
 - ✅ Burn transaction on source chain
 - ✅ Attestation fetched from Circle
@@ -315,6 +341,7 @@ MATIC-AMOY
 - ✅ Status updates through each phase
 
 **CCTP Phases:**
+
 ```
 1. INITIATED    → Transaction submitted
 2. PENDING      → Burning USDC on source
@@ -323,6 +350,7 @@ MATIC-AMOY
 ```
 
 **Wait Time:**
+
 - Full CCTP transfer: 10-20 minutes
 - Check status in "Bridge History" tab
 
@@ -331,17 +359,20 @@ MATIC-AMOY
 ### Step 9: Test Paymaster (Gas in USDC)
 
 **Action:**
+
 1. When sending USDC, look for **"Pay gas in USDC"** toggle
 2. Enable the toggle
 3. Proceed with send transaction
 
 **Expected Result:**
+
 - ✅ Gas fee shown in USDC (not MATIC)
 - ✅ No native token balance required
 - ✅ Transaction completes successfully
 - ✅ Gas fee deducted from USDC balance
 
 **Fee Display:**
+
 ```
 Transaction Fee
 Estimated: 0.05 USDC
@@ -349,6 +380,7 @@ Estimated: 0.05 USDC
 ```
 
 **Note:** Paymaster is only available on supported networks:
+
 - MATIC (Polygon)
 - MATIC-AMOY (Polygon Testnet)
 - ARB (Arbitrum)
@@ -359,11 +391,13 @@ Estimated: 0.05 USDC
 ### Step 10: Test Blockchain Selector
 
 **Action:**
+
 1. If you have wallets on multiple chains
 2. Tap network selector dropdown
 3. Switch between chains
 
 **Expected Result:**
+
 - ✅ Available networks listed
 - ✅ Current network highlighted
 - ✅ Balance updates when switching
@@ -376,7 +410,7 @@ Estimated: 0.05 USDC
 ### Admin Test Flow Overview
 
 ```
-Login → View Wallets → View Transactions → Check Webhooks → 
+Login → View Wallets → View Transactions → Check Webhooks →
 View Settings → Export Data
 ```
 
@@ -385,11 +419,13 @@ View Settings → Export Data
 ### Step 1: Login to Admin Dashboard
 
 **Action:**
+
 1. Open browser
 2. Navigate to: `https://admin.raverpay.com/` (or your admin URL)
 3. Login with admin credentials
 
 **Expected Result:**
+
 - ✅ Login successful
 - ✅ Redirected to admin dashboard
 - ✅ Sidebar menu visible
@@ -399,14 +435,17 @@ View Settings → Export Data
 ### Step 2: Navigate to Circle Wallets
 
 **Action:**
+
 1. In sidebar, find **"Circle USDC"** menu item
 2. Click on it
 
 **Expected Result:**
+
 - ✅ Navigated to `/dashboard/circle-wallets`
 - ✅ Wallet overview page displayed
 
 **What You'll See:**
+
 ```
 Circle Wallets Overview
 ├── Stats Cards
@@ -428,6 +467,7 @@ Circle Wallets Overview
 ### Step 3: View All Wallets
 
 **Action:**
+
 1. On Circle wallets page
 2. Review the wallets table
 3. Use filters:
@@ -436,6 +476,7 @@ Circle Wallets Overview
    - Search by address or user
 
 **Expected Result:**
+
 - ✅ All Circle wallets displayed in table
 - ✅ Pagination works (if >10 wallets)
 - ✅ Filters apply correctly
@@ -447,6 +488,7 @@ Circle Wallets Overview
 | Ravestar O. | 0x6947...54f4 | MATIC-AMOY | 8.50 USDC | LIVE | Dec 18 |
 
 **Actions Available:**
+
 - Click row to view wallet details
 - Click address to copy
 - Click blockchain to filter
@@ -457,10 +499,12 @@ Circle Wallets Overview
 ### Step 4: View Wallet Details
 
 **Action:**
+
 1. Click on any wallet row
 2. View detailed wallet information
 
 **Expected Result:**
+
 - ✅ Modal or detail page opens
 - ✅ Complete wallet information shown:
   - Full address
@@ -476,14 +520,17 @@ Circle Wallets Overview
 ### Step 5: View Transactions
 
 **Action:**
+
 1. In sidebar, click **"Circle USDC" → "Transactions"**
 2. Navigate to `/dashboard/circle-wallets/transactions`
 
 **Expected Result:**
+
 - ✅ All Circle transactions displayed
 - ✅ Transaction table loaded
 
 **What You'll See:**
+
 ```
 Circle Transactions
 ├── Stats
@@ -513,6 +560,7 @@ Circle Transactions
 ### Step 6: Filter and Search Transactions
 
 **Action:**
+
 1. Use transaction filters:
    - **Status**: All, Pending, Complete, Failed
    - **Type**: All, Send, Receive
@@ -524,6 +572,7 @@ Circle Transactions
    - Search by user
 
 **Expected Result:**
+
 - ✅ Filters apply immediately
 - ✅ Search results displayed
 - ✅ URL updates with filter params
@@ -534,10 +583,12 @@ Circle Transactions
 ### Step 7: View Transaction Details
 
 **Action:**
+
 1. Click on any transaction row
 2. View detailed transaction modal
 
 **Expected Result:**
+
 - ✅ Modal opens with full details:
   ```
   Transaction Details
@@ -556,6 +607,7 @@ Circle Transactions
   ```
 
 **Actions Available:**
+
 - Copy transaction ID
 - View on block explorer (link)
 - Copy addresses
@@ -566,10 +618,12 @@ Circle Transactions
 ### Step 8: View CCTP Transfers
 
 **Action:**
+
 1. In sidebar, click **"Circle USDC" → "CCTP Transfers"**
 2. Navigate to `/dashboard/circle-wallets/cctp-transfers`
 
 **Expected Result:**
+
 - ✅ Cross-chain transfer list displayed
 - ✅ CCTP-specific information shown
 
@@ -579,6 +633,7 @@ Circle Transactions
 | x1y2... | Ravestar | 2.0 USDC | MATIC-AMOY | ETH-SEPOLIA | COMPLETE | ✓ | 15m ago |
 
 **Status Phases:**
+
 - INITIATED
 - PENDING (burning)
 - ATTESTED (Circle attestation)
@@ -590,14 +645,17 @@ Circle Transactions
 ### Step 9: View Webhook Logs
 
 **Action:**
+
 1. In sidebar, click **"Circle USDC" → "Webhooks"**
 2. Navigate to `/dashboard/circle-wallets/webhooks`
 
 **Expected Result:**
+
 - ✅ Webhook event log displayed
 - ✅ Real-time webhook processing shown
 
 **What You'll See:**
+
 ```
 Webhook Events
 ├── Stats
@@ -614,6 +672,7 @@ Webhook Events
 ```
 
 **Event Types:**
+
 - `wallets.created`
 - `wallets.updated`
 - `transactions.created`
@@ -621,6 +680,7 @@ Webhook Events
 - `transactions.failed`
 
 **Actions:**
+
 - Click to view full payload
 - Filter by event type
 - Search by subscription ID
@@ -630,37 +690,44 @@ Webhook Events
 ### Step 10: View Settings
 
 **Action:**
+
 1. In sidebar, click **"Circle USDC" → "Settings"**
 2. Navigate to `/dashboard/circle-wallets/settings`
 
 **Expected Result:**
+
 - ✅ Settings page displayed
 - ✅ Configuration information shown
 
 **Tabs Available:**
 
 **1. Overview Tab:**
+
 - Environment (Testnet/Mainnet)
 - Configuration status
 - Default blockchain
 - Default account type
 
 **2. Credentials Tab:**
+
 - API Key (masked)
 - Entity Secret (masked)
 - Environment variables
 - Security warnings
 
 **3. Networks Tab:**
+
 - List of supported blockchains
 - Default network highlighted
 - Paymaster support indicators
 
 **4. Paymaster Tab:**
+
 - Networks with Paymaster support
 - Configuration details
 
 **Actions:**
+
 - Test Connection button
 - Refresh configuration
 - View (but not edit) credentials
@@ -670,17 +737,20 @@ Webhook Events
 ### Step 11: Export Data
 
 **Action:**
+
 1. On any list page (Wallets/Transactions)
 2. Click **"Export"** button
 3. Select format: CSV or JSON
 4. Click **"Download"**
 
 **Expected Result:**
+
 - ✅ Export dialog appears
 - ✅ File downloads with current filters applied
 - ✅ CSV/JSON contains all visible data
 
 **CSV Format:**
+
 ```csv
 ID,User,Address,Blockchain,Balance,Status,Created
 abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
@@ -695,13 +765,14 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Balance Not Updating
 
 **Symptoms:**
+
 - Funded wallet but balance shows 0
 - Transactions complete but balance unchanged
 
 **Solutions:**
+
 1. **Pull to Refresh**
    - Swipe down on wallet screen to refresh
-   
 2. **Wait for Confirmation**
    - Blockchain confirmations take 30-60 seconds
    - Wait 2-3 minutes and refresh again
@@ -717,11 +788,13 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Send Transaction Fails
 
 **Symptoms:**
+
 - Transaction fails immediately
 - "Insufficient balance" error
 - "Invalid address" error
 
 **Solutions:**
+
 1. **Check Balance**
    - Ensure you have enough USDC
    - Account for gas fees (if not using Paymaster)
@@ -741,10 +814,12 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Transaction Stuck in Pending
 
 **Symptoms:**
+
 - Transaction shows "Pending" for >5 minutes
 - No confirmation on blockchain
 
 **Solutions:**
+
 1. **Check Gas Price**
    - Network might be congested
    - Wait 10-15 minutes
@@ -764,10 +839,12 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: CCTP Transfer Taking Too Long
 
 **Symptoms:**
+
 - CCTP transfer stuck in "PENDING"
 - No attestation received
 
 **Solutions:**
+
 1. **Wait**
    - CCTP transfers take 10-20 minutes normally
    - Can take up to 30 minutes on testnet
@@ -790,10 +867,12 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Wallets Not Showing
 
 **Symptoms:**
+
 - Empty wallet table
 - "No wallets found" message
 
 **Solutions:**
+
 1. **Check Filters**
    - Clear all filters
    - Reset to default view
@@ -809,10 +888,12 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Webhook Events Not Appearing
 
 **Symptoms:**
+
 - Webhook log is empty
 - Events not being received
 
 **Solutions:**
+
 1. **Verify Webhook Configuration**
    - Check webhook URL is correct in Circle Console
    - Verify webhook secret matches .env file
@@ -832,11 +913,14 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Settings Page Shows "Not Configured"
 
 **Symptoms:**
+
 - isConfigured: false
 - Credentials not loading
 
 **Solutions:**
+
 1. **Check Environment Variables**
+
    ```bash
    # In backend .env file
    CIRCLE_API_KEY=TEST_API_KEY:...
@@ -859,11 +943,13 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: "Network Error" or "API Unavailable"
 
 **Symptoms:**
+
 - Can't connect to backend
 - All requests fail
 - Timeout errors
 
 **Solutions:**
+
 1. **Check Backend Status**
    - Verify API server is running
    - Check server logs for errors
@@ -873,6 +959,7 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
    - Admin: Check endpoint URLs
 
 3. **Test Endpoint**
+
    ```bash
    curl https://your-api-url.com/api/health
    ```
@@ -884,10 +971,12 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 #### Issue: Circle API Errors
 
 **Symptoms:**
+
 - "Circle API Error" messages
 - 400/401/500 status codes from Circle
 
 **Solutions:**
+
 1. **Verify API Key**
    - Check API key is correct and active
    - Test with Circle's API explorer
@@ -950,6 +1039,7 @@ abc123,Ravestar,0x6947...,MATIC-AMOY,8.50,LIVE,2025-12-18
 ## Test Data Summary
 
 ### Test User
+
 ```
 Email: codeswithjoseph@gmail.com
 Password: 6thbornR%
@@ -957,6 +1047,7 @@ User ID: 2494cdd0-9169-41ea-814b-e6f0b882329c
 ```
 
 ### Test Wallet
+
 ```
 Address: 0x69476b0a0cb611faf8e9be80274b3b6ce63f54f4
 Wallet ID: 70e824e7-b8aa-5964-886f-b8da5625555d
@@ -965,12 +1056,14 @@ Account Type: SCA
 ```
 
 ### Test Recipient (for transfers)
+
 ```
 Address: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
 (Example testnet address)
 ```
 
 ### Useful Links
+
 - Circle Faucet: https://faucet.circle.com/
 - Polygon Amoy Explorer: https://amoy.polygonscan.com/
 - Circle Console: https://console.circle.com/
@@ -1013,4 +1106,3 @@ Once all tests pass:
 **Testing Guide Version**: 1.0  
 **Last Updated**: December 18, 2025  
 **Status**: Ready for Testing ✅
-

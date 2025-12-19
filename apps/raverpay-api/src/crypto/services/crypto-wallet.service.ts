@@ -1,7 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { VenlyService } from '../venly/venly.service';
-import { VenlyUserService } from '../venly/venly-user.service';
+// Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+// import { VenlyService } from '../venly/venly.service';
+// import { VenlyUserService } from '../venly/venly-user.service';
 import { WalletType } from '@prisma/client';
 
 /**
@@ -14,8 +15,9 @@ export class CryptoWalletService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly venly: VenlyService,
-    private readonly venlyUser: VenlyUserService,
+    // Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+    // private readonly venly: VenlyService,
+    // private readonly venlyUser: VenlyUserService,
   ) {}
 
   /**
@@ -36,47 +38,54 @@ export class CryptoWalletService {
     }
 
     try {
-      // 1. Create Venly user (if doesn't exist)
-      let venlyUser = await this.venlyUser.getVenlyUser(userId);
-
-      if (!venlyUser) {
-        venlyUser = await this.venlyUser.createVenlyUser({ userId, pin });
-      }
-
-      // 2. Get signing method header
-      const signingMethod = await this.venlyUser.getSigningMethodHeader(
-        userId,
-        pin,
+      // Venly integration - COMMENTED OUT (not using Venly anymore, using Circle)
+      // This method should not be called - Venly wallet creation is disabled
+      throw new Error(
+        'Venly wallet initialization is disabled. Please use Circle USDC wallet instead.',
       );
 
-      // 3. Create MATIC wallet on Polygon via Venly
-      const venlyWallet = await this.venly.createWallet({
-        userId: venlyUser.venlyUserId,
-        signingMethod,
-        description: 'RaverPay Crypto Wallet',
-        identifier: userId,
-      });
+      // COMMENTED OUT - All Venly wallet creation code
+      // // 1. Create Venly user (if doesn't exist)
+      // let venlyUser = await this.venlyUser.getVenlyUser(userId);
 
-      // 4. Create wallet in database
-      const wallet = await this.prisma.wallet.create({
-        data: {
-          userId,
-          type: WalletType.CRYPTO,
-          currency: 'CRYPTO',
-          balance: 0,
-          ledgerBalance: 0,
-          venlyWalletId: venlyWallet.id,
-          walletAddress: venlyWallet.address,
-        },
-      });
+      // if (!venlyUser) {
+      //   venlyUser = await this.venlyUser.createVenlyUser({ userId, pin });
+      // }
 
-      // 5. Initialize default balances (0 for each token)
-      await this.initializeBalances(wallet.id);
+      // // 2. Get signing method header
+      // const signingMethod = await this.venlyUser.getSigningMethodHeader(
+      //   userId,
+      //   pin,
+      // );
 
-      this.logger.log(`Initialized crypto wallet for user: ${userId}`);
-      this.logger.log(`Wallet address: ${venlyWallet.address}`);
+      // // 3. Create MATIC wallet on Polygon via Venly
+      // const venlyWallet = await this.venly.createWallet({
+      //   userId: venlyUser.venlyUserId,
+      //   signingMethod,
+      //   description: 'RaverPay Crypto Wallet',
+      //   identifier: userId,
+      // });
 
-      return wallet;
+      // // 4. Create wallet in database
+      // const wallet = await this.prisma.wallet.create({
+      //   data: {
+      //     userId,
+      //     type: WalletType.CRYPTO,
+      //     currency: 'CRYPTO',
+      //     balance: 0,
+      //     ledgerBalance: 0,
+      //     venlyWalletId: venlyWallet.id,
+      //     walletAddress: venlyWallet.address,
+      //   },
+      // });
+
+      // // 5. Initialize default balances (0 for each token)
+      // await this.initializeBalances(wallet.id);
+
+      // this.logger.log(`Initialized crypto wallet for user: ${userId}`);
+      // this.logger.log(`Wallet address: ${venlyWallet.address}`);
+
+      // return wallet;
     } catch (error) {
       this.logger.error(
         `Failed to initialize crypto wallet for user: ${userId}`,

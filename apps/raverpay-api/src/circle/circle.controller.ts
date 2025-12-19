@@ -1,43 +1,44 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Put,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Request,
+  Header,
   HttpCode,
   HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CircleWalletService } from './wallets/circle-wallet.service';
-import { CircleTransactionService } from './transactions/circle-transaction.service';
-import { CCTPService } from './transactions/cctp.service';
-import { CircleConfigService } from './config/circle.config.service';
 import {
-  PaymasterService,
-  PaymasterFeeEstimate,
-  SponsoredTransactionResponse,
-} from './paymaster/paymaster.service';
-import {
-  CreateCircleWalletDto,
-  UpdateWalletDto,
-  TransferUsdcDto,
-  EstimateFeeDto,
-  CCTPTransferDto,
-  CCTPEstimateDto,
-  TransactionQueryDto,
-  CCTPQueryDto,
-  ValidateAddressDto,
-} from './dto';
-import { CircleBlockchain, CircleFeeLevel } from './circle.types';
-import {
+  CCTPTransferState,
   CircleTransactionState,
   CircleTransactionType,
-  CCTPTransferState,
 } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CircleBlockchain, CircleFeeLevel } from './circle.types';
+import { CircleConfigService } from './config/circle.config.service';
+import {
+  CCTPEstimateDto,
+  CCTPQueryDto,
+  CCTPTransferDto,
+  CreateCircleWalletDto,
+  EstimateFeeDto,
+  TransactionQueryDto,
+  TransferUsdcDto,
+  UpdateWalletDto,
+  ValidateAddressDto,
+} from './dto';
+import {
+  PaymasterFeeEstimate,
+  PaymasterService,
+  SponsoredTransactionResponse,
+} from './paymaster/paymaster.service';
+import { CCTPService } from './transactions/cctp.service';
+import { CircleTransactionService } from './transactions/circle-transaction.service';
+import { CircleWalletService } from './wallets/circle-wallet.service';
 
 interface AuthRequest {
   user: { id: string; email: string; role: string };
@@ -131,6 +132,12 @@ export class CircleController {
    * GET /circle/wallets/:id/balance
    */
   @Get('wallets/:id/balance')
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   async getWalletBalance(@Request() req: AuthRequest, @Param('id') id: string) {
     const wallet = await this.walletService.getWallet(id, req.user.id);
     const balances = await this.walletService.getWalletBalance(
@@ -144,12 +151,17 @@ export class CircleController {
         address: wallet.address,
         blockchain: wallet.blockchain,
         balances: balances.map((b) => ({
-          symbol: b.token.symbol,
-          name: b.token.name,
+          token: {
+            id: b.token.id,
+            name: b.token.name,
+            symbol: b.token.symbol,
+            decimals: b.token.decimals,
+            isNative: b.token.isNative,
+            tokenAddress: b.token.tokenAddress,
+            blockchain: b.token.blockchain,
+          },
           amount: b.amount,
-          decimals: b.token.decimals,
-          isNative: b.token.isNative,
-          tokenAddress: b.token.tokenAddress,
+          updateDate: b.updateDate,
         })),
       },
     };
@@ -160,6 +172,12 @@ export class CircleController {
    * GET /circle/wallets/:id/usdc-balance
    */
   @Get('wallets/:id/usdc-balance')
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   async getUsdcBalance(@Request() req: AuthRequest, @Param('id') id: string) {
     const wallet = await this.walletService.getWallet(id, req.user.id);
     const balance = await this.walletService.getUsdcBalance(

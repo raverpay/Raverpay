@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
-import { VenlyService } from '../venly/venly.service';
+// Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+// import { VenlyService } from '../venly/venly.service';
 import { CryptoSendService } from '../services/crypto-send.service';
 import { CryptoTransactionStatus } from '@prisma/client';
 
@@ -20,7 +21,8 @@ export class TransactionStatusCron {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly venly: VenlyService,
+    // Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+    // private readonly venly: VenlyService,
     private readonly cryptoSend: CryptoSendService,
   ) {}
 
@@ -58,46 +60,49 @@ export class TransactionStatusCron {
       }
 
       let checkedCount = 0;
-      let updatedCount = 0;
+      const updatedCount = 0; // Always 0 since Venly is disabled
 
       // Check each transaction status
       for (const transaction of pendingTransactions) {
         try {
-          // Get transaction status from Venly
-          const status = await this.venly.getTransactionStatus(
-            'MATIC', // secretType for Polygon
-            transaction.transactionHash,
-          );
+          // Get transaction status from Venly - COMMENTED OUT (not using Venly anymore, using Circle)
+          // const status = await this.venly.getTransactionStatus(
+          //   'MATIC', // secretType for Polygon
+          //   transaction.transactionHash,
+          // );
 
+          // Skip Venly status check - Venly integration disabled
           checkedCount++;
+          continue; // Skip this transaction since Venly is disabled
 
-          // Update transaction based on status
-          if (status.status === 'SUCCEEDED') {
-            // Use the same handler as webhook
-            await this.cryptoSend.handleTransactionSuccess(
-              transaction.transactionHash,
-              {
-                result: status,
-                eventType: 'TRANSACTION_SUCCEEDED',
-              },
-            );
+          // COMMENTED OUT - Venly status handling (not using Venly anymore, using Circle)
+          // // Update transaction based on status
+          // if (status.status === 'SUCCEEDED') {
+          //   // Use the same handler as webhook
+          //   await this.cryptoSend.handleTransactionSuccess(
+          //     transaction.transactionHash,
+          //     {
+          //       result: status,
+          //       eventType: 'TRANSACTION_SUCCEEDED',
+          //     },
+          //   );
 
-            updatedCount++;
-          } else if (status.status === 'FAILED') {
-            // Use the same handler as webhook
-            await this.cryptoSend.handleTransactionFailure(
-              transaction.transactionHash,
-              {
-                result: status,
-                eventType: 'TRANSACTION_FAILED',
-              },
-            );
+          //   updatedCount++;
+          // } else if (status.status === 'FAILED') {
+          //   // Use the same handler as webhook
+          //   await this.cryptoSend.handleTransactionFailure(
+          //     transaction.transactionHash,
+          //     {
+          //       result: status,
+          //       eventType: 'TRANSACTION_FAILED',
+          //     },
+          //   );
 
-            updatedCount++;
-          }
+          //   updatedCount++;
+          // }
 
-          // Small delay to avoid rate limiting
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          // // Small delay to avoid rate limiting
+          // await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
           this.logger.error(
             `Failed to check transaction ${transaction.transactionHash}`,
@@ -140,28 +145,35 @@ export class TransactionStatusCron {
         return;
       }
 
-      // Get transaction status from Venly
-      const status = await this.venly.getTransactionStatus(
-        'MATIC',
-        transactionHash,
-      );
+      // Get transaction status from Venly - COMMENTED OUT (not using Venly anymore, using Circle)
+      // const status = await this.venly.getTransactionStatus(
+      //   'MATIC',
+      //   transactionHash,
+      // );
 
-      // Update transaction based on status
-      if (status.status === 'SUCCEEDED') {
-        await this.cryptoSend.handleTransactionSuccess(transactionHash, {
-          result: status,
-          eventType: 'TRANSACTION_SUCCEEDED',
-        });
-      } else if (status.status === 'FAILED') {
-        await this.cryptoSend.handleTransactionFailure(transactionHash, {
-          result: status,
-          eventType: 'TRANSACTION_FAILED',
-        });
-      }
-
-      this.logger.log(
-        `Transaction ${transactionHash} status: ${status.status}`,
+      // Skip Venly status check - Venly integration disabled
+      this.logger.warn(
+        'Venly transaction status check disabled - using Circle instead',
       );
+      return;
+
+      // COMMENTED OUT - Venly status handling (not using Venly anymore, using Circle)
+      // // Update transaction based on status
+      // if (status.status === 'SUCCEEDED') {
+      //   await this.cryptoSend.handleTransactionSuccess(transactionHash, {
+      //     result: status,
+      //     eventType: 'TRANSACTION_SUCCEEDED',
+      //   });
+      // } else if (status.status === 'FAILED') {
+      //   await this.cryptoSend.handleTransactionFailure(transactionHash, {
+      //     result: status,
+      //     eventType: 'TRANSACTION_FAILED',
+      //   });
+      // }
+
+      // this.logger.log(
+      //   `Transaction ${transactionHash} status: ${status.status}`,
+      // );
     } catch (error) {
       this.logger.error(
         `Failed to check transaction status for ${transactionHash}`,

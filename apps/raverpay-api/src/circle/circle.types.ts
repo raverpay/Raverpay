@@ -259,6 +259,11 @@ export interface FeeEstimate {
 
 export type CircleWebhookEventType =
   | 'transactions.created'
+  | 'transactions.inbound'
+  | 'transactions.outbound'
+  | 'transactions.queued'
+  | 'transactions.sent'
+  | 'transactions.confirmed'
   | 'transactions.complete'
   | 'transactions.failed'
   | 'transactions.denied'
@@ -277,6 +282,23 @@ export interface CircleWebhookEvent {
     blockchain?: CircleBlockchain;
     address?: string;
     txHash?: string;
+    tokenId?: string;
+    sourceAddress?: string;
+    destinationAddress?: string;
+    amounts?: string[];
+    nftTokenIds?: string[];
+    transactionType?: 'INBOUND' | 'OUTBOUND';
+    errorReason?: string;
+    errorDetails?: {
+      code: string;
+      message: string;
+    };
+    outboundTransactionId?: string;
+    networkFee?: string;
+    userOpHash?: string;
+    refId?: string;
+    createDate?: string;
+    updateDate?: string;
     [key: string]: unknown;
   };
   timestamp: string;

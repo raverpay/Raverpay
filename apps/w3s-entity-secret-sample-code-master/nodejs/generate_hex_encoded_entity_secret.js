@@ -17,12 +17,12 @@ const crypto = require('crypto');
 // The following sample codes generate a distinct hex encoded entity secret with each execution
 // The generation of entity secret only need to be executed once unless you need to rotate entity secret.
 function main() {
-	// Generate a random 32-byte value
-	const randomBytes = crypto.randomBytes(32);
+  // Generate a random 32-byte value
+  const randomBytes = crypto.randomBytes(32);
 
-	console.log('Hex encoded entity secret: ', randomBytes.toString('hex'));
+  console.log('Hex encoded entity secret: ', randomBytes.toString('hex'));
 }
 
 if (require.main === module) {
-	main();
+  main();
 }

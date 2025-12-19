@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 // Config
 import { CircleConfigService } from './config/circle.config.service';
@@ -40,7 +41,7 @@ import { CircleController } from './circle.controller';
  * - Webhook handling for transaction updates
  */
 @Module({
-  imports: [ConfigModule, PrismaModule],
+  imports: [ConfigModule, PrismaModule, NotificationsModule],
   controllers: [CircleController, CircleWebhookController],
   providers: [
     // Configuration

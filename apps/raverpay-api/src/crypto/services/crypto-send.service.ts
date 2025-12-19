@@ -6,8 +6,9 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { VenlyService } from '../venly/venly.service';
-import { VenlyUserService } from '../venly/venly-user.service';
+// Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+// import { VenlyService } from '../venly/venly.service';
+// import { VenlyUserService } from '../venly/venly-user.service';
 import { CryptoWalletService } from './crypto-wallet.service';
 import { CryptoBalanceService } from './crypto-balance.service';
 import { NotificationDispatcherService } from '../../notifications/notification-dispatcher.service';
@@ -37,8 +38,9 @@ export class CryptoSendService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly venly: VenlyService,
-    private readonly venlyUser: VenlyUserService,
+    // Venly services - COMMENTED OUT (not using Venly anymore, using Circle)
+    // private readonly venly: VenlyService,
+    // private readonly venlyUser: VenlyUserService,
     private readonly cryptoWallet: CryptoWalletService,
     private readonly cryptoBalance: CryptoBalanceService,
     @Inject(forwardRef(() => NotificationDispatcherService))
@@ -77,100 +79,114 @@ export class CryptoSendService {
         throw new BadRequestException(`Insufficient ${tokenSymbol} balance`);
       }
 
-      // 4. Get signing method
-      const signingMethod = await this.venlyUser.getSigningMethodHeader(
-        userId,
-        pin,
+      // 4. Get signing method - COMMENTED OUT (not using Venly anymore, using Circle)
+      // const signingMethod = await this.venlyUser.getSigningMethodHeader(
+      //   userId,
+      //   pin,
+      // );
+
+      // 5. Execute transaction via Venly - COMMENTED OUT (not using Venly anymore, using Circle)
+      // Venly integration disabled - this method should not be called
+      throw new BadRequestException(
+        'Crypto send via Venly is disabled. Please use Circle USDC wallet instead.',
       );
 
-      // 5. Execute transaction via Venly (official API format)
-      let venlyTransaction;
+      // COMMENTED OUT - All Venly transaction code (not using Venly anymore, using Circle)
+      // // Get signing method
+      // const signingMethod = await this.venlyUser.getSigningMethodHeader(
+      //   userId,
+      //   pin,
+      // );
 
-      if (tokenSymbol === 'MATIC') {
-        venlyTransaction = await this.venly.sendMATIC(
-          wallet.venlyWalletId,
-          toAddress,
-          amount,
-          signingMethod,
-        );
-      } else if (tokenSymbol === 'USDT') {
-        venlyTransaction = await this.venly.sendUSDT(
-          wallet.venlyWalletId,
-          toAddress,
-          amount,
-          signingMethod,
-        );
-      } else if (tokenSymbol === 'USDC') {
-        venlyTransaction = await this.venly.sendUSDC(
-          wallet.venlyWalletId,
-          toAddress,
-          amount,
-          signingMethod,
-        );
-      } else {
-        throw new BadRequestException(`Unsupported token: ${tokenSymbol}`);
-      }
+      // // Execute transaction via Venly
+      // let venlyTransaction;
 
-      this.logger.log(
-        `Venly transaction submitted: ${venlyTransaction.transactionHash}`,
-      );
-      if (venlyTransaction.id) {
-        this.logger.log(`Venly transaction ID: ${venlyTransaction.id}`);
-      }
+      // if (tokenSymbol === 'MATIC') {
+      //   venlyTransaction = await this.venly.sendMATIC(
+      //     wallet.venlyWalletId,
+      //     toAddress,
+      //     amount,
+      //     signingMethod,
+      //   );
+      // } else if (tokenSymbol === 'USDT') {
+      //   venlyTransaction = await this.venly.sendUSDT(
+      //     wallet.venlyWalletId,
+      //     toAddress,
+      //     amount,
+      //     signingMethod,
+      //   );
+      // } else if (tokenSymbol === 'USDC') {
+      //   venlyTransaction = await this.venly.sendUSDC(
+      //     wallet.venlyWalletId,
+      //     toAddress,
+      //     amount,
+      //     signingMethod,
+      //   );
+      // } else {
+      //   throw new BadRequestException(`Unsupported token: ${tokenSymbol}`);
+      // }
 
-      // 6. Get token details
-      const tokenBalance = await this.cryptoBalance.getTokenBalance(
-        wallet.id,
-        tokenSymbol,
-      );
-      const usdPrice = Number(tokenBalance?.usdPrice || 0);
-      const usdValue = Number(amount) * usdPrice;
+      // this.logger.log(
+      //   `Venly transaction submitted: ${venlyTransaction.transactionHash}`,
+      // );
+      // if (venlyTransaction.id) {
+      //   this.logger.log(`Venly transaction ID: ${venlyTransaction.id}`);
+      // }
 
-      // 7. Create transaction record
-      const transaction = await this.prisma.cryptoTransaction.create({
-        data: {
-          reference: `TXN_CRYPTO_${Date.now()}`,
-          transactionHash: venlyTransaction.transactionHash,
-          userId,
-          walletId: wallet.id,
-          type: CryptoTransactionType.SEND,
-          direction: TransactionDirection.OUTGOING,
-          fromAddress: wallet.walletAddress!,
-          toAddress,
-          tokenSymbol,
-          tokenAddress: tokenBalance?.tokenAddress || null,
-          tokenDecimals: tokenBalance?.tokenDecimals || 6,
-          amount: new Decimal(amount),
-          rawAmount: amount, // Can be refined later
-          usdValue: new Decimal(usdValue),
-          network: 'MATIC',
-          status: CryptoTransactionStatus.PENDING,
-          memo,
-          submittedAt: new Date(),
-        },
-      });
+      // // 6. Get token details
+      // const tokenBalance = await this.cryptoBalance.getTokenBalance(
+      //   wallet.id,
+      //   tokenSymbol,
+      // );
+      // const usdPrice = Number(tokenBalance?.usdPrice || 0);
+      // const usdValue = Number(amount) * usdPrice;
 
-      this.logger.log(`Transaction created: ${transaction.reference}`);
-      this.logger.log(`Transaction hash: ${venlyTransaction.transactionHash}`);
+      // // 7. Create transaction record
+      // const transaction = await this.prisma.cryptoTransaction.create({
+      //   data: {
+      //     reference: `TXN_CRYPTO_${Date.now()}`,
+      //     transactionHash: venlyTransaction.transactionHash,
+      //     userId,
+      //     walletId: wallet.id,
+      //     type: CryptoTransactionType.SEND,
+      //     direction: TransactionDirection.OUTGOING,
+      //     fromAddress: wallet.walletAddress!,
+      //     toAddress,
+      //     tokenSymbol,
+      //     tokenAddress: tokenBalance?.tokenAddress || null,
+      //     tokenDecimals: tokenBalance?.tokenDecimals || 6,
+      //     amount: new Decimal(amount),
+      //     rawAmount: amount,
+      //     usdValue: new Decimal(usdValue),
+      //     network: 'MATIC',
+      //     status: CryptoTransactionStatus.PENDING,
+      //     memo,
+      //     submittedAt: new Date(),
+      //   },
+      // });
 
-      // 8. Send pending notification (async - don't wait)
-      this.sendTransactionNotification(transaction, 'PENDING').catch(
-        (error) => {
-          this.logger.error('Failed to send pending notification', error);
-        },
-      );
+      // this.logger.log(`Transaction created: ${transaction.reference}`);
+      // this.logger.log(`Transaction hash: ${venlyTransaction.transactionHash}`);
 
-      // 9. Sync balances (async - don't wait)
-      this.cryptoBalance.syncBalances(userId).catch((error) => {
-        this.logger.error('Failed to sync balances after send', error);
-      });
+      // // 8. Send pending notification (async - don't wait)
+      // this.sendTransactionNotification(transaction, 'PENDING').catch(
+      //   (error) => {
+      //     this.logger.error('Failed to send pending notification', error);
+      //   },
+      // );
 
-      return {
-        transaction,
-        transactionHash: venlyTransaction.transactionHash,
-        status: 'PENDING',
-        message: 'Transaction submitted to blockchain',
-      };
+      // COMMENTED OUT - Code after Venly transaction (not using Venly anymore, using Circle)
+      // // 9. Sync balances (async - don't wait)
+      // this.cryptoBalance.syncBalances(userId).catch((error) => {
+      //   this.logger.error('Failed to sync balances after send', error);
+      // });
+
+      // return {
+      //   transaction,
+      //   transactionHash: venlyTransaction.transactionHash,
+      //   status: 'PENDING',
+      //   message: 'Transaction submitted to blockchain',
+      // };
     } catch (error) {
       this.logger.error('Failed to send crypto', error);
       throw error;
@@ -544,55 +560,61 @@ export class CryptoSendService {
         `Manually checking status for transaction: ${transaction.transactionHash}`,
       );
 
-      // Get status from Venly
-      const status = await this.venly.getTransactionStatus(
-        'MATIC',
-        transaction.transactionHash,
+      // Get status from Venly - COMMENTED OUT (not using Venly anymore, using Circle)
+      // const status = await this.venly.getTransactionStatus(
+      //   'MATIC',
+      //   transaction.transactionHash,
+      // );
+
+      // Venly integration disabled
+      throw new BadRequestException(
+        'Venly transaction status check is disabled. Please use Circle USDC wallet instead.',
       );
 
-      // Update based on status
-      if (status.status === 'SUCCEEDED') {
-        await this.handleTransactionSuccess(transaction.transactionHash, {
-          result: status,
-          eventType: 'TRANSACTION_SUCCEEDED',
-        });
+      // COMMENTED OUT - Venly status handling (not using Venly anymore, using Circle)
+      // // Update based on status
+      // if (status.status === 'SUCCEEDED') {
+      //   await this.handleTransactionSuccess(transaction.transactionHash, {
+      //     result: status,
+      //     eventType: 'TRANSACTION_SUCCEEDED',
+      //   });
 
-        // Get updated transaction
-        const updatedTransaction =
-          await this.prisma.cryptoTransaction.findUnique({
-            where: { id: transactionId },
-          });
+      //   // Get updated transaction
+      //   const updatedTransaction =
+      //     await this.prisma.cryptoTransaction.findUnique({
+      //       where: { id: transactionId },
+      //     });
 
-        return {
-          message: 'Transaction completed successfully',
-          status: 'COMPLETED',
-          transaction: updatedTransaction,
-        };
-      } else if (status.status === 'FAILED') {
-        await this.handleTransactionFailure(transaction.transactionHash, {
-          result: status,
-          eventType: 'TRANSACTION_FAILED',
-        });
+      //   return {
+      //     message: 'Transaction completed successfully',
+      //     status: 'COMPLETED',
+      //     transaction: updatedTransaction,
+      //   };
+      // } else if (status.status === 'FAILED') {
+      //   await this.handleTransactionFailure(transaction.transactionHash, {
+      //     result: status,
+      //     eventType: 'TRANSACTION_FAILED',
+      //   });
 
-        // Get updated transaction
-        const updatedTransaction =
-          await this.prisma.cryptoTransaction.findUnique({
-            where: { id: transactionId },
-          });
+      //   // Get updated transaction
+      //   const updatedTransaction =
+      //     await this.prisma.cryptoTransaction.findUnique({
+      //       where: { id: transactionId },
+      //     });
 
-        return {
-          message: 'Transaction failed',
-          status: 'FAILED',
-          transaction: updatedTransaction,
-        };
-      } else {
-        return {
-          message: 'Transaction still pending',
-          status: 'PENDING',
-          transaction,
-          blockchainStatus: status,
-        };
-      }
+      //   return {
+      //     message: 'Transaction failed',
+      //     status: 'FAILED',
+      //     transaction: updatedTransaction,
+      //   };
+      // } else {
+      //   return {
+      //     message: 'Transaction still pending',
+      //     status: 'PENDING',
+      //     transaction,
+      //     blockchainStatus: status,
+      //   };
+      // }
     } catch (error) {
       this.logger.error(
         `Failed to check transaction status for ${transactionId}`,

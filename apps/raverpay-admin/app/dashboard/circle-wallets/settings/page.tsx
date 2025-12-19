@@ -8,41 +8,33 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Settings, 
-  Key, 
-  Globe, 
-  Shield, 
-  RefreshCw, 
-  CheckCircle2, 
+import {
+  Settings,
+  Key,
+  Globe,
+  Shield,
+  RefreshCw,
+  CheckCircle2,
   XCircle,
   AlertTriangle,
   Copy,
   Eye,
-  EyeOff
+  EyeOff,
 } from 'lucide-react';
-import { circleApi } from '@/lib/api/circle';
-import { useToast } from '@/hooks/use-toast';
-
-interface CircleConfig {
-  environment: string;
-  supportedBlockchains: string[];
-  defaultBlockchain: string;
-  defaultAccountType: string;
-  isConfigured: boolean;
-  paymasterSupported: string[];
-}
+import { circleApi, CircleConfig } from '@/lib/api/circle';
+import { toast } from 'sonner';
 
 export default function CircleSettingsPage() {
   const [config, setConfig] = useState<CircleConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showEntitySecret, setShowEntitySecret] = useState(false);
-  const { toast } = useToast();
 
   // Masked credentials (for display only)
   const [maskedApiKey, setMaskedApiKey] = useState('TEST_API_KEY:****...****');
-  const [maskedEntitySecret, setMaskedEntitySecret] = useState('************************************');
+  const [maskedEntitySecret, setMaskedEntitySecret] = useState(
+    '************************************',
+  );
 
   useEffect(() => {
     loadConfig();
@@ -52,13 +44,9 @@ export default function CircleSettingsPage() {
     try {
       setLoading(true);
       const response = await circleApi.getConfig();
-      setConfig(response.data);
+      setConfig(response);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load Circle configuration',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load Circle configuration');
     } finally {
       setLoading(false);
     }
@@ -66,31 +54,18 @@ export default function CircleSettingsPage() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied',
-      description: `${label} copied to clipboard`,
-    });
+    toast.success(`${label} copied to clipboard`);
   };
 
   const testConnection = async () => {
     try {
-      toast({
-        title: 'Testing Connection',
-        description: 'Verifying Circle API connection...',
-      });
-      
+      toast.info('Verifying Circle API connection...');
+
       await circleApi.getConfig();
-      
-      toast({
-        title: 'Success',
-        description: 'Circle API connection is working correctly',
-      });
+
+      toast.success('Circle API connection is working correctly');
     } catch (error) {
-      toast({
-        title: 'Connection Failed',
-        description: 'Unable to connect to Circle API',
-        variant: 'destructive',
-      });
+      toast.error('Unable to connect to Circle API');
     }
   };
 
@@ -125,9 +100,7 @@ export default function CircleSettingsPage() {
             <Settings className="h-8 w-8" />
             Circle Settings
           </h1>
-          <p className="text-muted-foreground">
-            Manage Circle API configuration and credentials
-          </p>
+          <p className="text-muted-foreground">Manage Circle API configuration and credentials</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={testConnection} variant="outline">
@@ -142,7 +115,11 @@ export default function CircleSettingsPage() {
       </div>
 
       {/* Status Alert */}
-      <Alert className={config?.isConfigured ? 'border-green-500 bg-green-50' : 'border-yellow-500 bg-yellow-50'}>
+      <Alert
+        className={
+          config?.isConfigured ? 'border-green-500 bg-green-50' : 'border-yellow-500 bg-yellow-50'
+        }
+      >
         <div className="flex items-center gap-2">
           {config?.isConfigured ? (
             <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -189,9 +166,13 @@ export default function CircleSettingsPage() {
                     <span className="text-sm text-muted-foreground">Status</span>
                     <Badge variant={config?.isConfigured ? 'default' : 'destructive'}>
                       {config?.isConfigured ? (
-                        <><CheckCircle2 className="h-3 w-3 mr-1" /> Active</>
+                        <>
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Active
+                        </>
                       ) : (
-                        <><XCircle className="h-3 w-3 mr-1" /> Inactive</>
+                        <>
+                          <XCircle className="h-3 w-3 mr-1" /> Inactive
+                        </>
                       )}
                     </Badge>
                   </div>
@@ -214,10 +195,7 @@ export default function CircleSettingsPage() {
                     <span className="text-sm text-muted-foreground">Blockchain</span>
                     <Badge variant="outline">{config?.defaultBlockchain}</Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Account Type</span>
-                    <Badge variant="outline">{config?.defaultAccountType}</Badge>
-                  </div>
+                  {/* Account Type removed - not available in API config */}
                 </div>
               </CardContent>
             </Card>
@@ -251,7 +229,8 @@ export default function CircleSettingsPage() {
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              Credentials are stored securely in environment variables. Never share your API key or entity secret.
+              Credentials are stored securely in environment variables. Never share your API key or
+              entity secret.
             </AlertDescription>
           </Alert>
 
@@ -269,21 +248,23 @@ export default function CircleSettingsPage() {
                 <div className="flex gap-2">
                   <Input
                     type={showApiKey ? 'text' : 'password'}
-                    value={showApiKey ? process.env.NEXT_PUBLIC_CIRCLE_API_KEY || 'Not configured' : maskedApiKey}
+                    value={
+                      showApiKey
+                        ? process.env.NEXT_PUBLIC_CIRCLE_API_KEY || 'Not configured'
+                        : maskedApiKey
+                    }
                     readOnly
                     className="font-mono text-sm"
                   />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                  >
+                  <Button variant="outline" size="icon" onClick={() => setShowApiKey(!showApiKey)}>
                     {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => copyToClipboard(process.env.NEXT_PUBLIC_CIRCLE_API_KEY || '', 'API Key')}
+                    onClick={() =>
+                      copyToClipboard(process.env.NEXT_PUBLIC_CIRCLE_API_KEY || '', 'API Key')
+                    }
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -309,7 +290,11 @@ export default function CircleSettingsPage() {
                 <div className="flex gap-2">
                   <Input
                     type={showEntitySecret ? 'text' : 'password'}
-                    value={showEntitySecret ? process.env.NEXT_PUBLIC_CIRCLE_ENTITY_SECRET || 'Not configured' : maskedEntitySecret}
+                    value={
+                      showEntitySecret
+                        ? process.env.NEXT_PUBLIC_CIRCLE_ENTITY_SECRET || 'Not configured'
+                        : maskedEntitySecret
+                    }
                     readOnly
                     className="font-mono text-sm"
                   />
@@ -318,7 +303,11 @@ export default function CircleSettingsPage() {
                     size="icon"
                     onClick={() => setShowEntitySecret(!showEntitySecret)}
                   >
-                    {showEntitySecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showEntitySecret ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -329,8 +318,8 @@ export default function CircleSettingsPage() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Keep your recovery file backed up securely. It's required for entity secret rotation.
-                  Location: apps/raverpay-api/recovery/circle-recovery.dat
+                  Keep your recovery file backed up securely. It&apos;s required for entity secret
+                  rotation. Location: apps/raverpay-api/recovery/circle-recovery.dat
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -342,9 +331,7 @@ export default function CircleSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Supported Blockchains</CardTitle>
-              <CardDescription>
-                Networks available for USDC wallet creation
-              </CardDescription>
+              <CardDescription>Networks available for USDC wallet creation</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -363,12 +350,8 @@ export default function CircleSettingsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {blockchain === config?.defaultBlockchain && (
-                        <Badge>Default</Badge>
-                      )}
-                      {config?.paymasterSupported?.includes(blockchain) && (
-                        <Badge variant="secondary">Paymaster</Badge>
-                      )}
+                      {blockchain === config?.defaultBlockchain && <Badge>Default</Badge>}
+                      {/* Paymaster support info not available in API config */}
                     </div>
                   </div>
                 ))}
@@ -382,35 +365,20 @@ export default function CircleSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Paymaster Configuration</CardTitle>
-              <CardDescription>
-                Networks that support gas fee payments in USDC
-              </CardDescription>
+              <CardDescription>Networks that support gas fee payments in USDC</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {config?.paymasterSupported?.map((blockchain) => (
-                  <div
-                    key={blockchain}
-                    className="flex items-center justify-between p-3 border rounded-lg bg-green-50 dark:bg-green-950"
-                  >
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                      <div>
-                        <p className="font-medium">{blockchain}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Users can pay gas fees in USDC
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="default">Enabled</Badge>
-                  </div>
-                ))}
+                <p className="text-sm text-muted-foreground">
+                  Paymaster configuration details are not available in the API response.
+                </p>
               </div>
 
               <Alert className="mt-4">
                 <AlertDescription>
-                  Paymaster allows users to pay transaction gas fees using USDC instead of native tokens (ETH, MATIC, etc.).
-                  This provides a better user experience as users don't need to hold multiple token types.
+                  Paymaster allows users to pay transaction gas fees using USDC instead of native
+                  tokens (ETH, MATIC, etc.). This provides a better user experience as users
+                  don&apos;t need to hold multiple token types.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -420,4 +388,3 @@ export default function CircleSettingsPage() {
     </div>
   );
 }
-

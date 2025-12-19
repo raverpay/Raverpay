@@ -1,6 +1,6 @@
 ---
 name: Circle Integration Implementation Plan
-overview: ""
+overview: ''
 todos: []
 ---
 
@@ -373,19 +373,16 @@ CIRCLE_ENVIRONMENT=testnet  # or mainnet
 ## Security Considerations
 
 1. **Entity Secret Management**
-
    - Store encrypted entity secrets
    - Never log entity secrets
    - Rotate secrets periodically
 
 2. **Webhook Security**
-
    - Verify webhook signatures
    - Rate limit webhook endpoints
    - Log all webhook events
 
 3. **API Security**
-
    - Use environment variables for API keys
    - Implement rate limiting
    - Add request validation
@@ -434,19 +431,16 @@ CIRCLE_ENVIRONMENT=testnet  # or mainnet
 ## Migration Strategy
 
 1. **Phase 1**: Implement Circle alongside Venly (both systems active)
-
    - Both systems run in parallel
    - No disruption to existing Venly users
    - New users can choose Circle or Venly (default to Circle for new users)
 
 2. **Phase 2**: Gradual Migration
-
    - Allow existing Venly users to migrate to Circle wallets
    - Provide migration tool/flow in admin dashboard
    - Support both systems during transition period
 
 3. **Phase 3**: Circle as Primary (Future)
-
    - Make Circle the default for all new users
    - Deprecate Venly integration (keep for backward compatibility)
    - Migrate remaining Venly users to Circle
@@ -547,28 +541,24 @@ CIRCLE_ENVIRONMENT=testnet  # or mainnet
 ## Monitoring & Observability
 
 1. **Logging**
-
    - Log all Circle API calls with request/response
    - Log webhook events with full payload
    - Log errors with stack traces
    - Use structured logging (JSON format)
 
 2. **Metrics**
-
    - Track Circle API call success/failure rates
    - Monitor webhook processing times
    - Track transaction completion rates
    - Monitor wallet creation success rates
 
 3. **Alerts**
-
    - Alert on Circle API failures
    - Alert on webhook processing failures
    - Alert on high transaction failure rates
    - Alert on entity secret rotation issues
 
 4. **Audit Trail**
-
    - Log all Circle wallet operations
    - Log all Circle transactions
    - Log all webhook events

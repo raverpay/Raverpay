@@ -1,12 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { CircleApiClient } from '../circle-api.client';
-import { CircleConfigService } from '../config/circle.config.service';
-import { CircleTransactionService } from '../transactions/circle-transaction.service';
-import { CCTPService } from '../transactions/cctp.service';
-import { CircleWebhookEvent, WebhookSubscription } from '../circle.types';
 import { CircleTransactionState, CircleWalletState } from '@prisma/client';
 import * as crypto from 'crypto';
+import { randomUUID } from 'crypto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationDispatcherService } from '../../notifications/notification-dispatcher.service';
+import { CircleApiClient } from '../circle-api.client';
+import { CircleWebhookEvent, WebhookSubscription } from '../circle.types';
+import { CircleConfigService } from '../config/circle.config.service';
+import { CCTPService } from '../transactions/cctp.service';
+import { CircleTransactionService } from '../transactions/circle-transaction.service';
 
 /**
  * Circle Webhook Service
@@ -22,6 +24,7 @@ export class CircleWebhookService {
     private readonly config: CircleConfigService,
     private readonly transactionService: CircleTransactionService,
     private readonly cctpService: CCTPService,
+    private readonly notificationDispatcher: NotificationDispatcherService,
   ) {}
 
   /**
@@ -85,6 +88,11 @@ export class CircleWebhookService {
       // Route to appropriate handler
       switch (event.notificationType) {
         case 'transactions.created':
+        case 'transactions.inbound':
+        case 'transactions.outbound':
+        case 'transactions.queued':
+        case 'transactions.sent':
+        case 'transactions.confirmed':
         case 'transactions.complete':
         case 'transactions.failed':
         case 'transactions.denied':
@@ -154,19 +162,93 @@ export class CircleWebhookService {
 
     const mappedState = state ? stateMap[state] : undefined;
 
+    // For inbound transactions, check if it exists, if not create it
+    if (notificationType === 'transactions.inbound') {
+      const existingTx = await this.prisma.circleTransaction.findFirst({
+        where: { circleTransactionId: transactionId },
+      });
+
+      if (!existingTx && notification.walletId) {
+        // Find the wallet owner
+        const wallet = await this.prisma.circleWallet.findFirst({
+          where: { circleWalletId: notification.walletId },
+        });
+
+        if (
+          wallet &&
+          notification.blockchain &&
+          notification.destinationAddress
+        ) {
+          this.logger.log(
+            `Creating inbound transaction record: ${transactionId}`,
+          );
+
+          // Generate unique reference for the transaction
+          const reference = `CIR-${Date.now()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+
+          const newTransaction = await this.prisma.circleTransaction.create({
+            data: {
+              reference,
+              userId: wallet.userId,
+              circleTransactionId: transactionId,
+              walletId: wallet.id, // Use database wallet ID, not Circle's wallet ID
+              type: 'TRANSFER', // Inbound transfers are classified as TRANSFER type
+              state: mappedState || CircleTransactionState.CONFIRMED,
+              blockchain: notification.blockchain,
+              tokenId: notification.tokenId,
+              sourceAddress: notification.sourceAddress,
+              destinationAddress: notification.destinationAddress,
+              amounts: notification.amounts || [],
+              transactionHash: notification.txHash,
+              ...(mappedState === CircleTransactionState.COMPLETE && {
+                completedDate: new Date(),
+              }),
+            },
+          });
+
+          // Don't send notification for inbound transactions (receiving USDC)
+          // Only send notifications when user sends USDC and transaction completes
+        }
+      }
+    }
+
+    // Prepare update data
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (mappedState) {
+      updateData.state = mappedState;
+    }
+
+    if (notification.txHash) {
+      updateData.transactionHash = notification.txHash;
+    }
+
+    if (notification.networkFee) {
+      updateData.networkFee = notification.networkFee;
+    }
+
+    if (notification.errorReason) {
+      updateData.errorReason = notification.errorReason;
+    }
+
+    if (notificationType === 'transactions.confirmed') {
+      updateData.firstConfirmDate = new Date();
+    }
+
+    if (notificationType === 'transactions.complete') {
+      updateData.completedDate = new Date();
+    }
+
+    if (notificationType === 'transactions.cancelled') {
+      updateData.cancelledDate = new Date();
+    }
+
     // Update transaction in database
     const updated = await this.prisma.circleTransaction.updateMany({
       where: { circleTransactionId: transactionId },
-      data: {
-        ...(mappedState && { state: mappedState }),
-        ...(notification.txHash && { transactionHash: notification.txHash }),
-        ...(notificationType === 'transactions.complete' && {
-          completedDate: new Date(),
-        }),
-        ...(notificationType === 'transactions.cancelled' && {
-          cancelledDate: new Date(),
-        }),
-      },
+      data: updateData,
     });
 
     if (updated.count > 0) {
@@ -179,6 +261,13 @@ export class CircleWebhookService {
 
       // Sync full transaction details
       await this.transactionService.syncTransaction(transactionId);
+
+      // Send notifications for completed outbound transactions only
+      await this.sendTransactionNotification(
+        transactionId,
+        notificationType,
+        event,
+      );
     } else {
       this.logger.warn(`Transaction not found in database: ${transactionId}`);
     }
@@ -359,5 +448,101 @@ export class CircleWebhookService {
 
     // Re-process the webhook
     await this.processWebhook(log.payload as unknown as CircleWebhookEvent);
+  }
+
+  /**
+   * Send transaction notification to user
+   * Only sends notifications for outbound transactions (user sending USDC) when complete
+   */
+  private async sendTransactionNotification(
+    transactionId: string,
+    notificationType: string,
+    event?: CircleWebhookEvent,
+  ): Promise<void> {
+    try {
+      // Only send notifications when outbound transactions are complete
+      // (when user sends USDC, not when receiving)
+      if (notificationType !== 'transactions.complete') {
+        return;
+      }
+
+      // Don't notify for inbound transactions (user receiving USDC)
+      if (event?.notification.transactionType === 'INBOUND') {
+        return;
+      }
+
+      // Fetch the updated transaction with wallet info
+      const transaction = await this.prisma.circleTransaction.findFirst({
+        where: { circleTransactionId: transactionId },
+        include: {
+          wallet: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      });
+
+      if (!transaction || !transaction.wallet) {
+        this.logger.warn(
+          `Transaction or wallet not found for notification: ${transactionId}`,
+        );
+        return;
+      }
+
+      // Calculate total amount from amounts array (amounts is String[])
+      const totalAmount =
+        transaction.amounts?.reduce(
+          (sum, amount) => sum + Number(amount || 0),
+          0,
+        ) || 0;
+
+      // Format amount for display
+      const formattedAmount = totalAmount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 6,
+      });
+
+      // Notification details for completed outbound transaction
+      const eventType = 'circle_usdc_completed';
+      const title = `Transaction Completed`;
+      const message = `Your USDC transaction of ${formattedAmount} USDC has been completed successfully.`;
+
+      // Send notification via email, push, and in-app
+      await this.notificationDispatcher.sendNotification({
+        userId: transaction.wallet.userId,
+        eventType,
+        category: 'TRANSACTION',
+        channels: ['EMAIL', 'PUSH', 'IN_APP'],
+        title,
+        message,
+        data: {
+          transactionId: transaction.circleTransactionId,
+          reference: transaction.reference,
+          amount: formattedAmount,
+          blockchain: transaction.blockchain,
+          transactionHash: transaction.transactionHash,
+          sourceAddress: transaction.sourceAddress,
+          destinationAddress: transaction.destinationAddress,
+          state: transaction.state,
+          type: transaction.type,
+          networkFee: transaction.networkFee,
+          timestamp: transaction.updatedAt.toLocaleString('en-NG', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          }),
+        },
+      });
+
+      this.logger.log(
+        `Notification sent for transaction ${transactionId}: ${eventType}`,
+      );
+    } catch (error) {
+      // Don't throw - notifications are non-critical
+      this.logger.error(
+        `Failed to send notification for transaction ${transactionId}`,
+        error,
+      );
+    }
   }
 }

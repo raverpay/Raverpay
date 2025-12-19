@@ -42,7 +42,11 @@ export default function CircleWebhooksPage() {
   const [search, setSearch] = useState('');
   const [processedFilter, setProcessedFilter] = useState<string>('all');
 
-  const { data: logsData, isLoading, refetch } = useQuery({
+  const {
+    data: logsData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['circle-webhooks', page, search, processedFilter],
     queryFn: () =>
       circleApi.getWebhookLogs({
@@ -57,7 +61,8 @@ export default function CircleWebhooksPage() {
   const getEventTypeColor = (eventType: string): string => {
     if (eventType.includes('transaction')) return 'bg-blue-100 text-blue-800';
     if (eventType.includes('wallet')) return 'bg-purple-100 text-purple-800';
-    if (eventType.includes('cctp') || eventType.includes('transfer')) return 'bg-green-100 text-green-800';
+    if (eventType.includes('cctp') || eventType.includes('transfer'))
+      return 'bg-green-100 text-green-800';
     return 'bg-gray-100 text-gray-800';
   };
 
@@ -88,9 +93,9 @@ export default function CircleWebhooksPage() {
             <div>
               <h3 className="font-semibold text-blue-900">Webhook Processing</h3>
               <p className="text-sm text-blue-700 mt-1">
-                Circle sends webhook notifications for transaction updates, wallet state changes, and
-                CCTP transfer progress. These events are processed automatically to keep your data
-                synchronized.
+                Circle sends webhook notifications for transaction updates, wallet state changes,
+                and CCTP transfer progress. These events are processed automatically to keep your
+                data synchronized.
               </p>
             </div>
           </div>
@@ -152,7 +157,9 @@ export default function CircleWebhooksPage() {
                     {logsData.data.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell>
-                          <Badge className={getEventTypeColor(log.eventType)}>{log.eventType}</Badge>
+                          <Badge className={getEventTypeColor(log.eventType)}>
+                            {log.eventType}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <code className="text-xs bg-muted px-2 py-1 rounded">
@@ -239,4 +246,3 @@ export default function CircleWebhooksPage() {
     </div>
   );
 }
-

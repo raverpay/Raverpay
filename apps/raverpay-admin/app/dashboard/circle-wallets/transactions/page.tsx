@@ -95,7 +95,9 @@ export default function CircleTransactionsPage() {
         {stats?.transactionsByState?.map((item) => (
           <Card key={item.state}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{item.state}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {item.state}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{item.count}</div>
@@ -285,4 +287,3 @@ export default function CircleTransactionsPage() {
     </div>
   );
 }
-

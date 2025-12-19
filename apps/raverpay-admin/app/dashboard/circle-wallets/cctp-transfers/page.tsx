@@ -103,7 +103,9 @@ export default function CCTPTransfersPage() {
           <div className="flex items-start gap-4">
             <Globe className="h-6 w-6 text-purple-600 mt-1" />
             <div>
-              <h3 className="font-semibold text-purple-900">Cross-Chain Transfer Protocol (CCTP)</h3>
+              <h3 className="font-semibold text-purple-900">
+                Cross-Chain Transfer Protocol (CCTP)
+              </h3>
               <p className="text-sm text-purple-700 mt-1">
                 CCTP enables native USDC to be transferred across blockchains. The process involves
                 burning USDC on the source chain, getting an attestation from Circle, and minting on
@@ -201,7 +203,9 @@ export default function CCTPTransfersPage() {
                                 <p className="text-sm font-medium">
                                   {transfer.user.firstName} {transfer.user.lastName}
                                 </p>
-                                <p className="text-xs text-muted-foreground">{transfer.user.email}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {transfer.user.email}
+                                </p>
                               </div>
                             ) : (
                               <span className="text-muted-foreground">N/A</span>
@@ -315,4 +319,3 @@ export default function CCTPTransfersPage() {
     </div>
   );
 }
-

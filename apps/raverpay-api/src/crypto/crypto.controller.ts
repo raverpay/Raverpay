@@ -211,12 +211,12 @@ export class CryptoController {
   // ============================================
 
   /**
-   * Venly webhook endpoint
+   * Venly webhook endpoint - COMMENTED OUT (not using Venly anymore, using Circle)
    * POST /v1/crypto/webhooks/venly
    */
-  @Post('webhooks/venly')
-  @HttpCode(HttpStatus.OK)
-  async handleVenlyWebhook(@Body() payload: any) {
-    return this.cryptoService.handleVenlyWebhook(payload);
-  }
+  // @Post('webhooks/venly')
+  // @HttpCode(HttpStatus.OK)
+  // async handleVenlyWebhook(@Body() payload: any) {
+  //   return this.cryptoService.handleVenlyWebhook(payload);
+  // }
 }
