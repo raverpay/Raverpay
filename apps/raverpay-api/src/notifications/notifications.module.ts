@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsController } from './notifications.controller';
@@ -14,9 +14,15 @@ import { NotificationQueueProcessor } from './notification-queue.processor';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailService } from '../services/email/email.service';
 import { SmsService } from '../services/sms/sms.service';
+import { QueueModule } from '../queue/queue.module';
 
 @Module({
-  imports: [PrismaModule, ConfigModule, ScheduleModule.forRoot()],
+  imports: [
+    PrismaModule,
+    ConfigModule,
+    ScheduleModule.forRoot(),
+    forwardRef(() => QueueModule), // Import QueueModule for BullMQ support
+  ],
   controllers: [NotificationsController, NotificationPreferencesController],
   providers: [
     NotificationsService,

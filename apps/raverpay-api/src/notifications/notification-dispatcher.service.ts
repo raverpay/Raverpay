@@ -1,4 +1,11 @@
-import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  forwardRef,
+  Inject,
+  Optional,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from './notifications.service';
 import { NotificationPreferencesService } from './notification-preferences.service';
@@ -7,6 +14,7 @@ import { ExpoPushService } from './expo-push.service';
 import { EmailService } from '../services/email/email.service';
 import { SmsService } from '../services/sms/sms.service';
 import { NotificationQueueProcessor } from './notification-queue.processor';
+import { QueueService } from '../queue/queue.service';
 import { NotificationChannel } from '@prisma/client';
 
 /**
@@ -44,6 +52,8 @@ export interface NotificationEvent {
 export class NotificationDispatcherService {
   private readonly logger = new Logger(NotificationDispatcherService.name);
 
+  private readonly useBullMQ: boolean;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
@@ -52,9 +62,18 @@ export class NotificationDispatcherService {
     private readonly emailService: EmailService,
     private readonly smsService: SmsService,
     private readonly expoPushService: ExpoPushService,
+    private readonly configService: ConfigService,
     @Inject(forwardRef(() => NotificationQueueProcessor))
+    @Optional()
     private readonly queueProcessor: NotificationQueueProcessor,
-  ) {}
+    @Optional()
+    private readonly queueService: QueueService,
+  ) {
+    // Check if BullMQ should be used
+    this.useBullMQ =
+      this.configService.get<string>('USE_BULLMQ_QUEUE') === 'true' &&
+      !!this.queueService;
+  }
 
   /**
    * Send notification via multiple channels
@@ -147,13 +166,27 @@ export class NotificationDispatcherService {
     };
 
     for (const channel of channels) {
-      await this.queueProcessor.queueNotification({
-        userId: event.userId,
-        channel: channel as NotificationChannel,
-        eventType: event.eventType,
-        variables: notificationVariables,
-        priority: priorityMap[channel] || 0,
-      });
+      if (this.useBullMQ && this.queueService) {
+        // Use BullMQ queue
+        await this.queueService.addNotificationJob({
+          userId: event.userId,
+          channel: channel as 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP',
+          eventType: event.eventType,
+          variables: notificationVariables,
+          priority: priorityMap[channel] || 0,
+        });
+      } else if (this.queueProcessor) {
+        // Fallback to database queue
+        await this.queueProcessor.queueNotification({
+          userId: event.userId,
+          channel: channel as NotificationChannel,
+          eventType: event.eventType,
+          variables: notificationVariables,
+          priority: priorityMap[channel] || 0,
+        });
+      } else {
+        this.logger.warn(`No queue service available for channel ${channel}`);
+      }
     }
   }
 

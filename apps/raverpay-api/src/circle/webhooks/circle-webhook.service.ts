@@ -65,9 +65,10 @@ export class CircleWebhookService {
    * Process incoming webhook event
    */
   async processWebhook(event: CircleWebhookEvent): Promise<void> {
-    // Log the webhook
-    const webhookLog = await this.prisma.circleWebhookLog.create({
-      data: {
+    // Use upsert to handle duplicate webhook events (Circle retries webhooks)
+    const webhookLog = await this.prisma.circleWebhookLog.upsert({
+      where: { notificationId: event.notificationId },
+      create: {
         subscriptionId: event.subscriptionId,
         notificationId: event.notificationId,
         eventType: event.notificationType,
@@ -78,7 +79,21 @@ export class CircleWebhookService {
         isValid: true,
         processed: false,
       },
+      update: {
+        // Update payload in case Circle sends updated information
+        payload: event as object,
+        retryCount: { increment: 1 },
+        lastRetryAt: new Date(),
+      },
     });
+
+    // Skip processing if already processed
+    if (webhookLog.processed) {
+      this.logger.log(
+        `Webhook already processed, skipping: ${event.notificationType} - ${event.notificationId}`,
+      );
+      return;
+    }
 
     try {
       this.logger.log(

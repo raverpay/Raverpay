@@ -24,7 +24,7 @@ import { LimitsModule } from './limits/limits.module';
 import { AppConfigModule } from './app-config/app-config.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, seconds } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { RedisThrottlerStorage } from './common/storage/redis-throttler.storage';
 import { RateLimitLoggerInterceptor } from './common/interceptors/rate-limit-logger.interceptor';
@@ -33,6 +33,11 @@ import { AccountLockGuard } from './common/guards/account-lock.guard';
 import { IdempotencyService } from './common/services/idempotency.service';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { QueueModule } from './queue/queue.module';
+import { SentryModule } from './common/sentry/sentry.module';
+import { LogtailModule } from './common/logging/logtail.module';
+import { PostHogModule } from './common/analytics/posthog.module';
+import { SentryExceptionFilter } from './common/filters/sentry-exception.filter';
 
 @Module({
   imports: [
@@ -65,6 +70,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     CacheModule, // Add cache module first for global availability
     UtilsModule, // Utils module (BVN encryption) - global
     PrismaModule,
+    // Monitoring & Queue Infrastructure
+    SentryModule, // Error tracking
+    LogtailModule, // Log aggregation
+    PostHogModule, // Product analytics
+    QueueModule, // BullMQ for background jobs
     AuthModule,
     UsersModule,
     DeviceModule, // Device fingerprinting and management
@@ -108,6 +118,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     {
       provide: APP_INTERCEPTOR,
       useClass: IdempotencyInterceptor,
+    },
+    // Global exception filter for Sentry error tracking
+    {
+      provide: APP_FILTER,
+      useClass: SentryExceptionFilter,
     },
   ],
 })
