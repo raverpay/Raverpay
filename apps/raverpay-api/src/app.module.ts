@@ -34,10 +34,10 @@ import { IdempotencyService } from './common/services/idempotency.service';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QueueModule } from './queue/queue.module';
-import { SentryModule } from './common/sentry/sentry.module';
+import { SentryModule } from '@sentry/nestjs/setup';
+import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { LogtailModule } from './common/logging/logtail.module';
 import { PostHogModule } from './common/analytics/posthog.module';
-import { SentryExceptionFilter } from './common/filters/sentry-exception.filter';
 
 @Module({
   imports: [
@@ -71,7 +71,7 @@ import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
     UtilsModule, // Utils module (BVN encryption) - global
     PrismaModule,
     // Monitoring & Queue Infrastructure
-    SentryModule, // Error tracking
+    SentryModule.forRoot(), // Error tracking (official NestJS SDK)
     LogtailModule, // Log aggregation
     PostHogModule, // Product analytics
     QueueModule, // BullMQ for background jobs
@@ -119,10 +119,11 @@ import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
       provide: APP_INTERCEPTOR,
       useClass: IdempotencyInterceptor,
     },
-    // Global exception filter for Sentry error tracking
+    // Global exception filter for Sentry error tracking (official NestJS SDK)
+    // This must be added before any other exception filters
     {
       provide: APP_FILTER,
-      useClass: SentryExceptionFilter,
+      useClass: SentryGlobalFilter,
     },
   ],
 })

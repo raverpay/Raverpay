@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -41,7 +41,11 @@ import { CircleController } from './circle.controller';
  * - Webhook handling for transaction updates
  */
 @Module({
-  imports: [ConfigModule, PrismaModule, NotificationsModule],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    forwardRef(() => NotificationsModule), // Use forwardRef to break circular dependency
+  ],
   controllers: [CircleController, CircleWebhookController],
   providers: [
     // Configuration

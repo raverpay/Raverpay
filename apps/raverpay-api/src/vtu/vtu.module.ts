@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { VTUController } from './vtu.controller';
 import { VTUWebhooksController } from './vtu-webhooks.controller';
@@ -17,7 +17,7 @@ import { LimitsModule } from '../limits/limits.module';
     PrismaModule,
     WalletModule,
     UsersModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule), // Use forwardRef to break circular dependency
     CashbackModule,
     LimitsModule,
   ],

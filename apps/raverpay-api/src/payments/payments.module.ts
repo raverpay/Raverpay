@@ -11,7 +11,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ConfigModule,
     PrismaModule,
     forwardRef(() => TransactionsModule),
-    NotificationsModule,
+    forwardRef(() => NotificationsModule), // Use forwardRef to break circular dependency
   ],
   controllers: [PaymentsController],
   providers: [PaystackService],

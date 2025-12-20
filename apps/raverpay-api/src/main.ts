@@ -1,68 +1,15 @@
+// IMPORTANT: Import instrument.ts at the very top before any other imports
+// This initializes Sentry before everything else
+import './instrument';
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { webcrypto } from 'crypto';
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 // Polyfill for crypto.randomUUID() in Node.js v18
 if (!globalThis.crypto) {
   globalThis.crypto = webcrypto as any;
-}
-
-// Initialize Sentry before creating the NestJS app
-const sentryDsn = process.env.SENTRY_DSN;
-const environment =
-  process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development';
-const release =
-  process.env.SENTRY_RELEASE || process.env.npm_package_version || '1.0.0';
-
-if (sentryDsn) {
-  Sentry.init({
-    dsn: sentryDsn,
-    environment,
-    release,
-    tracesSampleRate: environment === 'production' ? 0.1 : 1.0,
-    profilesSampleRate: environment === 'production' ? 0.1 : 1.0,
-    integrations: [Sentry.httpIntegration(), nodeProfilingIntegration()],
-    beforeSend(event, hint) {
-      // Filter sensitive data
-      if (event.request?.headers) {
-        const sensitiveFields = [
-          'password',
-          'pin',
-          'token',
-          'bvn',
-          'nin',
-          'authorization',
-          'x-api-key',
-        ];
-
-        sensitiveFields.forEach((field) => {
-          if (event.request?.headers?.[field]) {
-            event.request.headers[field] = '[Filtered]';
-          }
-        });
-      }
-
-      if (event.request?.data) {
-        const data = event.request.data as Record<string, any>;
-        const sensitiveFields = ['password', 'pin', 'token', 'bvn', 'nin'];
-        sensitiveFields.forEach((field) => {
-          if (data[field]) {
-            data[field] = '[Filtered]';
-          }
-        });
-      }
-
-      return event;
-    },
-    ignoreErrors: [
-      'ResizeObserver loop limit exceeded',
-      'NetworkError',
-      'Failed to fetch',
-    ],
-  });
 }
 
 async function bootstrap() {

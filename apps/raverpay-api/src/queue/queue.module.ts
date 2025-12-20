@@ -6,10 +6,11 @@ import { WebhookRetryProcessor } from './processors/webhook-retry.processor';
 import { ReconciliationProcessor } from './processors/reconciliation.processor';
 import { QueueService } from './queue.service';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { WebhooksModule } from '../webhooks/webhooks.module';
+import { PrismaModule } from '../prisma/prisma.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { VTUModule } from '../vtu/vtu.module';
 import { CircleModule } from '../circle/circle.module';
+import { WebhooksModule } from '../webhooks/webhooks.module';
 
 /**
  * Queue Module
@@ -20,12 +21,13 @@ import { CircleModule } from '../circle/circle.module';
 @Module({
   imports: [
     ConfigModule,
-    // Import modules with forwardRef to avoid circular dependencies
+    PrismaModule,
+    // Import modules with forwardRef to break circular dependencies
     forwardRef(() => NotificationsModule),
-    forwardRef(() => WebhooksModule),
     forwardRef(() => PaymentsModule),
     forwardRef(() => VTUModule),
     forwardRef(() => CircleModule),
+    forwardRef(() => WebhooksModule),
     // Notification Queue - processes EMAIL, SMS, PUSH, IN_APP notifications
     BullModule.forRootAsync({
       imports: [ConfigModule],
