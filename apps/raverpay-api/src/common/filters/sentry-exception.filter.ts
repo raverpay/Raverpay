@@ -1,24 +1,31 @@
 import {
   ExceptionFilter,
   Catch,
-  ArgumentsHost,
   HttpException,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import type { ArgumentsHost } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { SentryService } from '../sentry/sentry.service';
+import { BetterStackService } from '../logging/better-stack.service';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 
 /**
  * Sentry Exception Filter
  *
  * Captures all exceptions and sends them to Sentry with context.
+ * Also logs all HTTP errors to Better Stack.
  */
 @Injectable()
 @Catch()
 export class SentryExceptionFilter implements ExceptionFilter {
-  constructor(private readonly sentryService: SentryService) {}
+  constructor(
+    private readonly sentryService: SentryService,
+    private readonly betterStackService: BetterStackService,
+  ) {}
 
+  @SentryExceptionCaptured()
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -87,6 +94,32 @@ export class SentryExceptionFilter implements ExceptionFilter {
         status,
       });
     }
+
+    // Log to Better Stack
+    const errorLog = {
+      timestamp: new Date().toISOString(),
+      method: request.method,
+      url: request.url,
+      userId: userId || 'anonymous',
+      ip: request.ip,
+      userAgent: request.get('user-agent'),
+      contentType: request.get('content-type') || 'unknown',
+      requestId: `req_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      statusCode: status,
+      error: {
+        name:
+          exception instanceof Error
+            ? exception.constructor.name
+            : 'UnknownError',
+        message:
+          typeof message === 'string'
+            ? message
+            : (message as any).message || 'Unknown error',
+      },
+      success: false,
+    };
+
+    this.betterStackService.info('HTTP Request Failed', errorLog);
 
     // Send response
     response.status(status).json({

@@ -3,24 +3,29 @@
 ## ✅ Changes Made
 
 ### 1. Installed @logtail/node Package
+
 ```bash
 pnpm add @logtail/node --filter raverpay-api
 ```
 
 ### 2. Updated Logtail Service
+
 **File:** `apps/raverpay-api/src/common/logging/logtail.service.ts`
 
 **Changes:**
+
 - Added Better Stack endpoint configuration: `https://in.logs.betterstack.com`
 - Added `flush()` method to ensure logs are sent immediately
 - Updated initialization message to confirm Better Stack endpoint usage
 
 **Before:**
+
 ```typescript
 this.logtail = new Logtail(sourceToken);
 ```
 
 **After:**
+
 ```typescript
 this.logtail = new Logtail(sourceToken, {
   endpoint: 'https://in.logs.betterstack.com',
@@ -32,11 +37,13 @@ this.logtail = new Logtail(sourceToken, {
 ## 🚀 Next Steps
 
 ### Step 1: Restart Your Server
+
 You need to restart your NestJS server for the changes to take effect.
 
 **Stop the server** (Ctrl+C if running in terminal)
 
 **Start the server again:**
+
 ```bash
 cd apps/raverpay-api
 pnpm run start:dev
@@ -44,17 +51,21 @@ pnpm run start:dev
 ```
 
 ### Step 2: Check Server Logs
+
 Look for this message in your server startup logs:
+
 ```
 ✅ Logtail initialized with Better Stack endpoint
 ```
 
 If you see:
+
 - ✅ `✅ Logtail initialized with Better Stack endpoint` - **SUCCESS!**
 - ❌ `LOGTAIL_SOURCE_TOKEN not configured` - Check your `.env` file
 - ❌ `Failed to initialize Logtail` - Check the error message
 
 ### Step 3: Make Test API Requests
+
 Once the server is running, make some API requests to generate logs:
 
 ```bash
@@ -76,9 +87,11 @@ curl -X GET https://d00a3dcebc73.ngrok-free.app/api/invalid-endpoint
 ```
 
 ### Step 4: Check Better Stack Dashboard
+
 **URL:** https://telemetry.betterstack.com/team/t486268/tail?s=1641618
 
 **What to look for:**
+
 - Logs should appear within 5-10 seconds
 - Look for logs with message: `"HTTP Request Completed"`
 - Each log should contain:
@@ -97,6 +110,7 @@ curl -X GET https://d00a3dcebc73.ngrok-free.app/api/invalid-endpoint
 
 **1. Check Environment Variable**
 Ensure `LOGTAIL_SOURCE_TOKEN=8q3WwqFjeC1ghtTFJcgjhefz` is in your `.env` file:
+
 ```bash
 grep LOGTAIL_SOURCE_TOKEN apps/raverpay-api/.env
 ```
@@ -106,6 +120,7 @@ Look for any Logtail-related errors in your server console.
 
 **3. Test Direct Connection**
 Run this command to test if Better Stack is reachable:
+
 ```bash
 curl -X POST \
   -H 'Content-Type: application/json' \
@@ -119,6 +134,7 @@ Ensure your server can reach `https://in.logs.betterstack.com`
 
 **5. Enable Debug Logging**
 Temporarily change the log level in `logtail.service.ts`:
+
 ```typescript
 this.logger.debug('Failed to send log to Logtail', error);
 // Change to:
@@ -132,6 +148,7 @@ this.logger.error('Failed to send log to Logtail', error);
 After restarting and making API requests, you should see:
 
 ### In Better Stack Dashboard:
+
 ```json
 {
   "message": "HTTP Request Completed",
@@ -148,6 +165,7 @@ After restarting and making API requests, you should see:
 ```
 
 ### For Errors (404):
+
 ```json
 {
   "message": "HTTP Request Failed",
@@ -181,15 +199,18 @@ After restarting and making API requests, you should see:
 ## 🎯 Summary
 
 **What was the problem?**
+
 - The `@logtail/node` package was not installed
 - The Logtail service was using the default endpoint instead of Better Stack's endpoint
 
 **What did we fix?**
+
 - Installed `@logtail/node` package using pnpm
 - Updated Logtail service to use Better Stack endpoint: `https://in.logs.betterstack.com`
 - Added flush method for immediate log delivery
 
 **What's next?**
+
 - Restart your server
 - Make some API requests
 - Check Better Stack dashboard for logs

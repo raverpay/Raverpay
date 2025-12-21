@@ -15,4 +15,3 @@ import { LogtailModule } from '../logging/logtail.module';
   exports: [PrismaPulseService],
 })
 export class PrismaPulseModule {}
-

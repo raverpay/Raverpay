@@ -37,7 +37,8 @@ async function bootstrap() {
       message.includes('connect ETIMEDOUT') ||
       message.includes('connect EAI_AGAIN') ||
       (message.includes('Redis') && message.includes('connection')) ||
-      (message.includes('ioredis') && (message.includes('ENOTFOUND') || message.includes('ECONNREFUSED')))
+      (message.includes('ioredis') &&
+        (message.includes('ENOTFOUND') || message.includes('ECONNREFUSED')))
     ) {
       return true;
     }

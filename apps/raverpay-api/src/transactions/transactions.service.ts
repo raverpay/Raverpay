@@ -1834,7 +1834,10 @@ export class TransactionsService {
           recipientTag: recipientTag,
           kycTier: sender.kycTier,
           status: 'FAILED',
-          error: lastError instanceof Error ? lastError.message : 'Transaction failed after retries',
+          error:
+            lastError instanceof Error
+              ? lastError.message
+              : 'Transaction failed after retries',
         },
       });
       throw lastError || new Error('Transaction failed after retries');

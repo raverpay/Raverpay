@@ -79,7 +79,9 @@ export class RequestLoggerInterceptor implements NestInterceptor {
           );
 
           // Send structured log to Better Stack
-          this.logger.debug(`About to send log to Better Stack for ${method} ${originalUrl}`);
+          this.logger.debug(
+            `About to send log to Better Stack for ${method} ${originalUrl}`,
+          );
           this.betterStackService.info('HTTP Request Completed', responseLog);
           this.logger.debug(`Called betterStackService.info()`);
         },

@@ -4,6 +4,7 @@ import { PostHogService } from './posthog.service';
 import { PostHog } from 'posthog-node';
 
 describe('PostHogService', () => {
+  /* eslint-disable @typescript-eslint/unbound-method */
   let service: PostHogService;
   let configService: ConfigService;
 
@@ -38,9 +39,7 @@ describe('PostHogService', () => {
         capture: jest.fn(),
       } as unknown as PostHog;
 
-      // @ts-expect-error - accessing private property for testing
       service['posthog'] = mockPostHog;
-      // @ts-expect-error - accessing private property for testing
       service['enabled'] = true;
 
       service.capture({
@@ -64,9 +63,7 @@ describe('PostHogService', () => {
         capture: jest.fn(),
       } as unknown as PostHog;
 
-      // @ts-expect-error - accessing private property for testing
       service['posthog'] = mockPostHog;
-      // @ts-expect-error - accessing private property for testing
       service['enabled'] = false;
 
       service.capture({
@@ -84,9 +81,7 @@ describe('PostHogService', () => {
         identify: jest.fn(),
       } as unknown as PostHog;
 
-      // @ts-expect-error - accessing private property for testing
       service['posthog'] = mockPostHog;
-      // @ts-expect-error - accessing private property for testing
       service['enabled'] = true;
 
       service.identify('user-123', { email: 'test@example.com' });
@@ -98,4 +93,3 @@ describe('PostHogService', () => {
     });
   });
 });
-

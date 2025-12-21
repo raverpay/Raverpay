@@ -34,22 +34,30 @@ export class LogtailService implements OnModuleInit {
         endpoint: 'https://s1641618.eu-nbg-2.betterstackdata.com',
       });
       this.enabled = true;
-      this.logger.log('✅ Logtail initialized with Better Stack endpoint (s1641618.eu-nbg-2.betterstackdata.com)');
-      
+      this.logger.log(
+        '✅ Logtail initialized with Better Stack endpoint (s1641618.eu-nbg-2.betterstackdata.com)',
+      );
+
       // Send a test log on initialization to verify connection
-      this.logtail.info('Logtail service initialized', {
-        timestamp: new Date().toISOString(),
-        environment: this.configService.get('NODE_ENV') || 'development',
-      }).then(async () => {
-        this.logger.log('📤 Test log queued');
-        // Flush immediately to send the log
-        if (this.logtail) {
-          await this.logtail.flush();
-          this.logger.log('✅ Test log flushed to Better Stack');
-        }
-      }).catch((err) => {
-        this.logger.error('❌ Failed to send test log to Better Stack:', err.message);
-      });
+      this.logtail
+        .info('Logtail service initialized', {
+          timestamp: new Date().toISOString(),
+          environment: this.configService.get('NODE_ENV') || 'development',
+        })
+        .then(async () => {
+          this.logger.log('📤 Test log queued');
+          // Flush immediately to send the log
+          if (this.logtail) {
+            await this.logtail.flush();
+            this.logger.log('✅ Test log flushed to Better Stack');
+          }
+        })
+        .catch((err) => {
+          this.logger.error(
+            '❌ Failed to send test log to Better Stack:',
+            err.message,
+          );
+        });
     } catch (error) {
       this.logger.error('Failed to initialize Logtail', error);
     }

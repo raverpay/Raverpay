@@ -3,13 +3,17 @@
 
 import * as Sentry from '@sentry/nestjs';
 
-const sentryDsn = process.env.SENTRY_DSN;
-const environment =
-  process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development';
-const release =
-  process.env.SENTRY_RELEASE || process.env.npm_package_version || '1.0.0';
+// IMPORTANT: instrument.ts runs BEFORE .env is loaded, so we hardcode the DSN
+const sentryDsn =
+  'https://9aae50bc00dcdabdc343a4f50552b156@o4510566567182336.ingest.de.sentry.io/4510572878037072';
+const environment = process.env.NODE_ENV || 'production';
+const release = '1.0.0';
 
-if (sentryDsn) {
+console.log('🔧 Initializing Sentry...');
+console.log('DSN:', sentryDsn ? 'Found' : 'Missing');
+console.log('Environment:', environment);
+
+try {
   Sentry.init({
     dsn: sentryDsn,
     environment,
@@ -63,5 +67,8 @@ if (sentryDsn) {
       'Failed to fetch',
     ],
   });
-}
 
+  console.log('✅ Sentry initialized successfully!');
+} catch (error) {
+  console.error('❌ Failed to initialize Sentry:', error);
+}

@@ -18,11 +18,13 @@ The `QueueModule` is conditionally imported in `app.module.ts`:
 ## Enabling BullMQ
 
 1. **Set the environment variable:**
+
    ```env
    USE_BULLMQ_QUEUE=true
    ```
 
 2. **Ensure Redis is configured:**
+
    ```env
    REDIS_URL=redis://default:xxxxx@xxxxx.upstash.io:xxxxx
    # OR
@@ -39,9 +41,11 @@ The `QueueModule` is conditionally imported in `app.module.ts`:
 ## Disabling BullMQ
 
 1. **Set the environment variable:**
+
    ```env
    USE_BULLMQ_QUEUE=false
    ```
+
    Or simply remove/unset the variable.
 
 2. **Restart the application**
@@ -132,4 +136,3 @@ UPSTASH_REDIS_URL=redis://...            # Upstash Redis URL
 - No code changes needed to toggle between systems
 - Both systems can coexist during migration period
 - Database queue remains as fallback for reliability
-

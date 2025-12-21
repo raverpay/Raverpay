@@ -3,10 +3,11 @@ import { LogtailService } from '../common/logging/logtail.service';
 
 /**
  * Diagnostic Controller for Testing Logtail
- * 
+ *
  * This controller provides endpoints to test if Logtail is working correctly.
  * Access: GET /api/diagnostic/logtail-test
  */
+
 @Controller('diagnostic')
 export class DiagnosticController {
   constructor(private readonly logtailService: LogtailService) {}
@@ -14,10 +15,10 @@ export class DiagnosticController {
   @Get('logtail-test')
   async testLogtail() {
     const timestamp = new Date().toISOString();
-    
+
     // Check if Logtail is enabled
     const isEnabled = this.logtailService.isEnabled();
-    
+
     if (!isEnabled) {
       return {
         success: false,
@@ -67,5 +68,35 @@ export class DiagnosticController {
         ? 'Logtail is enabled and ready'
         : 'Logtail is NOT enabled - check LOGTAIL_SOURCE_TOKEN',
     };
+  }
+
+  @Get('sentry-test')
+  testSentry() {
+    // Throw an error to test Sentry capture
+    throw new Error(
+      'This is a test error for Sentry - triggered from diagnostic endpoint',
+    );
+  }
+
+  @Get('debug-sentry')
+  getError() {
+    throw new Error('My first Sentry error!');
+  }
+
+  @Get('test-database-error')
+  testDatabaseError() {
+    throw new Error('Database connection failed - simulated error');
+  }
+
+  @Get('test-validation-error')
+  testValidationError() {
+    throw new Error('Invalid user input - email format is incorrect');
+  }
+
+  @Get('test-null-reference')
+  testNullReference() {
+    const user: any = null;
+    // This will throw a TypeError
+    return user.name;
   }
 }

@@ -1,6 +1,6 @@
 ---
 name: Fintech Transaction Correctness Audit & Implementation Plan
-overview: "Comprehensive plan documenting the Fintech Transaction Correctness Audit findings, implementation status, and remaining work across 10 critical areas: Transaction Lifecycle, Webhooks, Status Enquiry, Idempotency, Retries, Reversals, Money Data Types, Reconciliation, Audit Logging, and Asynchronous Consistency."
+overview: 'Comprehensive plan documenting the Fintech Transaction Correctness Audit findings, implementation status, and remaining work across 10 critical areas: Transaction Lifecycle, Webhooks, Status Enquiry, Idempotency, Retries, Reversals, Money Data Types, Reconciliation, Audit Logging, and Asynchronous Consistency.'
 todos:
   - id: add-initiated-timeout-status
     content: Add INITIATED and TIMEOUT to TransactionStatus enum in schema.prisma and create migration

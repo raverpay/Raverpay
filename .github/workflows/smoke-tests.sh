@@ -5,8 +5,8 @@
 set -e  # Exit on error
 
 API_URL="${API_URL:-https://api.raverpay.com}"
-TEST_EMAIL="${SMOKE_TEST_EMAIL}"
-TEST_PASSWORD="${SMOKE_TEST_PASSWORD}"
+TEST_EMAIL="${SMOKE_TEST_EMAIL:-codeswithjoseph@gmail.com}"
+TEST_PASSWORD="${SMOKE_TEST_PASSWORD:-6thbornR%}"
 
 # Colors for output
 RED='\033[0;31m'

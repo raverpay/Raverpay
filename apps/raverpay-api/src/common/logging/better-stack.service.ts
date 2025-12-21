@@ -4,7 +4,7 @@ import axios from 'axios';
 
 /**
  * Better Stack Direct HTTP Logger
- * 
+ *
  * Sends logs directly to Better Stack via HTTP POST
  * instead of using the Logtail SDK (which doesn't work with custom endpoints)
  */
@@ -18,8 +18,9 @@ export class BetterStackService implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
-    this.sourceToken = this.configService.get<string>('LOGTAIL_SOURCE_TOKEN') ?? null;
-    
+    this.sourceToken =
+      this.configService.get<string>('LOGTAIL_SOURCE_TOKEN') ?? null;
+
     if (!this.sourceToken) {
       this.logger.warn(
         'LOGTAIL_SOURCE_TOKEN not configured - Better Stack logging disabled',
@@ -30,9 +31,9 @@ export class BetterStackService implements OnModuleInit {
     // Better Stack endpoint for source 1641618
     this.endpoint = 'https://s1641618.eu-nbg-2.betterstackdata.com';
     this.enabled = true;
-    
+
     this.logger.log('✅ Better Stack HTTP logger initialized');
-    
+
     // Send test log
     this.sendTestLog();
   }
@@ -73,23 +74,27 @@ export class BetterStackService implements OnModuleInit {
 
       this.logger.debug(`Sending log to Better Stack: ${message}`);
       this.logger.debug(`Payload: ${JSON.stringify(payload)}`);
-      this.logger.debug(`Token (first 10 chars): ${this.sourceToken?.substring(0, 10)}...`);
-      
+      this.logger.debug(
+        `Token (first 10 chars): ${this.sourceToken?.substring(0, 10)}...`,
+      );
+
       const response = await axios.post(this.endpoint, payload, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.sourceToken}`,
+          Authorization: `Bearer ${this.sourceToken}`,
         },
         timeout: 5000,
       });
-      
+
       this.logger.debug(`Better Stack response: ${response.status}`);
     } catch (error) {
       // Log the error so we can see what's wrong
       this.logger.error(`Failed to send log to Better Stack: ${error.message}`);
       if (error.response) {
         this.logger.error(`Response status: ${error.response.status}`);
-        this.logger.error(`Response data: ${JSON.stringify(error.response.data)}`);
+        this.logger.error(
+          `Response data: ${JSON.stringify(error.response.data)}`,
+        );
       }
     }
   }

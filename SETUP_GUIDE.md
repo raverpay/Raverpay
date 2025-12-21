@@ -15,6 +15,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
 **Why:** Track errors, performance issues, and exceptions in production.
 
 **Steps:**
+
 1. Go to https://sentry.io/signup/
 2. Sign up with email or GitHub
 3. Create a new organization (e.g., "RaverPay")
@@ -32,6 +33,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
    - Connect your GitHub repository
 
 **What you'll get:**
+
 - `SENTRY_DSN`: Your project DSN (starts with `https://`)
 - Free tier: 5,000 errors/month
 
@@ -44,6 +46,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
 **Why:** Centralized log aggregation, search, and alerting.
 
 **Steps:**
+
 1. Go to https://logtail.com/signup
 2. Sign up with email or GitHub
 3. After login, you'll be in your dashboard
@@ -54,6 +57,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
    - This is your `LOGTAIL_SOURCE_TOKEN`
 
 **What you'll get:**
+
 - `LOGTAIL_SOURCE_TOKEN`: Your source token
 - Free tier: 1GB logs/month, 3-day retention
 
@@ -66,6 +70,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
 **Why:** Track user events, product analytics, and feature flags.
 
 **Steps:**
+
 1. Go to https://posthog.com/signup
 2. Sign up with email or GitHub
 3. Create a new project:
@@ -79,6 +84,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
    - Self-hosted: Your custom domain
 
 **What you'll get:**
+
 - `POSTHOG_API_KEY`: Your project API key (starts with `phc_`)
 - `POSTHOG_HOST`: `https://app.posthog.com` (or custom if self-hosted)
 - Free tier: 1M events/month
@@ -92,6 +98,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
 **Why:** Monitor API uptime and get alerts when service is down.
 
 **Steps:**
+
 1. Go to https://uptimerobot.com/signup/
 2. Sign up with email
 3. Verify your email
@@ -109,6 +116,7 @@ This guide walks you through creating accounts and obtaining API keys for all re
    - Copy the API key (optional, for `UPTIME_ROBOT_API_KEY`)
 
 **What you'll get:**
+
 - Monitor configured (no API key needed for basic monitoring)
 - `UPTIME_ROBOT_API_KEY`: Optional, for programmatic access
 - Free tier: 50 monitors, 5-minute intervals
@@ -122,14 +130,17 @@ This guide walks you through creating accounts and obtaining API keys for all re
 **Why:** BullMQ requires Redis for queue storage.
 
 **Current Setup:**
+
 - You're already using Upstash Redis
 - Check your Railway dashboard or `.env` for `REDIS_URL`
 
 **What you need:**
+
 - `REDIS_URL`: Your existing Redis connection string
 - Format: `redis://default:xxxxx@xxxxx.upstash.io:xxxxx`
 
 **If you need a new Redis instance:**
+
 1. Go to https://upstash.com/
 2. Sign up/login
 3. Create a new Redis database
@@ -184,8 +195,8 @@ USE_BULLMQ_QUEUE=false
 ## Support
 
 If you encounter issues:
+
 - **Sentry:** https://docs.sentry.io/platforms/javascript/
 - **Logtail:** https://logtail.com/docs
 - **PostHog:** https://posthog.com/docs
 - **UptimeRobot:** https://uptimerobot.com/api/
-

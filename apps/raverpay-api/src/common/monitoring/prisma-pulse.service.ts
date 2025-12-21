@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LogtailService } from '../logging/logtail.service';
@@ -31,7 +36,9 @@ export class PrismaPulseService implements OnModuleInit, OnModuleDestroy {
       this.configService.get<string>('ENABLE_PRISMA_PULSE') === 'true';
 
     if (!enablePulse) {
-      this.logger.log('Prisma Pulse monitoring disabled (set ENABLE_PRISMA_PULSE=true to enable)');
+      this.logger.log(
+        'Prisma Pulse monitoring disabled (set ENABLE_PRISMA_PULSE=true to enable)',
+      );
       return;
     }
 
@@ -69,7 +76,7 @@ export class PrismaPulseService implements OnModuleInit, OnModuleDestroy {
   private async subscribeToChanges() {
     // Check if $subscribe is available (only with Prisma Accelerate/Pulse)
     const prismaClient = this.prisma as any;
-    
+
     if (!prismaClient.$subscribe) {
       this.logger.warn(
         'Prisma $subscribe not available. Ensure you are using Prisma Accelerate or Pulse with the Accelerate connection string.',
@@ -80,10 +87,12 @@ export class PrismaPulseService implements OnModuleInit, OnModuleDestroy {
     // Subscribe to transaction changes
     try {
       // Type assertion needed because $subscribe is not in standard PrismaClient types
-      const transactionSubscription = await (prismaClient.$subscribe as any).transaction({
-        create: {},
-        update: {},
-      });
+      const transactionSubscription = await prismaClient.$subscribe.transaction(
+        {
+          create: {},
+          update: {},
+        },
+      );
 
       // Process transaction events asynchronously
       this.processTransactionEvents(transactionSubscription).catch((error) => {
@@ -98,7 +107,7 @@ export class PrismaPulseService implements OnModuleInit, OnModuleDestroy {
     // Subscribe to wallet balance changes
     try {
       // Type assertion needed because $subscribe is not in standard PrismaClient types
-      const walletSubscription = await (prismaClient.$subscribe as any).wallet({
+      const walletSubscription = await prismaClient.$subscribe.wallet({
         update: {
           fields: ['balance', 'ledgerBalance'],
         },
@@ -191,7 +200,8 @@ export class PrismaPulseService implements OnModuleInit, OnModuleDestroy {
 
         // Log significant balance changes
         if (wallet.balance && previousBalance) {
-          const balanceChange = Number(wallet.balance) - Number(previousBalance);
+          const balanceChange =
+            Number(wallet.balance) - Number(previousBalance);
 
           // Only log significant changes (> ₦10,000)
           if (Math.abs(balanceChange) > 10000) {
@@ -211,4 +221,3 @@ export class PrismaPulseService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
-

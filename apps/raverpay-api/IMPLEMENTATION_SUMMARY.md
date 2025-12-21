@@ -5,6 +5,7 @@
 ### ✅ Phase 1: BullMQ Setup & Migration
 
 **Files Created:**
+
 - `src/queue/queue.module.ts` - BullMQ module configuration
 - `src/queue/queue.service.ts` - Queue service for adding jobs
 - `src/queue/processors/notification.processor.ts` - Notification job processor
@@ -12,6 +13,7 @@
 - `src/queue/processors/reconciliation.processor.ts` - Transaction reconciliation processor
 
 **Key Features:**
+
 - Migrated from database-backed queue to Redis-based BullMQ
 - Eliminates slow database queries (1.2s+ → <10ms)
 - Automatic retry with exponential backoff
@@ -20,6 +22,7 @@
 - Reconciliation queue for stuck transactions
 
 **Migration Strategy:**
+
 - Set `USE_BULLMQ_QUEUE=true` to enable BullMQ
 - Old database queue still works as fallback
 - Gradual migration supported
@@ -27,11 +30,13 @@
 ### ✅ Phase 2: Sentry Integration
 
 **Files Created:**
+
 - `src/common/sentry/sentry.service.ts` - Sentry service wrapper
 - `src/common/sentry/sentry.module.ts` - Sentry module
 - `src/common/filters/sentry-exception.filter.ts` - Global exception filter
 
 **Key Features:**
+
 - Automatic error capture with context
 - Performance monitoring (10% sampling in production)
 - User context tracking
@@ -41,11 +46,13 @@
 ### ✅ Phase 3: Logtail Integration
 
 **Files Created:**
+
 - `src/common/logging/logtail.service.ts` - Logtail service
 - `src/common/logging/custom-logger.service.ts` - Custom NestJS logger
 - `src/common/logging/logtail.module.ts` - Logtail module
 
 **Key Features:**
+
 - Centralized log aggregation
 - Structured logging with context
 - Console output maintained for local development
@@ -54,10 +61,12 @@
 ### ✅ Phase 4: PostHog Integration
 
 **Files Created:**
+
 - `src/common/analytics/posthog.service.ts` - PostHog service
 - `src/common/analytics/posthog.module.ts` - PostHog module
 
 **Key Features:**
+
 - Event tracking (ready to use in services)
 - User identification
 - Feature flags support
@@ -107,22 +116,25 @@ Follow the setup guide in the root directory to create accounts and get API keys
 ### 3. Test the Implementation
 
 1. **Test BullMQ:**
+
    ```bash
    # Start the app
    pnpm start:dev
-   
+
    # Trigger a notification (e.g., user registration)
    # Check Redis for queued jobs
    # Verify jobs are processed
    ```
 
 2. **Test Sentry:**
+
    ```bash
    # Trigger an error (e.g., invalid endpoint)
    # Check Sentry dashboard for captured error
    ```
 
 3. **Test Logtail:**
+
    ```bash
    # Check application logs
    # Verify logs appear in Logtail dashboard
@@ -143,11 +155,13 @@ Follow the setup guide in the root directory to create accounts and get API keys
 ### 5. Add Event Tracking
 
 Add PostHog event tracking to key services:
+
 - `src/transactions/transactions.service.ts` - Track transaction events
 - `src/vtu/vtu.service.ts` - Track VTU purchase events
 - `src/payments/payments.controller.ts` - Track payment events
 
 Example:
+
 ```typescript
 // In transactions.service.ts
 constructor(
@@ -157,7 +171,7 @@ constructor(
 
 async sendToUser(...) {
   // ... transaction logic
-  
+
   // Track event
   this.posthog.capture({
     distinctId: senderId,
@@ -174,12 +188,14 @@ async sendToUser(...) {
 ## Performance Improvements
 
 ### Before (Database Queue):
+
 - Query time: 1.2-1.4 seconds per query
 - 4 channels × 6 queries/minute = 24 queries/minute
 - Total database time: ~30 seconds/minute
 - Slow query warnings in logs
 
 ### After (BullMQ):
+
 - Job processing: <10ms per job
 - No database queries for queue operations
 - 99%+ reduction in queue-related database load
@@ -188,6 +204,7 @@ async sendToUser(...) {
 ## Monitoring Setup
 
 ### Sentry Alerts
+
 1. Go to Sentry → Alerts
 2. Create alert for:
    - Errors > 10 in 5 minutes
@@ -195,6 +212,7 @@ async sendToUser(...) {
    - Performance degradation
 
 ### Logtail Alerts
+
 1. Go to Logtail → Alerts
 2. Create alert for:
    - Error rate > 5%
@@ -202,6 +220,7 @@ async sendToUser(...) {
    - Queue backlog
 
 ### UptimeRobot
+
 1. Configure monitor for: `https://api.raverpay.com/api/health`
 2. Set interval: 5 minutes (free tier)
 3. Add alert contacts
@@ -211,16 +230,19 @@ async sendToUser(...) {
 If issues occur:
 
 1. **Disable BullMQ:**
+
    ```env
    USE_BULLMQ_QUEUE=false
    ```
 
 2. **Disable Sentry:**
+
    ```env
    SENTRY_DSN=
    ```
 
 3. **Disable Logtail:**
+
    ```env
    LOGTAIL_SOURCE_TOKEN=
    ```
@@ -238,4 +260,3 @@ All services are designed to fail gracefully - the app will continue working eve
 - **Sentry Docs:** https://docs.sentry.io/platforms/javascript/
 - **Logtail Docs:** https://logtail.com/docs
 - **PostHog Docs:** https://posthog.com/docs
-

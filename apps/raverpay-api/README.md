@@ -421,6 +421,7 @@ All API responses follow a consistent structure with appropriate HTTP status cod
 The API includes comprehensive monitoring and observability infrastructure:
 
 ### Error Tracking (Sentry)
+
 - Automatic error capture with full context
 - Performance monitoring (10% sampling in production)
 - User context tracking
@@ -428,6 +429,7 @@ The API includes comprehensive monitoring and observability infrastructure:
 - Release tracking
 
 **Environment Variables:**
+
 ```env
 SENTRY_DSN=https://xxxxx@xxxxx.ingest.sentry.io/xxxxx
 SENTRY_ENVIRONMENT=production
@@ -436,35 +438,41 @@ SENTRY_CAPTURE_ALL=false  # Set to true to capture all errors (not just 5xx)
 ```
 
 ### Log Aggregation (Logtail)
+
 - Centralized log aggregation
 - Structured logging with context
 - Console output maintained for local development
 - Automatic log forwarding
 
 **Environment Variables:**
+
 ```env
 LOGTAIL_SOURCE_TOKEN=xxxxx_xxxxx_xxxxx
 ```
 
 ### Product Analytics (PostHog)
+
 - Event tracking for transactions, VTU purchases, and payments
 - User identification and properties
 - Feature flags support
 - Automatic event batching
 
 **Environment Variables:**
+
 ```env
 POSTHOG_API_KEY=phc_xxxxx
 POSTHOG_HOST=https://app.posthog.com
 ```
 
 ### Background Job Queue (BullMQ)
+
 - Redis-based job queue for notifications, webhooks, and reconciliation
 - Automatic retry with exponential backoff
 - Rate limiting per channel
 - Replaces database-backed queue for better performance
 
 **Environment Variables:**
+
 ```env
 # Use existing Redis connection
 REDIS_URL=redis://default:xxxxx@xxxxx.upstash.io:xxxxx
@@ -476,17 +484,20 @@ USE_BULLMQ_QUEUE=false
 ```
 
 **To Enable/Disable BullMQ:**
+
 1. Set `USE_BULLMQ_QUEUE=true` in your environment variables to enable
 2. Set `USE_BULLMQ_QUEUE=false` or leave unset to disable
 3. The QueueModule will be conditionally loaded based on this setting
 4. When disabled, the app falls back to the database-backed notification queue
 
 ### Database Monitoring (Prisma Pulse)
+
 - Real-time database change monitoring
 - Transaction and wallet balance change tracking
 - Requires Prisma Accelerate or Pulse subscription
 
 **Environment Variables:**
+
 ```env
 # Enable Prisma Pulse (requires Prisma Accelerate/Pulse subscription)
 ENABLE_PRISMA_PULSE=false

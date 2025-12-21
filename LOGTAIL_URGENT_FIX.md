@@ -3,10 +3,12 @@
 ## ❌ What Was Wrong
 
 The endpoint I initially used was **INCORRECT**:
+
 - ❌ Wrong: `https://in.logs.betterstack.com` (returned 401 Unauthorized)
 - ✅ Correct: `https://s1641618.eu-nbg-2.betterstackdata.com` (returns 202 Accepted)
 
 Better Stack uses **source-specific endpoints** with the format:
+
 ```
 https://s{SOURCE_ID}.{REGION}.betterstackdata.com
 ```
@@ -33,12 +35,14 @@ this.logtail = new Logtail(sourceToken, {
 1. **Stop your server** (Ctrl+C in the terminal where it's running)
 
 2. **Start it again:**
+
    ```bash
    cd apps/raverpay-api
    pnpm run start:dev
    ```
 
 3. **Look for this message:**
+
    ```
    ✅ Logtail initialized with Better Stack endpoint (s1641618)
    ```

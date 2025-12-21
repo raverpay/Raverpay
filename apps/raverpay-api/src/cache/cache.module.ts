@@ -146,7 +146,9 @@ import { setRedisClient } from './redis-client';
           const isDevelopment =
             configService.get<string>('NODE_ENV') !== 'production';
           if (isDevelopment) {
-            console.warn('⚠️  Redis cache unavailable. Using in-memory fallback.');
+            console.warn(
+              '⚠️  Redis cache unavailable. Using in-memory fallback.',
+            );
           } else {
             console.error('❌ Failed to create Redis store:', error);
             console.warn('⚠️  Falling back to in-memory cache');

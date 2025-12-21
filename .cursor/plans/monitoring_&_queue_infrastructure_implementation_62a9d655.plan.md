@@ -290,8 +290,6 @@ POSTHOG_HOST=https://app.posthog.com
 UPTIME_ROBOT_API_KEY=... (optional)
 ```
 
-
-
 #### 6.2 Update Configuration Service
 
 - Add new config values to `apps/raverpay-api/src/common/config/`
@@ -370,8 +368,6 @@ apps/raverpay-api/src/
 │   └── monitoring/
 │       └── prisma-pulse.service.ts
 ```
-
-
 
 ## Migration Strategy
 

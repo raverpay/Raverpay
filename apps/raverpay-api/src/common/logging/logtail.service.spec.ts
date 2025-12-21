@@ -4,6 +4,7 @@ import { LogtailService } from './logtail.service';
 import { Logtail } from '@logtail/node';
 
 describe('LogtailService', () => {
+  /* eslint-disable @typescript-eslint/unbound-method */
   let service: LogtailService;
   let configService: ConfigService;
 
@@ -37,9 +38,7 @@ describe('LogtailService', () => {
         info: jest.fn().mockResolvedValue(undefined),
       } as unknown as Logtail;
 
-      // @ts-expect-error - accessing private property for testing
       service['logtail'] = mockLogtail;
-      // @ts-expect-error - accessing private property for testing
       service['enabled'] = true;
 
       await service.info('Test message', { context: 'Test' });
@@ -54,9 +53,7 @@ describe('LogtailService', () => {
         info: jest.fn(),
       } as unknown as Logtail;
 
-      // @ts-expect-error - accessing private property for testing
       service['logtail'] = mockLogtail;
-      // @ts-expect-error - accessing private property for testing
       service['enabled'] = false;
 
       await service.info('Test message');
@@ -71,9 +68,7 @@ describe('LogtailService', () => {
         error: jest.fn().mockResolvedValue(undefined),
       } as unknown as Logtail;
 
-      // @ts-expect-error - accessing private property for testing
       service['logtail'] = mockLogtail;
-      // @ts-expect-error - accessing private property for testing
       service['enabled'] = true;
 
       await service.error('Error message', { context: 'Test' });
@@ -84,4 +79,3 @@ describe('LogtailService', () => {
     });
   });
 });
-
