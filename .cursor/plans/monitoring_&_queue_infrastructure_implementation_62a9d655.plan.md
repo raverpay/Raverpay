@@ -112,37 +112,33 @@ This plan implements production-grade monitoring, logging, analytics, and queue 
 #### 1.3 Create Queue Processors
 
 - **Notification Queue**: `apps/raverpay-api/src/queue/processors/notification.processor.ts`
-  - Migrate from `NotificationQueueProcessor` cron-based system
-  - Process EMAIL, SMS, PUSH, IN_APP notifications
-  - Implement rate limiting per channel
-  - Handle retries with exponential backoff
-
+- Migrate from `NotificationQueueProcessor` cron-based system
+- Process EMAIL, SMS, PUSH, IN_APP notifications
+- Implement rate limiting per channel
+- Handle retries with exponential backoff
 - **Webhook Retry Queue**: `apps/raverpay-api/src/queue/processors/webhook-retry.processor.ts`
-  - Retry failed webhook processing (Paystack, Circle, VTPass)
-  - Exponential backoff strategy
-
+- Retry failed webhook processing (Paystack, Circle, VTPass)
+- Exponential backoff strategy
 - **Reconciliation Queue**: `apps/raverpay-api/src/queue/processors/reconciliation.processor.ts`
-  - Check stuck transactions (PENDING/PROCESSING > 30 minutes)
-  - Query processor APIs for actual status
-  - Update transaction status based on processor response
+- Check stuck transactions (PENDING/PROCESSING > 30 minutes)
+- Query processor APIs for actual status
+- Update transaction status based on processor response
 
 #### 1.4 Update Notification System
 
 - Modify `apps/raverpay-api/src/notifications/notification-dispatcher.service.ts`
-  - Replace database queue writes with BullMQ job creation
-  - Remove dependency on `NotificationQueueProcessor`
-
+- Replace database queue writes with BullMQ job creation
+- Remove dependency on `NotificationQueueProcessor`
 - Update `apps/raverpay-api/src/notifications/notifications.module.ts`
-  - Import `QueueModule` instead of `NotificationQueueProcessor`
-  - Remove cron-based processor
+- Import `QueueModule` instead of `NotificationQueueProcessor`
+- Remove cron-based processor
 
 #### 1.5 Update Webhook Handlers
 
 - Modify `apps/raverpay-api/src/webhooks/paystack-webhook.service.ts`
-  - Add webhook retry queue on processing failure
-
+- Add webhook retry queue on processing failure
 - Modify `apps/raverpay-api/src/circle/webhooks/circle-webhook.service.ts`
-  - Add webhook retry queue on processing failure
+- Add webhook retry queue on processing failure
 
 #### 1.6 Database Migration
 
@@ -172,10 +168,10 @@ This plan implements production-grade monitoring, logging, analytics, and queue 
 #### 2.4 Add Performance Monitoring
 
 - Instrument critical endpoints:
-  - Transaction endpoints (`apps/raverpay-api/src/transactions/`)
-  - Payment endpoints (`apps/raverpay-api/src/payments/`)
-  - VTU endpoints (`apps/raverpay-api/src/vtu/`)
-  - Webhook endpoints (`apps/raverpay-api/src/webhooks/`)
+- Transaction endpoints (`apps/raverpay-api/src/transactions/`)
+- Payment endpoints (`apps/raverpay-api/src/payments/`)
+- VTU endpoints (`apps/raverpay-api/src/vtu/`)
+- Webhook endpoints (`apps/raverpay-api/src/webhooks/`)
 
 #### 2.5 Configure Release Tracking
 
@@ -211,10 +207,10 @@ This plan implements production-grade monitoring, logging, analytics, and queue 
 
 - Create `apps/raverpay-api/src/common/interceptors/request-logger.interceptor.ts`
 - Log all HTTP requests with:
-  - Request method, path, query, body (sanitized)
-  - Response status, duration
-  - User ID, IP address
-  - Transaction IDs (if applicable)
+- Request method, path, query, body (sanitized)
+- Response status, duration
+- User ID, IP address
+- Transaction IDs (if applicable)
 
 ### Phase 4: PostHog Integration (Priority: Medium)
 
@@ -232,16 +228,14 @@ This plan implements production-grade monitoring, logging, analytics, and queue 
 #### 4.3 Add Event Tracking
 
 - **Transaction Events**: Track in `apps/raverpay-api/src/transactions/transactions.service.ts`
-  - `transaction_initiated`, `transaction_completed`, `transaction_failed`
-  - Include: type, amount, status, user_id
-
+- `transaction_initiated`, `transaction_completed`, `transaction_failed`
+- Include: type, amount, status, user_id
 - **VTU Events**: Track in `apps/raverpay-api/src/vtu/vtu.service.ts`
-  - `vtu_purchase_initiated`, `vtu_purchase_completed`, `vtu_purchase_failed`
-  - Include: service_type, amount, network, status
-
+- `vtu_purchase_initiated`, `vtu_purchase_completed`, `vtu_purchase_failed`
+- Include: service_type, amount, network, status
 - **Payment Events**: Track in `apps/raverpay-api/src/payments/payments.controller.ts`
-  - `payment_initiated`, `payment_successful`, `payment_failed`
-  - Include: amount, method, status
+- `payment_initiated`, `payment_successful`, `payment_failed`
+- Include: amount, method, status
 
 #### 4.4 Add User Identification
 
@@ -292,6 +286,8 @@ POSTHOG_HOST=https://app.posthog.com
 # Uptime Monitoring (external config)
 UPTIME_ROBOT_API_KEY=... (optional)
 ```
+
+
 
 #### 6.2 Update Configuration Service
 
@@ -347,7 +343,7 @@ UPTIME_ROBOT_API_KEY=... (optional)
 
 ## File Structure
 
-```
+```javascript
 apps/raverpay-api/src/
 ├── queue/
 │   ├── queue.module.ts
@@ -371,6 +367,8 @@ apps/raverpay-api/src/
 │   └── monitoring/
 │       └── prisma-pulse.service.ts
 ```
+
+
 
 ## Migration Strategy
 
@@ -432,5 +430,3 @@ apps/raverpay-api/src/
 - Test BullMQ migration in staging first
 - Monitor queue processing closely after deployment
 - Set up alerts for queue backlogs
-- Keep database queue as fallback for 2 weeks
-- Gradual rollout of new monitoring services

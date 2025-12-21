@@ -23,43 +23,86 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     if (redisUrl) {
       try {
         this.redis = new Redis(redisUrl, {
-          maxRetriesPerRequest: 3,
+          maxRetriesPerRequest: null, // BullMQ requirement
           enableReadyCheck: true,
           enableOfflineQueue: false,
           lazyConnect: true, // Don't connect immediately
+          retryStrategy: (times: number) => {
+            // Stop retrying after 3 attempts
+            if (times > 3) {
+              return null;
+            }
+            return Math.min(times * 100, 1000);
+          },
+          connectTimeout: 10000,
+          showFriendlyErrorStack: false,
+        });
+
+        // Suppress all error events to avoid log spam
+        this.redis.on('error', (err) => {
+          this.isConnected = false;
+          // Completely suppress DNS lookup errors - they're expected when Redis is unavailable
+          if (
+            err.message.includes('ENOTFOUND') ||
+            err.message.includes('getaddrinfo')
+          ) {
+            // Silently ignore - fallback to in-memory storage
+            return;
+          }
+          // Only log other errors once
+          if (!this.hasLoggedError) {
+            const isDevelopment =
+              this.configService.get<string>('NODE_ENV') !== 'production';
+            if (isDevelopment) {
+              this.logger.warn(
+                `Redis connection failed: ${err.message}. Using in-memory fallback for rate limiting`,
+              );
+            } else {
+              this.logger.error(
+                `Redis connection failed: ${err.message}. Using in-memory fallback for rate limiting`,
+              );
+            }
+            this.hasLoggedError = true;
+          }
         });
 
         this.redis.on('connect', () => {
           this.isConnected = true;
           this.hasLoggedError = false;
-          this.logger.log('Redis throttler storage connected');
+          this.logger.log('✅ Redis throttler storage connected');
         });
 
-        this.redis.on('error', (err) => {
-          this.isConnected = false;
-          // Only log once to avoid spam
-          if (!this.hasLoggedError) {
-            this.logger.error(
-              `Redis connection failed: ${err.message}. Using in-memory fallback for rate limiting`,
-            );
-            this.hasLoggedError = true;
-          }
-        });
-
-        // Try to connect
+        // Try to connect silently
         this.redis.connect().catch(() => {
           // Connection failed, will use in-memory fallback
+          // Error already logged via 'error' event handler
         });
       } catch (error) {
-        console.error(
-          '❌ Failed to initialize Redis throttler storage:',
-          error,
-        );
+        const isDevelopment =
+          this.configService.get<string>('NODE_ENV') !== 'production';
+        if (isDevelopment) {
+          this.logger.warn(
+            '⚠️  Failed to initialize Redis throttler storage. Using in-memory fallback.',
+          );
+        } else {
+          this.logger.error(
+            '❌ Failed to initialize Redis throttler storage:',
+            error,
+          );
+        }
       }
     } else {
-      console.warn(
-        '⚠️  Redis URL not configured for throttler. Using in-memory storage.',
-      );
+      const isDevelopment =
+        this.configService.get<string>('NODE_ENV') !== 'production';
+      if (isDevelopment) {
+        this.logger.debug(
+          'Redis URL not configured for throttler. Using in-memory storage.',
+        );
+      } else {
+        this.logger.warn(
+          '⚠️  Redis URL not configured for throttler. Using in-memory storage.',
+        );
+      }
     }
   }
 

@@ -16,7 +16,7 @@ import { LimitsModule } from '../limits/limits.module';
     forwardRef(() => PaymentsModule),
     forwardRef(() => WalletModule),
     UsersModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule), // Use forwardRef to break circular dependency
     LimitsModule,
   ],
   controllers: [TransactionsController],

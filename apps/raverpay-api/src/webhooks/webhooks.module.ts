@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PaystackWebhookController } from './paystack-webhook.controller';
 import { PaystackWebhookService } from './paystack-webhook.service';
 import { ResendWebhookController } from './resend-webhook.controller';
@@ -15,7 +15,7 @@ import { ConfigModule } from '@nestjs/config';
     PrismaModule,
     PaymentsModule,
     WalletModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule), // Use forwardRef to break circular dependency
     SupportModule,
     ConfigModule,
   ],

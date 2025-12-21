@@ -15,6 +15,52 @@ if (!globalThis.crypto) {
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
+  // Suppress Redis DNS lookup errors globally
+  // These errors are expected when Redis is unavailable and are handled gracefully
+  const shouldSuppressError = (error: any): boolean => {
+    if (!error || typeof error !== 'object') return false;
+    const message = error.message || error.toString() || '';
+    const stack = error.stack || '';
+
+    // Suppress Redis DNS lookup errors
+    if (
+      message.includes('ENOTFOUND') &&
+      (message.includes('upstash.io') || stack.includes('upstash.io'))
+    ) {
+      return true;
+    }
+    // Suppress Redis connection errors
+    if (
+      message.includes('getaddrinfo ENOTFOUND') ||
+      message.includes('ECONNREFUSED') ||
+      (message.includes('Redis') && message.includes('connection'))
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  // Suppress uncaught exceptions from Redis
+  process.on('uncaughtException', (error: Error) => {
+    if (shouldSuppressError(error)) {
+      // Silently ignore - Redis is unavailable, fallbacks are in place
+      return;
+    }
+    // Let other errors through
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
+  });
+
+  // Suppress unhandled rejections from Redis
+  process.on('unhandledRejection', (reason: any) => {
+    if (shouldSuppressError(reason)) {
+      // Silently ignore - Redis is unavailable, fallbacks are in place
+      return;
+    }
+    // Let other rejections through
+    console.error('Unhandled Rejection:', reason);
+  });
+
   // Configure log level based on environment variable
   // Default: 'warn' in production, 'log' in development
   const logLevel =

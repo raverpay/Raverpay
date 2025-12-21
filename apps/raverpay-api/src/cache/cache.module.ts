@@ -57,25 +57,29 @@ import { setRedisClient } from './redis-client';
           retryStrategy: (times) => {
             // Retry up to 3 times with exponential backoff
             if (times > 3) {
-              console.error('❌ Redis connection failed after 3 retries');
+              // Suppress error message - already handled by error event
               return null; // Stop retrying
             }
             const delay = Math.min(times * 100, 1000);
             return delay;
           },
           connectTimeout: 10000,
-          lazyConnect: false,
+          lazyConnect: true, // Don't connect immediately - prevents error spam
           enableReadyCheck: true,
-          maxRetriesPerRequest: 3,
+          maxRetriesPerRequest: null, // Required for some Redis operations
           enableOfflineQueue: false,
           showFriendlyErrorStack: false,
         };
 
-        console.log('🔌 Connecting to Redis...', {
-          host: redisOptions.host,
-          port: redisOptions.port,
-          tls: !!redisOptions.tls,
-        });
+        const isDevelopment =
+          configService.get<string>('NODE_ENV') !== 'production';
+        if (isDevelopment) {
+          console.log('🔌 Redis cache configured (lazy connect)', {
+            host: redisOptions.host,
+            port: redisOptions.port,
+            tls: !!redisOptions.tls,
+          });
+        }
 
         try {
           const store = await redisStore(redisOptions);
@@ -87,16 +91,36 @@ import { setRedisClient } from './redis-client';
             const client = (store as any).client;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (client && typeof client.on === 'function') {
+              let hasLoggedError = false;
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               client.on('error', (err: Error) => {
-                // Only log if it's not a WRONGPASS retry error
-                if (!err.message.includes('WRONGPASS')) {
-                  console.error('Redis client error:', err.message);
+                // Suppress ALL DNS lookup errors and repeated errors
+                if (
+                  err.message.includes('ENOTFOUND') ||
+                  err.message.includes('WRONGPASS') ||
+                  err.message.includes('ECONNREFUSED')
+                ) {
+                  // Completely suppress these errors - they're expected when Redis is unavailable
+                  return;
+                }
+                // Only log other errors once
+                if (!hasLoggedError) {
+                  const isDevelopment =
+                    configService.get<string>('NODE_ENV') !== 'production';
+                  if (isDevelopment) {
+                    console.warn(
+                      `⚠️  Redis cache connection issue: ${err.message}. Using in-memory fallback.`,
+                    );
+                  } else {
+                    console.error('Redis client error:', err.message);
+                  }
+                  hasLoggedError = true;
                 }
               });
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               client.on('ready', () => {
-                console.log('✅ Redis client ready and authenticated');
+                console.log('✅ Redis cache client ready and authenticated');
+                hasLoggedError = false; // Reset on successful connection
               });
 
               // Store client reference for RedisService
@@ -104,14 +128,24 @@ import { setRedisClient } from './redis-client';
             }
           }
 
-          console.log('✅ Redis store created successfully');
+          const isDevelopment =
+            configService.get<string>('NODE_ENV') !== 'production';
+          if (isDevelopment) {
+            console.log('✅ Redis store created successfully (lazy connect)');
+          }
           return {
             store,
             ttl: 60000, // 60 seconds default TTL
           };
         } catch (error) {
-          console.error('❌ Failed to create Redis store:', error);
-          console.warn('⚠️  Falling back to in-memory cache');
+          const isDevelopment =
+            configService.get<string>('NODE_ENV') !== 'production';
+          if (isDevelopment) {
+            console.warn('⚠️  Redis cache unavailable. Using in-memory fallback.');
+          } else {
+            console.error('❌ Failed to create Redis store:', error);
+            console.warn('⚠️  Falling back to in-memory cache');
+          }
           return {
             ttl: 60000,
             max: 100,
