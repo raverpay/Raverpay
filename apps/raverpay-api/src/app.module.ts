@@ -32,6 +32,7 @@ import { AccountLockingService } from './common/services/account-locking.service
 import { AccountLockGuard } from './common/guards/account-lock.guard';
 import { IdempotencyService } from './common/services/idempotency.service';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
+import { RequestLoggerInterceptor } from './common/interceptors/request-logger.interceptor';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QueueModule } from './queue/queue.module';
 import { SentryModule } from '@sentry/nestjs/setup';
@@ -74,7 +75,7 @@ import { PostHogModule } from './common/analytics/posthog.module';
     SentryModule.forRoot(), // Error tracking (official NestJS SDK)
     LogtailModule, // Log aggregation
     PostHogModule, // Product analytics
-    QueueModule, // BullMQ for background jobs
+    // QueueModule, // BullMQ for background jobs - temporarily disabled for testing
     AuthModule,
     UsersModule,
     DeviceModule, // Device fingerprinting and management
@@ -113,6 +114,11 @@ import { PostHogModule } from './common/analytics/posthog.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: RateLimitLoggerInterceptor,
+    },
+    // Log all HTTP requests with structured data
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestLoggerInterceptor,
     },
     // Handle idempotency keys (only applies to endpoints with @Idempotent() decorator)
     {

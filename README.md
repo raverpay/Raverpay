@@ -68,7 +68,8 @@ RaverPay-fintech/
 - **Media Storage**: Cloudinary
 - **Email**: Resend
 - **SMS**: VTPass Messaging
-- **Monitoring**: Sentry (planned)
+- **Monitoring**: Sentry, Logtail, PostHog
+- **Queues**: BullMQ with Redis
 
 ## 🛠️ Getting Started
 

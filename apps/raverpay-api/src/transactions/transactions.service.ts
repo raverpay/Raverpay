@@ -13,6 +13,7 @@ import { UsersService } from '../users/users.service';
 import { WalletService } from '../wallet/wallet.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { LimitsService, TransactionLimitType } from '../limits/limits.service';
+import { PostHogService } from '../common/analytics/posthog.service';
 import {
   TransactionType,
   TransactionStatus,
@@ -45,6 +46,7 @@ export class TransactionsService {
     private walletService: WalletService,
     private notificationDispatcher: NotificationDispatcherService,
     private limitsService: LimitsService,
+    private posthogService: PostHogService,
   ) {}
 
   /**
@@ -300,6 +302,21 @@ export class TransactionsService {
       callbackUrl,
     );
 
+    // Track deposit initiation
+    this.posthogService.capture({
+      distinctId: userId,
+      event: 'deposit_initiated',
+      properties: {
+        amount,
+        fee: feeCalc.fee,
+        totalCharged: totalToCharge,
+        currency: 'NGN',
+        paymentMethod: 'card',
+        provider: 'paystack',
+        kycTier: user.kycTier,
+      },
+    });
+
     return {
       reference,
       authorizationUrl: payment.authorization_url,
@@ -515,6 +532,23 @@ export class TransactionsService {
     // Invalidate wallet and transaction caches
     await this.walletService.invalidateWalletCache(userId);
     await this.walletService.invalidateTransactionCache(userId);
+
+    // Track successful deposit
+    this.posthogService.capture({
+      distinctId: userId,
+      event: 'deposit_completed',
+      properties: {
+        amount: depositAmount,
+        fee: Number(transaction.fee),
+        currency: 'NGN',
+        paymentMethod: 'card',
+        provider: 'paystack',
+        kycTier: transaction.user.kycTier,
+        limitExceeded: shouldLockWallet,
+        walletLocked: shouldLockWallet,
+        channel: payment.channel,
+      },
+    });
 
     return {
       status: 'success',
@@ -1005,6 +1039,23 @@ export class TransactionsService {
         'Withdrawal failed. Amount refunded to wallet.',
       );
     }
+
+    // Track withdrawal initiation
+    this.posthogService.capture({
+      distinctId: userId,
+      event: 'withdrawal_initiated',
+      properties: {
+        amount,
+        fee: feeCalc.fee,
+        totalDebit: feeCalc.totalAmount,
+        currency: 'NGN',
+        bankCode,
+        bankName,
+        accountNumber: accountNumber.slice(-4), // Last 4 digits only
+        kycTier: user.kycTier,
+        provider: 'paystack',
+      },
+    });
 
     return {
       reference: transaction.reference,

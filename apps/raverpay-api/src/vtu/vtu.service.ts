@@ -12,6 +12,7 @@ import { UsersService } from '../users/users.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { CashbackService } from '../cashback/cashback.service';
 import { LimitsService, TransactionLimitType } from '../limits/limits.service';
+import { PostHogService } from '../common/analytics/posthog.service';
 import {
   PurchaseAirtimeDto,
   PurchaseDataDto,
@@ -61,6 +62,7 @@ export class VTUService {
     private readonly notificationDispatcher: NotificationDispatcherService,
     private readonly cashbackService: CashbackService,
     private readonly limitsService: LimitsService,
+    private readonly posthogService: PostHogService,
   ) {}
 
   // ==================== Product Catalog ====================
@@ -349,6 +351,19 @@ export class VTUService {
       dto.network.toUpperCase(),
       dto.amount,
     );
+
+    // Track VTU purchase initiation
+    this.posthogService.capture({
+      distinctId: userId,
+      event: 'vtu_purchase_initiated',
+      properties: {
+        serviceType: 'AIRTIME',
+        amount: dto.amount,
+        network: dto.network.toUpperCase(),
+        recipient: dto.phone,
+        provider: 'VTPASS',
+      },
+    });
 
     // 4. Handle cashback redemption if requested
     let cashbackRedeemed = 0;
@@ -712,6 +727,27 @@ export class VTUService {
       this.unlockWalletForTransaction(userId).catch((error) =>
         this.logger.error('Failed to unlock wallet (will auto-unlock)', error),
       );
+
+      // Track VTU purchase
+      this.posthogService.capture({
+        distinctId: userId,
+        event:
+          vtpassResult.status === 'success'
+            ? 'vtu_purchase_completed'
+            : 'vtu_purchase_failed',
+        properties: {
+          serviceType: 'AIRTIME',
+          amount: dto.amount,
+          fee,
+          totalAmount: total,
+          network: dto.network.toUpperCase(),
+          recipient: dto.phone,
+          status: vtpassResult.status,
+          cashbackRedeemed,
+          cashbackEarned: cashbackToEarn.cashbackAmount,
+          provider: 'VTPASS',
+        },
+      });
 
       // RETURN IMMEDIATELY - don't wait for async operations above
       return response;

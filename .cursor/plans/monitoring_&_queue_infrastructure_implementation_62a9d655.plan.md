@@ -38,7 +38,7 @@ todos:
     status: completed
   - id: logtail-request-interceptor
     content: Create request logging interceptor for structured HTTP request logging
-    status: pending
+    status: completed
     dependencies:
       - logtail-setup
   - id: posthog-setup
@@ -46,7 +46,7 @@ todos:
     status: completed
   - id: posthog-event-tracking
     content: Add event tracking to transactions, VTU, and payment endpoints
-    status: pending
+    status: completed
     dependencies:
       - posthog-setup
   - id: prisma-pulse
@@ -54,7 +54,7 @@ todos:
     status: pending
   - id: env-config
     content: Add all new environment variables and update configuration service
-    status: pending
+    status: completed
   - id: testing
     content: Write unit and integration tests for all new services
     status: pending
@@ -429,4 +429,3 @@ apps/raverpay-api/src/
 
 - Test BullMQ migration in staging first
 - Monitor queue processing closely after deployment
-- Set up alerts for queue backlogs

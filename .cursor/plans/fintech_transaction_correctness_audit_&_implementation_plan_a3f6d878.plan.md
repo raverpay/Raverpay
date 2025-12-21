@@ -548,5 +548,3 @@ enum TransactionStatus {
 ---
 
 ## Related Documentation
-
-- `apps/raverpay-api/TRANSACTION_SAFETY_ANALYSIS.md` - Transaction safety mechanisms
