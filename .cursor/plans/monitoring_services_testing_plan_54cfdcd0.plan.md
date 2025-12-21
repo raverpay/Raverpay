@@ -4,10 +4,10 @@ overview: Create a comprehensive testing plan to verify PostHog, Logtail, Sentry
 todos:
   - id: test-posthog
     content: "Test PostHog: User identification, transaction events, VTU events, payment events"
-    status: pending
+    status: completed
   - id: test-logtail
     content: "Test Logtail: HTTP request logs, error logs, application logs with context"
-    status: pending
+    status: completed
   - id: test-sentry
     content: "Test Sentry: Error capture, user context, sensitive data filtering"
     status: pending
