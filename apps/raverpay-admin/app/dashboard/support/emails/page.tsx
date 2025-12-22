@@ -42,6 +42,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { formatRelativeTime, getApiErrorMessage } from '@/lib/utils';
 import { UserRole } from '@/types/support';
+import { useAuthStore } from '@/lib/auth-store';
 
 function getRoleBadgeVariant(role?: UserRole) {
   switch (role) {
@@ -58,12 +59,38 @@ function getRoleBadgeVariant(role?: UserRole) {
 
 export default function EmailsPage() {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [targetEmailFilter, setTargetEmailFilter] = useState<string>('all');
   const [targetRoleFilter, setTargetRoleFilter] = useState<string>('all');
   const [processedFilter, setProcessedFilter] = useState<string>('all');
+
+  // Get allowed emails based on user role
+  const getAllowedEmails = () => {
+    if (!currentUser) return ['support@raverpay.com'];
+    
+    switch (currentUser.role) {
+      case 'SUPPORT':
+        return ['support@raverpay.com'];
+      case 'ADMIN':
+        return ['support@raverpay.com', 'admin@raverpay.com'];
+      case 'SUPER_ADMIN':
+        return [
+          'support@raverpay.com',
+          'admin@raverpay.com',
+          'promotions@raverpay.com',
+          'security@raverpay.com',
+          'compliance@raverpay.com',
+          'partnerships@raverpay.com',
+        ];
+      default:
+        return ['support@raverpay.com'];
+    }
+  };
+
+  const allowedEmails = getAllowedEmails();
 
   const queryParams: GetEmailsParams = {
     page,
@@ -114,7 +141,7 @@ export default function EmailsPage() {
   const [composeTo, setComposeTo] = useState('');
   const [composeSubject, setComposeSubject] = useState('');
   const [composeContent, setComposeContent] = useState('');
-  const [composeFromEmail, setComposeFromEmail] = useState('support@raverpay.com');
+  const [composeFromEmail, setComposeFromEmail] = useState(allowedEmails[0] || 'support@raverpay.com');
   const [composeCc, setComposeCc] = useState('');
   const [composeBcc, setComposeBcc] = useState('');
   const [composeAttachments, setComposeAttachments] = useState<File[]>([]);
@@ -138,7 +165,7 @@ export default function EmailsPage() {
       setComposeTo('');
       setComposeSubject('');
       setComposeContent('');
-      setComposeFromEmail('support@raverpay.com');
+      setComposeFromEmail(allowedEmails[0] || 'support@raverpay.com');
       setComposeCc('');
       setComposeBcc('');
       setComposeAttachments([]);
@@ -169,7 +196,7 @@ export default function EmailsPage() {
               setComposeTo('');
               setComposeSubject('');
               setComposeContent('');
-              setComposeFromEmail('support@raverpay.com');
+              setComposeFromEmail(allowedEmails[0] || 'support@raverpay.com');
               setComposeCc('');
               setComposeBcc('');
               setComposeAttachments([]);
@@ -196,14 +223,18 @@ export default function EmailsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="support@raverpay.com">support@raverpay.com</SelectItem>
-                      <SelectItem value="admin@raverpay.com">admin@raverpay.com</SelectItem>
-                      <SelectItem value="promotions@raverpay.com">promotions@raverpay.com</SelectItem>
-                      <SelectItem value="security@raverpay.com">security@raverpay.com</SelectItem>
-                      <SelectItem value="compliance@raverpay.com">compliance@raverpay.com</SelectItem>
-                      <SelectItem value="partnerships@raverpay.com">partnerships@raverpay.com</SelectItem>
+                      {allowedEmails.map((email) => (
+                        <SelectItem key={email} value={email}>
+                          {email}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {currentUser?.role === 'SUPPORT' && 'As a Support agent, you can only send from support@raverpay.com'}
+                    {currentUser?.role === 'ADMIN' && 'As an Admin, you can send from support@ and admin@ emails'}
+                    {currentUser?.role === 'SUPER_ADMIN' && 'As a Super Admin, you can send from all team emails'}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="compose-to">To *</Label>
