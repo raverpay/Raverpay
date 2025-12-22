@@ -413,11 +413,8 @@ export interface OutboundEmail {
 export const getOutboundEmails = async (
   params?: GetOutboundEmailsParams,
 ): Promise<PaginatedResponse<OutboundEmail>> => {
-  const response = await apiClient.get<PaginatedResponse<OutboundEmail>>(
-    '/admin/emails/outbound',
-    {
-      params,
-    },
-  );
+  const response = await apiClient.get<PaginatedResponse<OutboundEmail>>('/admin/emails/outbound', {
+    params,
+  });
   return response.data;
 };
