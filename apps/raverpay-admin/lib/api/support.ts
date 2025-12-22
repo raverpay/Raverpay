@@ -384,12 +384,40 @@ export interface GetOutboundEmailsParams {
   status?: string;
 }
 
+export interface OutboundEmail {
+  id: string;
+  resendEmailId: string | null;
+  sentBy: string;
+  fromEmail: string;
+  to: string;
+  cc: string[];
+  bcc: string[];
+  subject: string;
+  content: string;
+  status: string;
+  createdAt: string;
+  sender?: {
+    firstName: string;
+    lastName: string;
+  };
+  user?: {
+    firstName: string;
+    lastName: string;
+  };
+  inboundEmail?: {
+    subject: string;
+  };
+}
+
 // Add to supportApi object
 export const getOutboundEmails = async (
   params?: GetOutboundEmailsParams,
-): Promise<PaginatedResponse<any>> => {
-  const response = await apiClient.get<PaginatedResponse<any>>('/admin/emails/outbound', {
-    params,
-  });
+): Promise<PaginatedResponse<OutboundEmail>> => {
+  const response = await apiClient.get<PaginatedResponse<OutboundEmail>>(
+    '/admin/emails/outbound',
+    {
+      params,
+    },
+  );
   return response.data;
 };

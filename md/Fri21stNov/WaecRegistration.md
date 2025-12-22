@@ -30,7 +30,7 @@ EXPECTED RESPONSE
 "serviceID":"waec-registration",
 "convinience_fee":"N0.00",
 "variations":[
- {
+{
 "variation_code": "waec-registraion",
 "name": "WASSCE for Private Candidates - Second Series (2019)",
 "variation_amount": "14450.00",

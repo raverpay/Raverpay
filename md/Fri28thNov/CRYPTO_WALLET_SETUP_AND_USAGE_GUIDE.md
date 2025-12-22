@@ -3,6 +3,7 @@
 ## 📋 Overview
 
 This guide explains:
+
 1. ✅ Environment setup (.env configuration)
 2. ✅ User flows (new vs existing users)
 3. ✅ Testnet usage with Venly's free assets
@@ -62,6 +63,7 @@ pnpm run start:dev
 ### ✅ Verification
 
 API should start without errors. Check logs for:
+
 ```
 [Nest] 12345  - Crypto module initialized
 [Nest] 12345  - Venly environment: sandbox
@@ -77,6 +79,7 @@ API should start without errors. Check logs for:
 
 1. **Open App** → Navigate to "Crypto" tab
 2. **See Setup Screen**
+
    ```
    "Setup Crypto Wallet"
    - Create a secure 6-digit PIN
@@ -95,6 +98,7 @@ API should start without errors. Check logs for:
    - ✅ Success! Wallet created
 
 4. **What Happens Automatically** (Venly Sandbox Magic ✨)
+
    ```
    Your new wallet receives FREE testnet assets:
    - 1 POL Token (testnet MATIC for gas fees)
@@ -141,6 +145,7 @@ API should start without errors. Check logs for:
 
 1. **Open App** → Navigate to "Crypto" tab
 2. **See Wallet Home**
+
    ```
    Total Portfolio Value: $X.XX
 
@@ -157,6 +162,7 @@ API should start without errors. Check logs for:
 3. **Available Actions**:
 
    **A. RECEIVE Crypto** ✅
+
    ```
    - Tap "Receive"
    - See QR code with wallet address
@@ -166,6 +172,7 @@ API should start without errors. Check logs for:
    ```
 
    **B. SEND Crypto** ✅
+
    ```
    - Tap "Send"
    - Select token (USDT/USDC/MATIC)
@@ -178,6 +185,7 @@ API should start without errors. Check logs for:
    ```
 
    **C. CONVERT to Naira** ✅ (Production Only)
+
    ```
    - Tap "Convert"
    - Select token (USDT or USDC)
@@ -194,6 +202,7 @@ API should start without errors. Check logs for:
    ```
 
    **D. VIEW Transactions** ✅
+
    ```
    - See all crypto transactions
    - Filter by type (send/receive)
@@ -207,6 +216,7 @@ API should start without errors. Check logs for:
    ```
 
    **E. REFRESH Balance** ✅
+
    ```
    - Pull down to refresh
    - Syncs balances from blockchain
@@ -240,6 +250,7 @@ API should start without errors. Check logs for:
 ### What You Can Test:
 
 #### 1. **Basic Wallet Operations** ✅
+
 ```bash
 # Create wallet
 curl -X POST http://localhost:3000/v1/crypto/wallet/initialize \
@@ -252,6 +263,7 @@ curl -X POST http://localhost:3000/v1/crypto/wallet/initialize \
 ```
 
 #### 2. **Send Testnet Tokens** ✅
+
 ```bash
 # Send test MATIC to another address
 curl -X POST http://localhost:3000/v1/crypto/send \
@@ -266,6 +278,7 @@ curl -X POST http://localhost:3000/v1/crypto/send \
 ```
 
 #### 3. **Receive More Testnet Tokens** ✅
+
 ```bash
 # Get your wallet address
 curl -X GET http://localhost:3000/v1/crypto/deposit-info \
@@ -278,6 +291,7 @@ curl -X GET http://localhost:3000/v1/crypto/deposit-info \
 ```
 
 #### 4. **Check Balances** ✅
+
 ```bash
 # Sync and view balances
 curl -X POST http://localhost:3000/v1/crypto/wallet/sync \
@@ -307,6 +321,7 @@ curl -X GET http://localhost:3000/v1/crypto/balance/MATIC \
 ### When Ready for Real Money:
 
 #### Step 1: Get Venly Production Credentials
+
 ```bash
 1. Go to https://portal.venly.io
 2. Create account / Login
@@ -316,6 +331,7 @@ curl -X GET http://localhost:3000/v1/crypto/balance/MATIC \
 ```
 
 #### Step 2: Update .env
+
 ```env
 # Change environment
 VENLY_ENV=production
@@ -326,6 +342,7 @@ VENLY_CLIENT_SECRET=your_real_production_client_secret
 ```
 
 #### Step 3: Update Token Addresses (if needed)
+
 ```env
 # These are already correct for Polygon Mainnet
 POLYGON_USDT_ADDRESS=0xc2132D05D31c914a87C6611C10748AEb04B58e8F
@@ -333,11 +350,13 @@ POLYGON_USDC_ADDRESS=0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 ```
 
 #### Step 4: Restart API
+
 ```bash
 pnpm run start:dev
 ```
 
 #### Step 5: Users Get REAL Wallets
+
 ```
 - New wallets = mainnet addresses
 - NO automatic testnet assets
@@ -354,6 +373,7 @@ pnpm run start:dev
 You have **TWO SEPARATE** crypto systems:
 
 #### 🔴 OLD System: CryptoOrder (Buy/Sell Crypto Trading)
+
 ```
 Database Tables:
 - CryptoOrder (buy/sell orders)
@@ -372,6 +392,7 @@ Admin Dashboard Pages (ALREADY EXIST):
 ```
 
 #### 🟢 NEW System: Venly Wallet (Send/Receive/Convert)
+
 ```
 Database Tables (NEW):
 - venly_users
@@ -399,13 +420,15 @@ Admin Dashboard Pages (NEED TO CREATE):
 **Why**: Controls USD → NGN conversion rate for crypto-to-Naira
 
 **Backend Endpoints Needed**:
+
 ```typescript
-POST   /admin/crypto-wallet/exchange-rate    // Set new rate
-GET    /admin/crypto-wallet/exchange-rate    // Get current rate
-GET    /admin/crypto-wallet/exchange-rate/history  // Rate history
+POST / admin / crypto - wallet / exchange - rate; // Set new rate
+GET / admin / crypto - wallet / exchange - rate; // Get current rate
+GET / admin / crypto - wallet / exchange - rate / history; // Rate history
 ```
 
 **Dashboard UI Needed**:
+
 ```
 ┌─────────────────────────────────────┐
 │ Exchange Rate Management            │
@@ -425,6 +448,7 @@ GET    /admin/crypto-wallet/exchange-rate/history  // Rate history
 ```
 
 **Implementation**:
+
 ```typescript
 // API Endpoint
 @Post('admin/crypto-wallet/exchange-rate')
@@ -443,6 +467,7 @@ async setExchangeRate(
 **Why**: Monitor all users' crypto wallets and balances
 
 **Backend Endpoints Needed**:
+
 ```typescript
 GET    /admin/crypto-wallet/wallets           // List all crypto wallets
 GET    /admin/crypto-wallet/wallets/:userId   // Get user's wallet
@@ -450,6 +475,7 @@ GET    /admin/crypto-wallet/stats             // Overall statistics
 ```
 
 **Dashboard UI Needed**:
+
 ```
 ┌─────────────────────────────────────────────────┐
 │ Crypto Wallets Overview                         │
@@ -477,6 +503,7 @@ GET    /admin/crypto-wallet/stats             // Overall statistics
 ```
 
 **Implementation**:
+
 ```typescript
 // Controller
 @Get('admin/crypto-wallet/wallets')
@@ -544,6 +571,7 @@ async getAllWallets(params) {
 **Why**: Track all crypto → Naira conversions, detect anomalies
 
 **Backend Endpoints Needed**:
+
 ```typescript
 GET    /admin/crypto-wallet/conversions         // List all conversions
 GET    /admin/crypto-wallet/conversions/:id     // Conversion details
@@ -551,6 +579,7 @@ GET    /admin/crypto-wallet/conversion-stats    // Statistics
 ```
 
 **Dashboard UI Needed**:
+
 ```
 ┌──────────────────────────────────────────────┐
 │ Crypto Conversions                            │
@@ -580,6 +609,7 @@ GET    /admin/crypto-wallet/conversion-stats    // Statistics
 ```
 
 **Implementation**:
+
 ```typescript
 // Controller
 @Get('admin/crypto-wallet/conversions')
@@ -635,6 +665,7 @@ async getConversions(params) {
 **Why**: Monitor all crypto sends/receives, detect fraud
 
 **Backend Endpoints Needed**:
+
 ```typescript
 GET    /admin/crypto-wallet/transactions       // List all transactions
 GET    /admin/crypto-wallet/transactions/:id   // Transaction details
@@ -642,6 +673,7 @@ POST   /admin/crypto-wallet/transactions/:id/flag  // Flag suspicious
 ```
 
 **Dashboard UI Needed**:
+
 ```
 ┌──────────────────────────────────────────────┐
 │ Crypto Transactions                           │
@@ -677,13 +709,15 @@ POST   /admin/crypto-wallet/transactions/:id/flag  // Flag suspicious
 **Why**: Visualize crypto wallet adoption and usage
 
 **Backend Endpoints Needed**:
+
 ```typescript
-GET    /admin/crypto-wallet/analytics/adoption    // Wallet creation over time
-GET    /admin/crypto-wallet/analytics/volume      // Transaction volume
-GET    /admin/crypto-wallet/analytics/tokens      // Token distribution
+GET / admin / crypto - wallet / analytics / adoption; // Wallet creation over time
+GET / admin / crypto - wallet / analytics / volume; // Transaction volume
+GET / admin / crypto - wallet / analytics / tokens; // Token distribution
 ```
 
 **Dashboard UI Needed**:
+
 ```
 ┌──────────────────────────────────────────────┐
 │ Crypto Wallet Analytics                       │
@@ -713,6 +747,7 @@ GET    /admin/crypto-wallet/analytics/tokens      // Token distribution
 ## 🔑 Key Differences: OLD vs NEW Crypto Systems
 
 ### OLD CryptoOrder System (Buy/Sell Trading)
+
 ```
 Purpose: Users buy/sell crypto for Naira
 Flow: User places order → Admin approves → Funds transferred
@@ -722,6 +757,7 @@ Status: Already implemented ✅
 ```
 
 ### NEW Venly Wallet System (Self-Custody Wallet)
+
 ```
 Purpose: Users have their own wallet, send/receive/convert
 Flow: Automated blockchain transactions via Venly API
@@ -731,6 +767,7 @@ Status: Backend ✅ | Mobile ✅ | Admin Dashboard ❌
 ```
 
 ### They Co-Exist!
+
 ```
 ┌─────────────────────────────────────┐
 │ User Dashboard                       │
@@ -751,18 +788,21 @@ Status: Backend ✅ | Mobile ✅ | Admin Dashboard ❌
 ## ✅ Summary Checklist
 
 ### Backend API Setup:
+
 - [ ] Add crypto env variables to `.env`
 - [ ] Generate encryption key with `openssl rand -hex 32`
 - [ ] Restart API server
 - [ ] Verify crypto endpoints work
 
 ### Mobile App:
+
 - [ ] Install QR code dependencies
 - [ ] Implement screens from guide
 - [ ] Test wallet creation flow
 - [ ] Test send/receive with testnet
 
 ### Admin Dashboard (TODO):
+
 - [ ] Create exchange rate management page
 - [ ] Create wallet overview page
 - [ ] Create conversion monitoring page
@@ -771,6 +811,7 @@ Status: Backend ✅ | Mobile ✅ | Admin Dashboard ❌
 - [ ] Build API endpoints for above features
 
 ### Production Migration (Later):
+
 - [ ] Get Venly production credentials
 - [ ] Update .env to production
 - [ ] Test with small real amounts
@@ -788,4 +829,4 @@ Status: Backend ✅ | Mobile ✅ | Admin Dashboard ❌
 
 ---
 
-*Ready to use with testnet! Switch to production when needed.*
+_Ready to use with testnet! Switch to production when needed._

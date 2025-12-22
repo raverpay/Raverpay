@@ -3,6 +3,7 @@
 ## Problem: Prisma Migrate Can't Connect to Database
 
 Sometimes `prisma migrate` or `prisma db push` fails due to:
+
 - Network connectivity issues
 - Shadow database creation failures (common with Supabase poolers)
 - Connection timeout with pooled connections
@@ -11,6 +12,7 @@ Sometimes `prisma migrate` or `prisma db push` fails due to:
 ## When This Happens: Manual SQL Migration Process
 
 ### Step 1: Generate Prisma Client First
+
 Even if migration fails, always generate the Prisma client to get TypeScript types:
 
 ```bash
@@ -25,6 +27,7 @@ This gives you type safety even before applying database changes.
 Extract the schema changes you need to apply by looking at your `prisma/schema.prisma` file and manually creating SQL.
 
 **Key Points:**
+
 - Use `IF NOT EXISTS` for all CREATE statements (idempotent)
 - Use `ADD COLUMN IF NOT EXISTS` for ALTER TABLE statements
 - Match your existing table naming convention (lowercase_underscore)
@@ -69,6 +72,7 @@ grep "DIRECT_URL" .env | head -1
 ```
 
 **Important:** Use `DIRECT_URL`, not `DATABASE_URL`:
+
 - `DATABASE_URL` - Uses PgBouncer pooler (port 6543) - May have compatibility issues with psql
 - `DIRECT_URL` - Direct connection (port 5432) - Always works with psql
 
@@ -80,6 +84,7 @@ psql "postgresql://user:password@host:5432/database" -f your_migration.sql
 ```
 
 **Real example:**
+
 ```bash
 psql "postgresql://postgres.xxx:password@aws-1-eu-north-1.pooler.supabase.com:5432/postgres" -f manual_migration.sql
 ```
@@ -87,11 +92,13 @@ psql "postgresql://postgres.xxx:password@aws-1-eu-north-1.pooler.supabase.com:54
 ### Step 5: Verify Tables Were Created
 
 List all tables:
+
 ```bash
 psql "your_connection_string" -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;"
 ```
 
 Check specific table columns:
+
 ```bash
 psql "your_connection_string" -c "SELECT column_name, data_type, column_default FROM information_schema.columns WHERE table_name = 'your_table' ORDER BY ordinal_position;"
 ```
@@ -123,7 +130,9 @@ Should show 0 errors if everything is correct.
 ### What Prisma Migrate Provides:
 
 #### 1. **Migration History Tracking**
+
 Prisma maintains a `_prisma_migrations` table that tracks:
+
 - Which migrations have been applied
 - When they were applied
 - Migration checksums to detect tampering
@@ -132,7 +141,9 @@ Prisma maintains a `_prisma_migrations` table that tracks:
 **Without this:** You have no reliable way to know which database is at which version.
 
 #### 2. **Development/Production Parity**
+
 Migrations ensure:
+
 - Dev, staging, and production databases have identical schema
 - New team members can run `prisma migrate dev` to get up to date
 - CI/CD pipelines can apply migrations automatically
@@ -140,6 +151,7 @@ Migrations ensure:
 **Manual SQL risk:** Dev database might have changes that production doesn't, causing runtime errors.
 
 #### 3. **Schema Drift Detection**
+
 Prisma can detect when database schema doesn't match `schema.prisma`:
 
 ```bash
@@ -149,7 +161,9 @@ prisma migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-dat
 **Without this:** Database and code can silently diverge, causing bugs.
 
 #### 4. **Automatic Rollback Safety**
+
 Prisma migrate creates:
+
 - Forward migrations (apply changes)
 - Shadow database testing (validates migration before applying to production)
 - Migration history for rollback
@@ -157,7 +171,9 @@ Prisma migrate creates:
 **Manual SQL risk:** No easy way to undo changes if something goes wrong.
 
 #### 5. **Team Collaboration**
+
 With Prisma migrations:
+
 - Pull requests include migration files
 - Code reviewers can see database changes
 - Migrations are versioned in git
@@ -166,7 +182,9 @@ With Prisma migrations:
 **Manual SQL risk:** Two developers might make conflicting database changes without knowing.
 
 #### 6. **Cross-Database Compatibility**
+
 Prisma generates database-specific SQL:
+
 - PostgreSQL: Uses `SERIAL`, `JSONB`, `TEXT[]`
 - MySQL: Uses `AUTO_INCREMENT`, `JSON`, different syntax
 - SQLite: Different constraints and types
@@ -174,7 +192,9 @@ Prisma generates database-specific SQL:
 **Manual SQL risk:** Might not work if you switch databases.
 
 #### 7. **Type Safety Integration**
+
 When you run `prisma migrate dev`:
+
 1. Applies migration to database
 2. Regenerates Prisma Client automatically
 3. Updates TypeScript types
@@ -220,6 +240,7 @@ When you run `prisma migrate dev`:
 ## Best Practice: Hybrid Approach
 
 ### Normal Development Flow:
+
 ```bash
 # 1. Update schema.prisma
 # 2. Create migration
@@ -232,6 +253,7 @@ pnpm prisma migrate dev --name add_notifications
 ```
 
 ### When Prisma Migrate Fails:
+
 ```bash
 # 1. Generate client for types
 pnpm prisma generate
@@ -250,6 +272,7 @@ pnpm prisma migrate resolve --applied <migration_name>
 ```
 
 This gives you:
+
 - ✅ Schema changes applied immediately
 - ✅ Migration history maintained
 - ✅ Team aware of changes (via git)
@@ -262,6 +285,7 @@ This gives you:
 ### Our Project Convention: `lowercase_underscore`
 
 **Correct:**
+
 ```
 users
 transactions
@@ -271,6 +295,7 @@ notification_preferences
 ```
 
 **Incorrect:**
+
 ```
 Users
 Transactions
@@ -290,6 +315,7 @@ model NotificationLog {
 ```
 
 **Why this matters:**
+
 - PostgreSQL is case-sensitive with quoted identifiers
 - Our tables are all lowercase (convention from Supabase/PostgreSQL best practices)
 - Prisma defaults to PascalCase table names without `@@map()`
@@ -312,6 +338,7 @@ All should be lowercase with underscores.
 **Problem:** Table name case mismatch
 
 **Solution:**
+
 ```sql
 -- Wrong
 ALTER TABLE "Notification" ADD COLUMN ...;  ❌
@@ -325,6 +352,7 @@ ALTER TABLE notifications ADD COLUMN ...;  ✅
 **Problem:** Running migration twice
 
 **Solution:** Use `IF NOT EXISTS` everywhere
+
 ```sql
 ALTER TABLE notifications
   ADD CONSTRAINT IF NOT EXISTS notification_userId_fkey
@@ -336,6 +364,7 @@ ALTER TABLE notifications
 **Problem:** Prisma client not regenerated
 
 **Solution:**
+
 ```bash
 pnpm prisma generate
 ```
@@ -381,9 +410,11 @@ pnpm prisma migrate diff --from-schema-datamodel prisma/schema.prisma --to-schem
 ## Summary
 
 ### When Prisma Migrate Works:
+
 ✅ Use it! It's safer, tracked, and team-friendly
 
 ### When Prisma Migrate Fails:
+
 1. Generate Prisma client first (for types)
 2. Create manual SQL script (idempotent, with IF NOT EXISTS)
 3. Connect with psql using DIRECT_URL
@@ -393,6 +424,7 @@ pnpm prisma migrate diff --from-schema-datamodel prisma/schema.prisma --to-schem
 7. (Optional) Record migration in Prisma history
 
 ### Why Prisma Migrate is Important:
+
 - Migration history and versioning
 - Team collaboration and code review
 - Automatic rollback capability

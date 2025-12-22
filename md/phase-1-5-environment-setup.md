@@ -46,20 +46,23 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxxx"  # Optional, for frontend
 ### Local Development (using ngrok)
 
 1. **Install ngrok:**
+
    ```bash
    # macOS
    brew install ngrok
-   
+
    # Or download from: https://ngrok.com/download
    ```
 
 2. **Start your API server:**
+
    ```bash
    cd apps/raverpay-api
    pnpm run start:dev
    ```
 
 3. **Expose local server:**
+
    ```bash
    ngrok http 3001
    ```
@@ -105,12 +108,14 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxxx"  # Optional, for frontend
 ## Important Notes
 
 ### Virtual Accounts
+
 - Automatically created when user registers
 - Uses Wema Bank by default
 - Users can transfer to this account to fund wallet
 - Instant credit via webhooks
 
 ### Transaction Fees
+
 - **Card funding:** 2% (₦50 min, ₦2,000 max)
 - **Bank transfer:** Free
 - **Withdrawal < ₦5,000:** ₦10
@@ -118,11 +123,13 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxxx"  # Optional, for frontend
 - **Withdrawal > ₦50,000:** ₦50
 
 ### Paystack Transfer Balance
+
 - Withdrawals require sufficient balance in your Paystack account
 - Test mode: Limited test balance
 - Production: Fund your Paystack account from your bank
 
 ### Rate Limits
+
 - Paystack API has rate limits
 - Test mode: 100 requests/second
 - Production: 150 requests/second
@@ -133,22 +140,26 @@ PAYSTACK_PUBLIC_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxxx"  # Optional, for frontend
 ## Troubleshooting
 
 ### "Failed to initialize payment"
+
 - Check if `PAYSTACK_SECRET_KEY` is set
 - Verify key is correct (starts with `sk_test_` or `sk_live_`)
 - Check Paystack dashboard for errors
 
 ### "Virtual account not found"
+
 - Virtual account creation happens async on registration
 - Check server logs for creation errors
 - Manually trigger: Login as user, call GET `/api/transactions/virtual-account`
 
 ### "Withdrawal failed. Amount refunded to wallet."
+
 - Check Paystack balance (insufficient funds)
 - Verify bank code is correct
 - Check account number (must be 10 digits)
 - Ensure account name matches exactly
 
 ### Webhooks not received
+
 - Check ngrok is running
 - Verify webhook URL in Paystack dashboard
 - Check server logs for webhook signature verification
@@ -172,4 +183,3 @@ After setting up environment variables:
 **Last Updated:** November 9, 2025  
 **Paystack Documentation:** https://paystack.com/docs  
 **Support:** support@paystack.com
-

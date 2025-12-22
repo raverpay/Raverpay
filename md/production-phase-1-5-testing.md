@@ -10,6 +10,7 @@
    - https://dashboard.paystack.com/#/settings/developer
 
 2. **Add Webhook URL:**
+
    ```
    https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack
    ```
@@ -86,6 +87,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 ```
 
 **Response:**
+
 ```json
 {
   "reference": "TXN_DEP_17627030577598388",
@@ -113,7 +115,7 @@ curl -X POST {{URL}}/transactions/fund/card \
 ```
 1. User completes payment on Paystack checkout
 2. Paystack processes payment
-3. Paystack sends webhook to: 
+3. Paystack sends webhook to:
    https://raverpayraverpay-api-production.up.railway.app/api/payments/webhooks/paystack
 4. Your API receives webhook
 5. API verifies signature
@@ -129,6 +131,7 @@ curl -X GET {{URL}}/transactions/verify/TXN_DEP_17627030577598388 \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "status": "success",
@@ -167,6 +170,7 @@ curl -X POST {{URL}}/transactions/resolve-account \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "accountNumber": "0690000031",
@@ -191,6 +195,7 @@ curl -X POST {{URL}}/transactions/withdraw \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "reference": "TXN_WD_17627124561234",
@@ -223,6 +228,7 @@ curl -X GET {{URL}}/wallet/transactions \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "data": [
@@ -293,27 +299,32 @@ curl -X GET {{URL}}/wallet/transactions \
 ## 🐛 Troubleshooting
 
 ### "Virtual account not found"
+
 - Expected in test mode
 - Will work in production after DVA approval
 - Skip this test for now
 
 ### "Failed to resolve account number"
+
 - Test account numbers might not exist
 - Try a different account number
 - Or use your own real account number
 
 ### "Withdrawal failed. Amount refunded to wallet."
+
 - Expected in test mode
 - Paystack test account has limited balance
 - Will work in production with funded account
 
 ### Webhook not received
+
 - Check Railway logs for errors
 - Verify webhook URL in Paystack
 - Ensure Railway app is running
 - Check Paystack webhook logs for delivery status
 
 ### Payment successful but wallet not credited
+
 - Check if webhook was received (Railway logs)
 - Manually verify: `GET /transactions/verify/:reference`
 - Check transaction status in database
@@ -348,4 +359,3 @@ Replace these placeholders in commands:
 **Testing Date:** November 9, 2025  
 **Environment:** Production (Railway)  
 **Status:** Ready to Test ✅
-

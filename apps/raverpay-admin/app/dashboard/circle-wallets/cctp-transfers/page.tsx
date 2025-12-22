@@ -281,7 +281,9 @@ export default function CCTPTransfersPage() {
                                   <ExternalLink className="h-4 w-4" />
                                 </a>
                               )}
-                              <Link href={`/dashboard/circle-wallets/cctp-transfers/${transfer.id}`}>
+                              <Link
+                                href={`/dashboard/circle-wallets/cctp-transfers/${transfer.id}`}
+                              >
                                 <Button variant="ghost" size="sm">
                                   <Eye className="h-4 w-4" />
                                 </Button>

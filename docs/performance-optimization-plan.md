@@ -3,12 +3,14 @@
 ## Current Setup & Issues
 
 ### Infrastructure
+
 - **API Hosting**: Railway (Europe)
 - **Database**: Supabase PostgreSQL (Europe)
 - **Issue**: Slow API responses
 - **Same Region**: ✅ Good (low latency between API and DB)
 
 ### Current Performance Bottlenecks
+
 1. **Database queries on every request** - No caching
 2. **N+1 query problems** - Multiple database calls per request
 3. **Heavy computations** - Calculating limits, balances repeatedly
@@ -20,12 +22,14 @@
 ## Redis vs Upstash vs Railway
 
 ### What is Redis?
+
 - **In-memory data store** - Extremely fast (sub-millisecond)
 - **Cache layer** - Sits between your API and database
 - **Session storage** - Store user sessions, JWT tokens
 - **Rate limiting** - Track API usage per user
 
 ### Upstash Redis
+
 - **Serverless Redis** - Pay per request, no servers to manage
 - **HTTP/REST API** - Works anywhere, no connection pooling needed
 - **Global replication** - Can replicate to multiple regions
@@ -33,6 +37,7 @@
 - **Best for**: Serverless, edge computing, low usage apps
 
 **Pros**:
+
 - ✅ No infrastructure management
 - ✅ Automatic scaling
 - ✅ Free tier available
@@ -40,23 +45,27 @@
 - ✅ Built-in analytics
 
 **Cons**:
+
 - ❌ Slightly higher latency than self-hosted (~10-20ms)
 - ❌ Can get expensive at high scale
 - ❌ HTTP overhead vs native Redis protocol
 
 ### Railway Redis
+
 - **Self-hosted Redis** - You manage the instance
 - **Native Redis protocol** - Faster than HTTP
 - **Same datacenter** - Ultra-low latency with your API
 - **Pricing**: ~$5-10/month flat rate
 
 **Pros**:
+
 - ✅ Lowest latency (same datacenter)
 - ✅ Predictable pricing
 - ✅ Full Redis features
 - ✅ Better for high traffic
 
 **Cons**:
+
 - ❌ Need to manage/monitor
 - ❌ Fixed cost even if unused
 - ❌ Need to handle scaling manually
@@ -66,21 +75,26 @@
 ## Recommendation: Start with Upstash, Scale to Railway Redis
 
 ### Phase 1: Upstash Redis (Quick Win)
+
 **When**: Right now
 **Why**:
+
 - Fast to implement (no infrastructure)
 - Free tier covers development/testing
 - Immediate performance boost
 - Easy to migrate later
 
 **Expected improvements**:
+
 - Wallet balance: 500ms → 50ms (10x faster)
 - Transaction list: 800ms → 100ms (8x faster)
 - User profile: 300ms → 30ms (10x faster)
 
 ### Phase 2: Railway Redis (When scaling)
+
 **When**: When you exceed 10K requests/day or need <5ms cache latency
 **Why**:
+
 - Lower latency (native protocol)
 - Better for high traffic
 - More cost-effective at scale
@@ -92,6 +106,7 @@
 ### 1. User & Wallet Data (High Priority)
 
 #### Wallet Balance
+
 ```typescript
 Key: `wallet:${userId}`
 TTL: 60 seconds
@@ -106,6 +121,7 @@ Impact: 10x faster wallet queries
 ```
 
 #### User Profile
+
 ```typescript
 Key: `user:${userId}`
 TTL: 300 seconds (5 minutes)
@@ -120,6 +136,7 @@ Impact: Reduce 90% of user queries
 ```
 
 #### User Session
+
 ```typescript
 Key: `session:${userId}`
 TTL: 3600 seconds (1 hour)
@@ -138,6 +155,7 @@ Impact: No DB query for auth checks
 ### 2. Transaction Data (Medium Priority)
 
 #### Transaction History (Paginated)
+
 ```typescript
 Key: `transactions:${userId}:page:${page}:type:${type}:status:${status}`
 TTL: 120 seconds (2 minutes)
@@ -149,6 +167,7 @@ Impact: 8x faster transaction queries
 ```
 
 #### Transaction Details
+
 ```typescript
 Key: `transaction:${transactionId}`
 TTL: 600 seconds (10 minutes)
@@ -164,6 +183,7 @@ Impact: Instant transaction details
 ### 3. VTU Product Data (High Priority)
 
 #### Data Plans
+
 ```typescript
 Key: `vtu:data:${network}`
 TTL: 3600 seconds (1 hour)
@@ -175,6 +195,7 @@ Impact: 20x faster (no VTPass call)
 ```
 
 #### Cable TV Plans
+
 ```typescript
 Key: `vtu:cable:${provider}`
 TTL: 3600 seconds (1 hour)
@@ -186,6 +207,7 @@ Impact: 20x faster
 ```
 
 #### Electricity Providers
+
 ```typescript
 Key: `vtu:electricity:providers`
 TTL: 86400 seconds (24 hours)
@@ -201,6 +223,7 @@ Impact: Instant response
 ### 4. Rate Limiting (Critical)
 
 #### API Rate Limit
+
 ```typescript
 Key: `ratelimit:${userId}:${endpoint}`
 TTL: 60 seconds
@@ -212,6 +235,7 @@ Impact: Prevent abuse, reduce costs
 ```
 
 #### Failed Login Attempts
+
 ```typescript
 Key: `login:failed:${email}`
 TTL: 900 seconds (15 minutes)
@@ -255,6 +279,7 @@ CREATE INDEX idx_audit_logs_user ON audit_logs(userId, createdAt DESC);
 ## Additional Optimizations
 
 ### 1. Enable Supabase Connection Pooling
+
 ```env
 # Use Supabase's connection pooler (port 6543)
 DATABASE_URL=postgresql://user:pass@db.xxx.supabase.co:6543/postgres?pgbouncer=true
@@ -266,6 +291,7 @@ DIRECT_URL=postgresql://user:pass@db.xxx.supabase.co:5432/postgres
 ---
 
 ### 2. Implement Response Compression
+
 ```typescript
 // Enable gzip compression in NestJS
 app.use(compression());
@@ -276,6 +302,7 @@ app.use(compression());
 ---
 
 ### 3. Lazy Load Heavy Computations
+
 ```typescript
 // Don't calculate transaction summary unless needed
 // Only fetch when user explicitly requests it
@@ -289,6 +316,7 @@ GET /wallet?include=summary - Slower, with summary
 ---
 
 ### 4. Background Jobs for Heavy Tasks
+
 ```typescript
 // Don't block API response for:
 - Sending emails
@@ -306,6 +334,7 @@ GET /wallet?include=summary - Slower, with summary
 ## Implementation Priority
 
 ### Week 1: Quick Wins (Biggest Impact)
+
 1. ✅ **Add Upstash Redis** - 30 minutes setup
 2. ✅ **Cache wallet balance** - 1 hour
 3. ✅ **Cache VTU products** - 2 hours
@@ -317,6 +346,7 @@ GET /wallet?include=summary - Slower, with summary
 ---
 
 ### Week 2: Advanced Caching
+
 1. ✅ **Cache user profiles** - 1 hour
 2. ✅ **Cache transaction lists** - 2 hours
 3. ✅ **Implement rate limiting** - 2 hours
@@ -327,6 +357,7 @@ GET /wallet?include=summary - Slower, with summary
 ---
 
 ### Week 3: Optimization
+
 1. ✅ **Query optimization audit** - 2 hours
 2. ✅ **Implement lazy loading** - 2 hours
 3. ✅ **Add cache warming** - 1 hour
@@ -341,16 +372,19 @@ GET /wallet?include=summary - Slower, with summary
 ### Upstash Redis (Recommended to Start)
 
 **Free Tier**:
+
 - 10,000 requests/day
 - 256 MB storage
 - Perfect for development + small production
 
 **Pay-as-you-go** (after free tier):
+
 - $0.20 per 100K requests
 - ~$6/month for 1M requests/day
 - ~$30/month for 5M requests/day
 
 **Example**:
+
 - 100 users × 50 requests/day = 5,000 requests/day
 - Cost: **FREE** ✅
 
@@ -359,6 +393,7 @@ GET /wallet?include=summary - Slower, with summary
 ### Railway Redis (When You Scale)
 
 **Pricing**:
+
 - $5-10/month flat rate
 - Unlimited requests
 - Better value at >1M requests/day
@@ -394,11 +429,13 @@ GET /wallet?include=summary - Slower, with summary
 ## Migration Path
 
 ### Option A: Upstash Only (Recommended)
+
 ```
 Current → Upstash Redis → Monitor → Stay or migrate
 ```
 
 **Best for**:
+
 - Getting started quickly
 - Unpredictable traffic
 - Budget conscious
@@ -407,11 +444,13 @@ Current → Upstash Redis → Monitor → Stay or migrate
 ---
 
 ### Option B: Railway Redis (Future)
+
 ```
 Current → Upstash → Monitor → Railway Redis (when needed)
 ```
 
 **Best for**:
+
 - High traffic (>1M requests/day)
 - Need lowest latency (<5ms)
 - Predictable costs
@@ -421,30 +460,33 @@ Current → Upstash → Monitor → Railway Redis (when needed)
 
 ## Decision Matrix
 
-| Factor | Upstash | Railway Redis |
-|--------|---------|---------------|
-| **Setup Time** | 30 min ✅ | 2 hours |
-| **Initial Cost** | $0 ✅ | $5-10/month |
-| **Latency** | ~10-20ms | ~2-5ms ✅ |
-| **Scaling** | Auto ✅ | Manual |
-| **Maintenance** | Zero ✅ | Some required |
-| **Best for** | <1M req/day | >1M req/day |
+| Factor           | Upstash     | Railway Redis |
+| ---------------- | ----------- | ------------- |
+| **Setup Time**   | 30 min ✅   | 2 hours       |
+| **Initial Cost** | $0 ✅       | $5-10/month   |
+| **Latency**      | ~10-20ms    | ~2-5ms ✅     |
+| **Scaling**      | Auto ✅     | Manual        |
+| **Maintenance**  | Zero ✅     | Some required |
+| **Best for**     | <1M req/day | >1M req/day   |
 
 ---
 
 ## Recommendation
 
 ### Start Here:
+
 1. **Upstash Redis** - Free tier, immediate improvements
 2. **Add database indexes** - Free, huge performance boost
 3. **Enable compression** - Free, 60% smaller responses
 
 ### Expected Results:
+
 - **Before**: 500-1000ms average response time
 - **After**: 50-150ms average response time
 - **Improvement**: **5-10x faster** ⚡
 
 ### Cost:
+
 - **Month 1-6**: $0 (free tier)
 - **After scaling**: $6-30/month
 - **ROI**: Better UX = more users = worth it
@@ -456,6 +498,7 @@ Current → Upstash → Monitor → Railway Redis (when needed)
 ### Ready to Implement?
 
 **Option 1**: Start with Upstash (Recommended)
+
 - Create Upstash account
 - Get Redis URL
 - Implement caching layer
@@ -463,6 +506,7 @@ Current → Upstash → Monitor → Railway Redis (when needed)
 - Deploy
 
 **Option 2**: Start with Railway Redis
+
 - Add Redis to Railway project
 - Get connection URL
 - Implement caching layer

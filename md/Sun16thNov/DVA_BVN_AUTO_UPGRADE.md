@@ -7,6 +7,7 @@ Successfully implemented the feature to automatically upgrade users to TIER_2 wh
 ### Backend Changes (Committed: `380cc64`)
 
 #### 1. Enhanced Webhook Handler (`paystack-webhook.service.ts`)
+
 - Processes `customeridentification.success` webhook from Paystack
 - Automatically upgrades user from their current tier → **TIER_2**
 - Updates: `bvnVerified: true`, `kycTier: 'TIER_2'`, `paystackCustomerCode`
@@ -14,6 +15,7 @@ Successfully implemented the feature to automatically upgrade users to TIER_2 wh
 - Handles edge cases (user not found, already verified)
 
 #### 2. Updated DVA Service (`virtual-accounts.service.ts`)
+
 - Now accepts BVN, NIN, and bank account details via `RequestVirtualAccountDto`
 - Validates that BVN or NIN is provided for Financial Services compliance
 - Initiates Paystack customer validation with BVN before creating DVA
@@ -21,6 +23,7 @@ Successfully implemented the feature to automatically upgrade users to TIER_2 wh
 - Returns status: `pending_verification` or `active`
 
 #### 3. Created Request DTO (`request-virtual-account.dto.ts`)
+
 - Validates BVN (11 digits), NIN (11 digits), account number (10 digits)
 - Supports optional user data: `first_name`, `last_name`, `phone`, `date_of_birth`
 - Includes bank details: `account_number`, `bank_code` for validation
@@ -28,6 +31,7 @@ Successfully implemented the feature to automatically upgrade users to TIER_2 wh
 ### Frontend Changes (Committed: `baf06f8`)
 
 #### 1. Updated Types (`virtual-account.ts`)
+
 - Made `DVARequestPayload` fields optional to match backend
 - Added support for BVN, NIN, DOB, and bank account details
 - Updated `DVARequestResponse` to include `status` field
@@ -84,11 +88,11 @@ Successfully implemented the feature to automatically upgrade users to TIER_2 wh
 
 ## Limits After Upgrade
 
-| Tier | Single Transaction | Daily Limit | Requirements |
-|------|-------------------|-------------|--------------|
-| TIER_0 | ₦50,000 | ₦300,000 | Email + Phone verification |
-| **TIER_2** | **₦5,000,000** | **₦10,000,000** | **BVN verified via DVA** ✅ |
-| TIER_3 | Unlimited | Unlimited | Full KYC (BVN + NIN) |
+| Tier       | Single Transaction | Daily Limit     | Requirements                |
+| ---------- | ------------------ | --------------- | --------------------------- |
+| TIER_0     | ₦50,000            | ₦300,000        | Email + Phone verification  |
+| **TIER_2** | **₦5,000,000**     | **₦10,000,000** | **BVN verified via DVA** ✅ |
+| TIER_3     | Unlimited          | Unlimited       | Full KYC (BVN + NIN)        |
 
 ## What's Already Working
 
@@ -99,6 +103,7 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 ### POST `/api/virtual-accounts/request`
 
 **Request Body:**
+
 ```json
 {
   "preferred_bank": "wema-bank",
@@ -113,6 +118,7 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -133,6 +139,7 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 **Event:** `customeridentification.success`
 
 **Payload:**
+
 ```json
 {
   "event": "customeridentification.success",
@@ -148,6 +155,7 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 ```
 
 **Backend Action:**
+
 1. Find user by email
 2. Check if BVN already verified (idempotency)
 3. Update user record:
@@ -160,11 +168,13 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 ## Testing Checklist
 
 ### Prerequisites
+
 - [ ] Paystack webhook URL configured in Paystack Dashboard
 - [ ] `customeridentification.success` event enabled
 - [ ] Valid test BVN and bank account details
 
 ### Test Steps
+
 1. [ ] User completes DVA request with BVN data
 2. [ ] Verify DVA is created with `status: "pending_verification"`
 3. [ ] Verify Paystack receives customer validation request
@@ -176,6 +186,7 @@ The frontend screens you created earlier (`app/virtual-account/bvn-form.tsx`, et
 ## Files Modified
 
 ### Backend (`apps/raverpay-api`)
+
 ```
 src/
 ├── virtual-accounts/
@@ -189,6 +200,7 @@ src/
 ```
 
 ### Frontend (`raverpay-mobileapp`)
+
 ```
 src/
 └── types/
@@ -225,6 +237,7 @@ If you want to test this flow, you'll need to:
 ## Compliance Notes
 
 This implementation meets Nigerian Financial Services requirements:
+
 - CBN guidelines for customer identification
 - BVN verification for high-value transactions
 - Audit trail for regulatory compliance
@@ -235,5 +248,6 @@ This implementation meets Nigerian Financial Services requirements:
 **Implementation Status:** ✅ Complete and Ready for Testing
 
 **Commits:**
+
 - Backend: `380cc64` - feat: auto-upgrade users to TIER_2 via DVA BVN verification
 - Frontend: `baf06f8` - feat: update DVA types to support BVN auto-upgrade

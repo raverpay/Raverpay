@@ -8,6 +8,7 @@
 ---
 
 ## Table of Contents
+
 1. [Executive Summary](#executive-summary)
 2. [Tech Stack & Architecture](#tech-stack--architecture)
 3. [Design System](#design-system)
@@ -28,6 +29,7 @@
 ## Executive Summary
 
 RaverPay Mobile is a **production-grade fintech application** built with React Native/Expo that provides:
+
 - Digital wallet management
 - Bill payments (airtime, data, cable TV, electricity)
 - Bank transfers & withdrawals
@@ -36,6 +38,7 @@ RaverPay Mobile is a **production-grade fintech application** built with React N
 - Secure biometric authentication
 
 **Key Objectives:**
+
 - Native-like iOS experience with 60fps animations
 - < 2 second cold start time
 - Offline-first architecture with background sync
@@ -49,6 +52,7 @@ RaverPay Mobile is a **production-grade fintech application** built with React N
 ### Core Technologies
 
 #### 1. Framework & Tooling (Already Installed ✅)
+
 ```json
 {
   "expo": "~54.0.23",
@@ -60,6 +64,7 @@ RaverPay Mobile is a **production-grade fintech application** built with React N
 ```
 
 #### 2. UI & Styling (Already Installed ✅)
+
 ```json
 {
   "nativewind": "^4.2.1",
@@ -71,11 +76,13 @@ RaverPay Mobile is a **production-grade fintech application** built with React N
 ```
 
 **Note:** For fonts, you'll need to install:
+
 ```bash
 npx expo install @expo-google-fonts/urbanist expo-font
 ```
 
 #### 3. State Management & Data Fetching (Already Installed ✅)
+
 ```json
 {
   "zustand": "^5.0.8",
@@ -84,6 +91,7 @@ npx expo install @expo-google-fonts/urbanist expo-font
 ```
 
 **Need to Install:**
+
 ```bash
 npm install zod react-hook-form @hookform/resolvers
 ```
@@ -91,6 +99,7 @@ npm install zod react-hook-form @hookform/resolvers
 #### 4. Security & Storage (Partially Installed)
 
 **Already Installed:**
+
 ```json
 {
   "@react-native-async-storage/async-storage": "^2.2.0"
@@ -98,6 +107,7 @@ npm install zod react-hook-form @hookform/resolvers
 ```
 
 **Need to Install:**
+
 ```bash
 npx expo install expo-secure-store expo-local-authentication expo-crypto
 ```
@@ -105,6 +115,7 @@ npx expo install expo-secure-store expo-local-authentication expo-crypto
 #### 5. Notifications & Media (Partially Installed)
 
 **Already Installed:**
+
 ```json
 {
   "expo-image": "~3.0.10",
@@ -113,6 +124,7 @@ npx expo install expo-secure-store expo-local-authentication expo-crypto
 ```
 
 **Need to Install:**
+
 ```bash
 # OneSignal
 npm install react-native-onesignal onesignal-expo-plugin
@@ -124,6 +136,7 @@ npx expo install expo-image-picker expo-notifications
 #### 6. Networking & Utilities (Partially Installed)
 
 **Already Installed:**
+
 ```json
 {
   "axios": "^1.13.2"
@@ -131,11 +144,13 @@ npx expo install expo-image-picker expo-notifications
 ```
 
 **Need to Install:**
+
 ```bash
 npm install react-native-toast-message date-fns react-hook-form
 ```
 
 #### 7. Additional Packages Needed
+
 ```bash
 # Bottom sheet for modals
 npm install @gorhom/bottom-sheet
@@ -157,6 +172,7 @@ npm install zod @hookform/resolvers
 ```
 
 #### 8. Already Installed (No Action Needed ✅)
+
 ```json
 {
   "@expo/vector-icons": "^15.0.3",
@@ -302,6 +318,7 @@ raverpay-mobile/
 After researching top fintech apps (Revolut, N26, Monzo, Cash App), the recommended color scheme is:
 
 #### Option 1: Modern Purple/Blue (RECOMMENDED)
+
 ```typescript
 // constants/colors.ts
 export const colors = {
@@ -313,7 +330,7 @@ export const colors = {
       200: '#DDD6FE',
       300: '#C4B5FD',
       400: '#A78BFA',
-      500: '#8B5CF6',  // Main brand color
+      500: '#8B5CF6', // Main brand color
       600: '#7C3AED',
       700: '#6D28D9',
       800: '#5B21B6',
@@ -393,6 +410,7 @@ export const colors = {
 ```
 
 **Why this palette?**
+
 - Purple conveys innovation, trust, and premium quality
 - Green accents for positive actions (deposits, earnings)
 - Excellent contrast ratios (WCAG AAA compliant)
@@ -400,6 +418,7 @@ export const colors = {
 - Works great in both light/dark modes
 
 #### Alternative: Professional Blue/Green
+
 ```typescript
 // For a more traditional fintech look
 primary: '#0066FF',  // Blue (like PayPal, Wise)
@@ -515,11 +534,11 @@ export const spacing = {
 
 // Component-specific spacing
 export const layout = {
-  screenPadding: spacing[4],      // 16px horizontal padding
-  cardPadding: spacing[4],         // 16px card padding
-  sectionGap: spacing[6],          // 24px between sections
-  itemGap: spacing[3],             // 12px between list items
-  buttonHeight: 52,                // iOS-like button height
+  screenPadding: spacing[4], // 16px horizontal padding
+  cardPadding: spacing[4], // 16px card padding
+  sectionGap: spacing[6], // 24px between sections
+  itemGap: spacing[3], // 12px between list items
+  buttonHeight: 52, // iOS-like button height
   inputHeight: 52,
   borderRadius: {
     sm: 8,
@@ -538,6 +557,7 @@ export const layout = {
 Since React Native doesn't use media queries, we'll use:
 
 #### 1. Responsive Hook
+
 ```typescript
 // hooks/useResponsive.ts
 import { useWindowDimensions } from 'react-native';
@@ -548,9 +568,9 @@ export const useResponsive = () => {
   return {
     width,
     height,
-    isSmallDevice: width < 375,      // iPhone SE
-    isMediumDevice: width >= 375 && width < 414,  // iPhone 12/13
-    isLargeDevice: width >= 414,     // iPhone Pro Max, iPad
+    isSmallDevice: width < 375, // iPhone SE
+    isMediumDevice: width >= 375 && width < 414, // iPhone 12/13
+    isLargeDevice: width >= 414, // iPhone Pro Max, iPad
     isTablet: width >= 768,
 
     // Dynamic spacing
@@ -571,13 +591,11 @@ export const useResponsive = () => {
 ```
 
 #### 2. Tailwind Config with Custom Breakpoints
+
 ```javascript
 // tailwind.config.js
 module.exports = {
-  content: [
-    './app/**/*.{js,jsx,ts,tsx}',
-    './src/**/*.{js,jsx,ts,tsx}',
-  ],
+  content: ['./app/**/*.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
@@ -602,6 +620,7 @@ module.exports = {
 #### Base Components (iOS-inspired)
 
 **1. Button Component**
+
 ```typescript
 // components/ui/Button.tsx
 import { Pressable, Text, ActivityIndicator } from 'react-native';
@@ -636,6 +655,7 @@ export const Button = ({
 ```
 
 **2. Input Component**
+
 ```typescript
 // components/ui/Input.tsx
 interface InputProps {
@@ -656,6 +676,7 @@ interface InputProps {
 ```
 
 **3. Text Component (Type-safe)**
+
 ```typescript
 // components/ui/Text.tsx
 type TextVariant = 'h1' | 'h2' | 'h3' | 'body' | 'bodyMedium' | 'caption' | 'button';
@@ -669,6 +690,7 @@ interface TextProps {
 ```
 
 **4. Card Component**
+
 ```typescript
 // components/ui/Card.tsx
 interface CardProps {
@@ -679,6 +701,7 @@ interface CardProps {
 ```
 
 **5. Modal Component**
+
 ```typescript
 // components/ui/Modal.tsx
 interface ModalProps {
@@ -691,6 +714,7 @@ interface ModalProps {
 ```
 
 **6. BottomSheet Component**
+
 ```typescript
 // Using @gorhom/bottom-sheet
 interface BottomSheetProps {
@@ -775,11 +799,13 @@ export default function RootLayout() {
 ### Authentication Screens
 
 #### 1. Welcome Screen
+
 **Route:** `/(auth)/welcome`
 
 **Purpose:** First screen users see, brand introduction
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │                             │
@@ -799,6 +825,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Auto-navigate to main app if token valid
 - Smooth animations
 - Version number in footer
@@ -806,9 +833,11 @@ export default function RootLayout() {
 ---
 
 #### 2. Register Screen
+
 **Route:** `/(auth)/register`
 
 **Form Fields:**
+
 - First Name
 - Last Name
 - Email (with validation icon)
@@ -817,6 +846,7 @@ export default function RootLayout() {
 - Terms & Conditions checkbox
 
 **Validations:**
+
 - Email: Valid format
 - Phone: Nigerian number only
 - Password: Min 8 chars, uppercase, lowercase, number/special
@@ -825,6 +855,7 @@ export default function RootLayout() {
 **API Call:** `POST /auth/register`
 
 **Success Flow:**
+
 1. Register success
 2. Auto-send email verification
 3. Navigate to verify-email screen
@@ -832,21 +863,25 @@ export default function RootLayout() {
 ---
 
 #### 3. Login Screen
+
 **Route:** `/(auth)/login`
 
 **Form Fields:**
+
 - Email or Phone Number
 - Password
 - Remember Me toggle
 - Forgot Password link
 
 **Features:**
+
 - Biometric login (if previously enabled)
 - Auto-fill email if "Remember Me" was checked
 
 **API Call:** `POST /auth/login`
 
 **Success Flow:**
+
 1. Login success
 2. Check emailVerified status
 3. If not verified → navigate to verify-email
@@ -855,9 +890,11 @@ export default function RootLayout() {
 ---
 
 #### 4. Verify Email Screen
+
 **Route:** `/(auth)/verify-email`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │         [< Back]            │
@@ -879,6 +916,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Auto-send code on mount
 - Auto-focus OTP input
 - Countdown timer (60s) for resend
@@ -886,27 +924,33 @@ export default function RootLayout() {
 - Error handling (invalid/expired code)
 
 **API Calls:**
+
 - `POST /users/send-email-verification` (on mount)
 - `POST /users/verify-email` (on submit)
 
 **Success Flow:**
+
 1. Email verified
 2. Navigate to verify-phone screen
 
 ---
 
 #### 5. Verify Phone Screen
+
 **Route:** `/(auth)/verify-phone`
 
 **Similar to verify-email but:**
+
 - SMS sent via VTPass
 - Different heading/copy
 
 **API Calls:**
+
 - `POST /users/send-phone-verification`
 - `POST /users/verify-phone`
 
 **Success Flow:**
+
 1. Phone verified
 2. User status → ACTIVE
 3. KYC tier → TIER_1
@@ -918,9 +962,11 @@ export default function RootLayout() {
 ### Main App Screens
 
 #### 6. Home/Dashboard Screen
+
 **Route:** `/(main)/(tabs)/index`
 
 **Header:**
+
 ```
 ┌─────────────────────────────┐
 │ [Avatar] Hi, John!          │
@@ -931,6 +977,7 @@ export default function RootLayout() {
 ```
 
 **Balance Card:**
+
 ```
 ┌─────────────────────────────┐
 │ Available Balance           │
@@ -944,6 +991,7 @@ export default function RootLayout() {
 ```
 
 **Quick Actions:**
+
 ```
 ┌────────┬────────┬────────┬────────┐
 │Airtime │  Data  │ Cable  │Electric│
@@ -952,6 +1000,7 @@ export default function RootLayout() {
 ```
 
 **Recent Transactions:**
+
 ```
 ┌─────────────────────────────┐
 │ Recent Transactions [See All]│
@@ -967,6 +1016,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Pull-to-refresh (balance + transactions)
 - Balance visibility toggle (show/hide amount)
 - KYC tier badge (tap to upgrade)
@@ -974,15 +1024,18 @@ export default function RootLayout() {
 - Empty state if no transactions
 
 **API Calls:**
+
 - `GET /wallet` (balance, limits)
 - `GET /wallet/transactions?page=1&limit=5` (recent)
 
 ---
 
 #### 7. Services Screen
+
 **Route:** `/(main)/(tabs)/services`
 
 **Search Bar:**
+
 ```
 ┌─────────────────────────────┐
 │ [🔍] Search services...     │
@@ -990,6 +1043,7 @@ export default function RootLayout() {
 ```
 
 **Service Categories:**
+
 ```
 ┌─────────────────────────────┐
 │ Bill Payments               │
@@ -1012,6 +1066,7 @@ export default function RootLayout() {
 ```
 
 **Recent Orders:**
+
 ```
 ┌─────────────────────────────┐
 │ Recent Orders               │
@@ -1025,20 +1080,24 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Search (filter services)
 - Service cards with tap animation
 - Recent orders list
 - Pull-to-refresh
 
 **API Calls:**
+
 - `GET /vtu/orders?page=1&limit=10`
 
 ---
 
 #### 8. Wallet Screen
+
 **Route:** `/(main)/(tabs)/wallet`
 
 **Header Balance:**
+
 ```
 ┌─────────────────────────────┐
 │ Wallet Balance              │
@@ -1048,6 +1107,7 @@ export default function RootLayout() {
 ```
 
 **Actions:**
+
 ```
 ┌─────────────────────────────┐
 │ [💳 Add Money]              │
@@ -1057,6 +1117,7 @@ export default function RootLayout() {
 ```
 
 **Limits Card:**
+
 ```
 ┌─────────────────────────────┐
 │ Transaction Limits (Tier 1) │
@@ -1072,6 +1133,7 @@ export default function RootLayout() {
 ```
 
 **Transaction History:**
+
 ```
 ┌─────────────────────────────┐
 │ All Transactions [Filter]   │
@@ -1087,12 +1149,14 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Infinite scroll (pagination)
 - Filter by type, status, date range
 - Transaction grouping by date
 - Tap transaction → detail modal
 
 **API Calls:**
+
 - `GET /wallet`
 - `GET /wallet/limits`
 - `GET /wallet/transactions?page={n}&limit=20`
@@ -1100,9 +1164,11 @@ export default function RootLayout() {
 ---
 
 #### 9. Profile Screen
+
 **Route:** `/(main)/(tabs)/profile`
 
 **Profile Header:**
+
 ```
 ┌─────────────────────────────┐
 │      [Avatar with Edit]     │
@@ -1116,6 +1182,7 @@ export default function RootLayout() {
 ```
 
 **Menu Sections:**
+
 ```
 ┌─────────────────────────────┐
 │ Account                     │
@@ -1148,14 +1215,17 @@ export default function RootLayout() {
 ```
 
 **API Calls:**
+
 - `GET /users/profile`
 
 ---
 
 #### 10. Fund Wallet Screen
+
 **Route:** `/(main)/fund-wallet`
 
 **Options:**
+
 ```
 ┌─────────────────────────────┐
 │ Fund Wallet                 │
@@ -1173,6 +1243,7 @@ export default function RootLayout() {
 ```
 
 **If Card Selected:**
+
 ```
 ┌─────────────────────────────┐
 │ Amount                      │
@@ -1186,6 +1257,7 @@ export default function RootLayout() {
 ```
 
 **If Transfer Selected:**
+
 ```
 ┌─────────────────────────────┐
 │ Transfer to this account:   │
@@ -1202,6 +1274,7 @@ export default function RootLayout() {
 ```
 
 **Flow:**
+
 1. Select method
 2. Enter amount
 3. If card → open Paystack WebView
@@ -1209,6 +1282,7 @@ export default function RootLayout() {
 5. Show success/error screen
 
 **API Calls:**
+
 - `POST /transactions/fund/card` → Paystack URL
 - `GET /transactions/verify/:reference`
 - `GET /transactions/virtual-account`
@@ -1216,9 +1290,11 @@ export default function RootLayout() {
 ---
 
 #### 11. Withdraw Screen
+
 **Route:** `/(main)/withdraw`
 
 **Bank Selection:**
+
 ```
 ┌─────────────────────────────┐
 │ Withdraw                    │
@@ -1243,6 +1319,7 @@ export default function RootLayout() {
 ```
 
 **Add Bank Account Modal:**
+
 ```
 ┌─────────────────────────────┐
 │ Add Bank Account            │
@@ -1261,6 +1338,7 @@ export default function RootLayout() {
 ```
 
 **API Calls:**
+
 - `GET /transactions/banks`
 - `POST /transactions/resolve-account`
 - `POST /transactions/withdraw`
@@ -1268,6 +1346,7 @@ export default function RootLayout() {
 ---
 
 #### 12. Buy Airtime Screen
+
 **Route:** `/(main)/buy-airtime`
 
 ```
@@ -1296,18 +1375,21 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Auto-detect network from phone number
 - Recent/favorite beneficiaries
 - Contact picker integration
 - Quick amount buttons
 
 **API Calls:**
+
 - `GET /vtu/airtime/providers`
 - `POST /vtu/airtime/purchase`
 
 ---
 
 #### 13. Buy Data Screen
+
 **Route:** `/(main)/buy-data`
 
 ```
@@ -1334,6 +1416,7 @@ export default function RootLayout() {
 ```
 
 **Data Plans Bottom Sheet:**
+
 ```
 ┌─────────────────────────────┐
 │ MTN Data Plans              │
@@ -1352,6 +1435,7 @@ export default function RootLayout() {
 ```
 
 **API Calls:**
+
 - `GET /vtu/data/plans/:network`
 - `GET /vtu/data/sme-plans/:network`
 - `POST /vtu/data/purchase`
@@ -1359,6 +1443,7 @@ export default function RootLayout() {
 ---
 
 #### 14. Pay Cable TV Screen
+
 **Route:** `/(main)/pay-cable`
 
 ```
@@ -1387,6 +1472,7 @@ export default function RootLayout() {
 ```
 
 **API Calls:**
+
 - `GET /vtu/cable-tv/plans/:provider`
 - `POST /vtu/cable-tv/verify`
 - `POST /vtu/cable-tv/pay`
@@ -1394,6 +1480,7 @@ export default function RootLayout() {
 ---
 
 #### 15. Pay Electricity Screen
+
 **Route:** `/(main)/pay-electricity`
 
 ```
@@ -1422,6 +1509,7 @@ export default function RootLayout() {
 ```
 
 **API Calls:**
+
 - `GET /vtu/electricity/providers`
 - `POST /vtu/electricity/verify`
 - `POST /vtu/electricity/pay`
@@ -1429,6 +1517,7 @@ export default function RootLayout() {
 ---
 
 #### 16. Transaction Details Screen
+
 **Route:** `/(main)/transaction-details/[id]`
 
 ```
@@ -1465,11 +1554,13 @@ export default function RootLayout() {
 ```
 
 **API Calls:**
+
 - `GET /wallet/transactions/:id`
 
 ---
 
 #### 17. Notifications Screen
+
 **Route:** `/(main)/notifications`
 
 ```
@@ -1501,21 +1592,25 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Filter by type
 - Mark as read
 - Clear all
 - Pull-to-refresh
 
 **API Calls (Future):**
+
 - `GET /notifications?page=1&limit=20`
 - `PUT /notifications/:id/read`
 
 ---
 
 #### 18. Forgot Password Screen
+
 **Route:** `/(auth)/forgot-password`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │         [< Back]            │
@@ -1539,6 +1634,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Email validation
 - Loading state during request
 - Success message (code sent)
@@ -1547,6 +1643,7 @@ export default function RootLayout() {
 **API Call:** `POST /auth/forgot-password`
 
 **Success Flow:**
+
 1. Code sent to email
 2. Navigate to verify-reset-code screen
 3. Show toast: "Reset code sent to your email"
@@ -1554,9 +1651,11 @@ export default function RootLayout() {
 ---
 
 #### 19. Verify Reset Code Screen
+
 **Route:** `/(auth)/verify-reset-code`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │         [< Back]            │
@@ -1580,6 +1679,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Auto-focus OTP input
 - Countdown timer (10 minutes for expiry)
 - Resend code (60s cooldown)
@@ -1588,6 +1688,7 @@ export default function RootLayout() {
 **API Call:** `POST /auth/verify-reset-code`
 
 **Success Flow:**
+
 1. Code verified
 2. Receive reset token
 3. Navigate to reset-password screen
@@ -1595,9 +1696,11 @@ export default function RootLayout() {
 ---
 
 #### 20. Reset Password Screen
+
 **Route:** `/(auth)/reset-password`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │         [< Back]            │
@@ -1625,6 +1728,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Real-time password strength indicator
 - Password visibility toggle
 - Validation checklist
@@ -1633,6 +1737,7 @@ export default function RootLayout() {
 **API Call:** `POST /auth/reset-password`
 
 **Success Flow:**
+
 1. Password reset successfully
 2. Show success modal
 3. Navigate to login screen
@@ -1641,9 +1746,11 @@ export default function RootLayout() {
 ---
 
 #### 21. Change Password Screen
+
 **Route:** `/(main)/change-password`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Change Password   │
@@ -1671,6 +1778,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Verify current password first
 - Password strength indicator
 - Validation checklist
@@ -1679,6 +1787,7 @@ export default function RootLayout() {
 **API Call:** `POST /users/change-password`
 
 **Success Flow:**
+
 1. Password changed successfully
 2. Show success modal
 3. Navigate back to profile
@@ -1687,9 +1796,11 @@ export default function RootLayout() {
 ---
 
 #### 22. Set Transaction PIN Screen
+
 **Route:** `/(main)/set-pin`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Set Transaction PIN│
@@ -1718,6 +1829,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - 4-digit numeric keypad
 - PIN masking (show as dots)
 - PIN matching validation
@@ -1727,6 +1839,7 @@ export default function RootLayout() {
 **API Call:** `POST /users/set-pin`
 
 **Success Flow:**
+
 1. PIN set successfully
 2. Show success modal
 3. Navigate back
@@ -1735,9 +1848,11 @@ export default function RootLayout() {
 ---
 
 #### 23. Change Transaction PIN Screen
+
 **Route:** `/(main)/change-pin`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Change PIN        │
@@ -1758,6 +1873,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Verify current PIN first
 - 4-digit numeric inputs
 - PIN masking
@@ -1766,6 +1882,7 @@ export default function RootLayout() {
 **API Call:** `POST /users/change-pin`
 
 **Success Flow:**
+
 1. PIN changed successfully
 2. Show success modal
 3. Navigate back to profile
@@ -1773,9 +1890,11 @@ export default function RootLayout() {
 ---
 
 #### 24. Enter PIN Modal (Reusable)
+
 **Component:** `<PINModal />`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │  Enter Transaction PIN      │
@@ -1798,6 +1917,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Custom numeric keypad
 - PIN dots animation
 - Biometric option (if enabled)
@@ -1805,6 +1925,7 @@ export default function RootLayout() {
 - Auto-close on success
 
 **Usage:**
+
 ```typescript
 <PINModal
   visible={showPIN}
@@ -1818,9 +1939,11 @@ export default function RootLayout() {
 ---
 
 #### 25. Edit Profile Screen
+
 **Route:** `/(main)/edit-profile`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Edit Profile [Save]│
@@ -1859,6 +1982,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Avatar upload (camera or gallery)
 - Email/Phone locked (verified fields)
 - Date picker for DOB
@@ -1867,15 +1991,18 @@ export default function RootLayout() {
 - Validation
 
 **API Calls:**
+
 - `POST /users/upload-avatar` (when uploading photo)
 - `PUT /users/profile` (when saving)
 
 ---
 
 #### 26. Verify BVN Screen
+
 **Route:** `/(main)/verify-bvn`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Verify BVN        │
@@ -1905,6 +2032,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Show current vs new limits
 - BVN input (11 digits)
 - Security assurance message
@@ -1914,6 +2042,7 @@ export default function RootLayout() {
 **API Call:** `POST /users/verify-bvn`
 
 **Success Flow:**
+
 1. BVN verified
 2. KYC tier upgraded to TIER_2
 3. Show success modal with new limits
@@ -1923,9 +2052,11 @@ export default function RootLayout() {
 ---
 
 #### 27. Verify NIN Screen
+
 **Route:** `/(main)/verify-nin`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Verify NIN        │
@@ -1957,6 +2088,7 @@ export default function RootLayout() {
 **API Call:** `POST /users/verify-nin`
 
 **Success Flow:**
+
 1. NIN verified
 2. KYC tier upgraded to TIER_3
 3. Show premium success modal
@@ -1965,9 +2097,11 @@ export default function RootLayout() {
 ---
 
 #### 28. Settings Screen
+
 **Route:** `/(main)/settings`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────┐
 │ [< Back]  Settings          │
@@ -2009,6 +2143,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Theme switcher (immediate effect)
 - Biometric toggle (test before enabling)
 - Push notification preferences
@@ -2019,6 +2154,7 @@ export default function RootLayout() {
 #### 29. Success/Error Modals (Reusable Components)
 
 **Success Modal:**
+
 ```
 ┌─────────────────────────────┐
 │                             │
@@ -2037,6 +2173,7 @@ export default function RootLayout() {
 ```
 
 **Error Modal:**
+
 ```
 ┌─────────────────────────────┐
 │                             │
@@ -2054,6 +2191,7 @@ export default function RootLayout() {
 ```
 
 **Features:**
+
 - Lottie animations
 - Auto-dismiss option
 - Action buttons
@@ -2227,6 +2365,7 @@ export default function RootLayout() {
 ### Zustand Stores
 
 #### 1. Auth Store
+
 ```typescript
 // store/auth.store.ts
 import { create } from 'zustand';
@@ -2253,17 +2392,19 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
 
-      setTokens: (access, refresh) => set({
-        accessToken: access,
-        refreshToken: refresh,
-        isAuthenticated: true,
-      }),
+      setTokens: (access, refresh) =>
+        set({
+          accessToken: access,
+          refreshToken: refresh,
+          isAuthenticated: true,
+        }),
 
-      clearTokens: () => set({
-        accessToken: null,
-        refreshToken: null,
-        isAuthenticated: false,
-      }),
+      clearTokens: () =>
+        set({
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        }),
 
       logout: async () => {
         // Clear all stores
@@ -2275,12 +2416,13 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 ```
 
 #### 2. User Store
+
 ```typescript
 // store/user.store.ts
 interface UserState {
@@ -2295,20 +2437,22 @@ export const useUserStore = create<UserState>()(
     (set) => ({
       user: null,
       setUser: (user) => set({ user }),
-      updateUser: (updates) => set((state) => ({
-        user: state.user ? { ...state.user, ...updates } : null
-      })),
+      updateUser: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
       clearUser: () => set({ user: null }),
     }),
     {
       name: 'user-storage',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 ```
 
 #### 3. Wallet Store
+
 ```typescript
 // store/wallet.store.ts
 interface WalletState {
@@ -2326,6 +2470,7 @@ interface WalletState {
 ```
 
 #### 4. Theme Store
+
 ```typescript
 // store/theme.store.ts
 type ThemeMode = 'light' | 'dark' | 'auto';
@@ -2349,8 +2494,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,        // 5 minutes
-      gcTime: 1000 * 60 * 60 * 24,     // 24 hours
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
       retry: 2,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
@@ -2466,7 +2611,7 @@ apiClient.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor (handle errors, refresh token)
@@ -2497,7 +2642,6 @@ apiClient.interceptors.response.use(
         // Retry original request
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return apiClient(originalRequest);
-
       } catch (refreshError) {
         // Refresh failed → logout
         useAuthStore.getState().clearTokens();
@@ -2508,7 +2652,7 @@ apiClient.interceptors.response.use(
 
     // Handle other errors
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -2522,7 +2666,7 @@ export class ApiError extends Error {
   constructor(
     public statusCode: number,
     public message: string,
-    public errors?: Record<string, string[]>
+    public errors?: Record<string, string[]>,
   ) {
     super(message);
   }
@@ -2532,11 +2676,7 @@ export const handleApiError = (error: any): ApiError => {
   if (error.response) {
     const { status, data } = error.response;
 
-    return new ApiError(
-      status,
-      data.message || 'An error occurred',
-      data.errors
-    );
+    return new ApiError(status, data.message || 'An error occurred', data.errors);
   }
 
   if (error.request) {
@@ -2597,7 +2737,7 @@ export const biometrics = {
 
   async getSupportedTypes(): Promise<string[]> {
     const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-    return types.map(type => {
+    return types.map((type) => {
       switch (type) {
         case LocalAuthentication.AuthenticationType.FINGERPRINT:
           return 'fingerprint';
@@ -2629,15 +2769,15 @@ export const biometrics = {
 
 **What to Store:**
 
-| Data | Storage | Cache | Reason |
-|------|---------|-------|--------|
-| Access Token | SecureStore | No | Sensitive |
-| Refresh Token | SecureStore | No | Sensitive |
-| User Profile | AsyncStorage | Yes | Offline access |
-| Wallet Balance | AsyncStorage | Yes | Show on startup |
-| Transactions | React Query Cache | Yes | Pagination |
-| Settings | AsyncStorage | No | Preferences |
-| Biometric Enabled | AsyncStorage | No | User choice |
+| Data              | Storage           | Cache | Reason          |
+| ----------------- | ----------------- | ----- | --------------- |
+| Access Token      | SecureStore       | No    | Sensitive       |
+| Refresh Token     | SecureStore       | No    | Sensitive       |
+| User Profile      | AsyncStorage      | Yes   | Offline access  |
+| Wallet Balance    | AsyncStorage      | Yes   | Show on startup |
+| Transactions      | React Query Cache | Yes   | Pagination      |
+| Settings          | AsyncStorage      | No    | Preferences     |
+| Biometric Enabled | AsyncStorage      | No    | User choice     |
 
 **Cache Strategy:**
 
@@ -2667,7 +2807,7 @@ export const useOffline = () => {
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setIsOffline(!state.isConnected);
     });
 
@@ -2679,6 +2819,7 @@ export const useOffline = () => {
 ```
 
 **Offline UX:**
+
 - Show offline banner
 - Disable transaction buttons
 - Allow viewing cached data
@@ -2693,6 +2834,7 @@ export const useOffline = () => {
 **Target:** < 2 seconds cold start
 
 **Strategies:**
+
 ```typescript
 // app/_layout.tsx
 import { useEffect } from 'react';
@@ -2723,6 +2865,7 @@ export default function RootLayout() {
 ```
 
 **Optimization Checklist:**
+
 - ✅ Use Hermes engine (enabled by default in Expo 52)
 - ✅ Lazy load screens with React.lazy()
 - ✅ Optimize images with expo-image
@@ -2777,11 +2920,7 @@ import { Image } from 'expo-image';
 
 ```typescript
 // Use Reanimated for 60fps animations
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
 
 const scale = useSharedValue(1);
 
@@ -2811,13 +2950,13 @@ export default function RootLayout() {
     OneSignal.promptForPushNotificationsWithUserResponse();
 
     // Notification received handler
-    OneSignal.setNotificationWillShowInForegroundHandler(notification => {
+    OneSignal.setNotificationWillShowInForegroundHandler((notification) => {
       console.log('Notification received:', notification);
       // Display in-app notification
     });
 
     // Notification opened handler
-    OneSignal.setNotificationOpenedHandler(notification => {
+    OneSignal.setNotificationOpenedHandler((notification) => {
       console.log('Notification opened:', notification);
       // Navigate to relevant screen
       const { type, id } = notification.notification.additionalData;
@@ -2851,6 +2990,7 @@ interface NotificationPayload {
 ```
 
 **Example Notifications:**
+
 - Transaction completed
 - Wallet funded
 - KYC verified
@@ -2936,9 +3076,11 @@ describe('Authentication Flow', () => {
 ## Development Phases
 
 ### Phase 1: Foundation (Week 1-2)
+
 **Goal:** Core architecture + authentication
 
 **Tasks:**
+
 - [ ] Project setup (Expo, NativeWind, dependencies)
 - [ ] Design system (colors, typography, spacing)
 - [ ] Base components (Button, Input, Text, Card)
@@ -2954,9 +3096,11 @@ describe('Authentication Flow', () => {
 ---
 
 ### Phase 2: Core Features (Week 3-4)
+
 **Goal:** Wallet & dashboard
 
 **Tasks:**
+
 - [ ] Home/Dashboard screen
 - [ ] Wallet screen
 - [ ] Transaction history (with pagination)
@@ -2974,9 +3118,11 @@ describe('Authentication Flow', () => {
 ---
 
 ### Phase 3: Funding & Withdrawals (Week 5)
+
 **Goal:** Money in/out
 
 **Tasks:**
+
 - [ ] Fund wallet screen
 - [ ] Paystack WebView integration
 - [ ] Payment verification
@@ -2992,9 +3138,11 @@ describe('Authentication Flow', () => {
 ---
 
 ### Phase 4: VTU Services (Week 6-8)
+
 **Goal:** Bill payments
 
 **Tasks:**
+
 - [ ] Services screen
 - [ ] Buy airtime screen
 - [ ] Buy data screen (with plans bottom sheet)
@@ -3010,9 +3158,11 @@ describe('Authentication Flow', () => {
 ---
 
 ### Phase 5: KYC & Profile (Week 9)
+
 **Goal:** Identity verification
 
 **Tasks:**
+
 - [ ] BVN verification screen
 - [ ] NIN verification screen
 - [ ] Profile picture upload (API needed)
@@ -3027,9 +3177,11 @@ describe('Authentication Flow', () => {
 ---
 
 ### Phase 6: Polish & Optimization (Week 10-11)
+
 **Goal:** Production-ready
 
 **Tasks:**
+
 - [ ] Animations & transitions
 - [ ] Haptic feedback
 - [ ] Dark mode refinement
@@ -3047,9 +3199,11 @@ describe('Authentication Flow', () => {
 ---
 
 ### Phase 7: Testing & Deployment (Week 12)
+
 **Goal:** Launch
 
 **Tasks:**
+
 - [ ] Unit tests (critical functions)
 - [ ] Component tests
 - [ ] Manual testing (all flows)
@@ -3070,6 +3224,7 @@ describe('Authentication Flow', () => {
 ### Critical Endpoints Needed Before Launch
 
 #### 1. Transaction PIN System (HIGH PRIORITY)
+
 ```typescript
 POST /users/set-pin
 Body: { pin: "1234", confirmPin: "1234" }
@@ -3092,6 +3247,7 @@ Body: { ..., pin: "1234" }
 ---
 
 #### 2. Password Reset Flow
+
 ```typescript
 POST /auth/forgot-password
 Body: { email: "user@example.com" }
@@ -3111,6 +3267,7 @@ Response: { success: true }
 ---
 
 #### 3. Profile Picture Upload
+
 ```typescript
 POST /users/upload-avatar
 Content-Type: multipart/form-data
@@ -3126,6 +3283,7 @@ Response: { success: true }
 ---
 
 #### 4. Notifications Endpoints
+
 ```typescript
 GET /notifications?page=1&limit=20&type=TRANSACTION
 Response: {
@@ -3150,6 +3308,7 @@ Response: { success: true }
 ### Nice-to-Have Endpoints (Phase 2)
 
 #### 5. Wallet Transfer (P2P)
+
 ```typescript
 POST /wallet/transfer
 Body: {
@@ -3162,6 +3321,7 @@ Response: { transaction: {...} }
 ```
 
 #### 6. Beneficiary Management
+
 ```typescript
 GET /beneficiaries?serviceType=AIRTIME
 Response: { beneficiaries: [...] }
@@ -3178,6 +3338,7 @@ DELETE /beneficiaries/:id
 ```
 
 #### 7. Transaction Export
+
 ```typescript
 GET /wallet/transactions/export?format=csv&from=2025-01-01&to=2025-12-31
 Response: CSV file download
@@ -3190,14 +3351,17 @@ Response: CSV file download
 ### 1. App Icon & Splash Screen
 
 **Icon Requirements:**
+
 - iOS: 1024x1024px (no alpha channel)
 - Android: 512x512px (adaptive icon)
 
 **Colors:**
+
 - Use brand purple (#8B5CF6)
 - Simple, recognizable symbol (₦ or wallet icon)
 
 **Splash Screen:**
+
 - Logo + brand name
 - Same background as app theme
 - Smooth transition to first screen
@@ -3207,15 +3371,19 @@ Response: CSV file download
 ### 2. App Store Optimization
 
 **App Name:**
+
 - "RaverPay - Digital Wallet"
 
 **Subtitle:**
+
 - "Airtime, Bills & Transfers"
 
 **Keywords:**
+
 - wallet, airtime, data, bills, cable, electricity, transfer, payment
 
 **Description:**
+
 - Lead with value proposition
 - Highlight key features
 - Mention security
@@ -3226,11 +3394,13 @@ Response: CSV file download
 ### 3. Compliance & Legal
 
 **Required Pages:**
+
 - Privacy Policy
 - Terms of Service
 - Cookie Policy (if web version)
 
 **In-App:**
+
 - Delete account option
 - Data export option
 - Cookie preferences
@@ -3240,11 +3410,13 @@ Response: CSV file download
 ### 4. Analytics & Monitoring
 
 **Recommended Tools:**
+
 - Sentry (error tracking)
 - Mixpanel/Amplitude (analytics)
 - Firebase Crashlytics
 
 **Key Metrics:**
+
 - Registration completion rate
 - Verification completion rate
 - Transaction success rate
@@ -3265,6 +3437,7 @@ This specification provides a complete blueprint for building a **production-gra
 ✅ **Maintainable** - TypeScript, clean code, tests
 
 **Next Steps:**
+
 1. Review this document
 2. Set up the project
 3. Build design system components

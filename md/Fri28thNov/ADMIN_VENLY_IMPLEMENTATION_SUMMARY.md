@@ -7,11 +7,13 @@
 Created a complete admin backend for the Venly wallet system:
 
 **Files Created**:
+
 - `src/admin/venly-wallets/admin-venly-wallets.service.ts` - Service layer with business logic
 - `src/admin/venly-wallets/admin-venly-wallets.controller.ts` - API endpoints
 - `src/admin/venly-wallets/admin-venly-wallets.module.ts` - Module configuration
 
 **Files Modified**:
+
 - `src/admin/admin.module.ts` - Registered new module
 
 ### 2. API Endpoints Available
@@ -21,32 +23,38 @@ Created a complete admin backend for the Venly wallet system:
 All endpoints require JWT authentication and admin roles (ADMIN, SUPER_ADMIN, or SUPPORT).
 
 #### Wallet Management
+
 - `GET /admin/venly-wallets` - Get all users with crypto wallets (paginated, searchable)
 - `GET /admin/venly-wallets/stats` - Get wallet statistics (adoption rate, transaction counts)
 - `GET /admin/venly-wallets/user/:userId` - Get specific user's crypto wallet details
 
 #### Transaction Management
+
 - `GET /admin/venly-wallets/transactions` - Get all crypto transactions (filterable by user, status, type, date)
 - `GET /admin/venly-wallets/transactions/:id` - Get single transaction details
 - `POST /admin/venly-wallets/transactions/:id/flag` - Flag suspicious transaction
 
 #### Conversion Management
+
 - `GET /admin/venly-wallets/conversions` - Get crypto→Naira conversions (filterable, with stats)
 
 #### Exchange Rate Management (CRITICAL)
+
 - `GET /admin/venly-wallets/exchange-rates` - Get current exchange rates
 - `PATCH /admin/venly-wallets/exchange-rates` - Update exchange rate
 
 **Request Body**:
+
 ```json
 {
   "currency": "USD",
-  "toNaira": 1500.50,
+  "toNaira": 1500.5,
   "platformFeePercent": 1.0
 }
 ```
 
 #### Analytics
+
 - `GET /admin/venly-wallets/analytics` - Get analytics data (transactions by type/status, daily volume, conversions)
 
 ---
@@ -54,28 +62,33 @@ All endpoints require JWT authentication and admin roles (ADMIN, SUPER_ADMIN, or
 ## 🎯 Key Features
 
 ### 1. Separation from Existing Crypto System
+
 - OLD System: `/admin/crypto` (CryptoOrder - manual buy/sell approval)
 - NEW System: `/admin/venly-wallets` (Venly Wallet - automated blockchain transactions)
 - Both systems coexist independently
 
 ### 2. Exchange Rate Management
+
 - Admins can set USD→NGN rates
 - Platform fee percentage configurable
 - Audit log tracks all rate changes
 - **CRITICAL**: This controls how much Naira users receive when converting crypto
 
 ### 3. Transaction Monitoring
+
 - View all blockchain transactions
 - Filter by user, status, type, date range
 - Flag suspicious transactions (creates audit log)
 - Full transaction details with blockchain hash
 
 ### 4. Conversion Tracking
+
 - Monitor all crypto→Naira conversions
 - Volume statistics (total USD, average amount)
 - Filter by user, status, date range
 
 ### 5. Analytics Dashboard
+
 - Transactions grouped by type (SEND, RECEIVE, CRYPTO_TO_NAIRA)
 - Transactions grouped by status (COMPLETED, PENDING, FAILED)
 - Conversion statistics
@@ -86,11 +99,13 @@ All endpoints require JWT authentication and admin roles (ADMIN, SUPER_ADMIN, or
 ## 📝 Next Steps: Dashboard Implementation
 
 ### Priority 1: Exchange Rate Management Page (CRITICAL)
+
 **Route**: `/admin/venly-wallets/exchange-rates`
 
 **Why Critical**: Without this, crypto→Naira conversions cannot function properly.
 
 **Features Needed**:
+
 - Table showing all active rates (USD→NGN, USDT→NGN, USDC→NGN)
 - Edit button for each rate
 - Modal to update rate and platform fee
@@ -98,6 +113,7 @@ All endpoints require JWT authentication and admin roles (ADMIN, SUPER_ADMIN, or
 - Save button with confirmation
 
 **API Calls**:
+
 ```typescript
 // Load rates
 GET /admin/venly-wallets/exchange-rates
@@ -110,9 +126,11 @@ Body: { currency: "USD", toNaira: 1500.50, platformFeePercent: 1.0 }
 ---
 
 ### Priority 2: Wallet Overview Dashboard
+
 **Route**: `/admin/venly-wallets`
 
 **Features Needed**:
+
 - 4 KPI cards (total users, users with wallets, adoption rate, total transactions)
 - Paginated table of users with wallet status
 - Search by name/email/phone
@@ -120,6 +138,7 @@ Body: { currency: "USD", toNaira: 1500.50, platformFeePercent: 1.0 }
 - Click user row to view details
 
 **API Calls**:
+
 ```typescript
 // KPI cards
 GET /admin/venly-wallets/stats
@@ -134,9 +153,11 @@ GET /admin/venly-wallets/user/:userId
 ---
 
 ### Priority 3: Transaction Monitoring Page
+
 **Route**: `/admin/venly-wallets/transactions`
 
 **Features Needed**:
+
 - Filter bar (type, status, date range, user search)
 - Paginated transactions table
 - Columns: Date, User, Type, Amount, Currency, Status, Tx Hash, Actions
@@ -144,6 +165,7 @@ GET /admin/venly-wallets/user/:userId
 - Flag button on transaction details
 
 **API Calls**:
+
 ```typescript
 // Transactions table
 GET /admin/venly-wallets/transactions?page=1&limit=20&status=COMPLETED&type=SEND
@@ -159,15 +181,18 @@ Body: { reason: "Suspected fraud" }
 ---
 
 ### Priority 4: Conversion Monitoring Page
+
 **Route**: `/admin/venly-wallets/conversions`
 
 **Features Needed**:
+
 - Stats cards (total volume USD/NGN, average conversion)
 - Paginated conversions table
 - Filters: user, status, date range
 - Columns: Date, User, Crypto Amount, USD Value, NGN Amount, Exchange Rate, Status
 
 **API Calls**:
+
 ```typescript
 GET /admin/venly-wallets/conversions?page=1&limit=20&status=COMPLETED
 ```
@@ -175,9 +200,11 @@ GET /admin/venly-wallets/conversions?page=1&limit=20&status=COMPLETED
 ---
 
 ### Priority 5: Analytics Dashboard
+
 **Route**: `/admin/venly-wallets/analytics`
 
 **Features Needed**:
+
 - Date range selector
 - Charts:
   - Pie chart: Transactions by type
@@ -187,6 +214,7 @@ GET /admin/venly-wallets/conversions?page=1&limit=20&status=COMPLETED
 - Summary stats below charts
 
 **API Calls**:
+
 ```typescript
 GET /admin/venly-wallets/analytics?startDate=2024-01-01&endDate=2024-01-31
 ```
@@ -198,6 +226,7 @@ GET /admin/venly-wallets/analytics?startDate=2024-01-01&endDate=2024-01-31
 ## 🔐 Authentication & Authorization
 
 All endpoints require:
+
 1. Valid JWT token (via `Authorization: Bearer <token>` header)
 2. User role: `ADMIN`, `SUPER_ADMIN`, or `SUPPORT`
 
@@ -208,6 +237,7 @@ Some endpoints (like updating exchange rates) require `ADMIN` or `SUPER_ADMIN` o
 ## 🧪 Testing the API
 
 ### 1. Get Admin JWT Token
+
 ```bash
 # Login as admin
 curl -X POST http://localhost:3000/auth/login \
@@ -219,6 +249,7 @@ export TOKEN="your-jwt-token-here"
 ```
 
 ### 2. Test Endpoints
+
 ```bash
 # Get wallet stats
 curl -H "Authorization: Bearer $TOKEN" \
@@ -305,6 +336,7 @@ Keep existing "Crypto Trading" menu for the OLD system (CryptoOrder).
 ## 📖 Additional Documentation
 
 See these files for more details:
+
 - `ADMIN_DASHBOARD_VENLY_WALLET_IMPLEMENTATION.md` - Detailed dashboard implementation guide
 - `CRYPTO_WALLET_SETUP_AND_USAGE_GUIDE.md` - Environment setup and user flows
 - `CRYPTO_WALLET_MOBILE_IMPLEMENTATION_GUIDE.md` - Mobile app implementation guide

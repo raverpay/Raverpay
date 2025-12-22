@@ -89,7 +89,7 @@ export default function TransactionDetailsPage() {
         <XCircle className="h-12 w-12 text-muted-foreground mb-4" />
         <h2 className="text-2xl font-bold mb-2">Transaction Not Found</h2>
         <p className="text-muted-foreground mb-4">
-          The transaction you're looking for doesn't exist.
+          The transaction you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link href="/dashboard/circle-wallets/transactions">
           <Button>
@@ -102,10 +102,7 @@ export default function TransactionDetailsPage() {
   }
 
   const isInbound = transaction.type === 'INBOUND';
-  const totalAmount = transaction.amounts.reduce(
-    (sum, amt) => sum + parseFloat(amt || '0'),
-    0,
-  );
+  const totalAmount = transaction.amounts.reduce((sum, amt) => sum + parseFloat(amt || '0'), 0);
   const explorerUrl = transaction.transactionHash
     ? `${BLOCKCHAIN_EXPLORERS[transaction.blockchain] || ''}${transaction.transactionHash}`
     : null;
@@ -212,7 +209,9 @@ export default function TransactionDetailsPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => copyToClipboard(transaction.destinationAddress, 'Destination address')}
+                  onClick={() =>
+                    copyToClipboard(transaction.destinationAddress, 'Destination address')
+                  }
                 >
                   <Copy className="h-4 w-4" />
                 </Button>

@@ -28,5 +28,3 @@ pnpm lint            # Check for errors
 pnpm typecheck       # Check TypeScript
 pnpm test            # Run tests
 ```
-
-Start implenting the plan.. Make sure to create a new github branch for the implementation. also you will have to run pnpm lint and typecheck for the admin dashboard, while npm for the mobile app. then you will run build for the api and admin dashboard.

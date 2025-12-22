@@ -113,7 +113,7 @@ export default function WalletDetailsPage() {
         <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
         <h2 className="text-2xl font-bold mb-2">Wallet Not Found</h2>
         <p className="text-muted-foreground mb-4">
-          The wallet you're looking for doesn't exist.
+          The wallet you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link href="/dashboard/circle-wallets">
           <Button>

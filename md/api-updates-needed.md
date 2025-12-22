@@ -7,6 +7,7 @@
 ---
 
 ## Table of Contents
+
 1. [Critical Updates (Required Before Launch)](#critical-updates)
 2. [Important Updates (Required Soon)](#important-updates)
 3. [Nice-to-Have Updates (Phase 2)](#nice-to-have-updates)
@@ -24,6 +25,7 @@
 **Required Endpoints:**
 
 #### A. Set PIN (First Time)
+
 ```typescript
 POST /api/users/set-pin
 
@@ -57,6 +59,7 @@ Response (Error):
 ```
 
 **Implementation Notes:**
+
 ```typescript
 // services/users/users.service.ts
 
@@ -105,6 +108,7 @@ async setPin(userId: string, dto: SetPinDto) {
 ---
 
 #### B. Verify PIN
+
 ```typescript
 POST /api/users/verify-pin
 
@@ -137,6 +141,7 @@ Response (Locked):
 ```
 
 **Implementation Notes:**
+
 ```typescript
 async verifyPin(userId: string, pin: string): Promise<boolean> {
   // Get user's PIN
@@ -187,6 +192,7 @@ async verifyPin(userId: string, pin: string): Promise<boolean> {
 ---
 
 #### C. Change PIN
+
 ```typescript
 POST /api/users/change-pin
 
@@ -208,6 +214,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 async changePin(userId: string, dto: ChangePinDto) {
   // Verify current PIN
@@ -253,6 +260,7 @@ async changePin(userId: string, dto: ChangePinDto) {
 #### D. Update Transaction Endpoints to Require PIN
 
 **Endpoints to Update:**
+
 - `POST /api/transactions/withdraw`
 - `POST /api/vtu/airtime/purchase`
 - `POST /api/vtu/data/purchase`
@@ -261,6 +269,7 @@ async changePin(userId: string, dto: ChangePinDto) {
 - `POST /api/wallet/transfer` (future)
 
 **Example (Withdraw):**
+
 ```typescript
 // Before:
 class WithdrawDto {
@@ -310,6 +319,7 @@ async withdraw(userId: string, dto: WithdrawDto) {
 **Required Endpoints:**
 
 #### A. Request Password Reset
+
 ```typescript
 POST /api/auth/forgot-password
 
@@ -328,6 +338,7 @@ Note: Always return success even if email doesn't exist (security best practice)
 ```
 
 **Implementation:**
+
 ```typescript
 // auth/auth.service.ts
 
@@ -385,6 +396,7 @@ async forgotPassword(email: string) {
 ---
 
 #### B. Verify Reset Code
+
 ```typescript
 POST /api/auth/verify-reset-code
 
@@ -409,6 +421,7 @@ Response (Invalid):
 ```
 
 **Implementation:**
+
 ```typescript
 async verifyResetCode(email: string, code: string) {
   // Find user
@@ -477,6 +490,7 @@ async verifyResetCode(email: string, code: string) {
 ---
 
 #### C. Reset Password
+
 ```typescript
 POST /api/auth/reset-password
 
@@ -494,6 +508,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 async resetPassword(resetToken: string, newPassword: string) {
   // Verify reset token
@@ -594,7 +609,7 @@ export class CloudinaryService {
         (error, result) => {
           if (error) return reject(error);
           resolve(result.secure_url);
-        }
+        },
       );
 
       uploadStream.end(file.buffer);
@@ -610,6 +625,7 @@ export class CloudinaryService {
 ---
 
 #### B. Upload Avatar Endpoint
+
 ```typescript
 POST /api/users/upload-avatar
 
@@ -632,6 +648,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 // users/users.controller.ts
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -696,6 +713,7 @@ private extractPublicId(cloudinaryUrl: string): string | null {
 ---
 
 #### C. Delete Avatar Endpoint
+
 ```typescript
 DELETE /api/users/avatar
 
@@ -710,6 +728,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 async deleteAvatar(userId: string) {
   const user = await this.prisma.user.findUnique({
@@ -744,6 +763,7 @@ async deleteAvatar(userId: string) {
 **Current Status:** Database table exists, no endpoints
 
 #### A. Create Notification
+
 ```typescript
 // This is called internally when events happen
 // notifications/notifications.service.ts
@@ -773,6 +793,7 @@ async createNotification(dto: CreateNotificationDto) {
 ---
 
 #### B. Get Notifications
+
 ```typescript
 GET /api/notifications?page=1&limit=20&type=TRANSACTION&unreadOnly=false
 
@@ -813,6 +834,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 // notifications/notifications.controller.ts
 @Get()
@@ -870,6 +892,7 @@ async findAll(userId: string, options: FindNotificationsDto) {
 ---
 
 #### C. Mark as Read
+
 ```typescript
 PUT /api/notifications/:id/read
 
@@ -883,6 +906,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 async markAsRead(userId: string, notificationId: string) {
   // Verify ownership
@@ -913,6 +937,7 @@ async markAsRead(userId: string, notificationId: string) {
 ---
 
 #### D. Mark All as Read
+
 ```typescript
 PUT /api/notifications/read-all
 
@@ -927,6 +952,7 @@ Response (Success):
 ```
 
 **Implementation:**
+
 ```typescript
 async markAllAsRead(userId: string) {
   const result = await this.prisma.notification.updateMany({
@@ -944,6 +970,7 @@ async markAllAsRead(userId: string) {
 ---
 
 #### E. Delete Notification
+
 ```typescript
 DELETE /api/notifications/:id
 
@@ -961,6 +988,7 @@ Response (Success):
 #### F. Trigger Notifications on Events
 
 **Example: Wallet Funded**
+
 ```typescript
 // payments/payments.service.ts
 
@@ -983,6 +1011,7 @@ async handleChargeSuccess(event: PaystackWebhookEvent) {
 ```
 
 **Example: VTU Purchase Success**
+
 ```typescript
 // vtu/vtu.service.ts
 
@@ -1013,6 +1042,7 @@ async handleVTPassWebhook(payload: VTPassWebhookPayload) {
 **Current Issue:** Users can login even if email is not verified
 
 **Fix Required:**
+
 ```typescript
 // auth/auth.service.ts
 
@@ -1050,6 +1080,7 @@ async login(dto: LoginDto) {
 ```
 
 **Mobile App Handling:**
+
 ```typescript
 // Mobile app will catch these errors and navigate to verification screens
 try {
@@ -1070,6 +1101,7 @@ try {
 **Current Status:** Database table exists, no CRUD endpoints
 
 #### A. Add Bank Account
+
 ```typescript
 POST /api/bank-accounts
 
@@ -1102,6 +1134,7 @@ Response (Success):
 ---
 
 #### B. Get Bank Accounts
+
 ```typescript
 GET /api/bank-accounts
 
@@ -1125,6 +1158,7 @@ Response (Success):
 ---
 
 #### C. Set Primary Account
+
 ```typescript
 PUT /api/bank-accounts/:id/set-primary
 
@@ -1137,6 +1171,7 @@ Response (Success):
 ---
 
 #### D. Delete Bank Account
+
 ```typescript
 DELETE /api/bank-accounts/:id
 
@@ -1177,6 +1212,7 @@ Response (Success):
 ```
 
 **Bonus: Generate PDF**
+
 ```typescript
 GET /api/wallet/transactions/:id/receipt/pdf
 
@@ -1273,6 +1309,7 @@ Body:
 ## Database Schema Changes
 
 ### Required Tables (Already Exist)
+
 ✅ User
 ✅ Wallet
 ✅ Transaction
@@ -1286,6 +1323,7 @@ Body:
 ### Add Missing Fields
 
 #### User Table Updates
+
 ```prisma
 model User {
   // Existing fields...
@@ -1304,6 +1342,7 @@ model User {
 ### Priority Order
 
 **Week 1: Transaction PIN**
+
 - [ ] Implement PIN encryption/hashing
 - [ ] Create set-pin endpoint
 - [ ] Create verify-pin endpoint
@@ -1313,6 +1352,7 @@ model User {
 - [ ] Write tests
 
 **Week 2: Password Reset**
+
 - [ ] Implement forgot-password endpoint
 - [ ] Implement verify-reset-code endpoint
 - [ ] Implement reset-password endpoint
@@ -1321,6 +1361,7 @@ model User {
 - [ ] Write tests
 
 **Week 3: Profile Picture + Notifications**
+
 - [ ] Setup Cloudinary
 - [ ] Implement upload-avatar endpoint
 - [ ] Implement delete-avatar endpoint
@@ -1330,6 +1371,7 @@ model User {
 - [ ] Write tests
 
 **Week 4: Bank Accounts + Polish**
+
 - [ ] Implement bank account CRUD endpoints
 - [ ] Fix login email verification check
 - [ ] Add transaction receipts
@@ -1356,6 +1398,7 @@ ONESIGNAL_REST_API_KEY=your-rest-api-key
 ### Testing Checklist
 
 For each new endpoint:
+
 - [ ] Unit tests (service methods)
 - [ ] E2E tests (API endpoints)
 - [ ] Error handling tests
@@ -1369,23 +1412,27 @@ For each new endpoint:
 ## Summary
 
 ### Critical (Must Have)
+
 1. ✅ Transaction PIN system
 2. ✅ Password reset flow
 3. ✅ Profile picture upload
 4. ✅ Notifications endpoints
 
 ### Important (Should Have)
+
 5. ✅ Enhanced login verification check
 6. ✅ Bank account management
 7. ✅ Transaction receipts
 
 ### Nice to Have (Could Have)
+
 8. ⏳ Wallet transfers
 9. ⏳ Beneficiary management
 10. ⏳ Transaction export
 11. ⏳ Recurring payments
 
 **Estimated Development Time:**
+
 - Critical updates: 3-4 weeks
 - Important updates: 1-2 weeks
 - Nice-to-have: 2-3 weeks

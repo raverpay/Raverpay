@@ -7,6 +7,7 @@
 #### 1. **Database Schema** (Prisma)
 
 ##### Enhanced `Notification` Model
+
 ```prisma
 ✅ Multi-channel support: email, SMS, push, in-app
 ✅ Event type tracking: "deposit", "withdrawal", "bvn_verified", etc.
@@ -17,6 +18,7 @@
 ```
 
 ##### New `NotificationPreference` Model
+
 ```prisma
 ✅ Channel preferences (enable/disable email, SMS, push, in-app)
 ✅ Event-specific controls (transactionEmails, securitySms, etc.)
@@ -26,6 +28,7 @@
 ```
 
 ##### New `NotificationLog` Model
+
 ```prisma
 ✅ Delivery tracking (PENDING → SENT → DELIVERED → OPENED → CLICKED)
 ✅ Failure tracking with reasons
@@ -35,6 +38,7 @@
 ```
 
 ##### New `NotificationTemplate` Model
+
 ```prisma
 ✅ Template management by event + channel
 ✅ Variable placeholders: {{firstName}}, {{amount}}, {{reference}}
@@ -43,6 +47,7 @@
 ```
 
 ##### New `NotificationQueue` Model
+
 ```prisma
 ✅ Async processing queue
 ✅ Priority-based delivery
@@ -56,6 +61,7 @@
 #### 2. **Backend Services**
 
 ##### `NotificationPreferencesService`
+
 ```typescript
 ✅ getPreferences(userId) - Get user preferences (creates defaults if missing)
 ✅ updatePreferences(userId, dto) - Update preferences
@@ -67,6 +73,7 @@
 ```
 
 **Key Features:**
+
 - **Smart validation**: Checks channel enabled, category preferences, frequency
 - **Quiet hours**: Respects user timezone, always allows SECURITY alerts
 - **Auto-creation**: Default preferences created on first access
@@ -74,6 +81,7 @@
 ---
 
 ##### `NotificationPreferencesController`
+
 ```typescript
 API Endpoints:
 ✅ GET /notification-preferences - Get current user preferences
@@ -90,6 +98,7 @@ All endpoints require JWT authentication.
 #### 3. **DTOs & Validation**
 
 ##### `UpdateNotificationPreferencesDto`
+
 ```typescript
 ✅ All fields optional (partial updates)
 ✅ Boolean validation for all toggles
@@ -104,12 +113,14 @@ All endpoints require JWT authentication.
 **Status:** ⚠️ Migration created but NOT applied (database was offline)
 
 **To Apply Migration:**
+
 ```bash
 cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm prisma migrate dev
 ```
 
 This will:
+
 1. Create all new tables (notification_preferences, notification_logs, notification_templates, notification_queue)
 2. Add new columns to notifications table
 3. Create all indexes for performance
@@ -125,7 +136,6 @@ Create `notification-dispatcher.service.ts`:
 ```typescript
 @Injectable()
 export class NotificationDispatcherService {
-
   async sendNotification(event: {
     userId: string;
     eventType: string; // "deposit", "withdrawal", etc.
@@ -158,6 +168,7 @@ export class NotificationDispatcherService {
 ```
 
 **What it does:**
+
 - ✅ Checks user preferences before sending
 - ✅ Respects quiet hours (except security alerts)
 - ✅ Creates in-app notification immediately
@@ -169,6 +180,7 @@ export class NotificationDispatcherService {
 ### 2. **Update Existing Services** (High Priority)
 
 #### Email Service (`email.service.ts`)
+
 ```typescript
 // Add to each send method:
 async sendTransactionReceipt(email, firstName, transactionDetails) {
@@ -199,6 +211,7 @@ async sendTransactionReceipt(email, firstName, transactionDetails) {
 ```
 
 #### SMS Service (`sms.service.ts`)
+
 ```typescript
 // Same pattern as email - log every send attempt
 async sendTransactionAlert(phone, firstName, details) {
@@ -220,6 +233,7 @@ async sendTransactionAlert(phone, firstName, details) {
 ### 3. **Add Missing Event Triggers** (High Priority)
 
 #### In `paystack-webhook.service.ts`:
+
 ```typescript
 // BVN Verification Success
 async handleCustomerIdentificationSuccess(data: any) {
@@ -260,6 +274,7 @@ async handleDedicatedAccountAssignSuccess(data: any) {
 ```
 
 #### In `payments.controller.ts`:
+
 ```typescript
 // Transfer Success
 async handleTransferSuccess(data: any) {
@@ -304,12 +319,14 @@ async handleTransferFailed(data: any) {
 ### 4. **Push Notifications** (Medium Priority)
 
 #### Install OneSignal:
+
 ```bash
 cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
 pnpm add onesignal-node
 ```
 
 #### Create `push-notification.service.ts`:
+
 ```typescript
 import * as OneSignal from 'onesignal-node';
 
@@ -324,11 +341,14 @@ export class PushNotificationService {
     );
   }
 
-  async sendPush(userId: string, notification: {
-    title: string;
-    message: string;
-    data?: any;
-  }) {
+  async sendPush(
+    userId: string,
+    notification: {
+      title: string;
+      message: string;
+      data?: any;
+    },
+  ) {
     // Get user's device tokens from database
     const devices = await this.getDeviceTokens(userId);
 
@@ -349,6 +369,7 @@ export class PushNotificationService {
 ```
 
 #### Create `DeviceToken` model:
+
 ```prisma
 model DeviceToken {
   id       String @id @default(uuid())
@@ -372,6 +393,7 @@ model DeviceToken {
 ### 5. **Notification Templates** (Medium Priority)
 
 #### Seed Default Templates:
+
 ```typescript
 // In prisma/seed.ts
 const templates = [
@@ -397,7 +419,8 @@ const templates = [
     name: 'deposit-success-sms',
     eventType: 'deposit',
     channel: 'SMS',
-    bodyTemplate: 'Hi {{firstName}}! ₦{{amount}} deposited. Ref: {{reference}}. Balance: ₦{{newBalance}}. - RaverPay',
+    bodyTemplate:
+      'Hi {{firstName}}! ₦{{amount}} deposited. Ref: {{reference}}. Balance: ₦{{newBalance}}. - RaverPay',
     variables: ['firstName', 'amount', 'reference', 'newBalance'],
   },
   // ... more templates
@@ -405,6 +428,7 @@ const templates = [
 ```
 
 #### Create `TemplateService`:
+
 ```typescript
 @Injectable()
 export class TemplateService {
@@ -437,19 +461,20 @@ export class TemplateService {
 ### 6. **Queue Processor** (Medium Priority)
 
 #### Install Bull Queue:
+
 ```bash
 pnpm add @nestjs/bull bull
 pnpm add -D @types/bull
 ```
 
 #### Create `notification-queue.processor.ts`:
+
 ```typescript
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 
 @Processor('notifications')
 export class NotificationQueueProcessor {
-
   @Process('send-email')
   async sendEmail(job: Job) {
     const { userId, notificationId, templateId, variables } = job.data;
@@ -468,7 +493,6 @@ export class NotificationQueueProcessor {
         channel: 'EMAIL',
         status: 'SENT',
       });
-
     } catch (error) {
       // Retry up to 3 times
       if (job.attemptsMade < 3) {
@@ -561,6 +585,7 @@ export class NotificationQueueProcessor {
 ### Frontend Tasks:
 
 #### 1. **Create Notification Preferences Screen**
+
 ```typescript
 // app/settings/notifications.tsx
 
@@ -609,6 +634,7 @@ export default function NotificationSettingsScreen() {
 ```
 
 #### 2. **Push Notification Setup (OneSignal)**
+
 ```bash
 # In mobile app
 npm install react-native-onesignal
@@ -638,6 +664,7 @@ OneSignal.promptForPushNotificationsWithUserResponse((response) => {
 ```
 
 #### 3. **Real-time In-App Notifications**
+
 ```typescript
 // Use WebSocket or polling to get new notifications
 const { data: notifications } = useQuery({
@@ -658,6 +685,7 @@ const { data: notifications } = useQuery({
 ## ✅ Summary
 
 ### Phase 1 Complete:
+
 - ✅ Database schema with 5 new models
 - ✅ Notification preferences service
 - ✅ Preference management API
@@ -666,6 +694,7 @@ const { data: notifications } = useQuery({
 - ✅ Foundation for analytics
 
 ### Phase 2 (Next):
+
 - ⏳ Notification dispatcher service
 - ⏳ Update email/SMS services with logging
 - ⏳ Add missing event triggers
@@ -674,6 +703,7 @@ const { data: notifications } = useQuery({
 - ⏳ Queue processor
 
 ### Phase 3 (Future):
+
 - ⏳ Notification analytics dashboard
 - ⏳ Delivery webhooks from providers
 - ⏳ A/B testing for messages

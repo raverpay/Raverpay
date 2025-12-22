@@ -5,6 +5,7 @@
 **Status:** Ready for Testing
 
 This guide covers testing for the newly implemented features in Phase 3:
+
 - Transaction PIN System
 - Password Reset Flow
 - Profile Picture Upload (Cloudinary)
@@ -28,6 +29,7 @@ This guide covers testing for the newly implemented features in Phase 3:
 ## Prerequisites
 
 ### Required Tools
+
 - **cURL** or **Postman** or **HTTPie**
 - **Node.js** v18+ (for local testing)
 - **PostgreSQL** database access
@@ -86,6 +88,7 @@ https://your-production-domain.com/api
 ## Feature 1: Transaction PIN System
 
 ### Overview
+
 Users can set a 4-digit transaction PIN to secure withdrawals and VTU purchases.
 
 ### Test Cases
@@ -96,6 +99,7 @@ Users can set a 4-digit transaction PIN to secure withdrawals and VTU purchases.
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/set-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -107,6 +111,7 @@ curl -X POST http://localhost:3001/api/users/set-pin \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -118,6 +123,7 @@ curl -X POST http://localhost:3001/api/users/set-pin \
 **Error Cases to Test:**
 
 1. **PIN Mismatch:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/set-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -127,9 +133,11 @@ curl -X POST http://localhost:3001/api/users/set-pin \
     "confirmPin": "5678"
   }'
 ```
+
 Expected: `400 Bad Request` - "PIN and confirmation do not match"
 
 2. **Weak PIN:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/set-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -139,9 +147,11 @@ curl -X POST http://localhost:3001/api/users/set-pin \
     "confirmPin": "0000"
   }'
 ```
+
 Expected: `400 Bad Request` - "PIN is too weak"
 
 3. **PIN Already Set:**
+
 ```bash
 # Try setting PIN again after already setting it
 curl -X POST http://localhost:3001/api/users/set-pin \
@@ -152,6 +162,7 @@ curl -X POST http://localhost:3001/api/users/set-pin \
     "confirmPin": "5678"
   }'
 ```
+
 Expected: `400 Bad Request` - "PIN already set. Use change-pin endpoint instead"
 
 ---
@@ -162,6 +173,7 @@ Expected: `400 Bad Request` - "PIN already set. Use change-pin endpoint instead"
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/verify-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -172,6 +184,7 @@ curl -X POST http://localhost:3001/api/users/verify-pin \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "valid": true
@@ -181,6 +194,7 @@ curl -X POST http://localhost:3001/api/users/verify-pin \
 **Error Cases:**
 
 1. **Invalid PIN:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/verify-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -189,9 +203,11 @@ curl -X POST http://localhost:3001/api/users/verify-pin \
     "pin": "9999"
   }'
 ```
+
 Expected: `400 Bad Request` - "Invalid PIN. 4 attempts remaining"
 
 2. **Too Many Failed Attempts:**
+
 ```bash
 # Try invalid PIN 5 times, then:
 curl -X POST http://localhost:3001/api/users/verify-pin \
@@ -201,6 +217,7 @@ curl -X POST http://localhost:3001/api/users/verify-pin \
     "pin": "9999"
   }'
 ```
+
 Expected: `400 Bad Request` - "Too many failed attempts. Try again in 30 minutes"
 
 ---
@@ -211,6 +228,7 @@ Expected: `400 Bad Request` - "Too many failed attempts. Try again in 30 minutes
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/change-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -223,6 +241,7 @@ curl -X POST http://localhost:3001/api/users/change-pin \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -233,6 +252,7 @@ curl -X POST http://localhost:3001/api/users/change-pin \
 **Error Cases:**
 
 1. **Wrong Current PIN:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/change-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -243,9 +263,11 @@ curl -X POST http://localhost:3001/api/users/change-pin \
     "confirmNewPin": "5678"
   }'
 ```
+
 Expected: `400 Bad Request` - "Invalid PIN"
 
 2. **New PIN Same as Current:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/change-pin \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -256,6 +278,7 @@ curl -X POST http://localhost:3001/api/users/change-pin \
     "confirmNewPin": "1234"
   }'
 ```
+
 Expected: `400 Bad Request` - "New PIN must be different from current PIN"
 
 ---
@@ -266,6 +289,7 @@ Expected: `400 Bad Request` - "New PIN must be different from current PIN"
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/transactions/withdraw \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -281,6 +305,7 @@ curl -X POST http://localhost:3001/api/transactions/withdraw \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -296,6 +321,7 @@ curl -X POST http://localhost:3001/api/transactions/withdraw \
 ```
 
 **Test without PIN:**
+
 ```bash
 curl -X POST http://localhost:3001/api/transactions/withdraw \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -307,6 +333,7 @@ curl -X POST http://localhost:3001/api/transactions/withdraw \
     "bankCode": "058"
   }'
 ```
+
 Expected: `400 Bad Request` - Validation error about missing PIN
 
 ---
@@ -317,6 +344,7 @@ Expected: `400 Bad Request` - Validation error about missing PIN
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -330,6 +358,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -350,6 +379,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
 ## Feature 2: Password Reset Flow
 
 ### Overview
+
 Three-step password reset process: request code → verify code → reset password.
 
 ### Test Cases
@@ -360,6 +390,7 @@ Three-step password reset process: request code → verify code → reset passwo
 **Authentication:** Not required (Public)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/forgot-password \
   -H "Content-Type: application/json" \
@@ -369,6 +400,7 @@ curl -X POST http://localhost:3001/api/auth/forgot-password \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -377,11 +409,13 @@ curl -X POST http://localhost:3001/api/auth/forgot-password \
 ```
 
 **Check Email:**
+
 - Subject: "Password Reset Request"
 - Body contains 6-digit code
 - Code expires in 10 minutes
 
 **Test with Non-Existent Email:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/forgot-password \
   -H "Content-Type: application/json" \
@@ -389,6 +423,7 @@ curl -X POST http://localhost:3001/api/auth/forgot-password \
     "email": "nonexistent@example.com"
   }'
 ```
+
 Expected: Same response (security - don't reveal if email exists)
 
 ---
@@ -399,6 +434,7 @@ Expected: Same response (security - don't reveal if email exists)
 **Authentication:** Not required (Public)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/verify-reset-code \
   -H "Content-Type: application/json" \
@@ -409,6 +445,7 @@ curl -X POST http://localhost:3001/api/auth/verify-reset-code \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -421,6 +458,7 @@ curl -X POST http://localhost:3001/api/auth/verify-reset-code \
 **Error Cases:**
 
 1. **Invalid Code:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/verify-reset-code \
   -H "Content-Type: application/json" \
@@ -429,9 +467,11 @@ curl -X POST http://localhost:3001/api/auth/verify-reset-code \
     "code": "000000"
   }'
 ```
+
 Expected: `400 Bad Request` - "Invalid reset code"
 
 2. **Expired Code:**
+
 ```bash
 # Wait 11 minutes after requesting code, then verify
 curl -X POST http://localhost:3001/api/auth/verify-reset-code \
@@ -441,6 +481,7 @@ curl -X POST http://localhost:3001/api/auth/verify-reset-code \
     "code": "123456"
   }'
 ```
+
 Expected: `400 Bad Request` - "Reset code expired"
 
 ---
@@ -451,6 +492,7 @@ Expected: `400 Bad Request` - "Reset code expired"
 **Authentication:** Not required (Public, uses resetToken)
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/reset-password \
   -H "Content-Type: application/json" \
@@ -461,6 +503,7 @@ curl -X POST http://localhost:3001/api/auth/reset-password \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -469,6 +512,7 @@ curl -X POST http://localhost:3001/api/auth/reset-password \
 ```
 
 **Test Login with New Password:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
@@ -477,11 +521,13 @@ curl -X POST http://localhost:3001/api/auth/login \
     "password": "NewSecurePassword123!"
   }'
 ```
+
 Expected: `200 OK` with access token
 
 **Error Cases:**
 
 1. **Weak Password:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/reset-password \
   -H "Content-Type: application/json" \
@@ -490,9 +536,11 @@ curl -X POST http://localhost:3001/api/auth/reset-password \
     "newPassword": "weak"
   }'
 ```
+
 Expected: `400 Bad Request` - Password validation error
 
 2. **Invalid/Expired Token:**
+
 ```bash
 curl -X POST http://localhost:3001/api/auth/reset-password \
   -H "Content-Type: application/json" \
@@ -501,6 +549,7 @@ curl -X POST http://localhost:3001/api/auth/reset-password \
     "newPassword": "NewSecurePassword123!"
   }'
 ```
+
 Expected: `401 Unauthorized` - "Invalid or expired reset token"
 
 ---
@@ -508,6 +557,7 @@ Expected: `401 Unauthorized` - "Invalid or expired reset token"
 ## Feature 3: Profile Picture Upload
 
 ### Overview
+
 Users can upload and delete profile pictures using Cloudinary.
 
 ### Test Cases
@@ -519,6 +569,7 @@ Users can upload and delete profile pictures using Cloudinary.
 **Content-Type:** `multipart/form-data`
 
 **Request (using cURL):**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/upload-avatar \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -526,6 +577,7 @@ curl -X POST http://localhost:3001/api/users/upload-avatar \
 ```
 
 **Request (using HTTPie):**
+
 ```bash
 http -f POST http://localhost:3001/api/users/upload-avatar \
   Authorization:"Bearer YOUR_ACCESS_TOKEN" \
@@ -533,6 +585,7 @@ http -f POST http://localhost:3001/api/users/upload-avatar \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -541,8 +594,10 @@ http -f POST http://localhost:3001/api/users/upload-avatar \
 ```
 
 **Verify Upload:**
+
 1. Visit the avatarUrl in browser - image should load
 2. Check user profile - avatar field should be updated:
+
 ```bash
 curl -X GET http://localhost:3001/api/users/profile \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
@@ -551,26 +606,32 @@ curl -X GET http://localhost:3001/api/users/profile \
 **Error Cases:**
 
 1. **File Too Large (> 5MB):**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/upload-avatar \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -F "file=@/path/to/large-file.jpg"
 ```
+
 Expected: `400 Bad Request` - "File size must not exceed 5MB"
 
 2. **Invalid File Type:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/upload-avatar \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -F "file=@/path/to/document.pdf"
 ```
+
 Expected: `400 Bad Request` - "Only image files are allowed"
 
 3. **No File Uploaded:**
+
 ```bash
 curl -X POST http://localhost:3001/api/users/upload-avatar \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: `400 Bad Request` - "No file uploaded"
 
 ---
@@ -592,6 +653,7 @@ curl -X POST http://localhost:3001/api/users/upload-avatar \
 ```
 
 **Expected Behavior:**
+
 - First avatar is deleted from Cloudinary
 - New avatar URL is returned
 - Profile is updated with new avatar URL
@@ -604,12 +666,14 @@ curl -X POST http://localhost:3001/api/users/upload-avatar \
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X DELETE http://localhost:3001/api/users/avatar \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -618,18 +682,22 @@ curl -X DELETE http://localhost:3001/api/users/avatar \
 ```
 
 **Verify Deletion:**
+
 ```bash
 curl -X GET http://localhost:3001/api/users/profile \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: `avatar` field should be `null`
 
 **Error Case - No Avatar to Delete:**
+
 ```bash
 # Try deleting when no avatar exists
 curl -X DELETE http://localhost:3001/api/users/avatar \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: `400 Bad Request` - "No avatar to delete"
 
 ---
@@ -637,6 +705,7 @@ Expected: `400 Bad Request` - "No avatar to delete"
 ## Feature 4: Notifications System
 
 ### Overview
+
 Users can view, mark as read, and delete in-app notifications.
 
 ### Test Cases
@@ -647,12 +716,14 @@ Users can view, mark as read, and delete in-app notifications.
 **Authentication:** Required (JWT)
 
 **Request (Basic):**
+
 ```bash
 curl -X GET "http://localhost:3001/api/notifications" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "notifications": [
@@ -682,6 +753,7 @@ curl -X GET "http://localhost:3001/api/notifications" \
 ```
 
 **Request with Filters:**
+
 ```bash
 # Get only unread notifications
 curl -X GET "http://localhost:3001/api/notifications?unreadOnly=true" \
@@ -704,12 +776,14 @@ curl -X GET "http://localhost:3001/api/notifications?page=1&limit=10" \
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X PUT http://localhost:3001/api/notifications/NOTIFICATION_ID/read \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true
@@ -717,10 +791,12 @@ curl -X PUT http://localhost:3001/api/notifications/NOTIFICATION_ID/read \
 ```
 
 **Verify:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/notifications" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: The notification's `isRead` should be `true`
 
 ---
@@ -731,12 +807,14 @@ Expected: The notification's `isRead` should be `true`
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X PUT http://localhost:3001/api/notifications/read-all \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -745,10 +823,12 @@ curl -X PUT http://localhost:3001/api/notifications/read-all \
 ```
 
 **Verify:**
+
 ```bash
 curl -X GET "http://localhost:3001/api/notifications" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: `unreadCount` should be `0`, all notifications should have `isRead: true`
 
 ---
@@ -759,12 +839,14 @@ Expected: `unreadCount` should be `0`, all notifications should have `isRead: tr
 **Authentication:** Required (JWT)
 
 **Request:**
+
 ```bash
 curl -X DELETE http://localhost:3001/api/notifications/NOTIFICATION_ID \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true
@@ -772,11 +854,13 @@ curl -X DELETE http://localhost:3001/api/notifications/NOTIFICATION_ID \
 ```
 
 **Error Case - Deleting Another User's Notification:**
+
 ```bash
 # Try to delete a notification that doesn't belong to you
 curl -X DELETE http://localhost:3001/api/notifications/SOMEONE_ELSES_NOTIFICATION_ID \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: `404 Not Found` - "Notification not found"
 
 ---
@@ -788,15 +872,18 @@ Expected: `404 Not Found` - "Notification not found"
 1. Make a bank transfer to your virtual account
 2. Wait for webhook to process (~2 minutes)
 3. Check notifications:
+
 ```bash
 curl -X GET "http://localhost:3001/api/notifications" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
 Expected: New notification with type `TRANSACTION` and title `"Wallet Credited"`
 
 **Trigger 2: VTU Purchase Success**
 
 1. Purchase airtime/data:
+
 ```bash
 curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -808,6 +895,7 @@ curl -X POST http://localhost:3001/api/vtu/airtime/purchase \
     "pin": "1234"
   }'
 ```
+
 2. Wait for VTPass webhook (~1 minute)
 3. Check notifications - should see "Purchase Successful"
 
@@ -909,6 +997,7 @@ echo $JWT_SECRET
 ### Post-Deployment Testing
 
 1. **Health Check:**
+
 ```bash
 curl https://your-api.com/api/health
 ```
@@ -940,6 +1029,7 @@ Monitor these in production:
    - Monitor bounce/complaint rates
 
 3. **API Logs:**
+
 ```bash
 # Check for errors related to new features
 grep "Transaction PIN" /var/log/your-api.log
@@ -948,6 +1038,7 @@ grep "Notification" /var/log/your-api.log
 ```
 
 4. **Database:**
+
 ```sql
 -- Check PIN adoption rate
 SELECT COUNT(*) as users_with_pin
@@ -969,15 +1060,19 @@ WHERE avatar IS NOT NULL;
 ## Common Issues & Solutions
 
 ### Issue 1: "PIN already set" Error
+
 **Solution:** Use `/api/users/change-pin` instead of `/api/users/set-pin`
 
 ### Issue 2: Cloudinary Upload Fails
+
 **Causes:**
+
 - Invalid API credentials
 - File size exceeds 5MB
 - Invalid file format
 
 **Debug:**
+
 ```bash
 # Check Cloudinary config
 curl https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/resources/image \
@@ -985,21 +1080,27 @@ curl https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/resources/image \
 ```
 
 ### Issue 3: Password Reset Code Not Received
+
 **Causes:**
+
 - Email in spam folder
 - Resend API key invalid
 - Code expired (10 min limit)
 
 **Debug:**
+
 - Check Resend dashboard for delivery status
 - Verify `RESEND_API_KEY` is set correctly
 
 ### Issue 4: Notifications Not Appearing
+
 **Causes:**
+
 - Webhook not received from Paystack/VTPass
 - Notification service not triggered
 
 **Debug:**
+
 ```sql
 -- Check if webhooks are being received
 SELECT * FROM transactions
@@ -1018,6 +1119,7 @@ LIMIT 10;
 ## Support & Contact
 
 For issues or questions:
+
 - **Documentation:** `/docs/API_ENDPOINTS.md`
 - **GitHub Issues:** https://github.com/your-repo/issues
 - **Email:** support@raverpay.com

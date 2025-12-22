@@ -5,6 +5,7 @@
 ### The Confusion
 
 The Venly documentation mentions that sandbox users get free testnet assets:
+
 - 1 POL Token (testnet MATIC for gas fees)
 - 100 Venly Test Tokens (ERC20)
 - 1 NFT
@@ -16,14 +17,18 @@ The Venly documentation mentions that sandbox users get free testnet assets:
 ## How Venly Testnet Assets Work
 
 ### Portal-Created Wallets ✅
+
 When you sign up at https://portal.venly.io:
+
 - Venly creates a test user for you
 - Automatically creates a test wallet
 - **Automatically funds it with testnet assets**
 - You can view these in the portal dashboard
 
 ### API-Created Wallets ❌
+
 When you create wallets via the Venly API (what your app does):
+
 - Wallets are created successfully
 - Wallet address is generated
 - **BUT: Balance starts at 0** (no automatic funding)
@@ -36,17 +41,20 @@ When you create wallets via the Venly API (what your app does):
 ### Option 1: Use External Faucets (Manual)
 
 **Polygon Mumbai Testnet Faucet:**
+
 1. Go to https://faucet.polygon.technology
 2. Enter your wallet address (from `wallet.walletAddress`)
 3. Complete verification (usually simple captcha)
 4. Receive free testnet MATIC (~0.5 POL)
 
 **Pros:**
+
 - Free and unlimited
 - Official Polygon faucet
 - No cost to you
 
 **Cons:**
+
 - Manual process (user must do this themselves)
 - Requires user to understand faucets
 - Takes 1-2 minutes per wallet
@@ -61,6 +69,7 @@ Create an admin "master wallet" funded with testnet assets, then programmaticall
 **Implementation**:
 
 1. **Create Admin Master Wallet** (One-time setup):
+
    ```typescript
    // Create admin Venly user + wallet via portal or API
    // Fund it generously from Polygon faucet (do this once)
@@ -83,12 +92,14 @@ Create an admin "master wallet" funded with testnet assets, then programmaticall
    ```
 
 **Pros:**
+
 - Fully automated
 - Great UX (users get funded immediately)
 - No manual intervention
 - Professional experience
 
 **Cons:**
+
 - Requires maintaining admin wallet balance
 - Need to refill admin wallet periodically
 - Costs you time to set up initially
@@ -100,6 +111,7 @@ Create an admin "master wallet" funded with testnet assets, then programmaticall
 Create a backend endpoint that interfaces with Polygon faucet API (if available) or uses your funded admin wallet.
 
 **Implementation**:
+
 ```typescript
 // Add to crypto-wallet.service.ts
 async requestTestnetAssets(userId: string) {
@@ -123,6 +135,7 @@ async requestTestnetAssets(userId: string) {
 
 1. **Immediate Solution** (Do this NOW):
    - Update mobile app to show instructions:
+
      ```
      Your wallet is ready! To get free testnet assets:
      1. Copy your wallet address below
@@ -153,11 +166,13 @@ async requestTestnetAssets(userId: string) {
 **Testnet assets don't exist in production!**
 
 Users MUST deposit real crypto:
+
 - Buy USDT/USDC on an exchange
 - Send to their wallet address
 - Gas fees (POL/MATIC) cost real money (~$0.01 per transaction)
 
 **Production Onboarding**:
+
 1. User creates wallet ✅
 2. App shows deposit instructions:
    ```
@@ -171,6 +186,7 @@ Users MUST deposit real crypto:
 4. User can now send/convert crypto
 
 **For Gas Fees**:
+
 - Option A: User deposits small amount of MATIC for gas
 - Option B: Venly's "Gas Tank" feature (auto-pays gas, charges you)
 - Option C: You subsidize gas from company wallet
@@ -186,6 +202,7 @@ Users MUST deposit real crypto:
 **Quick Fix** (Next 30 minutes):
 
 1. **Update Wallet Creation Response**:
+
    ```typescript
    // In crypto-wallet.controller.ts
    return {
@@ -279,6 +296,7 @@ async initializeCryptoWallet(params: { userId: string; pin: string }) {
 ## Environment Variables Needed
 
 Add to `.env`:
+
 ```env
 # Admin wallet for funding new testnet wallets
 ADMIN_VENLY_WALLET_ID=your-admin-wallet-id
@@ -292,16 +310,19 @@ ADMIN_VENLY_PIN=your-admin-pin-encrypted
 ## Summary
 
 **Immediate Action Required**:
+
 1. ✅ Understand that API wallets don't auto-receive testnet assets
 2. ✅ Choose a funding strategy (manual faucet OR auto-funding)
 3. ✅ Update mobile app to show faucet instructions OR
 4. ✅ Implement admin wallet auto-funding
 
 **Recommended Approach**:
+
 - **Short-term**: Show faucet instructions in mobile app
 - **Long-term**: Implement admin wallet auto-funding for better UX
 
 **For Production**:
+
 - Remove all testnet funding logic
 - Show clear deposit instructions
 - Require real crypto deposits
@@ -312,6 +333,7 @@ ADMIN_VENLY_PIN=your-admin-pin-encrypted
 ## Need Help?
 
 If you want me to implement the admin auto-funding solution, I can:
+
 1. Create the faucet service
 2. Update wallet creation to auto-fund
 3. Add admin dashboard to monitor funding

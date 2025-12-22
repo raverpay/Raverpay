@@ -92,6 +92,8 @@ export interface CircleTransaction {
   transactionHash?: string;
   gasUsed?: string;
   networkFee?: string;
+  networkFeeUsd?: string;
+  reference?: string;
   memo?: string;
   errorReason?: string;
   createdAt: string;
@@ -120,6 +122,16 @@ export interface CCTPTransfer {
   attestationHash?: string;
   estimatedTime?: number;
   totalFee?: string;
+  reference?: string;
+  burnTransactionHash?: string;
+  mintTransactionHash?: string;
+  initiatedAt?: string;
+  burnConfirmedAt?: string;
+  attestationReceivedAt?: string;
+  mintConfirmedAt?: string;
+  completedAt?: string;
+  errorMessage?: string;
+  errorCode?: string;
   createdAt: string;
   updatedAt: string;
   user?: {

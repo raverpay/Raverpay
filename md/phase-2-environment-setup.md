@@ -9,12 +9,14 @@
 ### 1. Create VTPass Account
 
 **Sandbox (Testing):**
+
 1. Go to: https://sandbox.vtpass.com
 2. Sign up for a free account
 3. Verify your email
 4. Navigate to Dashboard → Settings → API Keys
 
 **Production (Live):**
+
 1. Go to: https://vtpass.com
 2. Create an account
 3. Complete KYC verification
@@ -50,14 +52,17 @@ VTPASS_WEBHOOK_SECRET=your_webhook_secret_here
 ## 🧪 Test Credentials
 
 **Test Phone Numbers:**
+
 - Any valid Nigerian number: `08011111111`
 
 **Test Smartcard Numbers:**
+
 - DSTV: `1234567890`
 - GOtv: `1234567890`
 - Startimes: `1234567890`
 
 **Test Meter Numbers:**
+
 - Any 11-digit number: `12345678901`
 
 **Note:** VTPass sandbox may have limited test data. Some services might return "Service temporarily unavailable" in test mode.
@@ -128,6 +133,7 @@ ngrok http 3001
 ```
 
 **Webhook URL:**
+
 ```
 https://abc123.ngrok-free.app/api/vtu/webhooks/vtpass
 ```
@@ -135,6 +141,7 @@ https://abc123.ngrok-free.app/api/vtu/webhooks/vtpass
 ### Production (Railway)
 
 **Webhook URL:**
+
 ```
 https://raverpayraverpay-api-production.up.railway.app/api/vtu/webhooks/vtpass
 ```
@@ -163,6 +170,7 @@ pnpm run start:dev
 ```
 
 **Check server logs:**
+
 ```
 ✅ Good: VTPass service initialized
 ❌ Bad: "VTPass API keys not configured. VTU services will not work."
@@ -177,6 +185,7 @@ curl http://localhost:3001/api/vtu/airtime/providers \
 ```
 
 **Expected response:**
+
 ```json
 [
   { "code": "mtn", "name": "MTN", "logo": "🟡" },
@@ -195,6 +204,7 @@ curl http://localhost:3001/api/vtu/data/plans/MTN \
 ```
 
 **Expected response:**
+
 ```json
 [
   {
@@ -221,6 +231,7 @@ If you get this, your API keys are working! ✅
 ### Issue 1: "VTPass API keys not configured"
 
 **Solution:**
+
 1. Check `.env` file exists in `/Users/joseph/Desktop/raverpay/apps/raverpay-api/`
 2. Verify keys are set correctly
 3. No quotes around values
@@ -230,12 +241,14 @@ If you get this, your API keys are working! ✅
 ### Issue 2: "Service provider temporarily unavailable"
 
 **Possible causes:**
+
 1. **Invalid API keys** - Double-check keys in VTPass dashboard
 2. **Sandbox limitations** - Some services may not work in sandbox
 3. **VTPass API down** - Check https://status.vtpass.com
 4. **Network issues** - Check your internet connection
 
 **Solution:**
+
 ```bash
 # Test with curl directly to VTPass API
 curl https://sandbox.vtpass.com/api/service-variations?serviceID=mtn-data \
@@ -246,6 +259,7 @@ curl https://sandbox.vtpass.com/api/service-variations?serviceID=mtn-data \
 ### Issue 3: "Invalid signature" on webhook
 
 **Solution:**
+
 1. Verify `VTPASS_WEBHOOK_SECRET` matches VTPass dashboard
 2. Check webhook URL is correct
 3. Ensure webhook secret hasn't changed
@@ -269,15 +283,15 @@ curl https://sandbox.vtpass.com/api/service-variations?serviceID=mtn-data \
 
 ### Production vs Sandbox
 
-| Feature | Sandbox | Production |
-|---------|---------|------------|
-| API Keys | Test keys | Live keys |
-| Transactions | Fake/Test | Real money |
-| Phone Numbers | Test numbers | Real numbers |
-| Wallet Funding | Not required | Required |
-| KYC | Not required | Required |
-| API Limits | Limited | Full access |
-| Support | Email only | Priority support |
+| Feature        | Sandbox      | Production       |
+| -------------- | ------------ | ---------------- |
+| API Keys       | Test keys    | Live keys        |
+| Transactions   | Fake/Test    | Real money       |
+| Phone Numbers  | Test numbers | Real numbers     |
+| Wallet Funding | Not required | Required         |
+| KYC            | Not required | Required         |
+| API Limits     | Limited      | Full access      |
+| Support        | Email only   | Priority support |
 
 ---
 
@@ -285,14 +299,15 @@ curl https://sandbox.vtpass.com/api/service-variations?serviceID=mtn-data \
 
 ### VTPass Charges
 
-| Service | VTPass Fee | Your Fee | Total User Pays |
-|---------|------------|----------|-----------------|
-| Airtime | ~0.5-1% | 2% (max ₦100) | Amount + Your Fee |
-| Data | ~0.5-1% | 2% (max ₦100) | Amount + Your Fee |
-| Cable TV | ~₦20-30 | ₦50 | Amount + Your Fee |
-| Electricity | ~₦20-30 | ₦50 | Amount + Your Fee |
+| Service     | VTPass Fee | Your Fee      | Total User Pays   |
+| ----------- | ---------- | ------------- | ----------------- |
+| Airtime     | ~0.5-1%    | 2% (max ₦100) | Amount + Your Fee |
+| Data        | ~0.5-1%    | 2% (max ₦100) | Amount + Your Fee |
+| Cable TV    | ~₦20-30    | ₦50           | Amount + Your Fee |
+| Electricity | ~₦20-30    | ₦50           | Amount + Your Fee |
 
 **Example: ₦1,000 MTN Airtime**
+
 - Amount: ₦1,000
 - VTPass fee: ~₦10 (deducted from your wallet)
 - Your fee: ₦20 (2% of ₦1,000)
@@ -317,4 +332,3 @@ curl https://sandbox.vtpass.com/api/service-variations?serviceID=mtn-data \
 ---
 
 **Questions?** Check the troubleshooting section or contact VTPass support.
-

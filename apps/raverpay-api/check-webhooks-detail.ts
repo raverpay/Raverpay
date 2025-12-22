@@ -15,7 +15,7 @@ async function main() {
   });
 
   console.log(`Found ${webhooks.length} webhooks\n`);
-  
+
   webhooks.forEach((log, i) => {
     const notification = (log.payload as any).notification;
     console.log(`Webhook ${i + 1}:`);

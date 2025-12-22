@@ -5,13 +5,16 @@
 The Venly integration has been **completely corrected** to match the official Venly API Reference documentation. Here are the key changes:
 
 ### 1. API URLs Updated
+
 **Before:**
+
 ```typescript
 VENLY_BASE_URL = 'https://api.venly.io';
 VENLY_AUTH_URL = 'https://login.venly.io/...';
 ```
 
 **After (Environment-aware):**
+
 ```typescript
 VENLY_BASE_URL = {
   sandbox: 'https://api-wallet-sandbox.venly.io/api',
@@ -25,11 +28,14 @@ VENLY_AUTH_URL = {
 ```
 
 ### 2. User Creation - Efficient One-Call API
+
 **Before (2 API calls):**
+
 1. Create user
 2. Create signing method separately
 
 **After (1 API call - OFFICIAL METHOD):**
+
 ```typescript
 // Creates user + PIN in single request (50 CUs instead of 100)
 POST /api/users
@@ -43,7 +49,9 @@ POST /api/users
 ```
 
 ### 3. Wallet Creation - Correct Header Format
+
 **Before:**
+
 ```typescript
 {
   userId: venlyUserId,
@@ -53,6 +61,7 @@ POST /api/users
 ```
 
 **After (Official Format):**
+
 ```typescript
 POST /api/wallets
 Headers: {
@@ -67,7 +76,9 @@ Body: {
 ```
 
 ### 4. Transaction Execution - Correct Request Structure
+
 **Before:**
+
 ```typescript
 {
   walletId,
@@ -80,6 +91,7 @@ Body: {
 ```
 
 **After (Official Format):**
+
 ```typescript
 POST /api/transactions/execute
 Headers: {
@@ -98,7 +110,9 @@ Body: {
 ```
 
 ### 5. Response Structure - Wrapper Added
+
 All Venly API responses now properly handle the wrapper:
+
 ```typescript
 {
   "success": true,
@@ -107,12 +121,15 @@ All Venly API responses now properly handle the wrapper:
 ```
 
 ### 6. Balance Queries - Separate Endpoints
+
 **Before:** Single endpoint returning both
 **After (Official):**
+
 - Native balance: `GET /api/wallets/{id}/balance`
 - Token balances: `GET /api/wallets/{id}/balance/tokens`
 
 ### 7. Transaction Status - Correct Endpoint
+
 **Before:** `GET /api/transactions/{id}`
 **After:** `GET /api/transactions/{secretType}/{txHash}/status`
 
@@ -146,6 +163,7 @@ POLYGON_USDC_ADDRESS=0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 The official Venly API Reference provides sandbox credentials:
 
 **Sandbox Test Credentials:**
+
 ```
 Client ID:     5104fc22-eb58-427b-ad17-fac2d3c56568
 Client Secret: 3smR3Oqa38VOTUdOzErutijgNzLM5aDC
@@ -155,22 +173,26 @@ API Base URL:  https://api-wallet-sandbox.venly.io/api
 
 **Automatic Testnet Assets:**
 When you sign up for Venly sandbox, you automatically get:
+
 - 1 POL Token (Mumbai testnet MATIC)
 - 100 Venly Test Tokens (ERC20 on Mumbai)
 - 1 NFT
 
 **Get More Testnet Tokens:**
+
 - Polygon Mumbai Faucet: https://faucet.polygon.technology
 
 ## 🔑 Key Implementation Files Updated
 
 ### Core Venly Services
+
 1. `venly.types.ts` - Complete type definitions matching official API
 2. `venly-auth.service.ts` - Environment-aware OAuth with correct URLs
 3. `venly.service.ts` - All API calls match official format
 4. `venly-user.service.ts` - Efficient user creation (one call)
 
 ### Integration Services
+
 5. `crypto-balance.service.ts` - Uses separate endpoints for native/token balances
 6. `crypto-send.service.ts` - Correct transaction execution format
 
@@ -189,12 +211,14 @@ When you sign up for Venly sandbox, you automatically get:
 ## 🚀 Next Steps
 
 1. **Add Environment Variables**
+
    ```bash
    cd /Users/joseph/Desktop/raverpay/apps/raverpay-api
    # Add to .env file
    ```
 
 2. **Generate Encryption Key**
+
    ```bash
    openssl rand -hex 32
    # Add as CRYPTO_ENCRYPTION_KEY to .env
@@ -213,6 +237,7 @@ When you sign up for Venly sandbox, you automatically get:
 ## 📊 API Flow Comparison
 
 ### Old Flow (Incorrect)
+
 ```
 1. POST /api/user (create user)
 2. POST /api/user/{id}/signing-methods (create PIN)
@@ -223,6 +248,7 @@ When you sign up for Venly sandbox, you automatically get:
 ```
 
 ### New Flow (Official ✅)
+
 ```
 1. POST /api/users (create user + PIN in one call)
    - Body includes signingMethod ✅

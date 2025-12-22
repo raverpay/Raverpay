@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Calendar, User, Paperclip, Download } from 'lucide-react';
+import { ArrowLeft, Mail, Calendar, User, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +20,7 @@ interface OutboundEmail {
   bcc: string[];
   subject: string;
   content: string;
-  attachments: any;
+  attachments: Array<{ filename: string; size: number; contentType: string }> | null;
   inReplyTo: string | null;
   inboundEmailId: string | null;
   conversationId: string | null;
@@ -31,7 +30,7 @@ interface OutboundEmail {
   openedAt: string | null;
   clickedAt: string | null;
   failureReason: string | null;
-  metadata: any;
+  metadata: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
   sender: {
@@ -86,7 +85,9 @@ export default function SentEmailDetailPage() {
       <div className="flex flex-col items-center justify-center py-12">
         <Mail className="h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold">Email not found</h3>
-        <p className="text-muted-foreground mb-4">The email you're looking for doesn't exist.</p>
+        <p className="text-muted-foreground mb-4">
+          The email you&apos;re looking for doesn&apos;t exist.
+        </p>
         <Button onClick={() => router.push('/dashboard/support/emails')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Emails
@@ -189,7 +190,9 @@ export default function SentEmailDetailPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Resend ID:</span>
-                  <code className="text-xs bg-muted px-1 py-0.5 rounded">{email.resendEmailId}</code>
+                  <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                    {email.resendEmailId}
+                  </code>
                 </div>
               )}
             </div>
@@ -209,32 +212,39 @@ export default function SentEmailDetailPage() {
           )}
 
           {/* Attachments */}
-          {email.attachments && Array.isArray(email.attachments) && email.attachments.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium flex items-center gap-2">
-                <Paperclip className="h-4 w-4" />
-                Attachments ({email.attachments.length})
-              </h3>
+          {email.attachments &&
+            Array.isArray(email.attachments) &&
+            email.attachments.length > 0 && (
               <div className="space-y-2">
-                {email.attachments.map((attachment: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between gap-2 rounded-md border p-3 text-sm"
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{attachment.filename}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {attachment.contentType} • {(attachment.size / 1024).toFixed(1)} KB
-                        </p>
+                <h3 className="text-sm font-medium flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  Attachments ({email.attachments.length})
+                </h3>
+                <div className="space-y-2">
+                  {email.attachments.map(
+                    (
+                      attachment: { filename: string; size: number; contentType: string },
+                      index: number,
+                    ) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between gap-2 rounded-md border p-3 text-sm"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{attachment.filename}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {attachment.contentType} • {(attachment.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    ),
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Email Content */}
           <div className="space-y-2">

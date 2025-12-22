@@ -30,7 +30,7 @@ EXPECTED RESPONSE
 "serviceID":"waec",
 "convinience_fee":"N0.00",
 "variations":[
- {
+{
 "variation_code": "waecdirect",
 "name": "WASSCE",
 "variation_amount": "900.00",

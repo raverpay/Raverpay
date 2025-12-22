@@ -48,7 +48,9 @@ async function main() {
   console.log(`\n=== Webhooks (${webhooks.length} total) ===`);
   webhooks.forEach((log, i) => {
     const notification = (log.payload as any).notification;
-    console.log(`${i + 1}. State: ${notification?.state}, Processed: ${log.processed}, Error: ${log.error || 'none'}`);
+    console.log(
+      `${i + 1}. State: ${notification?.state}, Processed: ${log.processed}, Error: ${log.error || 'none'}`,
+    );
   });
 }
 

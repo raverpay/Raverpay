@@ -9,6 +9,7 @@ This guide explains the **NEW admin API endpoints** for the Venly wallet system 
 Your application now has **TWO SEPARATE** crypto systems:
 
 ### 1. OLD System: CryptoOrder (Already Implemented)
+
 **Location**: `src/admin/crypto/` (admin-crypto.controller.ts, admin-crypto.service.ts)
 
 **Purpose**: Buy/sell crypto trading with manual admin approval
@@ -16,12 +17,14 @@ Your application now has **TWO SEPARATE** crypto systems:
 **Base Route**: `/admin/crypto`
 
 **Key Features**:
+
 - Users place BUY or SELL orders
 - Admin manually approves/rejects each order
 - Focuses on trading and exchanging crypto for Naira
 - Manual payout process
 
 **Endpoints**:
+
 - `GET /admin/crypto/orders` - View all crypto orders
 - `GET /admin/crypto/pending-review` - View pending sell orders
 - `GET /admin/crypto/stats` - Trading statistics
@@ -30,6 +33,7 @@ Your application now has **TWO SEPARATE** crypto systems:
 - `PATCH /admin/crypto/:orderId/adjust-amount` - Adjust payout amount
 
 **Dashboard Pages** (Already exist):
+
 - Crypto Orders Management
 - Pending Reviews
 - Trading Analytics
@@ -37,6 +41,7 @@ Your application now has **TWO SEPARATE** crypto systems:
 ---
 
 ### 2. NEW System: Venly Wallet (Just Implemented)
+
 **Location**: `src/admin/venly-wallets/` (admin-venly-wallets.controller.ts, admin-venly-wallets.service.ts)
 
 **Purpose**: Self-custody crypto wallets with automated blockchain transactions
@@ -44,6 +49,7 @@ Your application now has **TWO SEPARATE** crypto systems:
 **Base Route**: `/admin/venly-wallets`
 
 **Key Features**:
+
 - Users have their own crypto wallets on Polygon blockchain
 - Automated send/receive/convert functionality
 - Real blockchain transactions via Venly API
@@ -53,6 +59,7 @@ Your application now has **TWO SEPARATE** crypto systems:
 **Endpoints**: (Details below)
 
 **Dashboard Pages** (NEED TO BE CREATED):
+
 - Wallet Overview Dashboard
 - Exchange Rate Management
 - Conversion Monitoring
@@ -68,15 +75,18 @@ All endpoints require JWT authentication and admin roles.
 ### 1. Wallet Management
 
 #### GET /admin/venly-wallets
+
 Get all users with crypto wallets
 
 **Query Parameters**:
+
 - `page` (number): Page number (default: 1)
 - `limit` (number): Items per page (default: 20)
 - `search` (string): Search by name, email, or phone
 - `hasWallet` (boolean): Filter users with/without Venly wallets
 
 **Response**:
+
 ```json
 {
   "data": [
@@ -114,9 +124,11 @@ Get all users with crypto wallets
 ---
 
 #### GET /admin/venly-wallets/stats
+
 Get wallet statistics overview
 
 **Response**:
+
 ```json
 {
   "totalUsers": 1000,
@@ -144,9 +156,11 @@ Get wallet statistics overview
 ---
 
 #### GET /admin/venly-wallets/user/:userId
+
 Get specific user's crypto wallet details
 
 **Response**:
+
 ```json
 {
   "id": "venly-user-uuid",
@@ -191,9 +205,11 @@ Get specific user's crypto wallet details
 ### 2. Transaction Management
 
 #### GET /admin/venly-wallets/transactions
+
 Get all crypto transactions with filters
 
 **Query Parameters**:
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `userId` (string): Filter by user ID
@@ -203,6 +219,7 @@ Get all crypto transactions with filters
 - `endDate` (string): ISO date string
 
 **Response**:
+
 ```json
 {
   "data": [
@@ -248,6 +265,7 @@ Get all crypto transactions with filters
 ---
 
 #### GET /admin/venly-wallets/transactions/:id
+
 Get single transaction details
 
 **Response**: Same as transaction object above, with full details
@@ -257,9 +275,11 @@ Get single transaction details
 ---
 
 #### POST /admin/venly-wallets/transactions/:id/flag
+
 Flag a transaction as suspicious
 
 **Request Body**:
+
 ```json
 {
   "reason": "Suspected fraud - unusual amount pattern"
@@ -267,6 +287,7 @@ Flag a transaction as suspicious
 ```
 
 **Response**:
+
 ```json
 {
   "id": "tx-uuid",
@@ -286,12 +307,15 @@ Flag a transaction as suspicious
 ### 3. Conversion Management
 
 #### GET /admin/venly-wallets/conversions
+
 Get crypto to Naira conversions
 
 **Query Parameters**:
+
 - `page`, `limit`, `userId`, `status`, `startDate`, `endDate` (same as transactions)
 
 **Response**:
+
 ```json
 {
   "data": [
@@ -335,9 +359,11 @@ Get crypto to Naira conversions
 ### 4. Exchange Rate Management (CRITICAL)
 
 #### GET /admin/venly-wallets/exchange-rates
+
 Get current exchange rates
 
 **Response**:
+
 ```json
 [
   {
@@ -362,17 +388,20 @@ Get current exchange rates
 ---
 
 #### PATCH /admin/venly-wallets/exchange-rates
+
 Update exchange rate
 
 **Request Body**:
+
 ```json
 {
   "currency": "USD",
-  "toNaira": 1500.50
+  "toNaira": 1500.5
 }
 ```
 
 **Response**:
+
 ```json
 {
   "id": "rate-uuid",
@@ -392,13 +421,16 @@ Update exchange rate
 ### 5. Analytics
 
 #### GET /admin/venly-wallets/analytics
+
 Get analytics data
 
 **Query Parameters**:
+
 - `startDate` (string): ISO date string
 - `endDate` (string): ISO date string
 
 **Response**:
+
 ```json
 {
   "byType": [
@@ -458,6 +490,7 @@ Get analytics data
 **Route**: `/admin/venly-wallets/exchange-rates`
 
 **Features**:
+
 - Display current exchange rates in a table
 - Edit button for each rate
 - Modal/form to update rate
@@ -465,6 +498,7 @@ Get analytics data
 - Audit log of rate changes
 
 **Component Structure**:
+
 ```tsx
 // ExchangeRateManagementPage.tsx
 - Table showing all rates (USD→NGN, USDT→NGN, USDC→NGN)
@@ -480,6 +514,7 @@ Get analytics data
 ```
 
 **API Calls**:
+
 - `GET /admin/venly-wallets/exchange-rates` - On page load
 - `PATCH /admin/venly-wallets/exchange-rates` - On save
 
@@ -492,6 +527,7 @@ Get analytics data
 **Route**: `/admin/venly-wallets`
 
 **Features**:
+
 - KPI cards showing:
   - Total users
   - Users with wallets
@@ -502,6 +538,7 @@ Get analytics data
 - Click user row to view details
 
 **Component Structure**:
+
 ```tsx
 // WalletOverviewPage.tsx
 - Stats cards (4 KPIs)
@@ -515,6 +552,7 @@ Get analytics data
 ```
 
 **API Calls**:
+
 - `GET /admin/venly-wallets/stats` - For KPI cards
 - `GET /admin/venly-wallets` - For users table
 
@@ -525,12 +563,14 @@ Get analytics data
 **Route**: `/admin/venly-wallets/conversions`
 
 **Features**:
+
 - Stats summary (total volume, average conversion)
 - Paginated table of conversions
 - Filters: date range, user, status
 - Export functionality
 
 **Component Structure**:
+
 ```tsx
 // ConversionMonitoringPage.tsx
 - Stats cards (total volume, avg conversion)
@@ -545,6 +585,7 @@ Get analytics data
 ```
 
 **API Calls**:
+
 - `GET /admin/venly-wallets/conversions`
 
 ---
@@ -554,6 +595,7 @@ Get analytics data
 **Route**: `/admin/venly-wallets/transactions`
 
 **Features**:
+
 - Paginated table of all transactions
 - Filters: type, status, date range, user
 - Click transaction to view details
@@ -561,6 +603,7 @@ Get analytics data
 - Real-time status updates
 
 **Component Structure**:
+
 ```tsx
 // TransactionMonitoringPage.tsx
 - Filter bar (type, status, date range, user)
@@ -581,6 +624,7 @@ Get analytics data
 ```
 
 **API Calls**:
+
 - `GET /admin/venly-wallets/transactions` - For table
 - `GET /admin/venly-wallets/transactions/:id` - For details
 - `POST /admin/venly-wallets/transactions/:id/flag` - To flag
@@ -592,6 +636,7 @@ Get analytics data
 **Route**: `/admin/venly-wallets/analytics`
 
 **Features**:
+
 - Charts showing:
   - Transactions by type (pie chart)
   - Transactions by status (pie chart)
@@ -601,6 +646,7 @@ Get analytics data
 - Export reports
 
 **Component Structure**:
+
 ```tsx
 // AnalyticsDashboardPage.tsx
 - Date range selector
@@ -613,6 +659,7 @@ Get analytics data
 ```
 
 **API Calls**:
+
 - `GET /admin/venly-wallets/analytics`
 
 **Suggested Charts Library**: recharts, chart.js, or react-chartjs-2
@@ -686,15 +733,15 @@ Implement in this order:
 
 ## Key Differences: OLD vs NEW System
 
-| Feature | OLD (CryptoOrder) | NEW (Venly Wallet) |
-|---------|------------------|-------------------|
-| **Route** | `/admin/crypto` | `/admin/venly-wallets` |
-| **Purpose** | Trading (buy/sell) | Self-custody wallet |
-| **Approval** | Manual admin approval | Automated blockchain |
-| **Database** | `CryptoOrder` table | `VenlyWallet`, `CryptoTransaction` tables |
-| **Admin Actions** | Approve/reject orders | Monitor, flag, manage rates |
-| **User Experience** | Place order → wait for approval | Send/receive instantly |
-| **Critical Feature** | Approval workflow | Exchange rate management |
+| Feature              | OLD (CryptoOrder)               | NEW (Venly Wallet)                        |
+| -------------------- | ------------------------------- | ----------------------------------------- |
+| **Route**            | `/admin/crypto`                 | `/admin/venly-wallets`                    |
+| **Purpose**          | Trading (buy/sell)              | Self-custody wallet                       |
+| **Approval**         | Manual admin approval           | Automated blockchain                      |
+| **Database**         | `CryptoOrder` table             | `VenlyWallet`, `CryptoTransaction` tables |
+| **Admin Actions**    | Approve/reject orders           | Monitor, flag, manage rates               |
+| **User Experience**  | Place order → wait for approval | Send/receive instantly                    |
+| **Critical Feature** | Approval workflow               | Exchange rate management                  |
 
 ---
 
@@ -750,18 +797,21 @@ curl -H "Authorization: Bearer $TOKEN" \
 ## Summary
 
 **API Changes**: ✅ COMPLETED
+
 - New controller: `admin-venly-wallets.controller.ts`
 - New service: `admin-venly-wallets.service.ts`
 - Registered in `admin.module.ts`
 - 11 new endpoints ready to use
 
 **Dashboard Changes**: ❌ NOT STARTED
+
 - 5 new pages needed (listed above)
 - Exchange rate management is CRITICAL priority
 - Keep OLD crypto pages unchanged
 - Add new navigation menu
 
 **Next Steps**:
+
 1. Start with Exchange Rate Management page
 2. Test API endpoints with curl/Postman
 3. Implement remaining pages in priority order

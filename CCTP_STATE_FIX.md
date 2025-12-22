@@ -1,7 +1,9 @@
 # CCTP State Update Fix
 
 ## Problem
+
 The CCTP transfers were staying in `BURN_PENDING` state forever because:
+
 1. The webhook handler wasn't linking burn transactions to CCTP transfers using the `refId` field
 2. The mobile app was using incorrect state names
 
@@ -15,45 +17,51 @@ The CCTP transfers were staying in `BURN_PENDING` state forever because:
 4. **Tracks all state transitions**: Updates CCTP state for CLEARED, QUEUED, SENT, CONFIRMED states
 
 ### The Problem That Was Fixed:
+
 - CCTP service creates a `CircleCCTPTransfer` record and stores the `burnTransactionId`
 - But it doesn't create a `CircleTransaction` record for the burn
 - When webhooks arrive, the handler was looking for a `CircleTransaction` that didn't exist
 - So it would skip processing and the CCTP transfer would stay in `BURN_PENDING` forever
 
 ### The Solution:
+
 - When a webhook arrives and no `CircleTransaction` exists, check if it's a CCTP transaction (by `refId`)
 - If it is, create the `CircleTransaction` record with all the webhook data
 - Then process the CCTP progress update
 
 ### State Flow:
+
 ```
 INITIATED → BURN_PENDING → BURN_CONFIRMED → ATTESTATION_RECEIVED → COMPLETED
 ```
 
-
 ## Mobile App Fix (⚠️ NEEDS UPDATE)
 
 ### Issue
+
 Your mobile app uses **incorrect state names** that don't match the database schema:
 
 **Wrong Names in Mobile:**
+
 - `BURN_COMPLETE` ❌
 - `ATTESTATION_COMPLETE` ❌
 
 **Correct Names from Schema:**
+
 - `BURN_CONFIRMED` ✅
 - `ATTESTATION_RECEIVED` ✅
 
 ### Files to Update
 
 #### 1. Update `src/types/circle.types.ts`
+
 ```typescript
 export enum CCTPTransferState {
   INITIATED = 'INITIATED',
   BURN_PENDING = 'BURN_PENDING',
-  BURN_CONFIRMED = 'BURN_CONFIRMED',  // ← Was BURN_COMPLETE
+  BURN_CONFIRMED = 'BURN_CONFIRMED', // ← Was BURN_COMPLETE
   ATTESTATION_PENDING = 'ATTESTATION_PENDING',
-  ATTESTATION_RECEIVED = 'ATTESTATION_RECEIVED',  // ← Was ATTESTATION_COMPLETE
+  ATTESTATION_RECEIVED = 'ATTESTATION_RECEIVED', // ← Was ATTESTATION_COMPLETE
   MINT_PENDING = 'MINT_PENDING',
   MINT_CONFIRMED = 'MINT_CONFIRMED',
   COMPLETED = 'COMPLETED',
@@ -63,7 +71,9 @@ export enum CCTPTransferState {
 ```
 
 #### 2. Update `app/circle/transaction-status.tsx`
+
 Change these cases:
+
 ```typescript
 case "BURN_CONFIRMED":  // ← Was BURN_COMPLETE
   return {
@@ -87,6 +97,7 @@ case "ATTESTATION_RECEIVED":  // ← Was ATTESTATION_COMPLETE
 ## Complete State Progression
 
 ### Backend (Database)
+
 ```
 1. INITIATED          - Transfer created
 2. BURN_PENDING       - Burn transaction submitted (CLEARED/QUEUED/SENT)
@@ -101,12 +112,12 @@ case "ATTESTATION_RECEIVED":  // ← Was ATTESTATION_COMPLETE
 ### What Webhooks Trigger Updates
 
 | Webhook State | CCTP State Update |
-|--------------|-------------------|
-| CLEARED | BURN_PENDING |
-| QUEUED | BURN_PENDING |
-| SENT | BURN_PENDING |
-| CONFIRMED | BURN_CONFIRMED |
-| COMPLETE | BURN_CONFIRMED |
+| ------------- | ----------------- |
+| CLEARED       | BURN_PENDING      |
+| QUEUED        | BURN_PENDING      |
+| SENT          | BURN_PENDING      |
+| CONFIRMED     | BURN_CONFIRMED    |
+| COMPLETE      | BURN_CONFIRMED    |
 
 ## Testing
 
@@ -122,7 +133,7 @@ After updating the mobile app:
 3. **Check the logs** for these messages:
    ```
    Linking burn transaction ... to CCTP transfer ... via refId: CCTP-...
-   CCTP burn transaction cleared: ... 
+   CCTP burn transaction cleared: ...
    CCTP burn transaction queued: ...
    CCTP burn transaction sent: ...
    CCTP burn confirmed: ... - TxHash: 0x...

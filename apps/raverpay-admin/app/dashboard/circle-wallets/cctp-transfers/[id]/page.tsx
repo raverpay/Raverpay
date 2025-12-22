@@ -87,7 +87,7 @@ export default function CCTPTransferDetailsPage() {
         <XCircle className="h-12 w-12 text-muted-foreground mb-4" />
         <h2 className="text-2xl font-bold mb-2">Transfer Not Found</h2>
         <p className="text-muted-foreground mb-4">
-          The CCTP transfer you're looking for doesn't exist.
+          The CCTP transfer you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link href="/dashboard/circle-wallets/cctp-transfers">
           <Button>
@@ -150,15 +150,15 @@ export default function CCTPTransferDetailsPage() {
         <CardContent className="space-y-6">
           {/* Transfer Reference */}
           <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              Transfer Reference
-            </label>
+            <label className="text-sm font-medium text-muted-foreground">Transfer Reference</label>
             <div className="flex items-center gap-2 mt-1">
-              <code className="text-sm bg-muted px-3 py-2 rounded flex-1">{transfer.reference}</code>
+              <code className="text-sm bg-muted px-3 py-2 rounded flex-1">
+                {transfer.reference}
+              </code>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => copyToClipboard(transfer.reference, 'Reference')}
+                onClick={() => copyToClipboard(transfer.reference || '', 'Reference')}
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -187,9 +187,7 @@ export default function CCTPTransferDetailsPage() {
 
           {/* Destination Address */}
           <div>
-            <label className="text-sm font-medium text-muted-foreground">
-              Destination Address
-            </label>
+            <label className="text-sm font-medium text-muted-foreground">Destination Address</label>
             <div className="flex items-center gap-2 mt-1">
               <code className="text-sm bg-muted px-3 py-2 rounded flex-1 truncate">
                 {transfer.destinationAddress}
@@ -308,9 +306,7 @@ export default function CCTPTransferDetailsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
-                Attestation Hash
-              </label>
+              <label className="text-sm font-medium text-muted-foreground">Attestation Hash</label>
               <div className="flex items-center gap-2 mt-1">
                 <code className="text-sm bg-muted px-3 py-2 rounded flex-1 truncate">
                   {transfer.attestationHash}

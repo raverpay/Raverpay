@@ -11,6 +11,7 @@ This document describes the complete withdrawal feature with configurable rates 
 ### 1. **Database Schema**
 
 #### New Table: `withdrawal_config`
+
 ```sql
 CREATE TABLE withdrawal_config (
     id TEXT PRIMARY KEY,
@@ -29,10 +30,12 @@ CREATE TABLE withdrawal_config (
 ```
 
 #### New Enums:
+
 - `WithdrawalFeeType`: `FLAT`, `PERCENTAGE`
 - Reuses existing `KYCTier`: `TIER_0`, `TIER_1`, `TIER_2`, `TIER_3`
 
 #### Default Configuration Inserted:
+
 ```
 Fee Type: PERCENTAGE (1.5%)
 Min Fee: ₦50
@@ -43,6 +46,7 @@ Tier Level: NULL (Global - applies to all users)
 ```
 
 #### Migration Files:
+
 - **Prisma Schema**: `/apps/raverpay-api/prisma/schema.prisma` - Lines 1164-1201
 - **SQL Migration**: `/apps/raverpay-api/prisma/migrations/add_withdrawal_config.sql`
 
@@ -51,9 +55,11 @@ Tier Level: NULL (Global - applies to all users)
 ### 2. **Backend API**
 
 #### Services Updated:
+
 **File**: `/apps/raverpay-api/src/transactions/transactions.service.ts`
 
 **New Methods:**
+
 1. `getWithdrawalConfig(kycTier?)` - Fetch config from database with tier-specific logic
 2. `calculateWithdrawalFee(amount, kycTier?)` - Calculate fee based on config
 3. `getWithdrawalConfigForUser(userId)` - Get config for mobile app
@@ -65,10 +71,12 @@ Tier Level: NULL (Global - applies to all users)
 9. `deleteWithdrawalConfig(id)` - Admin: Delete config
 
 **Updated Method:**
+
 - `calculateFee()` - Now async, calls `calculateWithdrawalFee()` for withdrawals
 - `withdrawFunds()` - Now uses dynamic fee calculation from database
 
 #### Fee Calculation Logic:
+
 ```typescript
 1. Check for tier-specific config (e.g., TIER_2)
 2. If not found, use global config (tierLevel = null)
@@ -80,13 +88,16 @@ Tier Level: NULL (Global - applies to all users)
 ```
 
 #### DTOs Created:
+
 **File**: `/apps/raverpay-api/src/transactions/dto/`
+
 - `create-withdrawal-config.dto.ts`
 - `update-withdrawal-config.dto.ts`
 
 #### Controllers Updated:
 
 **User Endpoints** (`transactions.controller.ts`):
+
 ```
 GET  /api/transactions/withdrawal-config
 POST /api/transactions/withdrawal-preview
@@ -94,6 +105,7 @@ POST /api/transactions/withdraw (existing, now uses dynamic fees)
 ```
 
 **Admin Endpoints** (`admin-transactions.controller.ts`):
+
 ```
 GET    /api/admin/transactions/withdrawal-configs
 GET    /api/admin/transactions/withdrawal-configs/:id
@@ -107,9 +119,11 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 ### 3. **Admin Dashboard**
 
 #### New Page: `/dashboard/withdrawal-config`
+
 **File**: `/apps/raverpay-admin/app/dashboard/withdrawal-config/page.tsx`
 
 **Features:**
+
 - ✅ View all withdrawal configurations
 - ✅ Create new configurations (global or tier-specific)
 - ✅ Edit existing configurations
@@ -123,10 +137,12 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 
 **API Client**:
 **File**: `/apps/raverpay-admin/lib/api/withdrawal.ts`
+
 - TypeScript interfaces for all DTOs
 - API methods for CRUD operations
 
 **UI Components Used:**
+
 - Table for listing configs
 - Dialog for create/edit
 - AlertDialog for delete confirmation
@@ -139,9 +155,11 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 ### 4. **Mobile App**
 
 #### New Hook: `useWithdrawal`
+
 **File**: `/apps/raverpay/src/hooks/useWithdrawal.ts`
 
 **Hooks Exported:**
+
 1. `useWithdrawalConfig()` - Get user's withdrawal config
 2. `useWithdrawalPreview()` - Preview withdrawal fee
 3. `useWithdrawFunds()` - Execute withdrawal
@@ -153,6 +171,7 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 #### New Screen: `/app/withdraw.tsx`
 
 **Features:**
+
 - ✅ Amount input with quick amount buttons
 - ✅ Real-time fee preview
 - ✅ Bank selection with search
@@ -169,13 +188,17 @@ DELETE /api/admin/transactions/withdrawal-configs/:id
 - ✅ Beautiful UI matching existing screens
 
 #### Home Screen Updated:
+
 **File**: `/apps/raverpay/app/(tabs)/index.tsx`
+
 - ✅ Uncommented withdrawal button
 - ✅ Wired to navigate to `/withdraw` screen
 - ✅ Positioned next to "Add Money" button
 
 #### API Endpoints Added:
+
 **File**: `/apps/raverpay/src/lib/api/endpoints.ts`
+
 ```typescript
 TRANSACTIONS: {
   WITHDRAWAL_CONFIG: '/transactions/withdrawal-config',
@@ -236,6 +259,7 @@ TRANSACTIONS: {
 ## 🔧 Configuration Examples
 
 ### Global Configuration (All Users):
+
 ```typescript
 {
   feeType: "PERCENTAGE",
@@ -250,6 +274,7 @@ TRANSACTIONS: {
 ```
 
 ### Tier-Specific Configuration (TIER_2 Users):
+
 ```typescript
 {
   feeType: "FLAT",
@@ -264,6 +289,7 @@ TRANSACTIONS: {
 ```
 
 ### Multiple Configs Priority:
+
 ```
 1. Check for user's KYC tier config (e.g., TIER_2)
 2. If not found, use global config (tierLevel = null)
@@ -275,6 +301,7 @@ TRANSACTIONS: {
 ## 📝 Fee Calculation Examples
 
 ### Example 1: Percentage Fee
+
 ```
 Config: 1.5% fee, min ₦50, max ₦500
 
@@ -287,6 +314,7 @@ User Receives: ₦5,000
 ```
 
 ### Example 2: Percentage Fee with Min Cap
+
 ```
 Config: 1.5% fee, min ₦50, max ₦500
 
@@ -299,6 +327,7 @@ User Receives: ₦1,000
 ```
 
 ### Example 3: Percentage Fee with Max Cap
+
 ```
 Config: 1.5% fee, min ₦50, max ₦500
 
@@ -311,6 +340,7 @@ User Receives: ₦50,000
 ```
 
 ### Example 4: Flat Fee
+
 ```
 Config: ₦25 flat fee
 
@@ -326,6 +356,7 @@ User Receives: ₦10,000
 ## 🎨 UI/UX Features
 
 ### Mobile App:
+
 - ✅ Clean, modern design matching existing screens
 - ✅ Real-time fee calculation and display
 - ✅ Account auto-verification with visual feedback
@@ -340,6 +371,7 @@ User Receives: ₦10,000
 - ✅ Success alert with next steps
 
 ### Admin Dashboard:
+
 - ✅ Professional table layout
 - ✅ Statistics cards at top
 - ✅ Color-coded status badges
@@ -369,6 +401,7 @@ User Receives: ₦10,000
 ### Admin Dashboard Testing:
 
 1. **Access the page**:
+
    ```
    http://localhost:3001/dashboard/withdrawal-config
    ```
@@ -473,6 +506,7 @@ curl -X POST http://localhost:4000/api/admin/transactions/withdrawal-configs \
 ## 📁 Files Created/Modified
 
 ### Backend:
+
 - ✅ `prisma/schema.prisma` - Added WithdrawalConfig model
 - ✅ `prisma/migrations/add_withdrawal_config.sql` - Database migration
 - ✅ `src/transactions/dto/create-withdrawal-config.dto.ts` - New
@@ -484,16 +518,19 @@ curl -X POST http://localhost:4000/api/admin/transactions/withdrawal-configs \
 - ✅ `src/admin/transactions/admin-transactions.controller.ts` - Added endpoints
 
 ### Admin Dashboard:
+
 - ✅ `lib/api/withdrawal.ts` - New API client
 - ✅ `app/dashboard/withdrawal-config/page.tsx` - New page
 
 ### Mobile App:
+
 - ✅ `src/hooks/useWithdrawal.ts` - New hook
 - ✅ `src/lib/api/endpoints.ts` - Added endpoints
 - ✅ `app/withdraw.tsx` - New screen
 - ✅ `app/(tabs)/index.tsx` - Uncommented button
 
 ### Documentation:
+
 - ✅ `md/WITHDRAWAL_FEATURE_IMPLEMENTATION.md` - This file
 
 ---
@@ -501,6 +538,7 @@ curl -X POST http://localhost:4000/api/admin/transactions/withdrawal-configs \
 ## ✨ Future Enhancements
 
 ### Optional (Not Implemented):
+
 1. **Save Bank Accounts**:
    - Add backend endpoints for saving/managing bank accounts
    - Add UI for managing saved accounts
@@ -533,6 +571,7 @@ curl -X POST http://localhost:4000/api/admin/transactions/withdrawal-configs \
 ## 🎯 Success Metrics
 
 This implementation provides:
+
 - ✅ **Flexibility**: Admin can change fees without code deployment
 - ✅ **Tier-Based**: Different rates for different KYC levels
 - ✅ **Transparency**: Users see exact fees before confirming
@@ -546,6 +585,7 @@ This implementation provides:
 ## 📞 Support
 
 For questions or issues:
+
 1. Check this documentation first
 2. Review API endpoint responses
 3. Check browser/app console for errors

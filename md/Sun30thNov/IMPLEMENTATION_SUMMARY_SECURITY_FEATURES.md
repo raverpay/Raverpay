@@ -13,6 +13,7 @@
 **File:** `apps/raverpay-api/prisma/schema.prisma`
 
 **Changes:**
+
 - Added `Device` model for device fingerprinting and management
 - Added `DailyTransactionLimit` model for transaction tracking
 - Added security fields to `User` model:
@@ -31,11 +32,13 @@
 ### 2. **Device Fingerprinting System** ✅
 
 **Files Created:**
+
 - `src/device/device.service.ts` - Device management service
 - `src/device/device.module.ts` - Device module
 - `src/device/device.controller.ts` - Device endpoints
 
 **Features:**
+
 - ✅ **One Active Device Per User** - Enforces single device login policy
 - ✅ **Device Registration** - Stores device fingerprint, model, OS info
 - ✅ **Device Verification** - OTP-based verification for new devices
@@ -44,6 +47,7 @@
 - ✅ **Activity Tracking** - Tracks last login, last activity, IP addresses
 
 **Endpoints:**
+
 - `GET /api/devices` - Get all user devices
 - `GET /api/devices/active` - Get active device
 - `POST /api/devices/:deviceId/logout` - Logout specific device
@@ -56,6 +60,7 @@
 **File:** `src/auth/auth.service.ts`
 
 **Implementation:**
+
 - ✅ **3 Failed Attempts = 30-Minute Lock** - Automatic account locking
 - ✅ **Failed Attempt Tracking** - Increments counter on wrong password
 - ✅ **Auto-Unlock After Expiry** - Account unlocks automatically
@@ -63,6 +68,7 @@
 - ✅ **Clear Error Messages** - Shows remaining lock time
 
 **Flow:**
+
 ```
 1. Wrong password → failedLoginAttempts++
 2. 3rd wrong password → status = LOCKED, lockedUntil = now + 30min
@@ -72,6 +78,7 @@
 ```
 
 **Error Messages:**
+
 - Locked: `"Your account is temporarily locked due to multiple failed login attempts. Please try again in X minute(s) or reset your password."`
 - 3rd Attempt: `"Your account has been locked due to multiple failed login attempts. Please try again in 30 minutes or reset your password."`
 
@@ -80,11 +87,13 @@
 ### 4. **Device Verification Flow** ✅
 
 **Files Modified:**
+
 - `src/auth/auth.service.ts` - Added device verification logic
 - `src/auth/auth.controller.ts` - Added IP extraction and device endpoint
 - `src/auth/auth.module.ts` - Imported DeviceModule
 
 **New Endpoints:**
+
 - `POST /api/auth/verify-device` - Verify device with OTP
 
 **Login Flow with Device Verification:**
@@ -117,6 +126,7 @@
 ```
 
 **Security Features:**
+
 - ✅ Uses existing email/phone OTP system (no duplicate code)
 - ✅ Deactivates all other devices on verification
 - ✅ Tracks device info: IP, model, OS, location
@@ -129,11 +139,13 @@
 **File:** `src/auth/auth.controller.ts`
 
 **Changes:**
+
 - ✅ **IP Address Extraction** - From headers (x-forwarded-for, x-real-ip) or socket
 - ✅ **Device Info Support** - Accepts `deviceInfo` in request body
 - ✅ **Pass to Service** - Forwards IP and device info to auth service
 
 **Request Example:**
+
 ```typescript
 POST /api/auth/login
 {
@@ -151,6 +163,7 @@ POST /api/auth/login
 ```
 
 **Response (New Device):**
+
 ```typescript
 {
   "requiresDeviceVerification": true,
@@ -167,6 +180,7 @@ POST /api/auth/login
 ```
 
 **Response (Verified Device):**
+
 ```typescript
 {
   "user": { ... },
@@ -258,12 +272,14 @@ CREATE TABLE daily_transaction_limits (
 #### 1. **Login Notification Emails** ⏳
 
 **What Needs to be Done:**
+
 - Create email template for new login notifications
 - Include: Device info, IP address, location, date/time
 - Send async email after successful login
 - Add "Not you?" security link
 
 **Example Email:**
+
 ```
 Subject: New Login to Your RaverPay Account
 
@@ -283,6 +299,7 @@ If this wasn't you, please secure your account immediately:
 ```
 
 **Files to Create:**
+
 - `src/services/email/templates/login-notification.template.ts`
 - Update `src/services/email/email.service.ts` with `sendLoginNotification()`
 - Call from `auth.service.ts` after successful login
@@ -292,6 +309,7 @@ If this wasn't you, please secure your account immediately:
 #### 2. **Transaction Limits Service** ⏳
 
 **What Needs to be Done:**
+
 - Create `src/limits/limits.service.ts`
 - Implement daily limit tracking and enforcement
 - Add KYC tier-based limits:
@@ -301,6 +319,7 @@ If this wasn't you, please secure your account immediately:
   - **TIER_3**: Unlimited
 
 **Methods Required:**
+
 ```typescript
 - checkDailyLimit(userId, amount, type) → boolean
 - incrementDailySpend(userId, amount, type) → void
@@ -309,6 +328,7 @@ If this wasn't you, please secure your account immediately:
 ```
 
 **Apply To:**
+
 - VTU purchases (airtime, data, cable, electricity)
 - Transfers
 - Withdrawals
@@ -318,24 +338,20 @@ If this wasn't you, please secure your account immediately:
 #### 3. **Apply Transaction Limits** ⏳
 
 **Files to Update:**
+
 - `src/vtu/vtu.service.ts` - Check limits before purchase
 - `src/payments/payments.service.ts` - Check limits before withdrawal
 - `src/transactions/transactions.service.ts` - Check limits before transfer
 
 **Implementation:**
+
 ```typescript
 // Before processing transaction
-const canProceed = await limitsService.checkDailyLimit(
-  userId,
-  amount,
-  'AIRTIME'
-);
+const canProceed = await limitsService.checkDailyLimit(userId, amount, 'AIRTIME');
 
 if (!canProceed) {
   const remaining = await limitsService.getRemainingLimit(userId);
-  throw new BadRequestException(
-    `Daily limit exceeded. Remaining: ₦${remaining.toFixed(2)}`
-  );
+  throw new BadRequestException(`Daily limit exceeded. Remaining: ₦${remaining.toFixed(2)}`);
 }
 
 // After successful transaction
@@ -349,6 +365,7 @@ await limitsService.incrementDailySpend(userId, amount, 'AIRTIME');
 #### 1. **Device Fingerprinting Package** ⏳
 
 **Install:**
+
 ```bash
 cd /Users/joseph/Desktop/raverpay
 pnpm add expo-device @react-native-community/netinfo expo-application
@@ -356,14 +373,15 @@ pnpm add expo-device @react-native-community/netinfo expo-application
 
 **Create Utility:**
 `src/lib/device-fingerprint.ts`
+
 ```typescript
 import * as Device from 'expo-device';
 import * as Application from 'expo-application';
 import { Platform } from 'react-native';
 
 export async function getDeviceFingerprint() {
-  const deviceId = await Application.getAndroidId() ||
-                   await Application.getIosIdForVendorAsync();
+  const deviceId =
+    (await Application.getAndroidId()) || (await Application.getIosIdForVendorAsync());
 
   return {
     deviceId: deviceId || `${Device.modelName}-${Date.now()}`,
@@ -383,6 +401,7 @@ export async function getDeviceFingerprint() {
 **File:** `src/hooks/useAuth.ts`
 
 **Add Device Info to Login:**
+
 ```typescript
 import { getDeviceFingerprint } from '@/src/lib/device-fingerprint';
 
@@ -390,13 +409,10 @@ const loginMutation = useMutation({
   mutationFn: async (credentials: LoginRequest) => {
     const deviceInfo = await getDeviceFingerprint();
 
-    const { data } = await apiClient.post<AuthResponse>(
-      API_ENDPOINTS.AUTH.LOGIN,
-      {
-        ...credentials,
-        deviceInfo, // Add device info to request
-      }
-    );
+    const { data } = await apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, {
+      ...credentials,
+      deviceInfo, // Add device info to request
+    });
     return data;
   },
   // ... rest
@@ -410,6 +426,7 @@ const loginMutation = useMutation({
 **File:** `app/(auth)/login.tsx`
 
 **Add OTP Screen Navigation:**
+
 ```typescript
 const onSubmit = async (data: LoginFormData) => {
   try {
@@ -453,6 +470,7 @@ const onSubmit = async (data: LoginFormData) => {
 **File:** `app/(auth)/verify-device.tsx` (NEW)
 
 **Similar to verify-email.tsx but:**
+
 - Uses `deviceId` and `userId` from route params
 - Calls `POST /api/auth/verify-device` instead of verify-email
 - On success, stores tokens and navigates to main app
@@ -521,6 +539,7 @@ export function useInactivityTimeout(timeoutMs: number = 3 * 60 * 1000) {
 ```
 
 **Usage in Main App Layout:**
+
 ```typescript
 // app/(tabs)/_layout.tsx
 import { useInactivityTimeout } from '@/src/hooks/useInactivityTimeout';
@@ -541,11 +560,13 @@ export default function TabsLayout() {
 #### 6. **Contact Picker for Airtime/Data** ⏳
 
 **Install:**
+
 ```bash
 pnpm add expo-contacts
 ```
 
 **Add to app.json:**
+
 ```json
 {
   "expo": {
@@ -563,6 +584,7 @@ pnpm add expo-contacts
 
 **Create Utility:**
 `src/components/ContactPicker.tsx`
+
 ```typescript
 import * as Contacts from 'expo-contacts';
 import { useState } from 'react';
@@ -616,15 +638,15 @@ export function ContactPicker({ onSelectContact }: ContactPickerProps) {
 
 ### What's Protected:
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **Account Locking** | ✅ Complete | 3 failed attempts = 30-min lock |
-| **Device Fingerprinting** | ✅ Complete | One active device per user |
-| **Device Verification** | ✅ Complete | OTP required for new devices |
-| **IP Tracking** | ✅ Complete | Stores last successful login IP |
-| **Session Expiry** | ⏳ Partial | Access token: 15min (existing), Inactivity: 3min (pending frontend) |
-| **Transaction Limits** | ⏳ Pending | Daily limits by KYC tier |
-| **Login Notifications** | ⏳ Pending | Email on new device login |
+| Feature                   | Status      | Description                                                         |
+| ------------------------- | ----------- | ------------------------------------------------------------------- |
+| **Account Locking**       | ✅ Complete | 3 failed attempts = 30-min lock                                     |
+| **Device Fingerprinting** | ✅ Complete | One active device per user                                          |
+| **Device Verification**   | ✅ Complete | OTP required for new devices                                        |
+| **IP Tracking**           | ✅ Complete | Stores last successful login IP                                     |
+| **Session Expiry**        | ⏳ Partial  | Access token: 15min (existing), Inactivity: 3min (pending frontend) |
+| **Transaction Limits**    | ⏳ Pending  | Daily limits by KYC tier                                            |
+| **Login Notifications**   | ⏳ Pending  | Email on new device login                                           |
 
 ---
 
@@ -656,12 +678,14 @@ export function ContactPicker({ onSelectContact }: ContactPickerProps) {
 ### Backend:
 
 **Created:**
+
 - `src/device/device.service.ts` - Device management
 - `src/device/device.module.ts` - Device module
 - `src/device/device.controller.ts` - Device endpoints
 - `manual_migration_device_security.sql` - Database migration
 
 **Modified:**
+
 - `prisma/schema.prisma` - Added Device, DailyTransactionLimit models
 - `src/auth/auth.service.ts` - Account locking + device verification
 - `src/auth/auth.controller.ts` - IP extraction + device endpoint
@@ -671,12 +695,14 @@ export function ContactPicker({ onSelectContact }: ContactPickerProps) {
 ### Frontend (Pending):
 
 **To Create:**
+
 - `src/lib/device-fingerprint.ts` - Device fingerprinting utility
 - `src/hooks/useInactivityTimeout.ts` - Inactivity tracking
 - `src/components/ContactPicker.tsx` - Contact selection
 - `app/(auth)/verify-device.tsx` - Device OTP verification screen
 
 **To Modify:**
+
 - `src/hooks/useAuth.ts` - Add device info to login
 - `app/(auth)/login.tsx` - Handle device verification response
 - `app/(tabs)/_layout.tsx` - Add inactivity timeout
@@ -687,19 +713,14 @@ export function ContactPicker({ onSelectContact }: ContactPickerProps) {
 ## 🎯 **Next Steps**
 
 **Priority 1 (Critical):**
+
 1. Implement transaction limits service
 2. Apply limits to VTU/transfer endpoints
 3. Test account locking thoroughly
 
-**Priority 2 (High):**
-4. Implement frontend device fingerprinting
-5. Create device verification screen
-6. Test full device verification flow
+**Priority 2 (High):** 4. Implement frontend device fingerprinting 5. Create device verification screen 6. Test full device verification flow
 
-**Priority 3 (Medium):**
-7. Add login notification emails
-8. Implement inactivity timeout
-9. Add contact picker to VTU screens
+**Priority 3 (Medium):** 7. Add login notification emails 8. Implement inactivity timeout 9. Add contact picker to VTU screens
 
 ---
 

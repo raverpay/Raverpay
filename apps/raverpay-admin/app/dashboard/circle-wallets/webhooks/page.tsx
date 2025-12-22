@@ -201,7 +201,9 @@ export default function CircleWebhooksPage() {
                         <TableCell className="text-sm">
                           {log.processedAt ? formatDate(log.processedAt) : '—'}
                         </TableCell>
-                        <TableCell className="text-sm">{formatDate(log.receivedAt || log.createdAt)}</TableCell>
+                        <TableCell className="text-sm">
+                          {formatDate(log.receivedAt || log.createdAt)}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Dialog>
                             <DialogTrigger asChild>
