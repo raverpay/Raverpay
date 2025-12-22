@@ -40,9 +40,11 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatRelativeTime, getApiErrorMessage } from '@/lib/utils';
 import { UserRole } from '@/types/support';
 import { useAuthStore } from '@/lib/auth-store';
+import { getOutboundEmails, GetOutboundEmailsParams } from '@/lib/api/support';
 
 function getRoleBadgeVariant(role?: UserRole) {
   switch (role) {
@@ -92,6 +94,9 @@ export default function EmailsPage() {
 
   const allowedEmails = getAllowedEmails();
 
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<'inbox' | 'sent'>('inbox');
+
   const queryParams: GetEmailsParams = {
     page,
     limit: 20,
@@ -115,6 +120,20 @@ export default function EmailsPage() {
       processedFilter,
     ],
     queryFn: () => supportApi.getEmails(queryParams),
+    enabled: activeTab === 'inbox',
+  });
+
+  // Outbound emails query (for Sent tab)
+  const outboundQueryParams: GetOutboundEmailsParams = {
+    page,
+    limit: 20,
+    search: debouncedSearch || undefined,
+  };
+
+  const { data: outboundEmailsData, isLoading: isLoadingOutbound } = useQuery({
+    queryKey: ['outbound-emails', page, debouncedSearch],
+    queryFn: () => getOutboundEmails(outboundQueryParams),
+    enabled: activeTab === 'sent',
   });
 
   const { data: stats } = useQuery({
@@ -378,6 +397,23 @@ export default function EmailsPage() {
         </Dialog>
       </div>
 
+      {/* Tabs for Inbox and Sent */}
+      <Tabs value={activeTab} onValueChange={(value) => {
+        setActiveTab(value as 'inbox' | 'sent');
+        setPage(1); // Reset to page 1 when switching tabs
+      }}>
+        <TabsList>
+          <TabsTrigger value="inbox">
+            <Mail className="mr-2 h-4 w-4" />
+            Inbox
+          </TabsTrigger>
+          <TabsTrigger value="sent">
+            <PenSquare className="mr-2 h-4 w-4" />
+            Sent
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="inbox" className="space-y-4 mt-6">
       {/* Stats Cards */}
       {stats && (
         <div className="grid gap-4 md:grid-cols-4">
@@ -580,6 +616,103 @@ export default function EmailsPage() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        {/* Sent Tab Content */}
+        <TabsContent value="sent" className="space-y-4 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sent Emails</CardTitle>
+              <CardDescription>View all emails you've sent from the admin dashboard</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingOutbound ? (
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : !outboundEmailsData?.data || outboundEmailsData.data.length === 0 ? (
+                <div className="text-center py-12">
+                  <Mail className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">No sent emails</h3>
+                  <p className="text-muted-foreground">
+                    You haven't sent any emails yet. Click "Compose Email" to send your first email.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>To</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead>From</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Sent</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {outboundEmailsData.data.map((email: any) => (
+                        <TableRow key={email.id}>
+                          <TableCell>
+                            <div className="font-medium">{email.to}</div>
+                            {email.user && (
+                              <div className="text-sm text-muted-foreground">
+                                {email.user.firstName} {email.user.lastName}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="max-w-md truncate">{email.subject}</div>
+                            {email.inboundEmail && (
+                              <div className="text-xs text-muted-foreground">
+                                Re: {email.inboundEmail.subject}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{email.fromEmail}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                email.status === 'SENT'
+                                  ? 'default'
+                                  : email.status === 'DELIVERED'
+                                    ? 'secondary'
+                                    : email.status === 'FAILED'
+                                      ? 'destructive'
+                                      : 'outline'
+                              }
+                            >
+                              {email.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {formatRelativeTime(email.createdAt)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {outboundEmailsData.meta && (
+                    <div className="mt-4">
+                      <Pagination
+                        currentPage={page}
+                        totalPages={outboundEmailsData.meta.totalPages}
+                        totalItems={outboundEmailsData.meta.total}
+                        itemsPerPage={outboundEmailsData.meta.limit}
+                        onPageChange={setPage}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -375,3 +375,21 @@ export interface GetEmailsParams {
   isProcessed?: boolean;
   search?: string;
 }
+
+export interface GetOutboundEmailsParams {
+  page?: number;
+  limit?: number;
+  fromEmail?: string;
+  search?: string;
+  status?: string;
+}
+
+// Add to supportApi object
+export const getOutboundEmails = async (
+  params?: GetOutboundEmailsParams,
+): Promise<PaginatedResponse<any>> => {
+  const response = await apiClient.get<PaginatedResponse<any>>('/admin/emails/outbound', {
+    params,
+  });
+  return response.data;
+};
