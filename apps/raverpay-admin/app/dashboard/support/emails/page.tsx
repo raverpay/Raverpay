@@ -650,6 +650,7 @@ export default function EmailsPage() {
                         <TableHead>From</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Sent</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -691,6 +692,13 @@ export default function EmailsPage() {
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatRelativeTime(email.createdAt)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Link href={`/dashboard/support/emails/sent/${email.id}`}>
+                              <Button variant="outline" size="sm">
+                                View
+                              </Button>
+                            </Link>
                           </TableCell>
                         </TableRow>
                       ))}

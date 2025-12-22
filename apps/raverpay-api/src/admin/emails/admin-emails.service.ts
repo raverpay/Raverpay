@@ -311,6 +311,65 @@ export class AdminEmailsService {
   }
 
   /**
+   * Get outbound email by ID
+   * - SUPPORT/ADMIN: Can only see emails they sent
+   * - SUPER_ADMIN: Can see any email
+   */
+  async getOutboundEmailById(
+    emailId: string,
+    userRole: UserRole,
+    userId: string,
+  ) {
+    const email = await this.prisma.outboundEmail.findUnique({
+      where: { id: emailId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        inboundEmail: {
+          select: {
+            id: true,
+            subject: true,
+            from: true,
+          },
+        },
+        conversation: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!email) {
+      throw new NotFoundException('Outbound email not found');
+    }
+
+    // Role-based access check
+    if (userRole !== UserRole.SUPER_ADMIN && email.sentBy !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to view this email',
+      );
+    }
+
+    return email;
+  }
+
+  /**
    * Get email by ID with ticket-based access check
    */
   async getEmailById(emailId: string, userRole: UserRole, userId: string) {

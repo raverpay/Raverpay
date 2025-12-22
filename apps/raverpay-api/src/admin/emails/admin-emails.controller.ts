@@ -105,6 +105,19 @@ export class AdminEmailsController {
   }
 
   /**
+   * Get outbound email by ID
+   * GET /api/admin/emails/outbound/:id
+   */
+  @Get('outbound/:id')
+  async getOutboundEmailById(
+    @Param('id') emailId: string,
+    @GetUser('role') userRole: UserRole,
+    @GetUser('id') userId: string,
+  ) {
+    return this.emailsService.getOutboundEmailById(emailId, userRole, userId);
+  }
+
+  /**
    * Manually process an email from Resend by email ID
    * POST /api/admin/emails/process-from-resend
    *
