@@ -39,7 +39,7 @@ export class PaymasterEventService implements OnModuleInit {
 
   /**
    * Initialize event listeners on module start
-   * 
+   *
    * NOTE: Auto-start disabled because public RPC nodes don't support persistent filters.
    * Use manual sync via /circle/paymaster/sync-events endpoint instead.
    */
@@ -78,7 +78,9 @@ export class PaymasterEventService implements OnModuleInit {
       address: paymasterAddress as `0x${string}`,
       abi: this.EVENT_ABI,
       eventName: 'UserOperationSponsored',
-      onLogs: (logs) => this.handleEvents(logs, blockchain),
+      onLogs: (logs) => {
+        void this.handleEvents(logs, blockchain);
+      },
       onError: (error) => {
         this.logger.error(
           `Error watching events on ${blockchain}: ${error.message}`,

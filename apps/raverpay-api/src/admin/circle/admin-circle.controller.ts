@@ -169,4 +169,51 @@ export class AdminCircleController {
       data: analytics,
     };
   }
+
+  /**
+   * GET /admin/circle/users
+   * Get paginated Circle users
+   */
+  @Get('users')
+  async getCircleUsers(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('authMethod') authMethod?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.adminCircleService.getCircleUsers({
+      page,
+      limit,
+      search,
+      authMethod,
+      status,
+    });
+  }
+
+  /**
+   * GET /admin/circle/users/stats
+   * Get Circle users statistics
+   */
+  @Get('users/stats')
+  async getCircleUsersStats() {
+    const stats = await this.adminCircleService.getCircleUsersStats();
+    return {
+      success: true,
+      data: stats,
+    };
+  }
+
+  /**
+   * GET /admin/circle/users/:id
+   * Get Circle user by ID
+   */
+  @Get('users/:id')
+  async getCircleUserById(@Param('id') id: string) {
+    const user = await this.adminCircleService.getCircleUserById(id);
+    return {
+      success: true,
+      data: user,
+    };
+  }
 }

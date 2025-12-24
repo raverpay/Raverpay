@@ -61,19 +61,18 @@ export class PaymasterApprovalService {
 
     // Create approval transaction via Circle API
     // This approves the Paymaster to spend unlimited USDC
-    const approvalAmount = '115792089237316195423570985008687907853269984665640564039457584007913129639935'; // Max uint256
+    const approvalAmount =
+      '115792089237316195423570985008687907853269984665640564039457584007913129639935'; // Max uint256
 
     try {
       // Generate entity secret ciphertext
-      const entitySecretCiphertext =
-        await this.circleApi.post<{ ciphertext: string }>(
-          '/developer/entitySecrets/generate',
-          {},
-        );
+      const entitySecretCiphertext = await this.circleApi.post<{
+        ciphertext: string;
+      }>('/developer/entitySecrets/generate', {});
 
       // Use Circle's transfer API with approve function
       // This creates an ERC-20 approve transaction
-      const response = await this.circleApi.post<{ id: string }>( 
+      const response = await this.circleApi.post<{ id: string }>(
         '/developer/transactions/transfer',
         {
           idempotencyKey: this.circleApi.generateIdempotencyKey(),

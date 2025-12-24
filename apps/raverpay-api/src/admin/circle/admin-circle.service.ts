@@ -626,4 +626,128 @@ export class AdminCircleService {
       })),
     };
   }
+
+  /**
+   * Get paginated Circle users with filters
+   */
+  async getCircleUsers(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    authMethod?: string;
+    status?: string;
+  }) {
+    const { page = 1, limit = 20, search, authMethod, status } = query;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.CircleUserWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { circleUserId: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { user: { firstName: { contains: search, mode: 'insensitive' } } },
+        { user: { lastName: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    if (authMethod) {
+      where.authMethod = authMethod;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    const [users, total] = await Promise.all([
+      this.prisma.circleUser.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          _count: {
+            select: {
+              wallets: true,
+            },
+          },
+        },
+      }),
+      this.prisma.circleUser.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get Circle user by ID
+   */
+  async getCircleUserById(id: string) {
+    const user = await this.prisma.circleUser.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        wallets: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Circle user not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * Get Circle users statistics
+   */
+  async getCircleUsersStats() {
+    const [
+      totalUsers,
+      emailAuthUsers,
+      pinAuthUsers,
+      socialAuthUsers,
+      activeUsers,
+    ] = await Promise.all([
+      this.prisma.circleUser.count(),
+      this.prisma.circleUser.count({ where: { authMethod: 'EMAIL' } }),
+      this.prisma.circleUser.count({ where: { authMethod: 'PIN' } }),
+      this.prisma.circleUser.count({ where: { authMethod: 'SOCIAL' } }),
+      this.prisma.circleUser.count({ where: { status: 'ENABLED' } }),
+    ]);
+
+    return {
+      totalUsers,
+      emailAuthUsers,
+      pinAuthUsers,
+      socialAuthUsers,
+      activeUsers,
+    };
+  }
 }

@@ -63,9 +63,10 @@ export default function CircleWalletsPage() {
   const debouncedSearch = useDebouncedValue(search, 300, 2);
   const [blockchainFilter, setBlockchainFilter] = useState<string>('all');
   const [stateFilter, setStateFilter] = useState<string>('all');
+  const [custodyFilter, setCustodyFilter] = useState<string>('all');
 
   const { data: walletsData, isLoading } = useQuery({
-    queryKey: ['circle-wallets', page, debouncedSearch, blockchainFilter, stateFilter],
+    queryKey: ['circle-wallets', page, debouncedSearch, blockchainFilter, stateFilter, custodyFilter],
     queryFn: () =>
       circleApi.getWallets({
         page,
@@ -73,6 +74,7 @@ export default function CircleWalletsPage() {
         ...(debouncedSearch && { search: debouncedSearch }),
         ...(blockchainFilter !== 'all' && { blockchain: blockchainFilter }),
         ...(stateFilter !== 'all' && { state: stateFilter }),
+        ...(custodyFilter !== 'all' && { custodyType: custodyFilter }),
       }),
   });
 
@@ -92,7 +94,7 @@ export default function CircleWalletsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Circle USDC Wallets</h2>
-          <p className="text-muted-foreground">Manage Circle developer-controlled wallets</p>
+          <p className="text-muted-foreground">Manage Circle wallets (custodial & non-custodial)</p>
         </div>
         <div className="flex items-center gap-2">
           {config && (
@@ -210,6 +212,17 @@ export default function CircleWalletsPage() {
                 <SelectItem value="FROZEN">Frozen</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={custodyFilter} onValueChange={setCustodyFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Custody Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="DEVELOPER">Custodial</SelectItem>
+                <SelectItem value="USER">Non-Custodial</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Table */}
@@ -228,7 +241,8 @@ export default function CircleWalletsPage() {
                       <TableHead>User</TableHead>
                       <TableHead>Wallet Address</TableHead>
                       <TableHead>Blockchain</TableHead>
-                      <TableHead>Type</TableHead>
+                      <TableHead>Account Type</TableHead>
+                      <TableHead>Custody</TableHead>
                       <TableHead>State</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -264,6 +278,14 @@ export default function CircleWalletsPage() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">{wallet.accountType}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant="outline"
+                            className={wallet.custodyType === 'USER' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-green-50 text-green-700 border-green-200'}
+                          >
+                            {wallet.custodyType === 'USER' ? '🔑 Non-Custodial' : '🛡️ Custodial'}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className={STATE_COLORS[wallet.state]}>{wallet.state}</Badge>
@@ -306,7 +328,21 @@ export default function CircleWalletsPage() {
       </Card>
 
       {/* Quick Links */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Link href="/dashboard/circle-wallets/users">
+          <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4 text-[#3B82F6]" />
+                Circle Users
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Manage user-controlled wallets
+            </CardContent>
+          </Card>
+        </Link>
+
         <Link href="/dashboard/circle-wallets/transactions">
           <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
             <CardHeader className="pb-3">

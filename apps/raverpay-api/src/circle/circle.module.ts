@@ -29,6 +29,11 @@ import { PaymasterEventService } from './paymaster/paymaster-event.service';
 import { PaymasterApprovalService } from './paymaster/paymaster-approval.service';
 import { PaymasterController } from './paymaster/paymaster.controller';
 
+// User-Controlled Wallet Services
+import { UserControlledWalletService } from './user-controlled/user-controlled-wallet.service';
+import { EmailAuthService } from './user-controlled/email-auth.service';
+import { UserControlledWalletController } from './user-controlled/user-controlled-wallet.controller';
+
 // Webhook Services
 import { CircleWebhookService } from './webhooks/circle-webhook.service';
 import { CircleWebhookController } from './webhooks/circle-webhook.controller';
@@ -52,7 +57,12 @@ import { CircleController } from './circle.controller';
     PrismaModule,
     forwardRef(() => NotificationsModule), // Use forwardRef to break circular dependency
   ],
-  controllers: [CircleController, CircleWebhookController, PaymasterController],
+  controllers: [
+    CircleController,
+    CircleWebhookController,
+    PaymasterController,
+    UserControlledWalletController,
+  ],
   providers: [
     // Configuration
     CircleConfigService,
@@ -79,6 +89,10 @@ import { CircleController } from './circle.controller';
     PaymasterEventService,
     PaymasterApprovalService,
 
+    // User-Controlled Wallet Services
+    UserControlledWalletService,
+    EmailAuthService,
+
     // Webhook Services
     CircleWebhookService,
   ],
@@ -96,6 +110,8 @@ import { CircleController } from './circle.controller';
     PaymasterServiceV2,
     PaymasterEventService,
     PaymasterApprovalService,
+    UserControlledWalletService,
+    EmailAuthService,
     CircleWebhookService,
   ],
 })

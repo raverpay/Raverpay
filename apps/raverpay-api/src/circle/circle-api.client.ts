@@ -66,9 +66,11 @@ export class CircleApiClient {
   async get<T>(
     endpoint: string,
     params?: object,
+    headers?: Record<string, string>,
   ): Promise<CircleApiResponse<T>> {
     const response = await this.httpClient.get<CircleApiResponse<T>>(endpoint, {
       params,
+      headers,
     });
     return response.data;
   }

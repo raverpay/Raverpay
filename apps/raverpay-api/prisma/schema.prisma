@@ -93,6 +93,7 @@ model User {
   circleWallets          CircleWallet[]
   circleTransactions     CircleTransaction[]
   circleCCTPTransfers    CircleCCTPTransfer[]
+  circleUsers            CircleUser[]
   sentEmails             OutboundEmail[]          @relation("SentEmails")
   receivedEmails         OutboundEmail[]          @relation("ReceivedEmails")
 
@@ -1109,6 +1110,26 @@ model VenlyUser {
 // CIRCLE INTEGRATION MODELS
 // ============================================
 
+model CircleUser {
+  id                      String         @id @default(uuid())
+  userId                  String
+  circleUserId            String         @unique
+  authMethod              String         // EMAIL | PIN | SOCIAL
+  email                   String?
+  status                  String         @default("ENABLED") // ENABLED | DISABLED
+  pinStatus               String?        // ENABLED | DISABLED
+  securityQuestionStatus  String?        // ENABLED | DISABLED
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallets                 CircleWallet[]
+
+  @@index([userId])
+  @@index([circleUserId])
+  @@index([email])
+  @@map("circle_users")
+}
+
 model CircleWalletSet {
   id              String         @id @default(uuid())
   circleWalletSetId String       @unique
@@ -1135,12 +1156,14 @@ model CircleWallet {
   state            CircleWalletState   @default(LIVE)
   name             String?
   refId            String?
-  custodyType      String              @default("DEVELOPER")
+  custodyType      String              @default("DEVELOPER") // DEVELOPER | USER
+  circleUserId     String?             // Circle user ID for user-controlled wallets
   scaCore          String?
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   walletSet        CircleWalletSet     @relation(fields: [walletSetId], references: [id], onDelete: Cascade)
+  circleUser       CircleUser?         @relation(fields: [circleUserId], references: [id])
   circleTransactions CircleTransaction[]
   paymasterUserOps PaymasterUserOperation[]
 
@@ -1151,6 +1174,8 @@ model CircleWallet {
   @@index([address])
   @@index([blockchain])
   @@index([state])
+  @@index([custodyType])
+  @@index([circleUserId])
   @@map("circle_wallets")
 }
 

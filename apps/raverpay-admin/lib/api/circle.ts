@@ -162,6 +162,28 @@ export interface CircleWebhookLog {
   createdAt: string;
 }
 
+export interface CircleUser {
+  id: string;
+  userId: string;
+  circleUserId: string;
+  authMethod: 'EMAIL' | 'PIN' | 'SOCIAL';
+  email?: string;
+  status: 'ENABLED' | 'DISABLED';
+  pinStatus?: 'ENABLED' | 'DISABLED';
+  securityQuestionStatus?: 'ENABLED' | 'DISABLED';
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+  _count?: {
+    wallets: number;
+  };
+}
+
 export interface CircleStats {
   totalWalletSets: number;
   totalWallets: number;
@@ -301,6 +323,34 @@ export const circleApi = {
     byState: Array<{ state: string; count: number }>;
   }> => {
     const response = await apiClient.get('/admin/circle/analytics', { params });
+    return response.data.data;
+  },
+
+  // Circle Users (User-Controlled Wallets)
+  getCircleUsers: async (
+    params?: Record<string, unknown>,
+  ): Promise<PaginatedResponse<CircleUser>> => {
+    const response = await apiClient.get<PaginatedResponse<CircleUser>>('/admin/circle/users', {
+      params,
+    });
+    return response.data;
+  },
+
+  getCircleUserById: async (id: string): Promise<CircleUser> => {
+    const response = await apiClient.get<{ success: boolean; data: CircleUser }>(
+      `/admin/circle/users/${id}`,
+    );
+    return response.data.data;
+  },
+
+  getCircleUsersStats: async (): Promise<{
+    totalUsers: number;
+    emailAuthUsers: number;
+    pinAuthUsers: number;
+    socialAuthUsers: number;
+    activeUsers: number;
+  }> => {
+    const response = await apiClient.get('/admin/circle/users/stats');
     return response.data.data;
   },
 };
