@@ -101,8 +101,18 @@ export class PaymasterServiceV2 {
       permitSignature as `0x${string}`,
     );
 
-    // Estimate permit amount (gas fee + transfer amount)
-    const permitAmount = BigInt(amount) + BigInt(10_000_000); // Add 10 USDC buffer for gas
+    // Dynamically calculate gas buffer based on estimated gas
+    let gasBufferUsdc = 3_000_000n; // Default 3 USDC in smallest units
+    try {
+      const gasEstimateNum = await this.estimateGasInUsdc(blockchain);
+      gasBufferUsdc = BigInt(Math.ceil(gasEstimateNum * 1e6));
+    } catch (error) {
+      this.logger.warn(`Failed to estimate gas, using default: ${error}`);
+    }
+
+    // Add 20% safety margin to gas estimate
+    const gasBuffer = (gasBufferUsdc * 120n) / 100n;
+    const permitAmount = BigInt(amount) + gasBuffer;
 
     const paymasterData = this.permitService.encodePaymasterData({
       tokenAddress: usdcAddress,
@@ -172,7 +182,7 @@ export class PaymasterServiceV2 {
 
     const gasCostWei = totalGas * gasEstimate.maxFeePerGas;
     // Approximate: 1 ETH = 3000 USDC, 1 USDC = 1e6
-    const estimatedGasUsdc = ((Number(gasCostWei) / 1e18) * 3000).toFixed(6);
+    const estimatedGasUsdcStr = ((Number(gasCostWei) / 1e18) * 3000).toFixed(6);
 
     // 9. Submit to bundler
     const userOpHash = await this.bundlerService.submitUserOperation({
@@ -188,7 +198,7 @@ export class PaymasterServiceV2 {
         walletId: wallet.id,
         blockchain,
         status: 'PENDING',
-        estimatedGasUsdc,
+        estimatedGasUsdc: estimatedGasUsdcStr,
         permitSignature,
         paymasterData,
       },
@@ -201,7 +211,7 @@ export class PaymasterServiceV2 {
     return {
       userOpHash,
       status: 'PENDING',
-      estimatedGasUsdc,
+      estimatedGasUsdc: estimatedGasUsdcStr,
       paymasterAddress,
     };
   }
@@ -307,8 +317,23 @@ export class PaymasterServiceV2 {
       args: [wallet.address as `0x${string}`],
     });
 
-    // Estimate permit amount (transfer + gas buffer)
-    const permitAmount = BigInt(amount) + BigInt(10_000_000); // 10 USDC buffer
+    // Dynamically calculate gas buffer based on estimated gas
+    // Default to 3 USDC if estimation fails, with 20% safety margin
+    let estimatedGasUsdc = 3_000_000n; // 3 USDC in smallest units
+    try {
+      const gasEstimate = await this.estimateGasInUsdc(blockchain);
+      estimatedGasUsdc = BigInt(Math.ceil(gasEstimate * 1e6));
+    } catch (error) {
+      this.logger.warn(`Failed to estimate gas, using default: ${error}`);
+    }
+
+    // Add 20% safety margin to gas estimate
+    const gasBuffer = (estimatedGasUsdc * 120n) / 100n;
+    const permitAmount = BigInt(amount) + gasBuffer;
+
+    this.logger.debug(
+      `Permit calculation: amount=${amount}, gasBuffer=${gasBuffer.toString()}, total=${permitAmount.toString()}`,
+    );
 
     // Generate typed data
     const typedData = await this.permitService.generatePermitTypedData({
@@ -327,6 +352,46 @@ export class PaymasterServiceV2 {
       permitAmount: permitAmount.toString(),
       paymasterAddress,
       usdcAddress,
+      estimatedGasUsdc: (Number(gasBuffer) / 1e6).toFixed(6),
     };
+  }
+
+  /**
+   * Estimate gas cost in USDC for a UserOperation on a given blockchain
+   */
+  private async estimateGasInUsdc(blockchain: CircleBlockchain): Promise<number> {
+    // Get gas price from chain
+    const publicClient = this.bundlerService.getPublicClient(blockchain);
+    if (!publicClient) {
+      return 3.0; // Default to 3 USDC
+    }
+
+    try {
+      const gasPrice = await publicClient.getGasPrice();
+      
+      // Estimate typical UserOp gas usage (~500k gas for transfer with paymaster)
+      const estimatedGas = 500_000n;
+      const gasCostWei = estimatedGas * gasPrice;
+      
+      // Convert to USD using approximate ETH prices per chain
+      // These are rough estimates - in production, use an oracle
+      const ethPrices: Record<string, number> = {
+        'ETH': 3000, 'ETH-SEPOLIA': 3000,
+        'ARB': 3000, 'ARB-SEPOLIA': 3000,
+        'BASE': 3000, 'BASE-SEPOLIA': 3000,
+        'OP': 3000, 'OP-SEPOLIA': 3000,
+        'AVAX': 35, 'AVAX-FUJI': 35,
+        'MATIC': 0.8, 'MATIC-AMOY': 0.8,
+      };
+      
+      const ethPrice = ethPrices[blockchain] || 3000;
+      const gasCostUsd = (Number(gasCostWei) / 1e18) * ethPrice;
+      
+      // Minimum 0.5 USDC, maximum 10 USDC
+      return Math.max(0.5, Math.min(10, gasCostUsd));
+    } catch (error) {
+      this.logger.warn(`Gas estimation failed for ${blockchain}: ${error}`);
+      return 3.0; // Default to 3 USDC
+    }
   }
 }

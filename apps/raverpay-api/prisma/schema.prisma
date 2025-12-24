@@ -1112,15 +1112,15 @@ model VenlyUser {
 
 model CircleUser {
   id                      String         @id @default(uuid())
-  userId                  String
-  circleUserId            String         @unique
-  authMethod              String         // EMAIL | PIN | SOCIAL
+  userId                  String         @map("user_id")
+  circleUserId            String         @unique @map("circle_user_id")
+  authMethod              String         @map("auth_method") // EMAIL | PIN | SOCIAL
   email                   String?
   status                  String         @default("ENABLED") // ENABLED | DISABLED
-  pinStatus               String?        // ENABLED | DISABLED
-  securityQuestionStatus  String?        // ENABLED | DISABLED
-  createdAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
+  pinStatus               String?        @map("pin_status") // ENABLED | DISABLED
+  securityQuestionStatus  String?        @map("security_question_status") // ENABLED | DISABLED
+  createdAt               DateTime       @default(now()) @map("created_at")
+  updatedAt               DateTime       @updatedAt @map("updated_at")
   user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   wallets                 CircleWallet[]
 
