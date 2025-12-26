@@ -27,13 +27,16 @@ export class CircleConfigService {
   constructor(private readonly configService: ConfigService) {
     // Load API configuration
     this.apiKey = this.configService.get<string>('CIRCLE_API_KEY') || '';
-    this.apiBaseUrl =
-      this.configService.get<string>('CIRCLE_API_BASE_URL') ||
-      'https://api.circle.com/v1/w3s';
     this.environment =
       (this.configService.get<string>('CIRCLE_ENVIRONMENT') as
         | 'testnet'
         | 'mainnet') || 'testnet';
+
+    this.apiBaseUrl =
+      this.configService.get<string>('CIRCLE_API_BASE_URL') ||
+      (this.environment === 'testnet'
+        ? 'https://api-sandbox.circle.com/v1/w3s'
+        : 'https://api.circle.com/v1/w3s');
 
     // Load entity secret
     this.entitySecret =

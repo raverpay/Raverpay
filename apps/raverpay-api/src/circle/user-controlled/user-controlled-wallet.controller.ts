@@ -11,6 +11,14 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { UserControlledWalletService } from './user-controlled-wallet.service';
 import { EmailAuthService } from './email-auth.service';
 import { CircleBlockchain } from '../circle.types';
+import {
+  CreateCircleUserDto,
+  GetCircleUserTokenDto,
+  InitializeUserWalletDto,
+  ListUserWalletsDto,
+  GetEmailDeviceTokenDto,
+  SaveSecurityQuestionsDto,
+} from '../dto';
 
 interface AuthRequest {
   user: { id: string; email: string; role: string };
@@ -33,13 +41,14 @@ export class UserControlledWalletController {
    * POST /circle/user-controlled/users/create
    */
   @Post('users/create')
-  async createUser(@Request() req: AuthRequest, @Body() body: any) {
-    const { email, authMethod = 'EMAIL' } = body;
-
+  async createUser(
+    @Request() req: AuthRequest,
+    @Body() dto: CreateCircleUserDto,
+  ) {
     const result = await this.userControlledWalletService.createCircleUser({
       userId: req.user.id,
-      email: email || req.user.email,
-      authMethod,
+      email: dto.email || req.user.email,
+      authMethod: dto.authMethod || 'PIN',
     });
 
     return {
@@ -53,8 +62,11 @@ export class UserControlledWalletController {
    * POST /circle/user-controlled/users/token
    */
   @Post('users/token')
-  async getUserToken(@Request() req: AuthRequest, @Body() body: any) {
-    const { circleUserId } = body;
+  async getUserToken(
+    @Request() req: AuthRequest,
+    @Body() dto: GetCircleUserTokenDto,
+  ) {
+    const { circleUserId } = dto;
 
     // Verify the Circle user belongs to the authenticated user
     const circleUser =
@@ -113,8 +125,11 @@ export class UserControlledWalletController {
    * POST /circle/user-controlled/wallets/create
    */
   @Post('wallets/create')
-  async createWallet(@Request() req: AuthRequest, @Body() body: any) {
-    const { circleUserId, blockchain, accountType = 'SCA', userToken } = body;
+  async createWallet(
+    @Request() req: AuthRequest,
+    @Body() dto: InitializeUserWalletDto,
+  ) {
+    const { circleUserId, blockchain, accountType, userToken } = dto;
 
     // Verify ownership
     const circleUser =
@@ -130,7 +145,7 @@ export class UserControlledWalletController {
       await this.userControlledWalletService.initializeUserWithWallet({
         userToken,
         blockchain: blockchain as CircleBlockchain,
-        accountType,
+        accountType: accountType || 'SCA',
         userId: req.user.id,
         circleUserId,
       });
@@ -146,8 +161,11 @@ export class UserControlledWalletController {
    * GET /circle/user-controlled/wallets
    */
   @Get('wallets')
-  async listWallets(@Request() req: AuthRequest, @Body() body: any) {
-    const { userToken } = body;
+  async listWallets(
+    @Request() req: AuthRequest,
+    @Body() dto: ListUserWalletsDto,
+  ) {
+    const { userToken } = dto;
 
     const wallets =
       await this.userControlledWalletService.listUserWallets(userToken);
@@ -163,8 +181,11 @@ export class UserControlledWalletController {
    * POST /circle/user-controlled/auth/email/device-token
    */
   @Post('auth/email/device-token')
-  async getDeviceToken(@Request() req: AuthRequest, @Body() body: any) {
-    const { email, deviceId } = body;
+  async getDeviceToken(
+    @Request() req: AuthRequest,
+    @Body() dto: GetEmailDeviceTokenDto,
+  ) {
+    const { email, deviceId } = dto;
 
     const result = await this.emailAuthService.getDeviceToken({
       email: email || req.user.email,
@@ -174,6 +195,67 @@ export class UserControlledWalletController {
     return {
       success: true,
       data: result,
+    };
+  }
+
+  /**
+   * Save security questions metadata
+   * POST /circle/user-controlled/users/:circleUserId/security-questions
+   */
+  @Post('users/:circleUserId/security-questions')
+  async saveSecurityQuestions(
+    @Request() req: AuthRequest,
+    @Param('circleUserId') circleUserId: string,
+    @Body() dto: SaveSecurityQuestionsDto,
+  ) {
+    // Verify ownership
+    const circleUser =
+      await this.userControlledWalletService.getCircleUserByCircleUserId(
+        circleUserId,
+      );
+
+    if (!circleUser || circleUser.userId !== req.user.id) {
+      throw new Error('Circle user not found or unauthorized');
+    }
+
+    const result = await this.userControlledWalletService.saveSecurityQuestions(
+      {
+        circleUserId,
+        questions: dto.questions,
+      },
+    );
+
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
+  /**
+   * Get security questions metadata
+   * GET /circle/user-controlled/users/:circleUserId/security-questions
+   */
+  @Get('users/:circleUserId/security-questions')
+  async getSecurityQuestions(
+    @Request() req: AuthRequest,
+    @Param('circleUserId') circleUserId: string,
+  ) {
+    // Verify ownership
+    const circleUser =
+      await this.userControlledWalletService.getCircleUserByCircleUserId(
+        circleUserId,
+      );
+
+    if (!circleUser || circleUser.userId !== req.user.id) {
+      throw new Error('Circle user not found or unauthorized');
+    }
+
+    const questions =
+      await this.userControlledWalletService.getSecurityQuestions(circleUserId);
+
+    return {
+      success: true,
+      data: questions,
     };
   }
 }

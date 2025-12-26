@@ -1111,23 +1111,39 @@ model VenlyUser {
 // ============================================
 
 model CircleUser {
-  id                      String         @id @default(uuid())
-  userId                  String         @map("user_id")
-  circleUserId            String         @unique @map("circle_user_id")
-  authMethod              String         @map("auth_method") // EMAIL | PIN | SOCIAL
+  id                      String                   @id @default(uuid())
+  userId                  String                   @map("user_id")
+  circleUserId            String                   @unique @map("circle_user_id")
+  authMethod              String                   @map("auth_method") // EMAIL | PIN | SOCIAL
   email                   String?
-  status                  String         @default("ENABLED") // ENABLED | DISABLED
-  pinStatus               String?        @map("pin_status") // ENABLED | DISABLED
-  securityQuestionStatus  String?        @map("security_question_status") // ENABLED | DISABLED
-  createdAt               DateTime       @default(now()) @map("created_at")
-  updatedAt               DateTime       @updatedAt @map("updated_at")
-  user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status                  String                   @default("ENABLED") // ENABLED | DISABLED
+  pinStatus               String?                  @map("pin_status") // ENABLED | DISABLED
+  securityQuestionStatus  String?                  @map("security_question_status") // ENABLED | DISABLED
+  createdAt               DateTime                 @default(now()) @map("created_at")
+  updatedAt               DateTime                 @updatedAt @map("updated_at")
+  user                    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   wallets                 CircleWallet[]
+  securityQuestions       CircleSecurityQuestion[]
 
   @@index([userId])
   @@index([circleUserId])
   @@index([email])
   @@map("circle_users")
+}
+
+model CircleSecurityQuestion {
+  id            String     @id @default(uuid())
+  circleUserId  String     @map("circle_user_id")
+  questionId    String     @map("question_id")
+  questionText  String     @map("question_text")
+  questionIndex Int        @map("question_index") // 0 or 1 (first or second question)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  circleUser    CircleUser @relation(fields: [circleUserId], references: [id], onDelete: Cascade)
+
+  @@unique([circleUserId, questionIndex])
+  @@index([circleUserId])
+  @@map("circle_security_questions")
 }
 
 model CircleWalletSet {

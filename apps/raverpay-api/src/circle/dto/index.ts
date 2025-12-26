@@ -5,8 +5,14 @@ import {
   IsNumber,
   Min,
   IsUUID,
+  IsNotEmpty,
+  IsArray,
+  ValidateNested,
+  ArrayMinSize,
+  ArrayMaxSize,
+  IsInt,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 /**
  * Circle DTOs
@@ -193,4 +199,86 @@ export class ValidateAddressDto {
 export class CreateWebhookSubscriptionDto {
   @IsString()
   endpoint: string;
+}
+
+// ============================================
+// USER-CONTROLLED WALLET DTOs
+// ============================================
+
+export class CreateCircleUserDto {
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsEnum(['EMAIL', 'PIN', 'SOCIAL'])
+  authMethod?: 'EMAIL' | 'PIN' | 'SOCIAL';
+}
+
+export class GetCircleUserTokenDto {
+  @IsString()
+  @IsNotEmpty()
+  circleUserId: string;
+}
+
+export class InitializeUserWalletDto {
+  @IsString()
+  @IsNotEmpty()
+  circleUserId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  blockchain: string;
+
+  @IsOptional()
+  @IsEnum(['SCA', 'EOA'])
+  accountType?: 'SCA' | 'EOA' = 'SCA';
+
+  @IsString()
+  @IsNotEmpty()
+  userToken: string;
+}
+
+export class ListUserWalletsDto {
+  @IsString()
+  @IsNotEmpty()
+  userToken: string;
+}
+
+export class GetEmailDeviceTokenDto {
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  deviceId: string;
+}
+
+// Security Question for nested validation
+export class SecurityQuestionItemDto {
+  @IsString()
+  @IsNotEmpty()
+  questionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  questionText: string;
+
+  @IsInt()
+  @Min(0)
+  questionIndex: number;
+}
+
+export class SaveSecurityQuestionsDto {
+  @IsString()
+  @IsNotEmpty()
+  circleUserId: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @Type(() => SecurityQuestionItemDto)
+  questions: SecurityQuestionItemDto[];
 }

@@ -34,7 +34,7 @@ export class UserControlledWalletService {
 
     try {
       // Call Circle API to create user
-      const response = await this.circleApi.post<{ data: any }>('/w3s/users', {
+      const response = await this.circleApi.post<{ data: any }>('/users', {
         userId: circleUserId,
       });
 
@@ -79,7 +79,7 @@ export class UserControlledWalletService {
           userToken: string;
           encryptionKey: string;
         };
-      }>('/w3s/users/token', {
+      }>('/users/token', {
         userId: circleUserId,
       });
 
@@ -122,7 +122,7 @@ export class UserControlledWalletService {
           challengeId: string;
         };
       }>(
-        '/w3s/user/initialize',
+        '/user/initialize',
         {
           idempotencyKey: this.circleApi.generateIdempotencyKey(),
           accountType,
@@ -175,7 +175,7 @@ export class UserControlledWalletService {
           }>;
         };
       }>(
-        '/w3s/wallets',
+        '/wallets',
         {},
         {
           'X-User-Token': userToken,
@@ -219,7 +219,7 @@ export class UserControlledWalletService {
           };
         };
       }>(
-        '/w3s/user',
+        '/user',
         {},
         {
           'X-User-Token': userToken,
@@ -276,5 +276,87 @@ export class UserControlledWalletService {
         updatedAt: new Date(),
       },
     });
+  }
+
+  /**
+   * Save security questions metadata
+   * Stores which questions the user selected (not the answers - Circle encrypts those)
+   */
+  async saveSecurityQuestions(params: {
+    circleUserId: string;
+    questions: Array<{
+      questionId: string;
+      questionText: string;
+      questionIndex: number;
+    }>;
+  }) {
+    const { circleUserId, questions } = params;
+
+    this.logger.log(
+      `Saving security questions metadata for: ${circleUserId}`,
+    );
+
+    // Get the internal CircleUser record
+    const circleUser = await this.prisma.circleUser.findUnique({
+      where: { circleUserId },
+    });
+
+    if (!circleUser) {
+      throw new Error(`Circle user not found: ${circleUserId}`);
+    }
+
+    // Upsert security questions (delete existing and create new)
+    await this.prisma.$transaction(async (tx) => {
+      // Delete existing questions for this user
+      await tx.circleSecurityQuestion.deleteMany({
+        where: { circleUserId: circleUser.id },
+      });
+
+      // Create new questions
+      await tx.circleSecurityQuestion.createMany({
+        data: questions.map((q) => ({
+          circleUserId: circleUser.id,
+          questionId: q.questionId,
+          questionText: q.questionText,
+          questionIndex: q.questionIndex,
+        })),
+      });
+
+      // Update Circle user to mark security questions as enabled
+      await tx.circleUser.update({
+        where: { id: circleUser.id },
+        data: {
+          securityQuestionStatus: 'ENABLED',
+        },
+      });
+    });
+
+    this.logger.log(
+      `Security questions saved for: ${circleUserId} (${questions.length} questions)`,
+    );
+
+    return { success: true };
+  }
+
+  /**
+   * Get security questions for a Circle user
+   */
+  async getSecurityQuestions(circleUserId: string) {
+    const circleUser = await this.prisma.circleUser.findUnique({
+      where: { circleUserId },
+      include: {
+        securityQuestions: true,
+      },
+    });
+
+    if (!circleUser) {
+      throw new Error(`Circle user not found: ${circleUserId}`);
+    }
+
+    return circleUser.securityQuestions.map((q) => ({
+      questionId: q.questionId,
+      questionText: q.questionText,
+      questionIndex: q.questionIndex,
+    }));
   }
 }

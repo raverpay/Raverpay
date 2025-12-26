@@ -27,7 +27,7 @@ export class EmailAuthService {
           deviceEncryptionKey: string;
           otpToken?: string;
         };
-      }>('/w3s/users/email/token', {
+      }>('/users/email/token', {
         idempotencyKey: this.circleApi.generateIdempotencyKey(),
         email,
         deviceId,
