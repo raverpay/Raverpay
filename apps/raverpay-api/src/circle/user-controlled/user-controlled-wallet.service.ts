@@ -65,7 +65,6 @@ export class UserControlledWalletService {
       throw new Error(`Failed to create Circle user: ${error.message}`);
     }
   }
-
   /**
    * Get user token for Circle user
    * User tokens are valid for 60 minutes and required for all user operations
@@ -74,20 +73,29 @@ export class UserControlledWalletService {
     this.logger.log(`Getting user token for: ${circleUserId}`);
 
     try {
+      // CircleApiResponse already wraps response in { data: T }
+      // So we just specify T as the inner structure
       const response = await this.circleApi.post<{
-        data: {
-          userToken: string;
-          encryptionKey: string;
-        };
+        userToken: string;
+        encryptionKey: string;
       }>('/users/token', {
         userId: circleUserId,
       });
 
       this.logger.log(`User token generated for: ${circleUserId}`);
+      this.logger.debug(`Circle API response: ${JSON.stringify(response)}`);
+
+      // response is already { data: { userToken, encryptionKey } }
+      const tokenData = response.data;
+      
+      if (!tokenData?.userToken) {
+        this.logger.error(`Invalid token response: ${JSON.stringify(response)}`);
+        throw new Error('userToken not found in Circle API response');
+      }
 
       return {
-        userToken: response.data.data.userToken,
-        encryptionKey: response.data.data.encryptionKey,
+        userToken: tokenData.userToken,
+        encryptionKey: tokenData.encryptionKey,
       };
     } catch (error) {
       this.logger.error(
@@ -117,10 +125,9 @@ export class UserControlledWalletService {
 
     try {
       // Call Circle API to initialize user and create wallet
+      // CircleApiResponse already wraps in { data: T }, so T is the inner structure
       const response = await this.circleApi.post<{
-        data: {
-          challengeId: string;
-        };
+        challengeId: string;
       }>(
         '/user/initialize',
         {
@@ -133,12 +140,21 @@ export class UserControlledWalletService {
         },
       );
 
+      this.logger.debug(`Circle API initialize response: ${JSON.stringify(response)}`);
+      
+      const challengeData = response.data;
+      
+      if (!challengeData?.challengeId) {
+        this.logger.error(`Invalid initialize response: ${JSON.stringify(response)}`);
+        throw new Error('challengeId not found in Circle API response');
+      }
+
       this.logger.log(
-        `User initialization challenge created: ${response.data.data.challengeId}`,
+        `User initialization challenge created: ${challengeData.challengeId}`,
       );
 
       return {
-        challengeId: response.data.data.challengeId,
+        challengeId: challengeData.challengeId,
       };
     } catch (error) {
       this.logger.error(
@@ -159,21 +175,20 @@ export class UserControlledWalletService {
     this.logger.log('Listing user wallets');
 
     try {
+      // CircleApiResponse already wraps in { data: T }
       const response = await this.circleApi.get<{
-        data: {
-          wallets: Array<{
-            id: string;
-            state: string;
-            walletSetId: string;
-            custodyType: string;
-            userId: string;
-            address: string;
-            blockchain: string;
-            accountType: string;
-            createDate: string;
-            updateDate: string;
-          }>;
-        };
+        wallets: Array<{
+          id: string;
+          state: string;
+          walletSetId: string;
+          custodyType: string;
+          userId: string;
+          address: string;
+          blockchain: string;
+          accountType: string;
+          createDate: string;
+          updateDate: string;
+        }>;
       }>(
         '/wallets',
         {},
@@ -182,11 +197,13 @@ export class UserControlledWalletService {
         },
       );
 
+      const walletData = response.data;
+      
       this.logger.log(
-        `Found ${response.data.data.wallets.length} wallets for user`,
+        `Found ${walletData?.wallets?.length || 0} wallets for user`,
       );
 
-      return response.data.data.wallets;
+      return walletData?.wallets || [];
     } catch (error) {
       this.logger.error(
         `Failed to list user wallets: ${error.message}`,
@@ -204,19 +221,18 @@ export class UserControlledWalletService {
     this.logger.log('Getting user status');
 
     try {
+      // CircleApiResponse already wraps in { data: T }
       const response = await this.circleApi.get<{
-        data: {
-          id: string;
-          status: string;
-          createDate: string;
-          pinStatus: string;
-          pinDetails?: {
-            failedAttempts: number;
-          };
-          securityQuestionStatus?: string;
-          securityQuestionDetails?: {
-            failedAttempts: number;
-          };
+        id: string;
+        status: string;
+        createDate: string;
+        pinStatus: string;
+        pinDetails?: {
+          failedAttempts: number;
+        };
+        securityQuestionStatus?: string;
+        securityQuestionDetails?: {
+          failedAttempts: number;
         };
       }>(
         '/user',
@@ -226,9 +242,11 @@ export class UserControlledWalletService {
         },
       );
 
-      this.logger.log(`User status: ${response.data.data.status}`);
+      const userData = response.data;
+      
+      this.logger.log(`User status: ${userData?.status}`);
 
-      return response.data.data;
+      return userData;
     } catch (error) {
       this.logger.error(
         `Failed to get user status: ${error.message}`,
