@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { PrismaService } from '../../prisma/prisma.service';
 import { UserControlledWalletService } from './user-controlled-wallet.service';
 import { EmailAuthService } from './email-auth.service';
 import { CircleBlockchain } from '../circle.types';
@@ -34,6 +35,7 @@ export class UserControlledWalletController {
   constructor(
     private readonly userControlledWalletService: UserControlledWalletService,
     private readonly emailAuthService: EmailAuthService,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -337,5 +339,90 @@ export class UserControlledWalletController {
       success: true,
       data: questions,
     };
+  }
+
+  /**
+   * Create a transaction for user-controlled wallet
+   * Returns a challengeId to execute via Circle SDK WebView
+   * POST /circle/user-controlled/transactions/create
+   */
+  @Post('transactions/create')
+  async createTransaction(
+    @Request() req: AuthRequest,
+    @Body()
+    dto: {
+      walletId: string;
+      destinationAddress: string;
+      amount: string;
+      feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+      memo?: string;
+    },
+  ) {
+    // Get the Circle user for this wallet
+    const circleUser =
+      await this.userControlledWalletService.getCircleUserByUserId(req.user.id);
+
+    if (!circleUser) {
+      throw new Error('Circle user not found. Please set up your wallet first.');
+    }
+
+    // Get fresh user token
+    const tokens = await this.userControlledWalletService.getUserToken(
+      circleUser.circleUserId,
+    );
+
+    // Get wallet info from database
+    const wallet = await this.prisma.circleWallet.findFirst({
+      where: {
+        id: dto.walletId,
+        userId: req.user.id,
+        custodyType: 'USER',
+      },
+    });
+
+    if (!wallet) {
+      throw new Error('User-controlled wallet not found');
+    }
+
+    // Get the token ID for USDC on this blockchain
+    // Circle uses standardized token IDs
+    const usdcTokenIds: Record<string, string> = {
+      'ETH-SEPOLIA': '5797fbd6-3795-519d-84ca-ec4c5f80c3b1', // USDC on ETH-SEPOLIA
+      'MATIC-AMOY': '36b6931a-873a-56a8-8a27-b706b17104ee', // USDC on MATIC-AMOY
+      'ARB-SEPOLIA': '2e0e3072-4f9e-5750-abed-e346acce2a18', // USDC on ARB-SEPOLIA
+    };
+
+    const tokenId = usdcTokenIds[wallet.blockchain];
+    if (!tokenId) {
+      throw new Error(`USDC not supported on ${wallet.blockchain}`);
+    }
+
+    // Circle User Control Wallet API expects Major Units (e.g. "0.1" for 0.1 USDC), not atomic units
+    const amountStr = dto.amount;
+
+    try {
+      const result = await this.userControlledWalletService.createTransaction({
+        userToken: tokens.userToken,
+        walletId: wallet.circleWalletId, // Use Circle wallet ID, not our DB ID
+        destinationAddress: dto.destinationAddress,
+        amounts: [amountStr],
+        tokenId,
+        feeLevel: dto.feeLevel || 'MEDIUM',
+        memo: dto.memo,
+      });
+
+      return {
+        success: true,
+        data: {
+          challengeId: result.challengeId,
+          userToken: tokens.userToken,
+          encryptionKey: tokens.encryptionKey,
+          walletId: dto.walletId,
+        },
+      };
+    } catch (error) {
+      console.error('Create transaction failed:', error);
+      throw error;
+    }
   }
 }

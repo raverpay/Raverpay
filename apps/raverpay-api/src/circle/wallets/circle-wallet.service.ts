@@ -192,6 +192,9 @@ export class CircleWalletService {
         id: walletId,
         ...(userId && { userId }),
       },
+      include: {
+        circleUser: true, // Include circle user for getting the actual Circle user ID
+      },
     });
 
     if (!wallet) {

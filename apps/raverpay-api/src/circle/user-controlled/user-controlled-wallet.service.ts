@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CircleApiClient } from '../circle-api.client';
@@ -148,14 +149,12 @@ export class UserControlledWalletService implements OnModuleInit {
     try {
       let response;
 
-      // Note: Circle's createWallet requires the user to already have completed PIN setup
-      // For users who have already set up PIN, we can use createWallet
-      // But if that fails, we fall back to createUserPinWithWallets which will just prompt for PIN confirmation
       if (isExistingUser) {
-        this.logger.log('Using createUserPinWithWallets for existing user (will prompt for PIN confirmation)');
-        // Even for existing users, createUserPinWithWallets works - it just prompts for PIN instead of setup
-        response = await this.circleClient.createUserPinWithWallets({
-          userId: circleUserId,
+        // For existing users who already have PIN set up, use createWallet with userId
+        // This creates a new wallet without going through PIN setup again
+        this.logger.log('Using createWallet for existing user with userId');
+        response = await this.circleClient.createWallet({
+          userId: circleUserId,  // Use userId, not userToken
           blockchains: blockchains as any,
           accountType,
         });
@@ -487,5 +486,114 @@ export class UserControlledWalletService implements OnModuleInit {
         questionIndex: q.questionIndex,
       })),
     };
+  }
+
+  /**
+   * Sign EIP-712 typed data with user's wallet
+   * Returns a challengeId that must be executed via Circle SDK WebView
+   * The user will enter their PIN in the WebView to authorize the signature
+   */
+  async signTypedData(params: {
+    userToken: string;
+    walletId: string;
+    typedData: any;
+    memo?: string;
+  }) {
+    const { userToken, walletId, typedData, memo } = params;
+
+    this.logger.log(`Signing typed data for wallet ${walletId}`);
+
+    try {
+      // Stringify the typed data if it's an object
+      const dataString = typeof typedData === 'string' 
+        ? typedData 
+        : JSON.stringify(typedData);
+
+      const response = await this.circleClient.signTypedData({
+        userToken,
+        walletId,
+        data: dataString,
+        memo: memo || 'Sign permit for gas payment',
+      });
+
+      this.logger.log(`Sign typed data response status: ${response.status}`);
+      this.logger.debug(`Sign typed data response: ${JSON.stringify(response.data)}`);
+
+      if (response.status !== 201 || !response.data?.challengeId) {
+        throw new Error(`Failed to create sign challenge: status ${response.status}`);
+      }
+
+      return {
+        challengeId: response.data.challengeId,
+      };
+    } catch (error) {
+      const errorData = (error as any).response?.data || (error as any).message;
+      this.logger.error(`Failed to sign typed data: ${JSON.stringify(errorData)}`, (error as any).stack);
+      throw new Error(`Failed to sign typed data: ${(error as any).message}`);
+    }
+  }
+
+  /**
+   * Create a transaction for user-controlled wallet
+   * Returns a challengeId that must be executed via Circle SDK WebView
+   * The user will enter their PIN in the WebView to authorize the transaction
+   */
+  async createTransaction(params: {
+    userToken: string;
+    walletId: string;
+    destinationAddress: string;
+    amounts: string[];
+    tokenId: string;
+    feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+    memo?: string;
+  }) {
+    const { userToken, walletId, destinationAddress, amounts, tokenId, feeLevel = 'MEDIUM', memo } = params;
+
+    this.logger.log(`Creating transaction for wallet ${walletId}`);
+    this.logger.log(`Requested Token ID: ${tokenId} Amount: ${amounts[0]}`);
+
+    try {
+      // DEBUG: Check wallet balance
+      try {
+        const balances = await this.circleClient.getWalletTokenBalance({
+          walletId,
+          userToken,
+        });
+        this.logger.log(`Wallet Balances: ${JSON.stringify(balances.data?.tokenBalances)}`);
+      } catch (err) {
+        this.logger.warn(`Failed to fetch balance for debug: ${err.message}`);
+      }
+
+      const idempotencyKey = crypto.randomUUID();
+      const response = await this.circleClient.createTransaction({
+        userToken,
+        walletId,
+        destinationAddress,
+        amounts,
+        tokenId,
+        idempotencyKey,
+        fee: {
+          type: 'level',
+          config: {
+            feeLevel,
+          },
+        },
+      });
+
+      this.logger.log(`Create transaction response status: ${response.status}`);
+      this.logger.debug(`Create transaction response: ${JSON.stringify(response.data)}`);
+
+      if (response.status !== 201 || !response.data?.challengeId) {
+        throw new Error(`Failed to create transaction: status ${response.status}`);
+      }
+
+      return {
+        challengeId: response.data.challengeId,
+      };
+    } catch (error) {
+      const errorData = (error as any).response?.data || (error as any).message;
+      this.logger.error(`Failed to create transaction: ${JSON.stringify(errorData)}`, (error as any).stack);
+      throw new Error(`Failed to create transaction: ${(error as any).message}`);
+    }
   }
 }
