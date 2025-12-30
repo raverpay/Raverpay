@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import * as crypto from 'crypto';
 
 // CONFIGURATION
-const API_URL = 'https://hydrometeorological-unjudicial-jeffie.ngrok-free.dev/api'; // Testing locally before deploying
+const API_URL = 'http://localhost:3001/api';
 const EMAIL = 'codeswithjoseph@gmail.com';
 const PASSWORD = '6thbornR%';
 
