@@ -69,14 +69,18 @@ export class IdempotencyInterceptor implements NestInterceptor {
         '/vtu/cable',
         '/vtu/electricity',
       ];
-      
-      const isMandatory = mandatoryEndpoints.some(ep => request.path.includes(ep));
-      
+
+      const isMandatory = mandatoryEndpoints.some((ep) =>
+        request.path.includes(ep),
+      );
+
       if (isMandatory) {
         this.logger.warn(
           `[Idempotency] BLOCKED: Missing mandatory idempotency key for ${request.method} ${request.path}`,
         );
-        throw new BadRequestException('Idempotency-Key header is required for this operation');
+        throw new BadRequestException(
+          'Idempotency-Key header is required for this operation',
+        );
       }
 
       this.logger.log(

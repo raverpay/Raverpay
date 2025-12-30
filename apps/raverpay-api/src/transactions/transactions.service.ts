@@ -1236,7 +1236,7 @@ export class TransactionsService {
       // If transfer fails, refund wallet and mark transaction as failed
       // FIXED: Use increment to add back the amount, not set to a stale value
       const refundAmount = new Decimal(feeCalc.totalAmount);
-      
+
       await this.prisma.$transaction([
         this.prisma.wallet.update({
           where: { id: walletId },
@@ -1642,9 +1642,8 @@ export class TransactionsService {
     message?: string,
     clientMetadata?: ClientMetadata,
   ): Promise<P2PTransferResponse> {
-    const { validateTag, isReservedTag } = await import(
-      './constants/reserved-tags.js'
-    );
+    const { validateTag, isReservedTag } =
+      await import('./constants/reserved-tags.js');
 
     // 1. Validate sender exists
     const sender = await this.prisma.user.findUnique({
@@ -2288,9 +2287,8 @@ export class TransactionsService {
    * Set or update user's tag
    */
   async setUserTag(userId: string, newTag: string): Promise<SetTagResponse> {
-    const { validateTag, isReservedTag } = await import(
-      './constants/reserved-tags.js'
-    );
+    const { validateTag, isReservedTag } =
+      await import('./constants/reserved-tags.js');
 
     const normalizedTag = newTag.toLowerCase().trim();
 

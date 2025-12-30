@@ -190,7 +190,6 @@ curl --location 'https://api.circle.com/v1/w3s/users/social/token' \
    </Frame>
 
    If calling `performLogin` doesn't return a response, check the following:
-
    - The identity provider credentials in the SDK and DevConsole are correct.
    - Confirm that the steps of the SDK initialization are complete, including
      calling `getDeviceId`.

@@ -10,10 +10,10 @@
 
 ### Wallet Type Requirements
 
-| Wallet Type | Custody | Gas Payment | Paymaster |
-|-------------|---------|-------------|-----------|
-| **Easy Wallet** | DEVELOPER | Native token (ETH, MATIC, etc.) | ❌ **Not supported** |
-| **Advanced Wallet** | USER | USDC via Paymaster | ✅ **Supported** |
+| Wallet Type         | Custody   | Gas Payment                     | Paymaster            |
+| ------------------- | --------- | ------------------------------- | -------------------- |
+| **Easy Wallet**     | DEVELOPER | Native token (ETH, MATIC, etc.) | ❌ **Not supported** |
+| **Advanced Wallet** | USER      | USDC via Paymaster              | ✅ **Supported**     |
 
 **To use Paymaster, users must create an Advanced (User-controlled) wallet!**
 
@@ -25,22 +25,22 @@ The Paymaster flow requires the user to sign an EIP-2612 permit, which can only 
 
 ### User-Controlled Wallets (Can Use Paymaster) ✅
 
-| User | Wallet ID | Blockchain | Address | Balance | Paymaster |
-|------|-----------|------------|---------|---------|-----------|
-| archjo6@gmail.com | 193e263b-... | ETH-SEPOLIA | 0x099434...0db | **3.0 USDC** | ✅ Compatible |
-| archjo6@gmail.com | 56138f33-... | MATIC-AMOY | 0x099434...0db | TBD | ✅ Compatible |
-| codeswithjoseph@gmail.com | c3abfa2d-... | ETH-SEPOLIA | 0x47f9e0...1ce | 0 USDC | ✅ Compatible |
-| codeswithjoseph@gmail.com | db4ee468-... | BASE-SEPOLIA | 0xa27e6d...f7 | TBD | ✅ Compatible |
+| User                      | Wallet ID    | Blockchain   | Address        | Balance      | Paymaster     |
+| ------------------------- | ------------ | ------------ | -------------- | ------------ | ------------- |
+| archjo6@gmail.com         | 193e263b-... | ETH-SEPOLIA  | 0x099434...0db | **3.0 USDC** | ✅ Compatible |
+| archjo6@gmail.com         | 56138f33-... | MATIC-AMOY   | 0x099434...0db | TBD          | ✅ Compatible |
+| codeswithjoseph@gmail.com | c3abfa2d-... | ETH-SEPOLIA  | 0x47f9e0...1ce | 0 USDC       | ✅ Compatible |
+| codeswithjoseph@gmail.com | db4ee468-... | BASE-SEPOLIA | 0xa27e6d...f7  | TBD          | ✅ Compatible |
 
 ### Developer-Controlled Wallets (Cannot Use Paymaster) ❌
 
-| User | Wallet ID | Blockchain | Address | Balance | Paymaster |
-|------|-----------|------------|---------|---------|-----------|
-| archjo6@gmail.com | 64eb0590-... | ETH-SEPOLIA | 0xeaccbb...02 | TBD | ❌ DEVELOPER |
-| archjo6@gmail.com | 983d2cb4-... | ARB-SEPOLIA | 0xeaccbb...02 | TBD | ❌ DEVELOPER |
-| archjo6@gmail.com | 8e2d43c8-... | MATIC-AMOY | 0x1c409c...b2 | TBD | ❌ DEVELOPER |
-| archjo6@gmail.com | 285de4ca-... | AVAX-FUJI | 0xeaccbb...02 | TBD | ❌ DEVELOPER |
-| codeswithjoseph@gmail.com | 5906a288-... | MATIC-AMOY | 0xa27e6d...f7 | TBD | ❌ DEVELOPER |
+| User                      | Wallet ID    | Blockchain  | Address       | Balance | Paymaster    |
+| ------------------------- | ------------ | ----------- | ------------- | ------- | ------------ |
+| archjo6@gmail.com         | 64eb0590-... | ETH-SEPOLIA | 0xeaccbb...02 | TBD     | ❌ DEVELOPER |
+| archjo6@gmail.com         | 983d2cb4-... | ARB-SEPOLIA | 0xeaccbb...02 | TBD     | ❌ DEVELOPER |
+| archjo6@gmail.com         | 8e2d43c8-... | MATIC-AMOY  | 0x1c409c...b2 | TBD     | ❌ DEVELOPER |
+| archjo6@gmail.com         | 285de4ca-... | AVAX-FUJI   | 0xeaccbb...02 | TBD     | ❌ DEVELOPER |
+| codeswithjoseph@gmail.com | 5906a288-... | MATIC-AMOY  | 0xa27e6d...f7 | TBD     | ❌ DEVELOPER |
 
 ---
 
@@ -48,26 +48,26 @@ The Paymaster flow requires the user to sign an EIP-2612 permit, which can only 
 
 ### Phase 1: Backend API Tests ✅ COMPLETED
 
-| Test | Status | Notes |
-|------|--------|-------|
-| 1.1 Health Check | ✅ PASSED | Backend up, DB connected |
-| 1.2 Paymaster Compatibility | ✅ PASSED | USER wallets correctly detected |
-| 1.3 Check Balance | ✅ PASSED | 3.0 USDC on archjo6's wallet |
-| 1.4 Generate Permit | ⬜ TO TEST | Need to test with USDC balance |
-| 1.5 Submit UserOp | ⬜ TO TEST | Needs mobile app PIN signing |
-| 1.6 Paymaster Stats | ✅ PASSED | Returns stats correctly |
+| Test                        | Status     | Notes                           |
+| --------------------------- | ---------- | ------------------------------- |
+| 1.1 Health Check            | ✅ PASSED  | Backend up, DB connected        |
+| 1.2 Paymaster Compatibility | ✅ PASSED  | USER wallets correctly detected |
+| 1.3 Check Balance           | ✅ PASSED  | 3.0 USDC on archjo6's wallet    |
+| 1.4 Generate Permit         | ⬜ TO TEST | Need to test with USDC balance  |
+| 1.5 Submit UserOp           | ⬜ TO TEST | Needs mobile app PIN signing    |
+| 1.6 Paymaster Stats         | ✅ PASSED  | Returns stats correctly         |
 
 ### Implementation Status
 
-| Component | Status |
-|-----------|--------|
-| User-Controlled Wallet Setup | ✅ Implemented |
+| Component                                 | Status         |
+| ----------------------------------------- | -------------- |
+| User-Controlled Wallet Setup              | ✅ Implemented |
 | Wallet Type Badges (Self-Custody/Managed) | ✅ Implemented |
-| Paymaster Compatibility Check | ✅ Implemented |
-| Auto-enable Paymaster Toggle | ✅ Implemented |
-| Generate Permit API | ✅ Implemented |
-| Submit UserOp API | ✅ Implemented |
-| Mobile WebView Circle SDK | ✅ Implemented |
+| Paymaster Compatibility Check             | ✅ Implemented |
+| Auto-enable Paymaster Toggle              | ✅ Implemented |
+| Generate Permit API                       | ✅ Implemented |
+| Submit UserOp API                         | ✅ Implemented |
+| Mobile WebView Circle SDK                 | ✅ Implemented |
 
 ---
 
@@ -76,6 +76,7 @@ The Paymaster flow requires the user to sign an EIP-2612 permit, which can only 
 ### Step 1: Login as Test User
 
 **User with USDC Balance**:
+
 - Email: archjo6@gmail.com
 - Password: 6thbornR%
 
@@ -144,6 +145,7 @@ curl -s -X POST "http://localhost:3001/api/circle/paymaster/generate-permit" \
 ```
 
 **Response includes**:
+
 - `typedData` - EIP-712 typed data for signing
 - `permitAmount` - Total permit amount (transfer + gas)
 - `estimatedGasUsdc` - Estimated gas fee in USDC
@@ -186,6 +188,7 @@ curl -s "http://localhost:3001/api/circle/paymaster/userop/{userOpHash}" \
 ### Funding the Wallet
 
 Get testnet USDC from:
+
 - **Circle Faucet**: https://faucet.circle.com/
 - Select ETH-SEPOLIA or MATIC-AMOY
 - Request USDC tokens
@@ -221,6 +224,7 @@ Minimum required: ~2 USDC (0.5 for transfer + ~1.5 for gas buffer)
 ## Mobile App Implementation Notes
 
 ### Auto-Enable Paymaster for User Wallets
+
 ```typescript
 // app/circle/send.tsx
 useEffect(() => {
@@ -231,12 +235,13 @@ useEffect(() => {
 ```
 
 ### Prevent Non-Paymaster Transfers for User Wallets
+
 ```typescript
 // User-controlled wallets MUST use Paymaster
 if (selectedWallet.custodyType === 'USER' && !usePaymasterGas) {
   Alert.alert(
     'Gas Payment Required',
-    'Self-custody wallets require USDC for gas fees. Please enable "Pay Gas in USDC".'
+    'Self-custody wallets require USDC for gas fees. Please enable "Pay Gas in USDC".',
   );
   return;
 }
@@ -246,15 +251,15 @@ if (selectedWallet.custodyType === 'USER' && !usePaymasterGas) {
 
 ## Summary
 
-| Component | Status |
-|-----------|--------|
-| Backend Paymaster APIs | ✅ All endpoints working |
-| User-Controlled Wallet Setup | ✅ Multi-network support |
-| Wallet Type Detection | ✅ USER vs DEVELOPER |
-| Paymaster Compatibility Check | ✅ API working |
-| Mobile Paymaster UI | ✅ Toggle and fee display |
-| Custody type badges | ✅ Self-Custody / Managed |
-| WebView Circle SDK | ✅ Ready for challenges |
+| Component                     | Status                    |
+| ----------------------------- | ------------------------- |
+| Backend Paymaster APIs        | ✅ All endpoints working  |
+| User-Controlled Wallet Setup  | ✅ Multi-network support  |
+| Wallet Type Detection         | ✅ USER vs DEVELOPER      |
+| Paymaster Compatibility Check | ✅ API working            |
+| Mobile Paymaster UI           | ✅ Toggle and fee display |
+| Custody type badges           | ✅ Self-Custody / Managed |
+| WebView Circle SDK            | ✅ Ready for challenges   |
 
 ## What's Ready for Testing
 

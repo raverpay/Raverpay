@@ -66,7 +66,14 @@ export default function CircleWalletsPage() {
   const [custodyFilter, setCustodyFilter] = useState<string>('all');
 
   const { data: walletsData, isLoading } = useQuery({
-    queryKey: ['circle-wallets', page, debouncedSearch, blockchainFilter, stateFilter, custodyFilter],
+    queryKey: [
+      'circle-wallets',
+      page,
+      debouncedSearch,
+      blockchainFilter,
+      stateFilter,
+      custodyFilter,
+    ],
     queryFn: () =>
       circleApi.getWallets({
         page,
@@ -280,9 +287,13 @@ export default function CircleWalletsPage() {
                           <span className="text-sm">{wallet.accountType}</span>
                         </TableCell>
                         <TableCell>
-                          <Badge 
+                          <Badge
                             variant="outline"
-                            className={wallet.custodyType === 'USER' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-green-50 text-green-700 border-green-200'}
+                            className={
+                              wallet.custodyType === 'USER'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-green-50 text-green-700 border-green-200'
+                            }
                           >
                             {wallet.custodyType === 'USER' ? '🔑 Non-Custodial' : '🛡️ Custodial'}
                           </Badge>

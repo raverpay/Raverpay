@@ -15,7 +15,9 @@ declare global {
 
 function CircleChallengeContent() {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'ready' | 'executing' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'executing' | 'success' | 'error'>(
+    'loading',
+  );
   const [errorMessage, setErrorMessage] = useState('');
   const sdkRef = useRef<W3SSdk | null>(null);
   const executionStarted = useRef(false);
@@ -50,7 +52,7 @@ function CircleChallengeContent() {
     sdkRef.current = sdk;
     console.log('[CircleSDK] SDK instance created');
     setStatus('ready');
-    
+
     return () => {
       console.log('[CircleSDK] Cleaning up SDK instance');
       sdkRef.current = null;
@@ -68,10 +70,10 @@ function CircleChallengeContent() {
       return;
     }
     if (executionStarted.current) return;
-    
+
     executionStarted.current = true;
     const sdk = sdkRef.current;
-    
+
     if (!sdk) {
       console.error('[CircleSDK] SDK not initialized');
       setStatus('error');
@@ -82,15 +84,15 @@ function CircleChallengeContent() {
 
     console.log('[CircleSDK] Setting app settings...');
     sdk.setAppSettings({ appId });
-    
+
     console.log('[CircleSDK] Setting authentication...');
     console.log('[CircleSDK] userToken (first 50 chars):', userToken.substring(0, 50));
     console.log('[CircleSDK] encryptionKey:', encryptionKey);
     sdk.setAuthentication({ userToken, encryptionKey });
-    
+
     sendToReactNative('initialized', { success: true });
     setStatus('executing');
-    
+
     console.log('[CircleSDK] Executing challenge:', challengeId);
     // Following Circle's reference implementation - only check for error
     // If no error, the challenge completed successfully
@@ -101,13 +103,13 @@ function CircleChallengeContent() {
         console.error('error.code:', error?.code);
         console.error('error.message:', error?.message);
         console.error('========================');
-        
+
         setStatus('error');
         setErrorMessage(error.message || 'Challenge failed');
-        sendToReactNative('error', { 
+        sendToReactNative('error', {
           error: error.message || 'Challenge failed',
           code: error.code,
-          details: JSON.stringify(error)
+          details: JSON.stringify(error),
         });
         return;
       }
@@ -115,12 +117,12 @@ function CircleChallengeContent() {
       // No error = success (matching Circle's reference implementation)
       console.log('[CircleSDK] Challenge completed successfully - no error returned');
       setStatus('success');
-      sendToReactNative('challengeComplete', { 
+      sendToReactNative('challengeComplete', {
         result: {
           resultType: 'success',
           status: 'COMPLETE',
-          type: 'INITIALIZE'
-        }
+          type: 'INITIALIZE',
+        },
       });
     });
   }, [status, appId, userToken, encryptionKey, challengeId, sendToReactNative]);
@@ -144,8 +146,18 @@ function CircleChallengeContent() {
       {status === 'success' && (
         <div className="text-center">
           <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-8 h-8 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
           <p className="text-gray-800 dark:text-white font-semibold">Wallet setup complete!</p>
@@ -155,8 +167,18 @@ function CircleChallengeContent() {
       {status === 'error' && (
         <div className="text-center max-w-md px-4">
           <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-8 h-8 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </div>
           <p className="text-red-600 font-semibold mb-2">Something went wrong</p>
@@ -169,14 +191,16 @@ function CircleChallengeContent() {
 
 export default function CircleChallengePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <CircleChallengeContent />
     </Suspense>
   );

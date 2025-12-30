@@ -4,16 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
-import {
-  Search,
-  Eye,
-  Users,
-  Mail,
-  Shield,
-  Key,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
+import { Search, Eye, Users, Mail, Shield, Key, CheckCircle, XCircle } from 'lucide-react';
 
 import { circleApi } from '@/lib/api/circle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,9 +87,7 @@ export default function CircleUsersPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.totalUsers?.toLocaleString() || '0'}
-            </div>
+            <div className="text-2xl font-bold">{stats?.totalUsers?.toLocaleString() || '0'}</div>
           </CardContent>
         </Card>
 
@@ -121,16 +110,12 @@ export default function CircleUsersPage() {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                PIN Auth
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">PIN Auth</CardTitle>
               <Key className="h-4 w-4 text-purple-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.pinAuthUsers?.toLocaleString() || '0'}
-            </div>
+            <div className="text-2xl font-bold">{stats?.pinAuthUsers?.toLocaleString() || '0'}</div>
           </CardContent>
         </Card>
 
@@ -144,9 +129,7 @@ export default function CircleUsersPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.activeUsers?.toLocaleString() || '0'}
-            </div>
+            <div className="text-2xl font-bold">{stats?.activeUsers?.toLocaleString() || '0'}</div>
           </CardContent>
         </Card>
       </div>
@@ -225,7 +208,9 @@ export default function CircleUsersPage() {
                               <p className="text-sm font-medium">
                                 {circleUser.user.firstName} {circleUser.user.lastName}
                               </p>
-                              <p className="text-xs text-muted-foreground">{circleUser.user.email}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {circleUser.user.email}
+                              </p>
                             </div>
                           ) : (
                             <div>
@@ -273,7 +258,9 @@ export default function CircleUsersPage() {
                             {circleUser._count?.wallets || 0}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm">{formatDate(circleUser.createdAt)}</TableCell>
+                        <TableCell className="text-sm">
+                          {formatDate(circleUser.createdAt)}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Link href={`/dashboard/circle-wallets/users/${circleUser.id}`}>
                             <Button variant="ghost" size="sm" className="gap-2">

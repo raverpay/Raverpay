@@ -3,6 +3,7 @@
 ## Test Configuration
 
 ### Sender (User 1)
+
 - **Email**: archjo6@gmail.com
 - **Wallet ID**: `64eb0590-cf40-42f6-b716-be5a78592b2f`
 - **Address**: `0xeaccbb34d6fa2782d0e1c21e3a9222f300736102`
@@ -11,11 +12,13 @@
 - **Type**: SCA (Paymaster Compatible) ✅
 
 ### Recipient (User 2)
+
 - **Email**: codeswithjoseph@gmail.com
 - **Address**: `0x69476b0a0cb611faf8e9be80274b3b6ce63f54f4`
 - **Network**: MATIC-AMOY (different chain - for demo)
 
 ### Transaction Details
+
 - **Amount**: 0.1 USDC (100,000 units)
 - **Gas Payment**: USDC (via Paymaster) ✅
 - **Bundler**: Pimlico (configured) ✅
@@ -37,9 +40,11 @@
 ## 🎯 Test Execution Steps
 
 ### Step 1: Generate Permit ✅ COMPLETED
+
 **Status**: SUCCESS
 
 **Response**:
+
 ```json
 {
   "permitAmount": "10100000",
@@ -53,11 +58,13 @@
 ### Step 2: Submit UserOperation with Paymaster
 
 **Important Note**: Since Circle wallets are developer-controlled, the backend will:
+
 1. Generate the permit typed data
 2. Sign it using Circle's API
 3. Submit the UserOperation to the bundler
 
 **API Call**:
+
 ```bash
 curl -X POST "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/submit-userop" \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -75,6 +82,7 @@ curl -X POST "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/submit-us
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -92,6 +100,7 @@ curl -X POST "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/submit-us
 ### Step 3: Monitor UserOperation Status
 
 **Poll every 3 seconds**:
+
 ```bash
 curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/userop/USER_OP_HASH" \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -99,6 +108,7 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/userop/USER_OP_HA
 ```
 
 **Status Progression**:
+
 1. `PENDING` - Submitted to bundler
 2. `CONFIRMED` - Included in block
 3. Transaction hash available
@@ -108,19 +118,22 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/userop/USER_OP_HA
 ### Step 4: Verify Results
 
 **Check Database**:
+
 ```sql
-SELECT * FROM paymaster_user_operations 
+SELECT * FROM paymaster_user_operations
 WHERE "walletId" = '64eb0590-cf40-42f6-b716-be5a78592b2f'
 ORDER BY "createdAt" DESC LIMIT 1;
 ```
 
 **Check Statistics**:
+
 ```bash
 curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 **Expected**:
+
 ```json
 {
   "totalUserOps": 1,
@@ -136,6 +149,7 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
 ## 🔍 What to Watch For
 
 ### Success Indicators:
+
 - ✅ UserOp hash returned
 - ✅ Status changes to CONFIRMED
 - ✅ Transaction hash appears
@@ -144,6 +158,7 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
 - ✅ No ETH deducted from sender
 
 ### On Etherscan:
+
 1. Go to: https://sepolia.etherscan.io/
 2. Search for transaction hash
 3. Verify:
@@ -166,6 +181,7 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
 ## 🎉 Success Criteria
 
 ### Transaction Success:
+
 - [ ] UserOperation submitted
 - [ ] Bundler accepted UserOp
 - [ ] Transaction included in block
@@ -173,12 +189,14 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
 - [ ] Visible on Etherscan
 
 ### Paymaster Functionality:
+
 - [ ] Gas paid in USDC
 - [ ] No ETH deducted
 - [ ] Permit signature valid
 - [ ] Paymaster sponsored transaction
 
 ### Database & API:
+
 - [ ] UserOp record created
 - [ ] Status updated to CONFIRMED
 - [ ] Actual gas cost recorded
@@ -190,15 +208,19 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
 ## 🚨 Potential Issues & Solutions
 
 ### Issue: "Insufficient USDC balance"
+
 **Solution**: User has 0.3 USDC, sending 0.1 + ~0.03 gas = 0.13 total. Should be fine.
 
 ### Issue: "Bundler rejected UserOp"
+
 **Solution**: Check bundler logs, verify gas limits, check permit signature.
 
 ### Issue: "Transaction reverted"
+
 **Solution**: Check USDC allowance, verify Paymaster address, check nonce.
 
 ### Issue: "Timeout waiting for confirmation"
+
 **Solution**: Sepolia can be slow. Wait up to 5 minutes.
 
 ---
@@ -206,6 +228,7 @@ curl "https://c9b6dda108ed.ngrok-free.app/api/circle/paymaster/stats" \
 ## 📝 Test Execution Checklist
 
 Before running:
+
 - [x] Bundler RPC configured
 - [x] User has USDC balance
 - [x] Wallet is SCA type
@@ -214,6 +237,7 @@ Before running:
 - [x] Permit generation tested
 
 Ready to execute:
+
 - [ ] Run submit-userop API call
 - [ ] Monitor status
 - [ ] Check Etherscan

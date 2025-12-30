@@ -169,7 +169,7 @@ export class PaymasterController {
   /**
    * Generate permit and return Circle SDK challenge for user signing
    * POST /circle/paymaster/sign-permit-challenge
-   * 
+   *
    * This endpoint:
    * 1. Generates the EIP-2612 permit typed data
    * 2. Sends it to Circle SDK for signing
@@ -182,11 +182,16 @@ export class PaymasterController {
     @Body() dto: SignPermitChallengeDto,
   ) {
     // Verify wallet belongs to user
-    const wallet = await this.walletService.getWallet(dto.walletId, req.user.id);
+    const wallet = await this.walletService.getWallet(
+      dto.walletId,
+      req.user.id,
+    );
 
     // Verify this is a user-controlled wallet
     if (wallet.custodyType !== 'USER') {
-      throw new Error('This endpoint is only for user-controlled wallets. Developer-controlled wallets can use generate-permit directly.');
+      throw new Error(
+        'This endpoint is only for user-controlled wallets. Developer-controlled wallets can use generate-permit directly.',
+      );
     }
 
     // Get the Circle wallet ID (the one from Circle, not our DB ID)
@@ -196,13 +201,16 @@ export class PaymasterController {
     // wallet.circleUserId is the FK to CircleUser.id
     // wallet.circleUser.circleUserId is the actual Circle API user ID
     if (!wallet.circleUser?.circleUserId) {
-      throw new Error('Wallet does not have an associated Circle User. Please set up your wallet first.');
+      throw new Error(
+        'Wallet does not have an associated Circle User. Please set up your wallet first.',
+      );
     }
     const circleApiUserId = wallet.circleUser.circleUserId;
 
     // Refresh the userToken server-side (tokens expire after 60 minutes)
     // This ensures we always have a valid token regardless of mobile app state
-    const freshTokens = await this.userControlledWalletService.getUserToken(circleApiUserId);
+    const freshTokens =
+      await this.userControlledWalletService.getUserToken(circleApiUserId);
 
     // 1. Generate the permit typed data
     const permitData = await this.paymasterService.generatePermitData({
@@ -216,7 +224,7 @@ export class PaymasterController {
       userToken: freshTokens.userToken, // Use fresh token, not the one from mobile
       walletId: circleWalletId, // Use the Circle wallet ID
       typedData: permitData.typedData,
-      memo: dto.destinationAddress 
+      memo: dto.destinationAddress
         ? `Sign permit for ${dto.amount} USDC transfer to ${dto.destinationAddress.slice(0, 10)}...`
         : 'Sign permit for USDC gas payment',
     });
@@ -387,17 +395,20 @@ export class PaymasterController {
     @Param('walletId') walletId: string,
   ) {
     const wallet = await this.walletService.getWallet(walletId, req.user.id);
-    
+
     // Paymaster only works with SCA + USER custody
     // Note: detailed custodyType check might need adjustment depending on how it's stored
     // verifying wallet.custodyType is available on the wallet object returned by service
-    const isCompatible = wallet.accountType === 'SCA' && wallet.custodyType === 'USER';
-    
+    const isCompatible =
+      wallet.accountType === 'SCA' && wallet.custodyType === 'USER';
+
     return {
       success: true,
       data: {
         isPaymasterCompatible: isCompatible,
-        reason: isCompatible ? null : 'Paymaster requires SCA wallet with USER custody',
+        reason: isCompatible
+          ? null
+          : 'Paymaster requires SCA wallet with USER custody',
       },
     };
   }

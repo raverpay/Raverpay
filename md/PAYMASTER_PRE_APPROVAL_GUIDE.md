@@ -35,12 +35,14 @@ The **pre-approval method** allows Paymaster to work with developer-controlled C
 ## 🚀 How It Works
 
 ### Step 1: One-Time Approval (Per Wallet)
+
 ```
 User's Wallet → Approve → Paymaster Contract
 "You can spend my USDC for gas fees"
 ```
 
 ### Step 2: Seamless Transactions
+
 ```
 User wants to send USDC
 ↓
@@ -52,6 +54,7 @@ Transaction completes
 ```
 
 ### Benefits:
+
 - ✅ **One-time setup** per wallet
 - ✅ **No permit signature** needed for each transaction
 - ✅ **Gas efficient** (approval once vs. permit every time)
@@ -64,11 +67,13 @@ Transaction completes
 ### New API Endpoints
 
 #### 1. Approve Paymaster
+
 ```bash
 POST /api/circle/paymaster/approve
 ```
 
 **Request**:
+
 ```json
 {
   "walletId": "64eb0590-cf40-42f6-b716-be5a78592b2f",
@@ -77,6 +82,7 @@ POST /api/circle/paymaster/approve
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -89,11 +95,13 @@ POST /api/circle/paymaster/approve
 ```
 
 #### 2. Check Approval Status
+
 ```bash
 GET /api/circle/paymaster/approval/:walletId/:blockchain
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -118,7 +126,7 @@ const approval = await checkApproval(walletId, blockchain);
 if (!approval.isApproved) {
   // 2. Request approval
   await approvePaymaster(walletId, blockchain);
-  
+
   // 3. Wait for approval transaction to confirm (~15 seconds)
   await waitForConfirmation();
 }
@@ -150,6 +158,7 @@ await submitUserOp({
 ## 🔄 Modified UserOperation Flow
 
 ### Before (With Permits):
+
 ```
 1. Generate permit typed data
 2. Sign permit (requires signature)
@@ -159,6 +168,7 @@ await submitUserOp({
 ```
 
 ### After (With Pre-Approval):
+
 ```
 1. Check if approved (one-time check)
 2. Submit UserOp (no signature needed)
@@ -182,15 +192,15 @@ const handleSend = async () => {
     // Check if Paymaster is approved
     const approval = await paymasterService.checkApproval(
       selectedWallet.id,
-      selectedWallet.blockchain
+      selectedWallet.blockchain,
     );
-    
+
     if (!approval.isApproved) {
       // Show approval modal
       setShowApprovalModal(true);
       return;
     }
-    
+
     // Submit UserOp (no permit signature needed)
     const result = await submitUserOp({
       walletId: selectedWallet.id,
@@ -200,7 +210,7 @@ const handleSend = async () => {
       feeLevel,
       memo,
     });
-    
+
     // Navigate to status screen
     router.push(`/circle/paymaster-status?userOpHash=${result.userOpHash}`);
   } else {
@@ -286,10 +296,10 @@ Modify `submitUserOperation` to skip permit signature when approval exists:
 ```typescript
 async submitUserOperation(request) {
   // ... existing code ...
-  
+
   // Check if approval exists
   const approval = await this.checkApprovalOnChain(walletId, blockchain);
-  
+
   if (approval.isApproved) {
     // Skip permit signature - use approval instead
     // Create UserOp without permit data
@@ -297,7 +307,7 @@ async submitUserOperation(request) {
     // Use permit signature flow
     // Existing code
   }
-  
+
   // ... rest of code ...
 }
 ```
@@ -306,16 +316,16 @@ async submitUserOperation(request) {
 
 ## 📊 Comparison: Permit vs Pre-Approval
 
-| Aspect | Permit Signature | Pre-Approval |
-|--------|------------------|--------------|
-| **Setup** | None | One-time per wallet |
-| **Per Transaction** | Sign permit | Nothing |
-| **Gas Cost** | Same | Same |
-| **UX** | Sign each time | Seamless after setup |
-| **Security** | Very secure | Very secure |
-| **Wallet Type** | User-controlled | Developer-controlled |
-| **Complexity** | Higher | Lower |
-| **Production Ready** | Yes | Yes |
+| Aspect               | Permit Signature | Pre-Approval         |
+| -------------------- | ---------------- | -------------------- |
+| **Setup**            | None             | One-time per wallet  |
+| **Per Transaction**  | Sign permit      | Nothing              |
+| **Gas Cost**         | Same             | Same                 |
+| **UX**               | Sign each time   | Seamless after setup |
+| **Security**         | Very secure      | Very secure          |
+| **Wallet Type**      | User-controlled  | Developer-controlled |
+| **Complexity**       | Higher           | Lower                |
+| **Production Ready** | Yes              | Yes                  |
 
 ---
 
@@ -326,6 +336,7 @@ async submitUserOperation(request) {
 **Use Pre-Approval** ✅
 
 **Why**:
+
 1. Works with your current wallet setup
 2. Better UX (one-time setup)
 3. Simpler implementation
@@ -365,6 +376,7 @@ async submitUserOperation(request) {
 ## ✅ Summary
 
 **Pre-Approval Method**:
+
 - ✅ Safe & secure
 - ✅ Production-ready
 - ✅ Standard DeFi pattern

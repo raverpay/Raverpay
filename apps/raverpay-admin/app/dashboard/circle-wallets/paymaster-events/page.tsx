@@ -2,11 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Download, RefreshCw, Search } from 'lucide-react';
 import { paymasterApi, PaymasterUserOperation } from '@/lib/api/paymaster';
 
@@ -84,11 +97,7 @@ export default function PaymasterEventsPage() {
       FAILED: 'destructive',
     };
 
-    return (
-      <Badge variant={variants[status] || 'outline'}>
-        {status}
-      </Badge>
-    );
+    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
   };
 
   const formatUsdc = (amount: string | null) => {
@@ -105,9 +114,7 @@ export default function PaymasterEventsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Paymaster Events</h1>
-          <p className="text-muted-foreground">
-            Track UserOperations and gas fees paid in USDC
-          </p>
+          <p className="text-muted-foreground">Track UserOperations and gas fees paid in USDC</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={fetchUserOps} variant="outline" size="sm">
@@ -124,9 +131,7 @@ export default function PaymasterEventsPage() {
       <Card>
         <CardHeader>
           <CardTitle>UserOperations</CardTitle>
-          <CardDescription>
-            All UserOperations submitted via Circle Paymaster
-          </CardDescription>
+          <CardDescription>All UserOperations submitted via Circle Paymaster</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-6">

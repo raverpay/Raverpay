@@ -1171,14 +1171,14 @@ async handleChargeSuccess(webhookData: any) {
 
 ### Cross-Border Transfer Compliance Summary
 
-| Route                        | Possible?    | Regulatory Path                                          | Estimated Cost |
-| ---------------------------- | ------------ | -------------------------------------------------------- | -------------- |
+| Route                       | Possible?    | Regulatory Path                                          | Estimated Cost |
+| --------------------------- | ------------ | -------------------------------------------------------- | -------------- |
 | **Nigeria ↔ Ghana**         | ⚠️ Difficult | Requires PSP license in both + ECOWAS partnership        | $500K+ setup   |
 | **Nigeria ↔ Kenya**         | ⚠️ Difficult | No regional integration. Needs remittance licenses.      | $500K+ setup   |
 | **Nigeria ↔ South Africa**  | ⚠️ Difficult | No regional integration. Needs remittance licenses.      | $500K+ setup   |
 | **Nigeria ↔ Côte d'Ivoire** | ⚠️ Difficult | ECOWAS member but different currency zones (NGN vs XOF). | $500K+ setup   |
-| **Ghana ↔ Côte d'Ivoire**   | ✅ Easier    | Both in WAEMU/ECOWAS. GHS ↔ XOF via authorized banks.   | $200K+ setup   |
-| **Within CFA Zone**          | ✅ Easy      | Same currency (XOF). Domestic transfers.                 | Minimal        |
+| **Ghana ↔ Côte d'Ivoire**   | ✅ Easier    | Both in WAEMU/ECOWAS. GHS ↔ XOF via authorized banks.    | $200K+ setup   |
+| **Within CFA Zone**         | ✅ Easy      | Same currency (XOF). Domestic transfers.                 | Minimal        |
 
 ---
 

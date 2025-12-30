@@ -5,7 +5,13 @@ import { CircleApiClient } from '../circle-api.client';
 import { CircleBlockchain, CircleFeeLevel } from '../circle.types';
 import { PermitService } from './permit.service';
 import { BundlerService } from './bundler.service';
-import { createPublicClient, http, parseAbi, encodeFunctionData, parseUnits } from 'viem';
+import {
+  createPublicClient,
+  http,
+  parseAbi,
+  encodeFunctionData,
+  parseUnits,
+} from 'viem';
 
 /**
  * DTO for submitting a UserOperation with Paymaster
@@ -331,7 +337,7 @@ export class PaymasterServiceV2 {
 
     // Add 20% safety margin to gas estimate
     const gasBuffer = (estimatedGasUsdc * 120n) / 100n;
-    
+
     // Convert amount to atomic units (USDC has 6 decimals)
     const amountAtomic = parseUnits(amount, 6);
     const permitAmount = amountAtomic + gasBuffer;
@@ -364,7 +370,9 @@ export class PaymasterServiceV2 {
   /**
    * Estimate gas cost in USDC for a UserOperation on a given blockchain
    */
-  private async estimateGasInUsdc(blockchain: CircleBlockchain): Promise<number> {
+  private async estimateGasInUsdc(
+    blockchain: CircleBlockchain,
+  ): Promise<number> {
     // Get gas price from chain
     const publicClient = this.bundlerService.getPublicClient(blockchain);
     if (!publicClient) {
@@ -373,25 +381,31 @@ export class PaymasterServiceV2 {
 
     try {
       const gasPrice = await publicClient.getGasPrice();
-      
+
       // Estimate typical UserOp gas usage (~500k gas for transfer with paymaster)
       const estimatedGas = 500_000n;
       const gasCostWei = estimatedGas * gasPrice;
-      
+
       // Convert to USD using approximate ETH prices per chain
       // These are rough estimates - in production, use an oracle
       const ethPrices: Record<string, number> = {
-        'ETH': 3000, 'ETH-SEPOLIA': 3000,
-        'ARB': 3000, 'ARB-SEPOLIA': 3000,
-        'BASE': 3000, 'BASE-SEPOLIA': 3000,
-        'OP': 3000, 'OP-SEPOLIA': 3000,
-        'AVAX': 35, 'AVAX-FUJI': 35,
-        'MATIC': 0.8, 'MATIC-AMOY': 0.8,
+        ETH: 3000,
+        'ETH-SEPOLIA': 3000,
+        ARB: 3000,
+        'ARB-SEPOLIA': 3000,
+        BASE: 3000,
+        'BASE-SEPOLIA': 3000,
+        OP: 3000,
+        'OP-SEPOLIA': 3000,
+        AVAX: 35,
+        'AVAX-FUJI': 35,
+        MATIC: 0.8,
+        'MATIC-AMOY': 0.8,
       };
-      
+
       const ethPrice = ethPrices[blockchain] || 3000;
       const gasCostUsd = (Number(gasCostWei) / 1e18) * ethPrice;
-      
+
       // Minimum 0.5 USDC, maximum 10 USDC
       return Math.max(0.5, Math.min(10, gasCostUsd));
     } catch (error) {

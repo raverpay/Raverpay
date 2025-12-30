@@ -9,17 +9,20 @@ This guide covers testing the entire user-controlled wallet system across API, M
 ## 📋 Pre-Testing Checklist
 
 ### ✅ Backend API
+
 - [ ] API server running
 - [ ] Database migrations applied
 - [ ] Circle API key configured
 - [ ] Environment variables set
 
 ### ✅ Mobile App
+
 - [ ] Circle App ID added to `.env`
 - [ ] Development build created
 - [ ] Device/simulator ready
 
 ### ✅ Admin Dashboard
+
 - [ ] Admin app running
 - [ ] Connected to API
 - [ ] Admin user logged in
@@ -40,6 +43,7 @@ pnpm dev
 ```
 
 **Expected Output:**
+
 ```
 [Nest] INFO [NestApplication] Nest application successfully started
 [Nest] INFO Server listening on http://localhost:3000
@@ -53,6 +57,7 @@ npx prisma studio
 ```
 
 **What to Check:**
+
 - ✅ `CircleUser` table exists
 - ✅ `CircleWallet` has `custodyType` column
 - ✅ All migrations applied
@@ -62,6 +67,7 @@ npx prisma studio
 Use Postman/Thunder Client or curl:
 
 #### Test 1: Create Circle User
+
 ```bash
 curl -X POST http://localhost:3000/circle/users \
   -H "Content-Type: application/json" \
@@ -73,6 +79,7 @@ curl -X POST http://localhost:3000/circle/users \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "id": "uuid",
@@ -83,6 +90,7 @@ curl -X POST http://localhost:3000/circle/users \
 ```
 
 #### Test 2: Get Device Token
+
 ```bash
 curl -X POST http://localhost:3000/circle/auth/email/device-token \
   -H "Content-Type: application/json" \
@@ -93,6 +101,7 @@ curl -X POST http://localhost:3000/circle/auth/email/device-token \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "deviceToken": "...",
@@ -110,11 +119,13 @@ curl -X POST http://localhost:3000/circle/auth/email/device-token \
 ### Step 2.1: Configure Environment
 
 1. **Add Circle App ID to `.env`:**
+
 ```env
 EXPO_PUBLIC_CIRCLE_APP_ID=d891ca084420932db5436dae705d3fdf
 ```
 
 2. **Verify API URL:**
+
 ```env
 EXPO_PUBLIC_API_URL=http://localhost:3000
 ```
@@ -124,12 +135,14 @@ EXPO_PUBLIC_API_URL=http://localhost:3000
 **Important:** You CANNOT use Expo Go. You must build a development client.
 
 #### For iOS:
+
 ```bash
 cd apps/raverpaymobile
 npx expo run:ios
 ```
 
 #### For Android:
+
 ```bash
 cd apps/raverpaymobile
 npx expo run:android
@@ -145,6 +158,7 @@ npx expo run:android
 4. **Click "Create USDC Wallet"**
 
 **Expected Screen:**
+
 - ✅ "Choose Wallet Type" screen appears
 - ✅ Two options visible:
   - "Easy Wallet" (Custodial)
@@ -155,6 +169,7 @@ npx expo run:android
 1. **Select "Advanced Wallet"**
 
 **Expected:**
+
 - ✅ Navigates to setup screen
 - ✅ Shows email input
 
@@ -162,12 +177,14 @@ npx expo run:android
 3. **Click "Send Verification Code"**
 
 **Expected:**
+
 - ✅ Loading indicator appears
 - ✅ Success message: "OTP Sent"
 - ✅ Email received with 6-digit code
 - ✅ Screen changes to OTP input
 
 **Troubleshooting:**
+
 - ❌ "SDK Not Ready" → Wait a few seconds, SDK is initializing
 - ❌ "Failed to send code" → Check API logs, verify Circle API key
 - ❌ No email received → Check spam folder, verify email service
@@ -176,6 +193,7 @@ npx expo run:android
 5. **Click "Verify Code"**
 
 **Expected:**
+
 - ✅ Loading indicator
 - ✅ Screen changes to "Creating Your Wallet"
 - ✅ Progress indicators show:
@@ -186,6 +204,7 @@ npx expo run:android
 6. **Circle SDK PIN Setup**
 
 **Expected:**
+
 - ✅ Circle SDK UI appears (native modal)
 - ✅ Prompts to create a 6-digit PIN
 - ✅ Asks to confirm PIN
@@ -195,6 +214,7 @@ npx expo run:android
 7. **Complete PIN Setup**
 
 **Expected:**
+
 - ✅ PIN created successfully
 - ✅ Returns to your app
 - ✅ Shows "Wallet Created!" success screen
@@ -206,6 +226,7 @@ npx expo run:android
 8. **Click "Go to Wallet"**
 
 **Expected:**
+
 - ✅ Navigates to Circle wallet screen
 - ✅ Shows your new wallet
 - ✅ Displays wallet address
@@ -214,6 +235,7 @@ npx expo run:android
 ### Step 2.5: Test Wallet Display
 
 **Check:**
+
 - ✅ Wallet appears in list
 - ✅ Shows correct blockchain (ETH-SEPOLIA)
 - ✅ Shows account type (SCA)
@@ -231,6 +253,7 @@ pnpm dev
 ```
 
 **Expected:**
+
 ```
 Ready on http://localhost:3001
 ```
@@ -246,6 +269,7 @@ Ready on http://localhost:3001
 1. **Go to** `/dashboard/circle-wallets`
 
 **Expected:**
+
 - ✅ Wallets table visible
 - ✅ "Custody Type" filter dropdown present
 - ✅ Options: All, Custodial, Non-Custodial
@@ -253,6 +277,7 @@ Ready on http://localhost:3001
 2. **Select "Non-Custodial"**
 
 **Expected:**
+
 - ✅ Table filters to show only user-controlled wallets
 - ✅ Your test wallet appears
 - ✅ "Custody" column shows "🔑 Non-Custodial" badge (blue)
@@ -260,6 +285,7 @@ Ready on http://localhost:3001
 3. **Select "Custodial"**
 
 **Expected:**
+
 - ✅ Shows only developer-controlled wallets
 - ✅ "Custody" column shows "🛡️ Custodial" badge (green)
 
@@ -268,6 +294,7 @@ Ready on http://localhost:3001
 1. **Click** "Circle Users" quick link (or navigate to `/dashboard/circle-wallets/users`)
 
 **Expected:**
+
 - ✅ Circle Users page loads
 - ✅ Stats cards show:
   - Total Users
@@ -278,6 +305,7 @@ Ready on http://localhost:3001
 2. **Find your test user**
 
 **Expected:**
+
 - ✅ User appears in table
 - ✅ Shows email address
 - ✅ Shows Circle User ID
@@ -290,6 +318,7 @@ Ready on http://localhost:3001
 **Type** your email in search box
 
 **Expected:**
+
 - ✅ Filters to show only your user
 - ✅ Results update in real-time
 
@@ -298,6 +327,7 @@ Ready on http://localhost:3001
 **Select** "Email" in Auth Method filter
 
 **Expected:**
+
 - ✅ Shows only email-authenticated users
 - ✅ Your user still visible
 
@@ -310,6 +340,7 @@ Ready on http://localhost:3001
 Before testing Paymaster, you need USDC in your wallet.
 
 **Options:**
+
 1. Use Circle's testnet faucet
 2. Transfer from another wallet
 3. Use the receive screen to get your address
@@ -325,6 +356,7 @@ Before testing Paymaster, you need USDC in your wallet.
 4. **Toggle "Pay Gas in USDC"** ON
 
 **Expected:**
+
 - ✅ Toggle switches on
 - ✅ Shows "Gas fee: $X.XX USDC" in blue box
 - ✅ Summary updates to show USDC gas fee
@@ -334,6 +366,7 @@ Before testing Paymaster, you need USDC in your wallet.
 7. **Enter PIN**
 
 **Expected:**
+
 - ✅ Transaction submits
 - ✅ Navigates to Paymaster status screen
 - ✅ Shows UserOperation hash
@@ -347,37 +380,47 @@ Before testing Paymaster, you need USDC in your wallet.
 ### Backend Issues
 
 #### "CircleUser table does not exist"
+
 ```bash
 cd apps/raverpay-api
 npx prisma migrate dev
 ```
 
 #### "Circle API authentication failed"
+
 - Check `CIRCLE_API_KEY` in `.env`
 - Verify API key is valid in Circle Console
 
 ### Mobile App Issues
 
 #### "SDK not initialized"
+
 **Solution:**
+
 1. Check `EXPO_PUBLIC_CIRCLE_APP_ID` in `.env`
 2. Rebuild development client
 3. Check console logs for initialization errors
 
 #### "Cannot use Expo Go"
+
 **Solution:**
+
 - You MUST use development build
 - Run `npx expo run:ios` or `npx expo run:android`
 
 #### "OTP not received"
+
 **Solution:**
+
 1. Check API logs for email service errors
 2. Verify email service is configured
 3. Check spam folder
 4. Try different email address
 
 #### "PIN setup doesn't appear"
+
 **Solution:**
+
 1. Ensure Circle SDK is properly installed
 2. Check that you're using development build (not Expo Go)
 3. Verify App ID is correct
@@ -386,14 +429,18 @@ npx prisma migrate dev
 ### Admin Dashboard Issues
 
 #### "No users showing"
+
 **Solution:**
+
 1. Check API connection
 2. Verify user was created successfully
 3. Check browser console for errors
 4. Refresh the page
 
 #### "Custody filter not working"
+
 **Solution:**
+
 1. Check that `custodyType` column exists in database
 2. Verify wallets have `custodyType` set
 3. Check API response in Network tab
@@ -403,6 +450,7 @@ npx prisma migrate dev
 ## ✅ Testing Checklist
 
 ### Backend API
+
 - [ ] Server starts successfully
 - [ ] Database schema is correct
 - [ ] Create Circle User endpoint works
@@ -411,6 +459,7 @@ npx prisma migrate dev
 - [ ] Initialize Wallet endpoint works
 
 ### Mobile App
+
 - [ ] App builds and launches
 - [ ] Circle SDK initializes
 - [ ] Wallet type selection works
@@ -424,6 +473,7 @@ npx prisma migrate dev
 - [ ] Balance shows correctly
 
 ### Admin Dashboard
+
 - [ ] Dashboard loads
 - [ ] Circle Wallets page works
 - [ ] Custody type filter works
@@ -435,6 +485,7 @@ npx prisma migrate dev
 - [ ] Filters work
 
 ### Paymaster (Optional)
+
 - [ ] Toggle appears in send screen
 - [ ] Gas fee estimate shows
 - [ ] Transaction submits
@@ -447,6 +498,7 @@ npx prisma migrate dev
 ## 📊 Expected Results Summary
 
 ### Successful Test Run:
+
 1. ✅ Backend API responds to all endpoints
 2. ✅ Mobile app creates user-controlled wallet
 3. ✅ Circle SDK handles PIN setup
@@ -456,6 +508,7 @@ npx prisma migrate dev
 7. ✅ All filters and search work correctly
 
 ### Time Estimate:
+
 - Backend testing: 15 minutes
 - Mobile app testing: 30 minutes
 - Admin dashboard testing: 20 minutes

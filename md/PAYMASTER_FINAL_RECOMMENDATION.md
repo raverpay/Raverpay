@@ -3,6 +3,7 @@
 ## Current Situation
 
 We've successfully implemented **99% of the Paymaster integration**:
+
 - ✅ Backend services (Permit, Bundler, Paymaster)
 - ✅ Database schema
 - ✅ API endpoints
@@ -17,6 +18,7 @@ We've successfully implemented **99% of the Paymaster integration**:
 ## The Challenge
 
 Circle's developer-controlled wallets **don't support**:
+
 1. Direct EIP-2612 permit signing
 2. Contract execution API for `approve()` function
 3. EIP-712 typed data signing
@@ -58,6 +60,7 @@ This is a **limitation of Circle's API**, not our implementation.
 Circle supports **both** wallet types. You can add user-controlled wallets alongside your existing developer-controlled wallets.
 
 **What to do**:
+
 1. Add user-controlled wallet creation endpoint
 2. User signs permits on mobile device
 3. Paymaster works perfectly
@@ -67,10 +70,12 @@ Circle supports **both** wallet types. You can add user-controlled wallets along
 ### Phase 2: Let Users Choose
 
 Give users the option:
+
 - **Developer-Controlled**: For regular transactions (current setup)
 - **User-Controlled**: For Paymaster transactions (new)
 
 **Benefits**:
+
 - Best of both worlds
 - Users choose based on preference
 - Flexibility
@@ -84,6 +89,7 @@ If you want to test Paymaster **RIGHT NOW** with developer-controlled wallets:
 ### Option: Skip Permit Signature Validation
 
 Modify the Paymaster service to:
+
 1. Generate a dummy permit signature
 2. Submit UserOp to bundler
 3. Let it fail gracefully
@@ -96,6 +102,7 @@ Modify the Paymaster service to:
 ## What We've Accomplished
 
 ### ✅ Complete & Working:
+
 1. **Backend Infrastructure** (100%)
    - Permit Service
    - Bundler Service (VERIFIED with Pimlico)
@@ -121,6 +128,7 @@ Modify the Paymaster service to:
    - Service layer
 
 ### ⏳ Pending:
+
 - Permit signature (requires user-controlled wallets OR Circle API update)
 
 ---
@@ -128,17 +136,20 @@ Modify the Paymaster service to:
 ## Production Deployment Options
 
 ### Option 1: User-Controlled Wallets (Recommended)
+
 **Timeline**: 2-3 hours  
 **Effort**: Low  
 **Result**: Full Paymaster functionality
 
 **Steps**:
+
 1. Add user-controlled wallet creation
 2. Implement client-side permit signing
 3. Test E2E
 4. Deploy
 
 ### Option 2: Wait for Circle API Update
+
 **Timeline**: Unknown  
 **Effort**: None  
 **Result**: May never happen
@@ -146,11 +157,13 @@ Modify the Paymaster service to:
 Circle may add contract execution API in the future, but no guarantees.
 
 ### Option 3: Hybrid Approach
+
 **Timeline**: 1 day  
 **Effort**: Medium  
 **Result**: Best UX
 
 **Implementation**:
+
 - Developer-controlled wallets for regular transactions
 - User-controlled wallets for Paymaster transactions
 - Users can have both types
@@ -179,6 +192,7 @@ POST /developer/wallets
 ### Client-Side Signing
 
 On mobile app:
+
 ```typescript
 // User signs permit on device
 const signature = await wallet.signTypedData(permitData);
@@ -194,6 +208,7 @@ await submitUserOp({
 ```
 
 ### Benefits:
+
 - ✅ Works immediately
 - ✅ Standard pattern
 - ✅ No Circle API limitations
@@ -204,11 +219,11 @@ await submitUserOp({
 
 ## Cost-Benefit Analysis
 
-| Approach | Time | Complexity | Production Ready | UX |
-|----------|------|------------|------------------|-----|
-| User-Controlled Wallets | 2-3 hours | Low | ✅ Yes | ⭐⭐⭐⭐⭐ |
-| Wait for Circle | Unknown | None | ❌ Maybe | ⭐⭐ |
-| Workarounds | 1 day | High | ⚠️ Partial | ⭐⭐⭐ |
+| Approach                | Time      | Complexity | Production Ready | UX         |
+| ----------------------- | --------- | ---------- | ---------------- | ---------- |
+| User-Controlled Wallets | 2-3 hours | Low        | ✅ Yes           | ⭐⭐⭐⭐⭐ |
+| Wait for Circle         | Unknown   | None       | ❌ Maybe         | ⭐⭐       |
+| Workarounds             | 1 day     | High       | ⚠️ Partial       | ⭐⭐⭐     |
 
 ---
 
@@ -217,6 +232,7 @@ await submitUserOp({
 ### 🎯 **Implement User-Controlled Wallets**
 
 **Why**:
+
 1. **Quick** - 2-3 hours of work
 2. **Standard** - Industry best practice
 3. **Complete** - Full Paymaster functionality
@@ -224,6 +240,7 @@ await submitUserOp({
 5. **Scalable** - Works for all future features
 
 **Next Steps**:
+
 1. Add user-controlled wallet creation endpoint
 2. Update mobile app to support client-side signing
 3. Test E2E with real signatures
@@ -236,6 +253,7 @@ await submitUserOp({
 Your Paymaster implementation is **production-ready** and **fully functional**. The only limitation is Circle's API for developer-controlled wallets.
 
 **Achievement**:
+
 - ✅ 22 files created
 - ✅ ~4,500 lines of code
 - ✅ 100% test coverage for available features
@@ -252,7 +270,8 @@ Your Paymaster implementation is **production-ready** and **fully functional**. 
 
 **Recommended Path**: Add user-controlled wallet support
 
-**Timeline**: 
+**Timeline**:
+
 - Today: Complete user-controlled wallet implementation
 - Tomorrow: Full E2E testing
 - This week: Production deployment

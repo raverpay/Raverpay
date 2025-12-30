@@ -3,12 +3,12 @@ import { Injectable, ExecutionContext, Inject } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
-import { 
-  ThrottlerGuard, 
-  ThrottlerException, 
-  ThrottlerStorage, 
+import {
+  ThrottlerGuard,
+  ThrottlerException,
+  ThrottlerStorage,
   ThrottlerModuleOptions,
-  InjectThrottlerOptions, 
+  InjectThrottlerOptions,
   InjectThrottlerStorage,
 } from '@nestjs/throttler';
 
@@ -20,7 +20,8 @@ import {
 export class CustomThrottlerGuard extends ThrottlerGuard {
   constructor(
     @InjectThrottlerOptions() protected readonly options: any,
-    @InjectThrottlerStorage() protected readonly storageService: ThrottlerStorage,
+    @InjectThrottlerStorage()
+    protected readonly storageService: ThrottlerStorage,
     protected readonly reflector: Reflector,
     private readonly jwtService: JwtService,
   ) {
@@ -34,28 +35,32 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
   protected async getTracker(req: Record<string, any>): Promise<string> {
     // 1. Try to get user from request (if AuthGuard ran already)
     if (req.user?.id) {
-      // console.log(`[Throttler] Tracking by req.user: ${req.user.id}`);
+      console.log(`[Throttler] Tracking by req.user: ${req.user.id}`);
       return `user:${req.user.id}`;
     }
 
     // 2. Try to decode JWT from header (if AuthGuard hasn't ran yet, which is typical for Global guards)
     const authHeader = req.headers?.authorization;
-    if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    if (
+      authHeader &&
+      typeof authHeader === 'string' &&
+      authHeader.startsWith('Bearer ')
+    ) {
       const token = authHeader.split(' ')[1];
       try {
         const decoded = this.jwtService.decode(token) as { sub: string } | null;
         if (decoded?.sub) {
-          // console.log(`[Throttler] Tracking by decoded JWT: ${decoded.sub}`);
+          console.log(`[Throttler] Tracking by decoded JWT: ${decoded.sub}`);
           return `user:${decoded.sub}`;
         }
       } catch (e) {
-        // Token invalid or decode failed, fall back to IP
+        console.log(`[Throttler] JWT Decode Error: ${e.message}`);
       }
     }
 
     // 3. Fallback: Track by IP
     const tracker = req.ip || req.socket?.remoteAddress || 'unknown';
-    // console.log(`[Throttler] Tracking by IP: ${tracker}`);
+    console.log(`[Throttler] Tracking by IP: ${tracker}`);
     return tracker;
   }
 
@@ -63,14 +68,12 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
    * Custom error message based on context
    */
   protected async throwThrottlingException(
-    context: ExecutionContext, 
-    throttlerLimitDetail: any
+    context: ExecutionContext,
+    throttlerLimitDetail: any,
   ): Promise<void> {
     const request = context.switchToHttp().getRequest<Request>();
     // We can't rely on req.user here if it wasn't set.
-    
-    throw new ThrottlerException(
-      'Too many requests. Please try again later.',
-    );
+
+    throw new ThrottlerException('Too many requests. Please try again later.');
   }
 }

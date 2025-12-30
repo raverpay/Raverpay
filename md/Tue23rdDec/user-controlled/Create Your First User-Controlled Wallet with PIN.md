@@ -27,7 +27,6 @@ Once you have one of the web, iOS, or Android
 
 1. Run the sample app and simulator.
 2. Obtain your App ID. This can be done by one of two options
-
    1. Access the developer console and navigate to the
       [configurator](https://console.circle.com/wallets/user/configurator)
       within user-controlled wallets. From there, copy the App ID.

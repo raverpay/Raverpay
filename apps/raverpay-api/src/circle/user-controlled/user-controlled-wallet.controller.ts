@@ -65,8 +65,9 @@ export class UserControlledWalletController {
    */
   @Get('users/check-status')
   async checkUserStatus(@Request() req: AuthRequest) {
-    const circleUser = await this.userControlledWalletService.getCircleUserByUserId(req.user.id);
-    
+    const circleUser =
+      await this.userControlledWalletService.getCircleUserByUserId(req.user.id);
+
     if (!circleUser) {
       return {
         success: true,
@@ -80,7 +81,10 @@ export class UserControlledWalletController {
     }
 
     // Check for user-controlled wallets
-    const wallets = await this.userControlledWalletService.getUserControlledWallets(req.user.id);
+    const wallets =
+      await this.userControlledWalletService.getUserControlledWallets(
+        req.user.id,
+      );
 
     return {
       success: true,
@@ -94,7 +98,7 @@ export class UserControlledWalletController {
           pinStatus: circleUser.pinStatus,
           status: circleUser.status,
         },
-        wallets: wallets.map(w => ({
+        wallets: wallets.map((w) => ({
           id: w.id,
           address: w.address,
           blockchain: w.blockchain,
@@ -176,7 +180,8 @@ export class UserControlledWalletController {
     @Request() req: AuthRequest,
     @Body() dto: InitializeUserWalletDto,
   ) {
-    const { circleUserId, blockchain, accountType, userToken, isExistingUser } = dto;
+    const { circleUserId, blockchain, accountType, userToken, isExistingUser } =
+      dto;
 
     // Verify ownership
     const circleUser =
@@ -191,9 +196,9 @@ export class UserControlledWalletController {
     const result =
       await this.userControlledWalletService.initializeUserWithWallet({
         userToken,
-        blockchain: Array.isArray(blockchain) 
-          ? blockchain.map(b => b as CircleBlockchain)
-          : blockchain as CircleBlockchain,
+        blockchain: Array.isArray(blockchain)
+          ? blockchain.map((b) => b as CircleBlockchain)
+          : (blockchain as CircleBlockchain),
         accountType: accountType || 'SCA',
         userId: req.user.id,
         circleUserId,
@@ -363,7 +368,9 @@ export class UserControlledWalletController {
       await this.userControlledWalletService.getCircleUserByUserId(req.user.id);
 
     if (!circleUser) {
-      throw new Error('Circle user not found. Please set up your wallet first.');
+      throw new Error(
+        'Circle user not found. Please set up your wallet first.',
+      );
     }
 
     // Get fresh user token

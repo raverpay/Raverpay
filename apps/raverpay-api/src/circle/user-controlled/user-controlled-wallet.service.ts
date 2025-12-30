@@ -58,8 +58,12 @@ export class UserControlledWalletService implements OnModuleInit {
         userId: circleUserId,
       });
 
-      this.logger.log(`Circle SDK createUser response status: ${response.status}`);
-      this.logger.debug(`Circle SDK createUser response: ${JSON.stringify(response.data)}`);
+      this.logger.log(
+        `Circle SDK createUser response status: ${response.status}`,
+      );
+      this.logger.debug(
+        `Circle SDK createUser response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 201) {
         throw new Error(`Failed to create user: status ${response.status}`);
@@ -104,8 +108,12 @@ export class UserControlledWalletService implements OnModuleInit {
         userId: circleUserId,
       });
 
-      this.logger.log(`Circle SDK createUserToken response status: ${response.status}`);
-      this.logger.debug(`Circle SDK createUserToken response: ${JSON.stringify(response.data)}`);
+      this.logger.log(
+        `Circle SDK createUserToken response status: ${response.status}`,
+      );
+      this.logger.debug(
+        `Circle SDK createUserToken response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 200 || !response.data) {
         throw new Error(`Failed to get user token: status ${response.status}`);
@@ -137,7 +145,14 @@ export class UserControlledWalletService implements OnModuleInit {
     circleUserId: string;
     isExistingUser?: boolean; // If true, uses createWallet instead of createUserPinWithWallets
   }) {
-    const { userToken, blockchain, accountType, userId, circleUserId, isExistingUser } = params;
+    const {
+      userToken,
+      blockchain,
+      accountType,
+      userId,
+      circleUserId,
+      isExistingUser,
+    } = params;
 
     // Normalize to array
     const blockchains = Array.isArray(blockchain) ? blockchain : [blockchain];
@@ -154,7 +169,7 @@ export class UserControlledWalletService implements OnModuleInit {
         // This creates a new wallet without going through PIN setup again
         this.logger.log('Using createWallet for existing user with userId');
         response = await this.circleClient.createWallet({
-          userId: circleUserId,  // Use userId, not userToken
+          userId: circleUserId, // Use userId, not userToken
           blockchains: blockchains as any,
           accountType,
         });
@@ -169,7 +184,9 @@ export class UserControlledWalletService implements OnModuleInit {
       }
 
       this.logger.log(`Circle SDK response status: ${response.status}`);
-      this.logger.debug(`Circle SDK response: ${JSON.stringify(response.data)}`);
+      this.logger.debug(
+        `Circle SDK response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 201 || !response.data?.challengeId) {
         throw new Error(`Failed to initialize user: status ${response.status}`);
@@ -203,7 +220,9 @@ export class UserControlledWalletService implements OnModuleInit {
         userToken,
       });
 
-      this.logger.debug(`Circle SDK listWallets response: ${JSON.stringify(response.data)}`);
+      this.logger.debug(
+        `Circle SDK listWallets response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 200) {
         throw new Error(`Failed to list wallets: status ${response.status}`);
@@ -232,7 +251,9 @@ export class UserControlledWalletService implements OnModuleInit {
   }) {
     const { userToken, userId, circleUserId } = params;
 
-    this.logger.log(`Syncing user-controlled wallets to database for user: ${userId}`);
+    this.logger.log(
+      `Syncing user-controlled wallets to database for user: ${userId}`,
+    );
 
     try {
       // Fetch wallets from Circle API
@@ -251,7 +272,9 @@ export class UserControlledWalletService implements OnModuleInit {
       });
 
       if (!circleUser) {
-        throw new Error(`CircleUser not found for circleUserId: ${circleUserId}`);
+        throw new Error(
+          `CircleUser not found for circleUserId: ${circleUserId}`,
+        );
       }
 
       // Get or create a wallet set for user-controlled wallets
@@ -320,7 +343,9 @@ export class UserControlledWalletService implements OnModuleInit {
           },
         });
 
-        this.logger.log(`Synced wallet ${newWallet.id} for blockchain ${wallet.blockchain}`);
+        this.logger.log(
+          `Synced wallet ${newWallet.id} for blockchain ${wallet.blockchain}`,
+        );
         syncedWallets.push(newWallet);
       }
 
@@ -358,7 +383,9 @@ export class UserControlledWalletService implements OnModuleInit {
         userToken,
       });
 
-      this.logger.debug(`Circle SDK getUserStatus response: ${JSON.stringify(response.data)}`);
+      this.logger.debug(
+        `Circle SDK getUserStatus response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 200) {
         throw new Error(`Failed to get user status: status ${response.status}`);
@@ -505,9 +532,8 @@ export class UserControlledWalletService implements OnModuleInit {
 
     try {
       // Stringify the typed data if it's an object
-      const dataString = typeof typedData === 'string' 
-        ? typedData 
-        : JSON.stringify(typedData);
+      const dataString =
+        typeof typedData === 'string' ? typedData : JSON.stringify(typedData);
 
       const response = await this.circleClient.signTypedData({
         userToken,
@@ -517,10 +543,14 @@ export class UserControlledWalletService implements OnModuleInit {
       });
 
       this.logger.log(`Sign typed data response status: ${response.status}`);
-      this.logger.debug(`Sign typed data response: ${JSON.stringify(response.data)}`);
+      this.logger.debug(
+        `Sign typed data response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 201 || !response.data?.challengeId) {
-        throw new Error(`Failed to create sign challenge: status ${response.status}`);
+        throw new Error(
+          `Failed to create sign challenge: status ${response.status}`,
+        );
       }
 
       return {
@@ -528,7 +558,10 @@ export class UserControlledWalletService implements OnModuleInit {
       };
     } catch (error) {
       const errorData = (error as any).response?.data || (error as any).message;
-      this.logger.error(`Failed to sign typed data: ${JSON.stringify(errorData)}`, (error as any).stack);
+      this.logger.error(
+        `Failed to sign typed data: ${JSON.stringify(errorData)}`,
+        (error as any).stack,
+      );
       throw new Error(`Failed to sign typed data: ${(error as any).message}`);
     }
   }
@@ -547,7 +580,15 @@ export class UserControlledWalletService implements OnModuleInit {
     feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
     memo?: string;
   }) {
-    const { userToken, walletId, destinationAddress, amounts, tokenId, feeLevel = 'MEDIUM', memo } = params;
+    const {
+      userToken,
+      walletId,
+      destinationAddress,
+      amounts,
+      tokenId,
+      feeLevel = 'MEDIUM',
+      memo,
+    } = params;
 
     this.logger.log(`Creating transaction for wallet ${walletId}`);
 
@@ -569,10 +610,14 @@ export class UserControlledWalletService implements OnModuleInit {
       });
 
       this.logger.log(`Create transaction response status: ${response.status}`);
-      this.logger.debug(`Create transaction response: ${JSON.stringify(response.data)}`);
+      this.logger.debug(
+        `Create transaction response: ${JSON.stringify(response.data)}`,
+      );
 
       if (response.status !== 201 || !response.data?.challengeId) {
-        throw new Error(`Failed to create transaction: status ${response.status}`);
+        throw new Error(
+          `Failed to create transaction: status ${response.status}`,
+        );
       }
 
       return {
@@ -580,8 +625,13 @@ export class UserControlledWalletService implements OnModuleInit {
       };
     } catch (error) {
       const errorData = (error as any).response?.data || (error as any).message;
-      this.logger.error(`Failed to create transaction: ${JSON.stringify(errorData)}`, (error as any).stack);
-      throw new Error(`Failed to create transaction: ${(error as any).message}`);
+      this.logger.error(
+        `Failed to create transaction: ${JSON.stringify(errorData)}`,
+        (error as any).stack,
+      );
+      throw new Error(
+        `Failed to create transaction: ${(error as any).message}`,
+      );
     }
   }
 }

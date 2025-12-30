@@ -453,9 +453,7 @@ export class LimitsService {
         }
       }
     } catch (e) {
-      this.logger.error(
-        `Error checking suspicious activity: ${e.message}`,
-      );
+      this.logger.error(`Error checking suspicious activity: ${e.message}`);
       // Fail open (don't block on error)
     }
 

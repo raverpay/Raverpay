@@ -67,9 +67,7 @@ export default function PaymasterAnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Paymaster Analytics</h1>
-        <p className="text-muted-foreground">
-          Monitor Paymaster usage and gas fee statistics
-        </p>
+        <p className="text-muted-foreground">Monitor Paymaster usage and gas fee statistics</p>
       </div>
 
       {loading ? (

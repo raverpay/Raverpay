@@ -1,9 +1,11 @@
 # Circle Typed Data Signing for Paymaster
 
 ## Overview
+
 For developer-controlled Circle wallets, the backend can sign EIP-712 typed data (permits) using Circle's API.
 
 ## Circle API Endpoint
+
 ```
 POST /v1/w3s/developer/transactions/contractExecution
 ```
@@ -11,12 +13,15 @@ POST /v1/w3s/developer/transactions/contractExecution
 ## How It Works
 
 ### Step 1: Generate Permit Typed Data
+
 Already implemented in `PermitService.generatePermitTypedData()`
 
 ### Step 2: Sign with Circle's API
+
 Circle's developer-controlled wallets can sign typed data via their API.
 
 **Request Format**:
+
 ```typescript
 {
   "idempotencyKey": "uuid",
@@ -31,6 +36,7 @@ Circle's developer-controlled wallets can sign typed data via their API.
 ## Alternative: Use EIP-191 Personal Sign
 
 Circle also supports personal message signing:
+
 ```
 POST /v1/w3s/developer/transactions/sign
 ```
@@ -39,12 +45,14 @@ But for EIP-2612 permits, we need **EIP-712 typed data signing**.
 
 ## The Issue
 
-Looking at Circle's current API documentation, **typed data signing for developer-controlled wallets is limited**. 
+Looking at Circle's current API documentation, **typed data signing for developer-controlled wallets is limited**.
 
 ## Solution: Two Approaches
 
 ### Approach 1: Use Circle's Transaction API (Current)
+
 Instead of signing a permit separately, we can:
+
 1. Skip the permit signature requirement
 2. Use Circle's regular transaction API to approve USDC to Paymaster
 3. Then submit the UserOperation
@@ -53,7 +61,9 @@ Instead of signing a permit separately, we can:
 **Cons**: Requires 2 transactions (approve + transfer)
 
 ### Approach 2: Modify Paymaster Flow (Recommended)
+
 Since these are developer-controlled wallets:
+
 1. Backend generates the permit typed data
 2. Backend uses Circle's signing capability (if available)
 3. If not available, use a workaround:
@@ -65,6 +75,7 @@ Since these are developer-controlled wallets:
 For **developer-controlled wallets**, the cleanest approach is:
 
 ### Option A: Pre-Approval Method
+
 ```typescript
 // 1. One-time: Approve Paymaster to spend USDC
 await circleApi.post('/v1/w3s/developer/transactions/transfer', {
@@ -80,7 +91,9 @@ await circleApi.post('/v1/w3s/developer/transactions/transfer', {
 ```
 
 ### Option B: Use User-Controlled Wallets for Paymaster
+
 For the **mobile app**, users can have user-controlled wallets where:
+
 - User signs the permit on their device
 - Full EIP-2612 flow works as designed
 - More decentralized
@@ -99,6 +112,7 @@ Since you want to test **now** with developer-controlled wallets:
 **Use a mock/test signature** for the E2E test, OR implement the pre-approval flow.
 
 For **production**, consider:
+
 - User-controlled wallets for Paymaster (better UX, true gasless)
 - Developer-controlled wallets for regular transactions
 

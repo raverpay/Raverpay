@@ -8,7 +8,7 @@ Offers
 Offer
 Get 1Password free for a year including 1Password Developer Tools
 
-Get direct access on the 1Password website 
+Get direct access on the 1Password website
 Get help at 1Password support
 
 Adafruit
@@ -20,7 +20,7 @@ Offers
 Offer
 One year of Adafruit IO+ and discounts on selected hardware.
 
-Get access by connecting your GitHub account on Adafruit 
+Get access by connecting your GitHub account on Adafruit
 Get help at Adafruit support
 
 AlgoExpert
@@ -32,7 +32,7 @@ Offers
 Offer
 Free access to 20 coding interview questions on AlgoExpert as well as a 10% discount on all AlgoExpert products.
 
-Get direct access on the AlgoExpert website 
+Get direct access on the AlgoExpert website
 Get help at AlgoExpert support
 
 Appfigures
@@ -44,7 +44,7 @@ Offers
 Offer
 "Free access to universal analytics and performance reports for one year.
 
-Get access by connecting your GitHub account on Appfigures 
+Get access by connecting your GitHub account on Appfigures
 Get help at Appfigures support
 
 Appwrite
@@ -56,7 +56,7 @@ Offers
 Offer
 Free access to Appwrite's Education plan (equivalent resource limits as Appwrite Pro, worth $15/month) throughout the course of your student career (i.e., as long as you remain a member of the GitHub Student Developer Pack).
 
-Get direct access on the Appwrite website 
+Get direct access on the Appwrite website
 Get help at Appwrite support
 
 Arduino
@@ -68,7 +68,7 @@ Offers
 Offer
 Free Arduino Cloud for 6 months and discounts on selected hardware.
 
-Get access by connecting your GitHub account on Arduino 
+Get access by connecting your GitHub account on Arduino
 Get help at Arduino support
 
 AstraSecurity
@@ -80,7 +80,7 @@ Offers
 Offer
 6 month access to website firewall & malware scanner
 
-Get access by connecting your GitHub account on AstraSecurity 
+Get access by connecting your GitHub account on AstraSecurity
 Get help at AstraSecurity support
 
 Blackfire
@@ -92,7 +92,7 @@ Offers
 Offer
 Free Developer subscription for students.
 
-Get access by connecting your GitHub account on Blackfire 
+Get access by connecting your GitHub account on Blackfire
 Get help at Blackfire support
 
 Blockchair
@@ -104,7 +104,7 @@ Offers
 Offer
 100,000 free requests.
 
-Get access by connecting your GitHub account on Blockchair 
+Get access by connecting your GitHub account on Blockchair
 Get help at Blockchair support
 
 Bootstrap Studio
@@ -116,7 +116,7 @@ Offers
 Offer
 A free license for Bootstrap Studio while you are a student.
 
-Get access by connecting your GitHub account on Bootstrap Studio 
+Get access by connecting your GitHub account on Bootstrap Studio
 Get help at Bootstrap Studio support
 
 BrowserStack
@@ -128,7 +128,7 @@ Offers
 Offer
 Free Automate Mobile Plan for 1 parallel and 1 user for 1 year.
 
-Get access by connecting your GitHub account on BrowserStack 
+Get access by connecting your GitHub account on BrowserStack
 Get help at BrowserStack support
 
 Camber
@@ -140,7 +140,7 @@ Offers
 Offer
 Free Camber Student plan that includes 200 CPU hours, 75GB of storage, and 200 LLM messages per month, plus additional student benefits designed to supercharge your research.
 
-Get direct access on the Camber website 
+Get direct access on the Camber website
 Get help at Camber support
 
 CARTO
@@ -152,7 +152,7 @@ Offers
 Offer
 Free account upgrades with increased database storage, real time data, Location Data Services Credits, and premium features for 2 years.
 
-Get access by connecting your GitHub account on CARTO 
+Get access by connecting your GitHub account on CARTO
 Get help at CARTO support
 
 Codecov
@@ -164,7 +164,7 @@ Offers
 Offer
 Free access to Codecov on public and private repositories.
 
-Get access by connecting your GitHub account on Codecov 
+Get access by connecting your GitHub account on Codecov
 Get help at Codecov support
 
 Codedex
@@ -176,7 +176,7 @@ Offers
 Offer
 Verified students receive 6 months of Codédex Club, a premium membership for free.
 
-Get direct access on the Codedex website 
+Get direct access on the Codedex website
 Get help at Codedex support
 
 CodeScene
@@ -188,7 +188,7 @@ Offers
 Offer
 A free Student account to analyze private GitHub repositories.
 
-Get access by connecting your GitHub account on CodeScene 
+Get access by connecting your GitHub account on CodeScene
 Get help at CodeScene support
 
 ConfigCat
@@ -200,7 +200,7 @@ Offers
 Offer
 1000 feature flags, ∞ users for free.
 
-Get access by connecting your GitHub account on ConfigCat 
+Get access by connecting your GitHub account on ConfigCat
 Get help at ConfigCat support
 
 Cryptolens
@@ -212,7 +212,7 @@ Offers
 Offer
 10 licenses and any number of end-users for free for students.
 
-Get access by connecting your GitHub account on Cryptolens 
+Get access by connecting your GitHub account on Cryptolens
 Get help at Cryptolens support
 
 DailyBot
@@ -224,7 +224,7 @@ Offers
 Offer
 DailyBot Business plan free for 10 users for 6 months.
 
-Get access by connecting your GitHub account on DailyBot 
+Get access by connecting your GitHub account on DailyBot
 Get help at DailyBot support
 
 Dashlane
@@ -236,7 +236,7 @@ Offers
 Offer
 Dashlane Premium free for 6 months.
 
-Get direct access on the Dashlane website 
+Get direct access on the Dashlane website
 Get help at Dashlane support
 
 DataCamp
@@ -248,7 +248,7 @@ Offers
 Offer
 DataCamp has partnered with GitHub Education to offer three months of free access when you sign up for a DataCamp subscription with your GitHub student account.
 
-Get access by connecting your GitHub account on DataCamp 
+Get access by connecting your GitHub account on DataCamp
 Get help at DataCamp support
 
 Datadog
@@ -260,7 +260,7 @@ Offers
 Offer
 Pro Account, including 10 servers. Free for 2 years.
 
-Get access by connecting your GitHub account on Datadog 
+Get access by connecting your GitHub account on Datadog
 Get help at Datadog support
 
 Deepnote
@@ -272,7 +272,7 @@ Offers
 Offer
 Our offer includes free use of the Deepnote Team plan while you are a student. The Deepnote Team Plan includes: Unlimited team members & projects, 30-day version history, unlimited basic machines with up to 5GB RAM and 2vCPU, premium integrations (Snowflake, SQL Server, BigQuery, Redshift, and more), and 30-day revision history.
 
-Get direct access on the Deepnote website 
+Get direct access on the Deepnote website
 Get help at Deepnote support
 
 DeepScan
@@ -284,7 +284,7 @@ Offers
 Offer
 Free 6-month trial while you are a student.
 
-Get access by connecting your GitHub account on DeepScan 
+Get access by connecting your GitHub account on DeepScan
 Get help at DeepScan support
 
 DevCycle
@@ -296,7 +296,7 @@ Offers
 Offer
 1 Free Year on our Starter Plan to Verified Students. Includes unlimited seats, unlimited feature flags, and unlimited usage.
 
-Get direct access on the DevCycle website 
+Get direct access on the DevCycle website
 Get help at DevCycle support
 
 DigitalOcean
@@ -308,7 +308,7 @@ Offers
 Offer
 Enjoy $200 in platform credit for 1 year!
 
-Get access by connecting your GitHub account on DigitalOcean 
+Get access by connecting your GitHub account on DigitalOcean
 Get help at DigitalOcean support
 
 Doppler
@@ -320,7 +320,7 @@ Offers
 Offer
 Free Doppler Team subscription while the user is an active student.
 
-Get direct access on the Doppler website 
+Get direct access on the Doppler website
 Get help at Doppler support
 
 Educative
@@ -332,7 +332,7 @@ Offers
 Offer
 Dive into 6 months of free access to over 70 practical courses, covering hot topics like Web Development, Python, Java, and Machine Learning. Plus, students enjoy an awesome 30% discount on any subscription they pick!
 
-Get access by connecting your GitHub account on Educative 
+Get access by connecting your GitHub account on Educative
 Get help at Educative support
 
 FrontendMasters
@@ -344,7 +344,7 @@ Offers
 Offer
 Free 6-months access to all courses and workshops.
 
-Get access by connecting your GitHub account on FrontendMasters 
+Get access by connecting your GitHub account on FrontendMasters
 Get help at FrontendMasters support
 
 GitHub
@@ -356,7 +356,7 @@ Offers
 Offer
 Free GitHub Pro while you are a student.
 
-Get direct access on the GitHub website 
+Get direct access on the GitHub website
 Get help at GitHub support
 
 Github Campus Experts
@@ -368,7 +368,7 @@ Offers
 Offer
 Apply to become part of the program while you’re a student.
 
-Get access by connecting your GitHub account on Github Campus Experts 
+Get access by connecting your GitHub account on Github Campus Experts
 Get help at Github Campus Experts support
 
 GitHub Certification Offer 2025
@@ -380,7 +380,7 @@ Offers
 Offer
 Showcase your expertise with GitHub Credentials. Verified students get 1 free voucher code to use for either the Foundations or Copilot GitHub Certifications exam. Current coupons expire on June 30, 2026. While supplies last.
 
-Request your offer code to get access 
+Request your offer code to get access
 Get help at GitHub Certification Offer 2025 support
 
 GitHub Codespaces
@@ -392,11 +392,11 @@ Offers
 Offer
 Free Pro level access to Codespaces to use anywhere in your account.
 
-Get direct access on the GitHub Codespaces website 
+Get direct access on the GitHub Codespaces website
 Get help at GitHub Codespaces support
 
 GitHub Community Exchange
-GitHub Community Exchange 
+GitHub Community Exchange
 About GitHub Community Exchange
 A student community within the GitHub Global Campus portal. As a student, it's a place where you can get exposure for your project and discover other student repositories in need of collaborators and maintainers.
 
@@ -404,7 +404,7 @@ Offers
 Offer
 Learn the skills you need to contribute to open source projects and grow your own portfolio, with GitHub Community Exchange.
 
-Get direct access on the GitHub Community Exchange website 
+Get direct access on the GitHub Community Exchange website
 Get help at GitHub Community Exchange support
 
 GitHub Copilot
@@ -416,7 +416,7 @@ Offers
 Offer
 Free access to Copilot Pro while you're a student. To enable Copilot Pro, go to your account settings and under Code, planning, and automation, select Copilot to sign up for free. Or click on the link below to claim the offer.
 
-Get direct access on the website GitHub Copilot 
+Get direct access on the website GitHub Copilot
 Get help at GitHub Copilot support
 
 GitHub Desktop
@@ -428,11 +428,11 @@ Offers
 Offer
 Open Source by GitHub, free for everyone.
 
-Get direct access on the GitHub Desktop website 
+Get direct access on the GitHub Desktop website
 Get help at GitHub Desktop support
 
 GitHub Pages
-GitHub Pages 
+GitHub Pages
 About GitHub Pages
 Websites for you and your projects. Hosted directly from your GitHub repository. Just edit, push, and your changes are live.
 
@@ -440,7 +440,7 @@ Offers
 Offer
 Get one site per GitHub account and organization, and unlimited project sites.
 
-Get direct access on the GitHub Pages website 
+Get direct access on the GitHub Pages website
 Get help at GitHub Pages support
 
 GitKraken
@@ -452,7 +452,7 @@ Offers
 Offer
 The GitKraken Student Plan: Free for 6 months and then up to 80% off the Pro price as long as you’re a student.
 
-Get access by connecting your GitHub account on GitKraken 
+Get access by connecting your GitHub account on GitKraken
 Get help at GitKraken support
 
 GitLens
@@ -464,7 +464,7 @@ Offers
 Offer
 The GitKraken Student plan: free for 6 months and then up to 80% off the Pro price as long as you’re a student.
 
-Get direct access on the GitLens website 
+Get direct access on the GitLens website
 Get help at GitLens support
 
 GoRails
@@ -476,7 +476,7 @@ Offers
 Offer
 Free access to all videos and lessons for 12 months.
 
-Get access by connecting your GitHub account on GoRails 
+Get access by connecting your GitHub account on GoRails
 Get help at GoRails support
 
 HazeOver
@@ -488,7 +488,7 @@ Offers
 Offer
 Free app license, including minor updates.
 
-Get access by connecting your GitHub account on HazeOver 
+Get access by connecting your GitHub account on HazeOver
 Get help at HazeOver support
 
 Heroku
@@ -500,7 +500,7 @@ Offers
 Offer
 Enjoy a credit of $13 USD per month for 24 months.
 
-Get access by connecting your GitHub account on Heroku 
+Get access by connecting your GitHub account on Heroku
 Get help at Heroku support
 
 Honeybadger
@@ -512,7 +512,7 @@ Offers
 Offer
 Free Small account for 1 year.
 
-Get access by connecting your GitHub account on Honeybadger 
+Get access by connecting your GitHub account on Honeybadger
 Get help at Honeybadger support
 
 Icons8
@@ -524,7 +524,7 @@ Offers
 Offer
 Free 3-month subscription that includes: icons, photos, illustrations, and music.
 
-Get access by connecting your GitHub account on Icons8 
+Get access by connecting your GitHub account on Icons8
 Get help at Icons8 support
 
 IconScout
@@ -536,7 +536,7 @@ Offers
 Offer
 Free access to 60 premium icons from selected contributors every month for 1 year.
 
-Get access by connecting your GitHub account on IconScout 
+Get access by connecting your GitHub account on IconScout
 Get help at IconScout support
 
 Imgbot
@@ -548,7 +548,7 @@ Offers
 Offer
 Free image optimization for all your public and private projects while you are a student.
 
-Get access by connecting your GitHub account on Imgbot 
+Get access by connecting your GitHub account on Imgbot
 Get help at Imgbot support
 
 InterviewCake
@@ -560,7 +560,7 @@ Offers
 Offer
 Access to the full coding interview prep course for 1 week.
 
-Get access by connecting your GitHub account on InterviewCake 
+Get access by connecting your GitHub account on InterviewCake
 Get help at InterviewCake support
 
 JetBrains
@@ -572,7 +572,7 @@ Offers
 Offer
 A free subscription for students, to be renewed annually.
 
-Get access by connecting your GitHub account on JetBrains 
+Get access by connecting your GitHub account on JetBrains
 Get help at JetBrains support
 
 LambdaTest
@@ -584,7 +584,7 @@ Offers
 Offer
 Free LambdaTest Live Plan for one year.
 
-Get access by connecting your GitHub account on LambdaTest 
+Get access by connecting your GitHub account on LambdaTest
 Get help at LambdaTest support
 
 LocalStack
@@ -596,7 +596,7 @@ Offers
 Offer
 Free license to LocalStack’s most powerful AWS emulator in a ready-to-use cloud environment
 
-Get direct access on the LocalStack website 
+Get direct access on the LocalStack website
 Get help at LocalStack support
 
 Microsoft Azure
@@ -608,7 +608,7 @@ Offers
 Offer
 Free access to 25+ Microsoft Azure cloud services plus $100 in Azure credit. For students aged 18+.
 
-Get access by connecting your GitHub account on Microsoft Azure 
+Get access by connecting your GitHub account on Microsoft Azure
 Get help at Microsoft Azure support
 
 Microsoft Azure (for ages 13-17)
@@ -620,7 +620,7 @@ Offers
 Offer
 For students age 13-17. Free access to Azure App Services, Azure Functions, Notification Hubs, MySQL database from MySQL in-app, Application Insights, Azure DevOps.
 
-Get direct access on the Microsoft Azure (for ages 13-17) website 
+Get direct access on the Microsoft Azure (for ages 13-17) website
 Get help at Microsoft Azure (for ages 13-17) support
 
 Microsoft Visual Studio Dev Essentials
@@ -632,7 +632,7 @@ Offers
 Offer
 Visual Studio Community, Visual Studio Community for Mac, access to Pluralsight training, 1 free year of Azure services with $200 credit for the 1st month and more.
 
-Get direct access on the Microsoft Visual Studio Dev Essentials website 
+Get direct access on the Microsoft Visual Studio Dev Essentials website
 Get help at Microsoft Visual Studio Dev Essentials support
 
 MongoDB
@@ -644,7 +644,7 @@ Offers
 Offer
 $50 in MongoDB Atlas Credits, plus access to MongoDB Compass and MongoDB University including free certification valued at $150.
 
-Get access by connecting your GitHub account on MongoDB 
+Get access by connecting your GitHub account on MongoDB
 Get help at MongoDB support
 
 Namecheap
@@ -656,11 +656,11 @@ Offers
 Offer #1
 1 year domain name registration on the .me TLD.
 
-Get access by connecting your GitHub account on Namecheap 
+Get access by connecting your GitHub account on Namecheap
 Offer #2
 1 SSL certificate free for 1 year.
 
-Request your offer code to get access 
+Request your offer code to get access
 Get help at Namecheap support
 
 Name.com
@@ -672,7 +672,7 @@ Offers
 Offer
 Build your project on a select free domain with over 25 domain extensions like .live, .studio, .software, .app, and .dev.
 
-Get access by connecting your GitHub account on Name.com 
+Get access by connecting your GitHub account on Name.com
 Get help at Name.com support
 
 New Relic
@@ -684,7 +684,7 @@ Offers
 Offer
 Free New Relic while you are a student. ($300/month value)
 
-Get access by connecting your GitHub account on New Relic 
+Get access by connecting your GitHub account on New Relic
 Get help at New Relic support
 
 Notion
@@ -696,7 +696,7 @@ Offers
 Offer
 Everything in the Notion Education plan with additional AI responses. Notion Education plan offers everything in our Plus plan + increased sharing & collaboration capabilities and longer page history.
 
-Get direct access on the Notion website 
+Get direct access on the Notion website
 Get help at Notion support
 
 Notion Template Collection
@@ -708,7 +708,7 @@ Offers
 Offer
 From setting up your CS course dashboard to running your hackathons to building your portfolios — this collection of templates has got you covered, in the classroom and beyond.
 
-Get direct access on the Notion Template Collection website 
+Get direct access on the Notion Template Collection website
 Get help at Notion Template Collection support
 
 Octicons
@@ -720,7 +720,7 @@ Offers
 Offer
 Using Figma designs to build the Octicons icon library
 
-Get direct access on the Octicons website 
+Get direct access on the Octicons website
 Get help at Octicons support
 
 Pageclip
@@ -732,7 +732,7 @@ Offers
 Offer
 Free basic plan while you are a student.
 
-Get access by connecting your GitHub account on Pageclip 
+Get access by connecting your GitHub account on Pageclip
 Get help at Pageclip support
 
 POEditor
@@ -744,7 +744,7 @@ Offers
 Offer
 Plus Plan for free for one year.
 
-Get access by connecting your GitHub account on POEditor 
+Get access by connecting your GitHub account on POEditor
 Get help at POEditor support
 
 Polypane
@@ -756,7 +756,7 @@ Offers
 Offer
 You'll get free use of Polypane's individual plan for 1 year.
 
-Get access by connecting your GitHub account on Polypane 
+Get access by connecting your GitHub account on Polypane
 Get help at Polypane support
 
 PomoDone
@@ -768,7 +768,7 @@ Offers
 Offer
 PomoDone Lite plan free for 2-years.
 
-Get access by connecting your GitHub account on PomoDone 
+Get access by connecting your GitHub account on PomoDone
 Get help at PomoDone support
 
 PopSQL
@@ -780,7 +780,7 @@ Offers
 Offer
 Free Premium subscription for PopSQL while you're a student.
 
-Get access by connecting your GitHub account on PopSQL 
+Get access by connecting your GitHub account on PopSQL
 Get help at PopSQL support
 
 Requestly
@@ -792,7 +792,7 @@ Offers
 Offer
 Requestly Professional plan (worth $270) free for one year.
 
-Get direct access on the Requestly website 
+Get direct access on the Requestly website
 Get help at Requestly support
 
 Scrimba
@@ -804,7 +804,7 @@ Offers
 Offer
 Level up your coding skills with interactive courses, projects, and challenges. Learn JavaScript, CSS, React, Python, and more. Enjoy 1 month of free access to Full access to Scrimba’s Pro courses, projects, and coding challenges, which includes 40+ courses.
 
-Get direct access on the Scrimba website 
+Get direct access on the Scrimba website
 Get help at Scrimba support
 
 Sentry
@@ -816,7 +816,7 @@ Offers
 Offer
 Students enjoy: 50K errors, 100K transactions, 1GB attachments, 500 replays, Team features, 1 yr limit (can renew), Disabled On-demand
 
-Get access by connecting your GitHub account on Sentry 
+Get access by connecting your GitHub account on Sentry
 Get help at Sentry support
 
 SimpleAnalytics
@@ -828,7 +828,7 @@ Offers
 Offer
 Starter plan free for one year, including 100k page views per month.
 
-Get access by connecting your GitHub account on SimpleAnalytics 
+Get access by connecting your GitHub account on SimpleAnalytics
 Get help at SimpleAnalytics support
 
 SlideCoach
@@ -840,7 +840,7 @@ Offers
 Offer
 Enjoy 2,000 free credits for SlideCoach—equivalent to 40 AI-powered presentation sessions—valid for one year after redemption.
 
-Get direct access on the SlideCoach website 
+Get direct access on the SlideCoach website
 Get help at SlideCoach support
 
 SQLGate
@@ -852,7 +852,7 @@ Offers
 Offer
 Access to most Standard Subscription features for 1 year.
 
-Get access by connecting your GitHub account on SQLGate 
+Get access by connecting your GitHub account on SQLGate
 Get help at SQLGate support
 
 Stripe
@@ -864,7 +864,7 @@ Offers
 Offer
 Waived transaction fees on first $1000 in revenue processed.
 
-Request your unique link to get access 
+Request your unique link to get access
 Get help at Stripe support
 
 SymfonyCasts
@@ -876,7 +876,7 @@ Offers
 Offer
 Free 3-month subscription for students.
 
-Get access by connecting your GitHub account on SymfonyCasts 
+Get access by connecting your GitHub account on SymfonyCasts
 Get help at SymfonyCasts support
 
 .TECH
@@ -888,7 +888,7 @@ Offers
 Offer
 One standard .TECH domain free for 1 year.
 
-Get access by connecting your GitHub account on .TECH 
+Get access by connecting your GitHub account on .TECH
 Get help at .TECH support
 
 Termius
@@ -900,7 +900,7 @@ Offers
 Offer
 Free access to all Termius Pro and Termius Team features, while you're a student.
 
-Get access by connecting your GitHub account on Termius 
+Get access by connecting your GitHub account on Termius
 Get help at Termius support
 
 Testmail
@@ -912,7 +912,7 @@ Offers
 Offer
 Free Essential plan while you're a student.
 
-Get access by connecting your GitHub account on Testmail 
+Get access by connecting your GitHub account on Testmail
 Get help at Testmail support
 
 Themeisle
@@ -924,7 +924,7 @@ Offers
 Offer
 Free year of Neve Agency WordPress theme exclusively for students.
 
-Get access by connecting your GitHub account on Themeisle 
+Get access by connecting your GitHub account on Themeisle
 Get help at Themeisle support
 
 ToDiagram
@@ -936,7 +936,7 @@ Offers
 Offer
 ToDiagram Pro Plan including full editor access, no data limits, and up to 10 documents stored in the cloud. This offer does not include AI-assistant functionality.
 
-Get direct access on the ToDiagram website 
+Get direct access on the ToDiagram website
 Get help at ToDiagram support
 
 Tower
@@ -948,7 +948,7 @@ Offers
 Offer
 Free license for Tower Pro while you are a student.
 
-Get access by connecting your GitHub account on Tower 
+Get access by connecting your GitHub account on Tower
 Get help at Tower support
 
 Travis CI
@@ -960,7 +960,7 @@ Offers
 Offer
 Private builds for free while you're a student.
 
-Get access by connecting your GitHub account on Travis CI 
+Get access by connecting your GitHub account on Travis CI
 Get help at Travis CI support
 
 Vaadin
@@ -972,7 +972,7 @@ Offers
 Offer
 Free Pro subscription license to access the commercial components and tools.
 
-Get access by connecting your GitHub account on Vaadin 
+Get access by connecting your GitHub account on Vaadin
 Get help at Vaadin support
 
 Visme
@@ -984,7 +984,7 @@ Offers
 Offer
 Get 3 free months free access to Visme's Starter plan.
 
-Get direct access on the Visme website 
+Get direct access on the Visme website
 Get help at Visme support
 
 Visual Studio Code
@@ -996,7 +996,7 @@ Offers
 Offer
 These coding packs help you download everything you need to start coding in Java, Python, or .NET.
 
-Get direct access on the Visual Studio Code website 
+Get direct access on the Visual Studio Code website
 Get help at Visual Studio Code support
 
 WorkingCopy
@@ -1008,7 +1008,7 @@ Offers
 Offer
 All Pro features for free while you are a student.
 
-Get access by connecting your GitHub account on WorkingCopy 
+Get access by connecting your GitHub account on WorkingCopy
 Get help at WorkingCopy support
 
 Xojo
@@ -1020,7 +1020,7 @@ Offers
 Offer
 Xojo Pro license free while you are a student.
 
-Get access by connecting your GitHub account on Xojo 
+Get access by connecting your GitHub account on Xojo
 Get help at Xojo support
 
 Zyte
@@ -1032,5 +1032,5 @@ Offers
 Offer
 1 Free Forever Scrapy Cloud Unit - unlimited team members, projects or requests. Unlimited crawl time and 120 day data retention.
 
-Get direct access on the Zyte website 
+Get direct access on the Zyte website
 Get help at Zyte support

@@ -17,6 +17,7 @@ PAYMASTER_POSTOP_GAS_LIMIT=15000
 ```
 
 ## Chain ID Reference:
+
 - **Ethereum Sepolia**: 11155111
 - **Arbitrum Sepolia**: 421614
 - **Base Sepolia**: 84532
@@ -24,6 +25,7 @@ PAYMASTER_POSTOP_GAS_LIMIT=15000
 - **Polygon Amoy**: 80002
 
 ## Next Steps:
+
 1. Add these lines to your `.env` file
 2. Restart your API server
 3. We'll run the E2E test!

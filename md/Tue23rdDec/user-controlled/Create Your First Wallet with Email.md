@@ -110,7 +110,6 @@ You can view the sample app source code on GitHub:
 
 3. On the sample app, select **Login with Email**. This takes you through the
    OTP email flow:
-
    - An email containing an OTP is sent to the email address specified in your
      request to `/users/email/token`.
    - The sample app prompts you with a UI to enter the OTP to verify identity,
