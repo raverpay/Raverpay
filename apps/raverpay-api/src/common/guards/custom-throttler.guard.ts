@@ -1,9 +1,16 @@
 import { Injectable, ExecutionContext, Inject } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerException } from '@nestjs/throttler';
+
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
-import { ThrottlerStorage, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { 
+  ThrottlerGuard, 
+  ThrottlerException, 
+  ThrottlerStorage, 
+  ThrottlerModuleOptions,
+  InjectThrottlerOptions, 
+  InjectThrottlerStorage,
+} from '@nestjs/throttler';
 
 /**
  * Custom throttler guard that provides user-based rate limiting
@@ -12,8 +19,8 @@ import { ThrottlerStorage, ThrottlerModuleOptions } from '@nestjs/throttler';
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
   constructor(
-    @Inject('THROTTLER_OPTIONS') protected readonly options: any,
-    @Inject('ThrottlerStorage') protected readonly storageService: ThrottlerStorage,
+    @InjectThrottlerOptions() protected readonly options: any,
+    @InjectThrottlerStorage() protected readonly storageService: ThrottlerStorage,
     protected readonly reflector: Reflector,
     private readonly jwtService: JwtService,
   ) {
