@@ -392,6 +392,77 @@ export class LimitsService {
   }
 
   /**
+   * Check for suspicious activity patterns
+   * Rule: > 3 distinct recipients in 10 minutes
+   */
+  async checkSuspiciousActivity(
+    userId: string,
+    type: 'P2P' | 'WITHDRAWAL',
+    targetIdentifier: string,
+  ): Promise<boolean> {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+    try {
+      if (type === 'P2P') {
+        // Check distinct P2P receivers
+        const recentTxns = await this.prisma.p2PTransfer.findMany({
+          where: {
+            senderId: userId,
+            createdAt: { gte: tenMinutesAgo },
+          },
+          select: { receiverId: true },
+        });
+
+        const distinctReceivers = new Set(
+          recentTxns.map((t) => t.receiverId).filter((id) => id),
+        );
+        distinctReceivers.add(targetIdentifier);
+
+        // Suspicious if more than 3 distinct receivers in 10 mins
+        if (distinctReceivers.size > 3) {
+          this.logger.warn(
+            `⚠️ [SuspiciousActivity] User ${userId} sending to ${distinctReceivers.size} distinct users in 10 mins`,
+          );
+          return true;
+        }
+      } else if (type === 'WITHDRAWAL') {
+        // Check distinct withdrawal bank accounts
+        const recentTxns = await this.prisma.transaction.findMany({
+          where: {
+            userId,
+            type: 'WITHDRAWAL',
+            createdAt: { gte: tenMinutesAgo },
+          },
+          select: { metadata: true },
+        });
+
+        const distinctAccounts = new Set<string>();
+        recentTxns.forEach((txn) => {
+          const meta = txn.metadata as any;
+          if (meta?.accountNumber) {
+            distinctAccounts.add(meta.accountNumber);
+          }
+        });
+        distinctAccounts.add(targetIdentifier);
+
+        if (distinctAccounts.size > 3) {
+          this.logger.warn(
+            `⚠️ [SuspiciousActivity] User ${userId} withdrawing to ${distinctAccounts.size} distinct accounts in 10 mins`,
+          );
+          return true;
+        }
+      }
+    } catch (e) {
+      this.logger.error(
+        `Error checking suspicious activity: ${e.message}`,
+      );
+      // Fail open (don't block on error)
+    }
+
+    return false;
+  }
+
+  /**
    * Get KYC tier limits information
    *
    * @returns All tier limits

@@ -128,7 +128,10 @@ export class VTUController {
 
   // ==================== Purchases ====================
 
-  @Throttle({ default: { limit: 30, ttl: 3600000 } }) // 30 airtime purchases per hour
+  @Throttle({
+    default: { limit: 30, ttl: 3600000 }, // 30 airtime purchases per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('airtime/purchase')
   @HttpCode(HttpStatus.CREATED)
   @Idempotent()
@@ -139,7 +142,10 @@ export class VTUController {
     return this.vtuService.purchaseAirtime(userId, dto);
   }
 
-  @Throttle({ default: { limit: 30, ttl: 3600000 } }) // 30 data purchases per hour
+  @Throttle({
+    default: { limit: 30, ttl: 3600000 }, // 30 data purchases per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('data/purchase')
   @HttpCode(HttpStatus.CREATED)
   @Idempotent()
@@ -147,7 +153,10 @@ export class VTUController {
     return this.vtuService.purchaseDataBundle(userId, dto);
   }
 
-  @Throttle({ default: { limit: 20, ttl: 3600000 } }) // 20 cable TV payments per hour
+  @Throttle({
+    default: { limit: 20, ttl: 3600000 }, // 20 cable TV payments per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('cable-tv/pay')
   @HttpCode(HttpStatus.CREATED)
   payCableTVSubscription(
@@ -172,7 +181,10 @@ export class VTUController {
     return this.vtuService.payShowmaxSubscription(userId, dto);
   }
 
-  @Throttle({ default: { limit: 20, ttl: 3600000 } }) // 20 electricity payments per hour
+  @Throttle({
+    default: { limit: 20, ttl: 3600000 }, // 20 electricity payments per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('electricity/pay')
   @HttpCode(HttpStatus.CREATED)
   payElectricityBill(
@@ -217,7 +229,10 @@ export class VTUController {
     return this.vtuService.verifyJAMBProfile(dto.profileId, dto.variationCode);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 10 JAMB purchases per hour
+  @Throttle({
+    default: { limit: 10, ttl: 3600000 }, // 10 JAMB purchases per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('education/jamb/purchase')
   @HttpCode(HttpStatus.CREATED)
   purchaseJAMBPin(
@@ -227,7 +242,10 @@ export class VTUController {
     return this.vtuService.purchaseJAMBPin(userId, dto);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 10 WAEC purchases per hour
+  @Throttle({
+    default: { limit: 10, ttl: 3600000 }, // 10 WAEC purchases per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('education/waec-registration/purchase')
   @HttpCode(HttpStatus.CREATED)
   purchaseWAECRegistration(
@@ -237,7 +255,10 @@ export class VTUController {
     return this.vtuService.purchaseWAECRegistration(userId, dto);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 10 WAEC purchases per hour
+  @Throttle({
+    default: { limit: 10, ttl: 3600000 }, // 10 WAEC purchases per hour
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('education/waec-result/purchase')
   @HttpCode(HttpStatus.CREATED)
   purchaseWAECResult(

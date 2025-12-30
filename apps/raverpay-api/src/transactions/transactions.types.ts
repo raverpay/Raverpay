@@ -105,3 +105,12 @@ export interface SetTagResponse {
   tag: string;
   message: string;
 }
+
+// Client Metadata for tracking
+export interface ClientMetadata {
+  platform: string;
+  appVersion: string;
+  deviceId: string;
+  deviceName: string;
+  ip: string;
+}

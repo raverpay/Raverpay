@@ -32,6 +32,7 @@ import {
   VirtualAccountResponse,
   P2PTransferResponse,
   SetTagResponse,
+  ClientMetadata,
 } from './transactions.types';
 
 @Injectable()
@@ -232,6 +233,7 @@ export class TransactionsService {
     userId: string,
     amount: number,
     callbackUrl?: string,
+    clientMetadata?: ClientMetadata,
   ): Promise<InitializePaymentResponse> {
     // Get user and wallet
     const user = await this.prisma.user.findUnique({
@@ -287,6 +289,7 @@ export class TransactionsService {
           provider: 'paystack',
           requestedAmount: amount,
           processingFee: feeCalc.fee,
+          ...clientMetadata, // Store tracking headers
         },
       },
     });
@@ -982,9 +985,27 @@ export class TransactionsService {
     bankCode: string,
     pin: string,
     narration?: string,
+    clientMetadata?: ClientMetadata,
   ): Promise<WithdrawalResponse> {
     // Verify PIN first (outside transaction)
     await this.usersService.verifyPin(userId, pin);
+
+    // Layer 5: Suspicious Activity Check
+    const isSuspicious = await this.limitsService.checkSuspiciousActivity(
+      userId,
+      'WITHDRAWAL',
+      accountNumber,
+    );
+
+    if (isSuspicious) {
+      await this.walletService.lockWallet(
+        userId,
+        'Automated Lock: High velocity withdrawals to distinct accounts',
+      );
+      throw new ForbiddenException(
+        'Your account has been locked due to suspicious activity detected.',
+      );
+    }
 
     // Get user info only (wallet will be locked inside transaction)
     const user = await this.prisma.user.findUnique({
@@ -1097,10 +1118,10 @@ export class TransactionsService {
                   `Withdrawal of ₦${amount.toLocaleString()} to ${accountName}`,
                 metadata: {
                   accountNumber,
-                  accountName,
                   bankCode,
                   bankName,
                   provider: 'paystack',
+                  ...clientMetadata, // Store tracking headers
                 },
               },
             });
@@ -1619,6 +1640,7 @@ export class TransactionsService {
     recipientTag: string,
     amount: number,
     message?: string,
+    clientMetadata?: ClientMetadata,
   ): Promise<P2PTransferResponse> {
     const { validateTag, isReservedTag } = await import(
       './constants/reserved-tags.js'
@@ -1695,6 +1717,23 @@ export class TransactionsService {
     // 3. Prevent self-transfer
     if (sender.id === receiver.id) {
       throw new BadRequestException('You cannot send money to yourself');
+    }
+
+    // Layer 5: Suspicious Activity Check
+    const isSuspicious = await this.limitsService.checkSuspiciousActivity(
+      senderId,
+      'P2P',
+      receiver.id,
+    );
+
+    if (isSuspicious) {
+      await this.walletService.lockWallet(
+        senderId,
+        'Automated Lock: High velocity P2P transfers to distinct recipients',
+      );
+      throw new ForbiddenException(
+        'Your account has been locked due to suspicious activity detected.',
+      );
     }
 
     // 4. Validate amount
@@ -1886,6 +1925,7 @@ export class TransactionsService {
                   recipientName: `${receiver.firstName} ${receiver.lastName}`,
                   message,
                   transferType: 'p2p',
+                  ...clientMetadata, // Store tracking headers
                 },
               },
             });

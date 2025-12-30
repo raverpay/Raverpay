@@ -11,6 +11,8 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Idempotent } from '../common/decorators/idempotent.decorator';
+import { GetClientMetadata } from '../common/decorators/get-client-metadata.decorator';
+import type { ClientMetadata } from './transactions.types';
 import { TransactionsService } from './transactions.service';
 import {
   FundWalletDto,
@@ -28,15 +30,23 @@ export class TransactionsController {
    * Initialize card payment
    * POST /api/transactions/fund/card
    */
-  @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 10 card funding attempts per hour per user
+  @Throttle({
+    default: { limit: 10, ttl: 3600000 }, // 10 card funding attempts per hour per user
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('fund/card')
   @UseGuards(JwtAuthGuard)
   @Idempotent()
-  async fundViaCard(@GetUser('id') userId: string, @Body() dto: FundWalletDto) {
+  async fundViaCard(
+    @GetUser('id') userId: string,
+    @Body() dto: FundWalletDto,
+    @GetClientMetadata() clientMetadata: ClientMetadata,
+  ) {
     return this.transactionsService.initializeCardPayment(
       userId,
       dto.amount,
       dto.callbackUrl,
+      clientMetadata,
     );
   }
 
@@ -103,11 +113,18 @@ export class TransactionsController {
    * Withdraw funds
    * POST /api/transactions/withdraw
    */
-  @Throttle({ default: { limit: 5, ttl: 3600000 } }) // 5 withdrawals per hour per user
+  @Throttle({
+    default: { limit: 5, ttl: 3600000 }, // 5 withdrawals per hour per user
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('withdraw')
   @UseGuards(JwtAuthGuard)
   @Idempotent()
-  async withdraw(@GetUser('id') userId: string, @Body() dto: WithdrawFundsDto) {
+  async withdraw(
+    @GetUser('id') userId: string,
+    @Body() dto: WithdrawFundsDto,
+    @GetClientMetadata() clientMetadata: ClientMetadata,
+  ) {
     return this.transactionsService.withdrawFunds(
       userId,
       dto.amount,
@@ -116,6 +133,7 @@ export class TransactionsController {
       dto.bankCode,
       dto.pin,
       dto.narration,
+      clientMetadata,
     );
   }
 
@@ -160,16 +178,24 @@ export class TransactionsController {
    * Send money to another user by tag
    * POST /api/transactions/send
    */
-  @Throttle({ default: { limit: 20, ttl: 3600000 } }) // 20 P2P transfers per hour per user
+  @Throttle({
+    default: { limit: 20, ttl: 3600000 }, // 20 P2P transfers per hour per user
+    burst: { limit: 1, ttl: 5000 }, // NEW: Burst limit 1 per 5s
+  })
   @Post('send')
   @UseGuards(JwtAuthGuard)
   @Idempotent()
-  async sendToUser(@GetUser('id') userId: string, @Body() dto: SendToUserDto) {
+  async sendToUser(
+    @GetUser('id') userId: string,
+    @Body() dto: SendToUserDto,
+    @GetClientMetadata() clientMetadata: ClientMetadata,
+  ) {
     return this.transactionsService.sendToUser(
       userId,
       dto.recipientTag,
       dto.amount,
       dto.message,
+      clientMetadata,
     );
   }
 

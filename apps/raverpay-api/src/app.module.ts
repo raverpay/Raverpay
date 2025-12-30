@@ -66,6 +66,11 @@ import { DiagnosticModule } from './diagnostic/diagnostic.module';
             ttl: seconds(10), // 10 second window
             limit: 20, // 20 requests per 10 seconds (burst protection)
           },
+          {
+            name: 'burst',
+            ttl: seconds(5), // 5 second window
+            limit: 1, // 1 request per 5 seconds (strict burst protection)
+          },
         ],
         storage: new RedisThrottlerStorage(configService),
       }),

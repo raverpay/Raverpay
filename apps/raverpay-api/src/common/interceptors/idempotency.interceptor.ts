@@ -57,8 +57,28 @@ export class IdempotencyInterceptor implements NestInterceptor {
       `[Idempotency] Endpoint: ${request.method} ${request.path}, Has key: ${!!idempotencyKey}`,
     );
 
-    // If no key provided, allow request to proceed (optional idempotency)
+    // If no key provided
     if (!idempotencyKey) {
+      // Check if this is a mandatory endpoint
+      const mandatoryEndpoints = [
+        '/transactions/withdraw',
+        '/transactions/send',
+        '/transactions/fund/card',
+        '/vtu/airtime/purchase',
+        '/vtu/data/purchase',
+        '/vtu/cable',
+        '/vtu/electricity',
+      ];
+      
+      const isMandatory = mandatoryEndpoints.some(ep => request.path.includes(ep));
+      
+      if (isMandatory) {
+        this.logger.warn(
+          `[Idempotency] BLOCKED: Missing mandatory idempotency key for ${request.method} ${request.path}`,
+        );
+        throw new BadRequestException('Idempotency-Key header is required for this operation');
+      }
+
       this.logger.log(
         `[Idempotency] No idempotency key provided for ${request.method} ${request.path}, proceeding normally`,
       );
