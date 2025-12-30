@@ -1,0 +1,109 @@
+
+> @raverpay/raverpay-admin@0.1.0 lint /Users/joseph/Desktop/raverpay/apps/raverpay-admin
+> eslint
+
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/circle-challenge/page.tsx
+  54:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/circle-challenge/page.tsx:54:5
+  52 |     sdkRef.current = sdk;
+  53 |     console.log('[CircleSDK] SDK instance created');
+> 54 |     setStatus('ready');
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  55 |
+  56 |     return () => {
+  57 |       console.log('[CircleSDK] Cleaning up SDK instance');                                                                                                                           react-hooks/set-state-in-effect
+  67:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/circle-challenge/page.tsx:67:7
+  65 |     if (!appId || !userToken || !encryptionKey || !challengeId) {
+  66 |       console.error('[CircleSDK] Missing required parameters');
+> 67 |       setStatus('error');
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  68 |       setErrorMessage('Missing required parameters');
+  69 |       sendToReactNative('error', { error: 'Missing required parameters' });
+  70 |       return;  react-hooks/set-state-in-effect
+  99:38  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/circle-wallets/settings/page.tsx
+  34:24  warning  'setMaskedApiKey' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  35:30  warning  'setMaskedEntitySecret' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  48:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+  67:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/circle-wallets/transactions/[id]/page.tsx
+  18:10  warning  'useState' is defined but never used         @typescript-eslint/no-unused-vars
+  25:22  warning  'truncateAddress' is defined but never used  @typescript-eslint/no-unused-vars
+  63:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/circle-wallets/users/page.tsx
+  7:62  warning  'XCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/kyc/page.tsx
+  5:10  warning  'useDebouncedValue' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/page.tsx
+  19:3  warning  'Mail' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/rate-limits/violations/page.tsx
+  42:6  warning  React Hook useEffect has a missing dependency: 'fetchViolations'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/support/canned-responses/page.tsx
+  10:29  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/support/emails/[id]/page.tsx
+  32:10  warning  'formatDate' is defined but never used  @typescript-eslint/no-unused-vars
+  33:20  warning  'Message' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/support/help-center/page.tsx
+  5:8   warning  'Link' is defined but never used      @typescript-eslint/no-unused-vars
+  6:32  warning  'BookOpen' is defined but never used  @typescript-eslint/no-unused-vars
+  6:54  warning  'Eye' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/support/tickets/[id]/page.tsx
+  34:10  warning  'getStatusBadgeVariant' is defined but never used    @typescript-eslint/no-unused-vars
+  49:10  warning  'getPriorityBadgeVariant' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/support/tickets/page.tsx
+  32:10  warning  'formatDate' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/venly-wallets/analytics/page.tsx
+  5:33  warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/venly-wallets/conversions/page.tsx
+  6:42  warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/venly-wallets/exchange-rates/page.tsx
+  12:10  warning  'Label' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/venly-wallets/transactions/page.tsx
+   8:3   warning  'Eye' is defined but never used             @typescript-eslint/no-unused-vars
+  49:22  warning  'formatCurrency' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/dashboard/virtual-accounts/failed/page.tsx
+  13:3  warning  'CreditCard' is defined but never used  @typescript-eslint/no-unused-vars
+  17:3  warning  'XCircle' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/app/layout.tsx
+  2:17  warning  'Barlow' is defined but never used  @typescript-eslint/no-unused-vars
+  2:25  warning  'Geist' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/joseph/Desktop/raverpay/apps/raverpay-admin/components/dashboard/sidebar.tsx
+  29:3  warning  'Coins' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 33 problems (3 errors, 30 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.

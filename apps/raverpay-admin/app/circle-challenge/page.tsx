@@ -51,6 +51,7 @@ function CircleChallengeContent() {
     const sdk = new W3SSdk();
     sdkRef.current = sdk;
     console.log('[CircleSDK] SDK instance created');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStatus('ready');
 
     return () => {
@@ -64,6 +65,7 @@ function CircleChallengeContent() {
     if (status !== 'ready') return;
     if (!appId || !userToken || !encryptionKey || !challengeId) {
       console.error('[CircleSDK] Missing required parameters');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus('error');
       setErrorMessage('Missing required parameters');
       sendToReactNative('error', { error: 'Missing required parameters' });
@@ -96,7 +98,7 @@ function CircleChallengeContent() {
     console.log('[CircleSDK] Executing challenge:', challengeId);
     // Following Circle's reference implementation - only check for error
     // If no error, the challenge completed successfully
-    sdk.execute(challengeId, (error: any) => {
+    sdk.execute(challengeId, (error: { code?: number; message?: string } | null) => {
       if (error) {
         console.error('=== Circle SDK Error ===');
         console.error('Full error object:', error);
