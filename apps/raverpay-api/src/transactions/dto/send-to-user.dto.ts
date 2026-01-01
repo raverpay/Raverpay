@@ -11,7 +11,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SendToUserDto {
   @ApiProperty({
-    description: 'Recipient user tag (3-20 characters, lowercase, alphanumeric and underscores)',
+    description:
+      'Recipient user tag (3-20 characters, lowercase, alphanumeric and underscores)',
     example: 'john_doe',
     minLength: 3,
     maxLength: 20,

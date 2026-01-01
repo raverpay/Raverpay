@@ -35,7 +35,8 @@ export class CreateCircleWalletDto {
   blockchain?: string;
 
   @ApiPropertyOptional({
-    description: 'Account type (Smart Contract Account or Externally Owned Account)',
+    description:
+      'Account type (Smart Contract Account or Externally Owned Account)',
     example: 'SCA',
     enum: ['SCA', 'EOA'],
   })
@@ -217,7 +218,8 @@ export class CCTPTransferDto {
   amount: string;
 
   @ApiPropertyOptional({
-    description: 'Transfer type (STANDARD uses native CCTP, FAST uses liquidity pools)',
+    description:
+      'Transfer type (STANDARD uses native CCTP, FAST uses liquidity pools)',
     example: 'STANDARD',
     enum: ['STANDARD', 'FAST'],
   })
@@ -403,10 +405,7 @@ export class InitializeUserWalletDto {
   @ApiProperty({
     description: 'Blockchain(s) to create wallet on',
     example: 'ETH-SEPOLIA',
-    oneOf: [
-      { type: 'string' },
-      { type: 'array', items: { type: 'string' } },
-    ],
+    oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
   })
   @IsNotEmpty()
   blockchain: string | string[];
@@ -430,7 +429,8 @@ export class InitializeUserWalletDto {
   userToken: string;
 
   @ApiPropertyOptional({
-    description: 'Whether this is an existing user (uses createWallet instead of createUserPinWithWallets)',
+    description:
+      'Whether this is an existing user (uses createWallet instead of createUserPinWithWallets)',
     example: false,
   })
   @IsOptional()
@@ -476,7 +476,7 @@ export class SecurityQuestionItemDto {
 
   @ApiProperty({
     description: 'Security question text',
-    example: 'What is your mother\'s maiden name?',
+    example: "What is your mother's maiden name?",
   })
   @IsString()
   @IsNotEmpty()
@@ -514,4 +514,3 @@ export class SaveSecurityQuestionsDto {
   @Type(() => SecurityQuestionItemDto)
   questions: SecurityQuestionItemDto[];
 }
-

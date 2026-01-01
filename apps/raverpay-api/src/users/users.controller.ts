@@ -50,7 +50,10 @@ export class UsersController {
    * GET /api/users/profile
    */
   @Get('profile')
-  @ApiOperation({ summary: 'Get Profile', description: 'Get current user profile details' })
+  @ApiOperation({
+    summary: 'Get Profile',
+    description: 'Get current user profile details',
+  })
   @ApiResponse({ status: 200, description: 'Profile retrieved' })
   async getProfile(@GetUser('id') userId: string) {
     return this.usersService.getProfile(userId);
@@ -61,7 +64,10 @@ export class UsersController {
    * PUT /api/users/profile
    */
   @Put('profile')
-  @ApiOperation({ summary: 'Update Profile', description: 'Update user profile information' })
+  @ApiOperation({
+    summary: 'Update Profile',
+    description: 'Update user profile information',
+  })
   @ApiResponse({ status: 200, description: 'Profile updated' })
   async updateProfile(
     @GetUser('id') userId: string,
@@ -76,7 +82,10 @@ export class UsersController {
    */
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Change Password', description: 'Change user login password' })
+  @ApiOperation({
+    summary: 'Change Password',
+    description: 'Change user login password',
+  })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid current password' })
   async changePassword(
@@ -92,7 +101,10 @@ export class UsersController {
    */
   @Post('verify-bvn')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify BVN', description: 'Complete Tier 2 KYC with BVN' })
+  @ApiOperation({
+    summary: 'Verify BVN',
+    description: 'Complete Tier 2 KYC with BVN',
+  })
   @ApiResponse({ status: 200, description: 'BVN verified successfully' })
   @ApiResponse({ status: 400, description: 'Invalid BVN details' })
   async verifyBvn(
@@ -124,7 +136,10 @@ export class UsersController {
    */
   @Post('send-email-verification')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Send Email Verification', description: 'Send/Resend email verification code' })
+  @ApiOperation({
+    summary: 'Send Email Verification',
+    description: 'Send/Resend email verification code',
+  })
   @ApiResponse({ status: 200, description: 'Verification email sent' })
   async sendEmailVerification(@GetUser('id') userId: string) {
     return this.usersService.sendEmailVerification(userId);
@@ -136,7 +151,10 @@ export class UsersController {
    */
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify Email', description: 'Confirm email address with code' })
+  @ApiOperation({
+    summary: 'Verify Email',
+    description: 'Confirm email address with code',
+  })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired code' })
   async verifyEmail(
@@ -152,7 +170,10 @@ export class UsersController {
    */
   @Post('send-phone-verification')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Send Phone Verification', description: 'Send/Resend SMS verification code' })
+  @ApiOperation({
+    summary: 'Send Phone Verification',
+    description: 'Send/Resend SMS verification code',
+  })
   @ApiResponse({ status: 200, description: 'Verification SMS sent' })
   async sendPhoneVerification(@GetUser('id') userId: string) {
     return this.usersService.sendPhoneVerification(userId);
@@ -164,7 +185,10 @@ export class UsersController {
    */
   @Post('verify-phone')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify Phone', description: 'Confirm phone number with code' })
+  @ApiOperation({
+    summary: 'Verify Phone',
+    description: 'Confirm phone number with code',
+  })
   @ApiResponse({ status: 200, description: 'Phone confirmed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired code' })
   async verifyPhone(
@@ -180,7 +204,10 @@ export class UsersController {
    */
   @Post('set-pin')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Set Transaction PIN', description: 'Set initial transaction PIN' })
+  @ApiOperation({
+    summary: 'Set Transaction PIN',
+    description: 'Set initial transaction PIN',
+  })
   @ApiResponse({ status: 200, description: 'PIN set successfully' })
   async setPin(@GetUser('id') userId: string, @Body() setPinDto: SetPinDto) {
     return this.usersService.setPin(
@@ -196,7 +223,10 @@ export class UsersController {
    */
   @Post('verify-pin')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify PIN', description: 'Verify current transaction PIN' })
+  @ApiOperation({
+    summary: 'Verify PIN',
+    description: 'Verify current transaction PIN',
+  })
   @ApiResponse({ status: 200, description: 'PIN verification result' })
   async verifyPin(
     @GetUser('id') userId: string,
@@ -212,7 +242,10 @@ export class UsersController {
    */
   @Post('change-pin')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Change PIN', description: 'Change transaction PIN' })
+  @ApiOperation({
+    summary: 'Change PIN',
+    description: 'Change transaction PIN',
+  })
   @ApiResponse({ status: 200, description: 'PIN changed successfully' })
   async changePin(
     @GetUser('id') userId: string,
@@ -245,7 +278,10 @@ export class UsersController {
       },
     },
   })
-  @ApiOperation({ summary: 'Upload Avatar', description: 'Upload user profile picture' })
+  @ApiOperation({
+    summary: 'Upload Avatar',
+    description: 'Upload user profile picture',
+  })
   @ApiResponse({ status: 200, description: 'Avatar uploaded successfully' })
   async uploadAvatar(
     @GetUser('id') userId: string,
@@ -263,7 +299,10 @@ export class UsersController {
    */
   @Delete('avatar')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete Avatar', description: 'Remove user profile picture' })
+  @ApiOperation({
+    summary: 'Delete Avatar',
+    description: 'Remove user profile picture',
+  })
   @ApiResponse({ status: 200, description: 'Avatar deleted successfully' })
   async deleteAvatar(@GetUser('id') userId: string) {
     return this.usersService.deleteAvatar(userId);
@@ -275,7 +314,10 @@ export class UsersController {
    */
   @Post('request-account-deletion')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request Account Deletion', description: 'Request permanent account deletion' })
+  @ApiOperation({
+    summary: 'Request Account Deletion',
+    description: 'Request permanent account deletion',
+  })
   @ApiResponse({ status: 200, description: 'Deletion request received' })
   async requestAccountDeletion(
     @GetUser('id') userId: string,
@@ -293,7 +335,10 @@ export class UsersController {
    */
   @Patch('push-token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update Push Token', description: 'Update Expo push notification token' })
+  @ApiOperation({
+    summary: 'Update Push Token',
+    description: 'Update Expo push notification token',
+  })
   @ApiBody({
     schema: {
       type: 'object',

@@ -6,7 +6,11 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { webcrypto } from 'crypto';
-import { setupPublicSwagger, setupAdminSwagger, shouldEnableSwagger } from './config/swagger.config';
+import {
+  setupPublicSwagger,
+  setupAdminSwagger,
+  shouldEnableSwagger,
+} from './config/swagger.config';
 
 // Polyfill for crypto.randomUUID() in Node.js v18
 if (!globalThis.crypto) {
@@ -121,12 +125,10 @@ async function bootstrap() {
   logger.log('   - P2P transfers: 20 attempts/hour');
   logger.log('   - Admin operations: 100 requests/minute');
 
-
-  
   if (shouldEnableSwagger()) {
     setupPublicSwagger(app);
     logger.log('📚 Public Swagger documentation enabled at /api/docs');
-    
+
     // Admin Swagger only in non-production environments
     if (process.env.NODE_ENV !== 'production') {
       setupAdminSwagger(app);
@@ -140,9 +142,13 @@ async function bootstrap() {
   logger.log(`🚀 RaverPay API running on http://localhost:${port}`);
   logger.log(`📚 API endpoints available at http://localhost:${port}/api`);
   if (shouldEnableSwagger()) {
-    logger.log(`📖 Public API documentation at http://localhost:${port}/api/docs`);
+    logger.log(
+      `📖 Public API documentation at http://localhost:${port}/api/docs`,
+    );
     if (process.env.NODE_ENV !== 'production') {
-      logger.log(`🔒 Admin API documentation at http://localhost:${port}/api/admin/docs`);
+      logger.log(
+        `🔒 Admin API documentation at http://localhost:${port}/api/admin/docs`,
+      );
     }
   }
 }

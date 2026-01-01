@@ -1,5 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AdminAdvancedAnalyticsService } from './admin-advanced-analytics.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -18,7 +23,11 @@ export class AdminAdvancedAnalyticsController {
   @ApiOperation({ summary: 'Get revenue analytics over time' })
   @ApiQuery({ name: 'startDate', required: true, type: String })
   @ApiQuery({ name: 'endDate', required: true, type: String })
-  @ApiQuery({ name: 'interval', required: false, enum: ['day', 'week', 'month'] })
+  @ApiQuery({
+    name: 'interval',
+    required: false,
+    enum: ['day', 'week', 'month'],
+  })
   @Get('revenue-time-series')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async getRevenueTimeSeries(
@@ -36,7 +45,11 @@ export class AdminAdvancedAnalyticsController {
   @ApiOperation({ summary: 'Get transaction trends over time' })
   @ApiQuery({ name: 'startDate', required: true, type: String })
   @ApiQuery({ name: 'endDate', required: true, type: String })
-  @ApiQuery({ name: 'interval', required: false, enum: ['day', 'week', 'month'] })
+  @ApiQuery({
+    name: 'interval',
+    required: false,
+    enum: ['day', 'week', 'month'],
+  })
   @Get('transaction-trends')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async getTransactionTrends(
@@ -54,7 +67,11 @@ export class AdminAdvancedAnalyticsController {
   @ApiOperation({ summary: 'Get user growth metrics' })
   @ApiQuery({ name: 'startDate', required: true, type: String })
   @ApiQuery({ name: 'endDate', required: true, type: String })
-  @ApiQuery({ name: 'interval', required: false, enum: ['day', 'week', 'month'] })
+  @ApiQuery({
+    name: 'interval',
+    required: false,
+    enum: ['day', 'week', 'month'],
+  })
   @Get('user-growth')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async getUserGrowth(

@@ -8,7 +8,14 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetUser } from '../../auth/decorators/get-user.decorator';
@@ -121,7 +128,9 @@ export class AdminUsersController {
 
   @ApiOperation({ summary: 'Unlock user account (rate limits)' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { reason: { type: 'string' } } },
+  })
   @Patch(':userId/unlock')
   async unlockRateLimitAccount(
     @GetUser('id') adminUserId: string,

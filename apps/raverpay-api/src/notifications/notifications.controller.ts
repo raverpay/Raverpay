@@ -29,7 +29,10 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get Notifications', description: 'Get user notifications' })
+  @ApiOperation({
+    summary: 'Get Notifications',
+    description: 'Get user notifications',
+  })
   @ApiResponse({ status: 200, description: 'Notifications retrieved' })
   async findAll(
     @GetUser('id') userId: string,
@@ -39,7 +42,10 @@ export class NotificationsController {
   }
 
   @Put(':id/read')
-  @ApiOperation({ summary: 'Mark As Read', description: 'Mark a notification as read' })
+  @ApiOperation({
+    summary: 'Mark As Read',
+    description: 'Mark a notification as read',
+  })
   @ApiParam({ name: 'id', description: 'Notification ID' })
   @ApiResponse({ status: 200, description: 'Notification marked as read' })
   async markAsRead(
@@ -50,14 +56,20 @@ export class NotificationsController {
   }
 
   @Put('read-all')
-  @ApiOperation({ summary: 'Mark All As Read', description: 'Mark all notifications as read' })
+  @ApiOperation({
+    summary: 'Mark All As Read',
+    description: 'Mark all notifications as read',
+  })
   @ApiResponse({ status: 200, description: 'All notifications marked as read' })
   async markAllAsRead(@GetUser('id') userId: string) {
     return this.notificationsService.markAllAsRead(userId);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete Notification', description: 'Delete a notification' })
+  @ApiOperation({
+    summary: 'Delete Notification',
+    description: 'Delete a notification',
+  })
   @ApiParam({ name: 'id', description: 'Notification ID' })
   @ApiResponse({ status: 200, description: 'Notification deleted' })
   async delete(

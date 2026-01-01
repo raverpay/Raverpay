@@ -8,7 +8,14 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { UserRole, VTUServiceType, TransactionStatus } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -109,7 +116,9 @@ export class AdminVTUController {
 
   @ApiOperation({ summary: 'Mark order as completed (manual)' })
   @ApiParam({ name: 'orderId', description: 'Order ID' })
-  @ApiBody({ schema: { type: 'object', properties: { notes: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { notes: { type: 'string' } } },
+  })
   @Post('orders/:orderId/mark-completed')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async markCompleted(

@@ -22,8 +22,6 @@ import {
 } from '@nestjs/swagger';
 import { PaystackWebhookDto } from './dto/paystack-webhook.dto';
 
-
-
 @ApiTags('Payments')
 @Controller('payments/webhooks')
 export class PaymentsController {
@@ -41,7 +39,10 @@ export class PaymentsController {
    * POST /api/payments/webhooks/paystack
    */
   @Post('paystack')
-  @ApiOperation({ summary: 'Paystack Webhook', description: 'Handle Paystack payment events' })
+  @ApiOperation({
+    summary: 'Paystack Webhook',
+    description: 'Handle Paystack payment events',
+  })
   @ApiHeader({
     name: 'x-paystack-signature',
     description: 'Paystack signature for verification',

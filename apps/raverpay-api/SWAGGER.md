@@ -7,26 +7,31 @@ This document describes the Swagger/OpenAPI documentation implementation for the
 ## 🚀 Accessing the Documentation
 
 ### Local Development
+
 ```
 http://localhost:3001/api/docs
 ```
 
 ### Staging
+
 ```
 https://api-staging.raverpay.com/api/docs
 ```
 
 ### Production
+
 ```
 https://api.raverpay.com/api/docs
 ```
 
 **Note:** Swagger is enabled by default in development and staging environments. In production, it's disabled by default for security. To enable in production, set the environment variable:
+
 ```bash
 ENABLE_SWAGGER=true
 ```
 
 To disable in development:
+
 ```bash
 DISABLE_SWAGGER=true
 ```
@@ -36,6 +41,7 @@ DISABLE_SWAGGER=true
 ### ✅ Fully Documented Modules
 
 #### Authentication (`/api/auth`)
+
 - **POST /auth/register** - Register new user
 - **POST /auth/login** - User login with device fingerprinting
 - **POST /auth/refresh** - Refresh access token
@@ -47,6 +53,7 @@ DISABLE_SWAGGER=true
 - **POST /auth/logout** - Logout user
 
 #### Wallet (`/api/wallet`)
+
 - **GET /api/wallet** - Get wallet balance
 - **GET /api/wallet/limits** - Get transaction limits
 - **POST /api/wallet/lock** - Lock wallet
@@ -55,13 +62,16 @@ DISABLE_SWAGGER=true
 - **GET /api/wallet/transactions/:id** - Get transaction details
 
 ### 🔄 Partially Documented
+
 - Circle endpoints
 - VTU endpoints
 - Admin endpoints
 - Webhook handlers
 
 ### ⏳ To Be Documented
+
 The following modules still need comprehensive documentation:
+
 - Payments
 - Transactions
 - Crypto
@@ -187,13 +197,7 @@ export class CreateUserDto {
 #### Adding Documentation to a Controller
 
 ```typescript
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -207,7 +211,6 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @ApiTags('Users')
 @ApiBearerAuth('JWT-auth')
 export class UsersController {
-  
   @Get()
   @ApiOperation({
     summary: 'Get all users',
@@ -255,16 +258,18 @@ export class UsersController {
 #### Using Reusable Response Decorators
 
 ```typescript
-import { ApiStandardResponses, ApiRateLimitResponse } from '../common/decorators/api-responses.decorator';
+import {
+  ApiStandardResponses,
+  ApiRateLimitResponse,
+} from '../common/decorators/api-responses.decorator';
 
 @Controller('payments')
 export class PaymentsController {
-  
   @Post('fund')
   @ApiOperation({ summary: 'Fund wallet' })
   @ApiResponse({ status: 200, description: 'Wallet funded successfully' })
-  @ApiStandardResponses()  // Adds 401, 500 responses
-  @ApiRateLimitResponse()  // Adds 429 response with headers
+  @ApiStandardResponses() // Adds 401, 500 responses
+  @ApiRateLimitResponse() // Adds 429 response with headers
   async fundWallet() {
     // Implementation
   }
@@ -282,6 +287,7 @@ pnpm swagger:export
 ```
 
 This generates a JSON file that can be:
+
 - Version controlled
 - Used for frontend type generation
 - Imported into Postman/Insomnia
@@ -301,16 +307,20 @@ npx openapi-typescript ./openapi.json -o ./types/api.ts
 ```
 
 Then use in your frontend:
+
 ```typescript
 import type { paths } from './types/api';
 
-type LoginRequest = paths['/api/auth/login']['post']['requestBody']['content']['application/json'];
-type LoginResponse = paths['/api/auth/login']['post']['responses']['200']['content']['application/json'];
+type LoginRequest =
+  paths['/api/auth/login']['post']['requestBody']['content']['application/json'];
+type LoginResponse =
+  paths['/api/auth/login']['post']['responses']['200']['content']['application/json'];
 ```
 
 ## 📊 Statistics
 
 Current documentation coverage:
+
 - **Total Endpoints**: 100+ (across all modules)
 - **Documented Endpoints**: 15+ (Auth + Wallet)
 - **Total DTOs**: 100+
@@ -320,24 +330,28 @@ Current documentation coverage:
 ## 🎯 Next Steps
 
 ### Priority 1: Core User Features
+
 - [ ] Document Payments module
 - [ ] Document Transactions module
 - [ ] Document Circle module (USDC operations)
 - [ ] Document VTU module
 
 ### Priority 2: Admin Features
+
 - [ ] Document Admin Users module
 - [ ] Document Admin Wallets module
 - [ ] Document Admin Transactions module
 - [ ] Document Admin Analytics module
 
 ### Priority 3: Advanced Features
+
 - [ ] Document Webhook handlers
 - [ ] Document Crypto module
 - [ ] Document Virtual Accounts module
 - [ ] Document Notifications module
 
 ### Priority 4: Polish
+
 - [ ] Add more response examples
 - [ ] Add request examples for complex operations
 - [ ] Document error codes
@@ -381,6 +395,7 @@ When adding new endpoints:
 ## 📞 Support
 
 For questions about API documentation:
+
 - **Slack**: #api-documentation
 - **Email**: dev@raverpay.com
 - **Documentation**: This file

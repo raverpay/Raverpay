@@ -37,7 +37,8 @@ export class WalletController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get wallet balance',
-    description: 'Retrieve current wallet balance and details for the authenticated user',
+    description:
+      'Retrieve current wallet balance and details for the authenticated user',
   })
   @ApiResponse({
     status: 200,
@@ -90,7 +91,10 @@ export class WalletController {
    */
   @Post('lock')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Lock wallet', description: 'Lock user wallet to prevent transactions' })
+  @ApiOperation({
+    summary: 'Lock wallet',
+    description: 'Lock user wallet to prevent transactions',
+  })
   @ApiResponse({ status: 200, description: 'Wallet locked successfully' })
   @ApiResponse({ status: 400, description: 'Wallet already locked' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -108,7 +112,10 @@ export class WalletController {
    */
   @Post('unlock')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Unlock wallet', description: 'Unlock a locked wallet (admin function)' })
+  @ApiOperation({
+    summary: 'Unlock wallet',
+    description: 'Unlock a locked wallet (admin function)',
+  })
   @ApiResponse({ status: 200, description: 'Wallet unlocked successfully' })
   @ApiResponse({ status: 400, description: 'Wallet not locked' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -130,11 +137,31 @@ export class WalletController {
    */
   @Get('transactions')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get transaction history', description: 'Retrieve paginated transaction history with optional filters' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
-  @ApiQuery({ name: 'type', required: false, description: 'Filter by transaction type' })
-  @ApiResponse({ status: 200, description: 'Transactions retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get transaction history',
+    description: 'Retrieve paginated transaction history with optional filters',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by transaction type',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Transactions retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getTransactionHistory(
     @GetUser('id') userId: string,
@@ -149,9 +176,15 @@ export class WalletController {
    */
   @Get('transactions/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get transaction details', description: 'Retrieve details of a specific transaction' })
+  @ApiOperation({
+    summary: 'Get transaction details',
+    description: 'Retrieve details of a specific transaction',
+  })
   @ApiParam({ name: 'id', description: 'Transaction ID' })
-  @ApiResponse({ status: 200, description: 'Transaction retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Transaction retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
   async getTransactionById(

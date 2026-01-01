@@ -32,7 +32,10 @@ export class DeviceController {
    * GET /api/devices
    */
   @Get()
-  @ApiOperation({ summary: 'Get User Devices', description: 'List all devices logged into the account' })
+  @ApiOperation({
+    summary: 'Get User Devices',
+    description: 'List all devices logged into the account',
+  })
   @ApiResponse({ status: 200, description: 'Devices retrieved' })
   async getUserDevices(@GetUser('id') userId: string) {
     const devices = await this.deviceService.getUserDevices(userId);
@@ -47,7 +50,10 @@ export class DeviceController {
    * GET /api/devices/active
    */
   @Get('active')
-  @ApiOperation({ summary: 'Get Active Device', description: 'Get details of the currently used device' })
+  @ApiOperation({
+    summary: 'Get Active Device',
+    description: 'Get details of the currently used device',
+  })
   @ApiResponse({ status: 200, description: 'Active device retrieved' })
   async getActiveDevice(@GetUser('id') userId: string) {
     const device = await this.deviceService.getActiveDevice(userId);
@@ -63,7 +69,10 @@ export class DeviceController {
    */
   @Post(':deviceId/logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout Device', description: 'Logout user from a specific device' })
+  @ApiOperation({
+    summary: 'Logout Device',
+    description: 'Logout user from a specific device',
+  })
   @ApiParam({ name: 'deviceId', description: 'Device ID to logout' })
   @ApiResponse({ status: 200, description: 'Device logged out' })
   async logoutDevice(
@@ -83,7 +92,10 @@ export class DeviceController {
    */
   @Post(':deviceId/trust')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Trust Device', description: 'Mark device as trusted to skip OTP' })
+  @ApiOperation({
+    summary: 'Trust Device',
+    description: 'Mark device as trusted to skip OTP',
+  })
   @ApiParam({ name: 'deviceId', description: 'Device ID to trust' })
   @ApiResponse({ status: 200, description: 'Device trusted' })
   async trustDevice(

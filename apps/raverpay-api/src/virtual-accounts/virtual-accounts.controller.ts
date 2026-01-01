@@ -51,8 +51,14 @@ export class VirtualAccountsController {
    */
   @Post('request')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request Virtual Account', description: 'Request a dedicated NUBAN account' })
-  @ApiResponse({ status: 200, description: 'Virtual account request initiated or retrieved' })
+  @ApiOperation({
+    summary: 'Request Virtual Account',
+    description: 'Request a dedicated NUBAN account',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Virtual account request initiated or retrieved',
+  })
   async requestVirtualAccount(
     @Request() req,
     @Body() dto: RequestVirtualAccountDto,
@@ -66,8 +72,14 @@ export class VirtualAccountsController {
    */
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get My Virtual Account', description: 'Get details of the assigned virtual account' })
-  @ApiResponse({ status: 200, description: 'Virtual account details retrieved' })
+  @ApiOperation({
+    summary: 'Get My Virtual Account',
+    description: 'Get details of the assigned virtual account',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Virtual account details retrieved',
+  })
   async getMyVirtualAccount(@Request() req) {
     return this.virtualAccountsService.getVirtualAccount(req.user.id);
   }
@@ -78,7 +90,10 @@ export class VirtualAccountsController {
    */
   @Get('providers')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Providers', description: 'Get available virtual account providers' })
+  @ApiOperation({
+    summary: 'Get Providers',
+    description: 'Get available virtual account providers',
+  })
   @ApiResponse({ status: 200, description: 'Providers retrieved' })
   async getProviders() {
     return this.virtualAccountsService.getAvailableProviders();
@@ -92,7 +107,10 @@ export class VirtualAccountsController {
    */
   @Post('requery')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Requery Account', description: 'Trigger manual requery for pending transactions' })
+  @ApiOperation({
+    summary: 'Requery Account',
+    description: 'Trigger manual requery for pending transactions',
+  })
   @ApiResponse({ status: 200, description: 'Requery triggered' })
   async requeryAccount(@Request() req) {
     return this.virtualAccountsService.requeryVirtualAccount(req.user.id);

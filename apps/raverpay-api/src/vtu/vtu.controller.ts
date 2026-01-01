@@ -50,7 +50,10 @@ export class VTUController {
   // ==================== Product Catalog ====================
 
   @Get('airtime/providers')
-  @ApiOperation({ summary: 'Get airtime providers', description: 'List supported airtime providers' })
+  @ApiOperation({
+    summary: 'Get airtime providers',
+    description: 'List supported airtime providers',
+  })
   @ApiResponse({ status: 200, description: 'Providers list retrieved' })
   @HttpCode(HttpStatus.OK)
   getAirtimeProviders() {
@@ -58,8 +61,14 @@ export class VTUController {
   }
 
   @Get('data/plans/:network')
-  @ApiOperation({ summary: 'Get data plans', description: 'List data plans for specific network' })
-  @ApiParam({ name: 'network', description: 'Network provider (MTN, GLO, etc.)' })
+  @ApiOperation({
+    summary: 'Get data plans',
+    description: 'List data plans for specific network',
+  })
+  @ApiParam({
+    name: 'network',
+    description: 'Network provider (MTN, GLO, etc.)',
+  })
   @ApiResponse({ status: 200, description: 'Data plans retrieved' })
   @HttpCode(HttpStatus.OK)
   getDataPlans(@Param('network') network: string) {
@@ -67,7 +76,10 @@ export class VTUController {
   }
 
   @Get('data/sme-plans/:network')
-  @ApiOperation({ summary: 'Get SME data plans', description: 'List SME data plans (e.g. for GLO)' })
+  @ApiOperation({
+    summary: 'Get SME data plans',
+    description: 'List SME data plans (e.g. for GLO)',
+  })
   @ApiParam({ name: 'network', description: 'Network provider' })
   @ApiResponse({ status: 200, description: 'SME plans retrieved' })
   @HttpCode(HttpStatus.OK)
@@ -76,8 +88,14 @@ export class VTUController {
   }
 
   @Get('cable-tv/plans/:provider')
-  @ApiOperation({ summary: 'Get Cable TV plans', description: 'List bouquets/plans for Cable TV provider' })
-  @ApiParam({ name: 'provider', description: 'Provider (DSTV, GOTV, STARTIMES)' })
+  @ApiOperation({
+    summary: 'Get Cable TV plans',
+    description: 'List bouquets/plans for Cable TV provider',
+  })
+  @ApiParam({
+    name: 'provider',
+    description: 'Provider (DSTV, GOTV, STARTIMES)',
+  })
   @ApiResponse({ status: 200, description: 'Plans retrieved' })
   @HttpCode(HttpStatus.OK)
   getCableTVPlans(@Param('provider') provider: string) {
@@ -85,7 +103,10 @@ export class VTUController {
   }
 
   @Get('electricity/providers')
-  @ApiOperation({ summary: 'Get electricity providers', description: 'List electricity distribution companies (Discos)' })
+  @ApiOperation({
+    summary: 'Get electricity providers',
+    description: 'List electricity distribution companies (Discos)',
+  })
   @ApiResponse({ status: 200, description: 'Providers retrieved' })
   @HttpCode(HttpStatus.OK)
   getElectricityProviders() {
@@ -95,7 +116,10 @@ export class VTUController {
   // ==================== International Airtime/Data Catalog ====================
 
   @Get('international/countries')
-  @ApiOperation({ summary: 'Get international countries', description: 'List supported countries for international top-up' })
+  @ApiOperation({
+    summary: 'Get international countries',
+    description: 'List supported countries for international top-up',
+  })
   @ApiResponse({ status: 200, description: 'Countries retrieved' })
   @HttpCode(HttpStatus.OK)
   getInternationalCountries() {
@@ -103,8 +127,14 @@ export class VTUController {
   }
 
   @Get('international/product-types/:countryCode')
-  @ApiOperation({ summary: 'Get international product types', description: 'List product types for a country (e.g. Mobile Top-up, Data)' })
-  @ApiParam({ name: 'countryCode', description: 'ISO country code (e.g. GH, ZAR)' })
+  @ApiOperation({
+    summary: 'Get international product types',
+    description: 'List product types for a country (e.g. Mobile Top-up, Data)',
+  })
+  @ApiParam({
+    name: 'countryCode',
+    description: 'ISO country code (e.g. GH, ZAR)',
+  })
   @ApiResponse({ status: 200, description: 'Product types retrieved' })
   @HttpCode(HttpStatus.OK)
   getInternationalProductTypes(@Param('countryCode') countryCode: string) {
@@ -112,7 +142,10 @@ export class VTUController {
   }
 
   @Get('international/operators/:countryCode/:productTypeId')
-  @ApiOperation({ summary: 'Get international operators', description: 'List operators for a country and product type' })
+  @ApiOperation({
+    summary: 'Get international operators',
+    description: 'List operators for a country and product type',
+  })
   @ApiParam({ name: 'countryCode', description: 'ISO country code' })
   @ApiParam({ name: 'productTypeId', description: 'Product type ID' })
   @ApiResponse({ status: 200, description: 'Operators retrieved' })
@@ -128,7 +161,10 @@ export class VTUController {
   }
 
   @Get('international/variations/:operatorId/:productTypeId')
-  @ApiOperation({ summary: 'Get international variations', description: 'List amounts/packages for an operator' })
+  @ApiOperation({
+    summary: 'Get international variations',
+    description: 'List amounts/packages for an operator',
+  })
   @ApiParam({ name: 'operatorId', description: 'Operator ID' })
   @ApiParam({ name: 'productTypeId', description: 'Product type ID' })
   @ApiResponse({ status: 200, description: 'Variations retrieved' })
@@ -146,7 +182,10 @@ export class VTUController {
   // ==================== Validation ====================
 
   @Post('cable-tv/verify')
-  @ApiOperation({ summary: 'Verify smartcard', description: 'Verify Cable TV smartcard or IUC number' })
+  @ApiOperation({
+    summary: 'Verify smartcard',
+    description: 'Verify Cable TV smartcard or IUC number',
+  })
   @ApiResponse({ status: 200, description: 'Smartcard details verified' })
   @ApiResponse({ status: 400, description: 'Invalid smartcard number' })
   @HttpCode(HttpStatus.OK)
@@ -155,7 +194,10 @@ export class VTUController {
   }
 
   @Post('electricity/verify')
-  @ApiOperation({ summary: 'Verify meter number', description: 'Verify electricity meter number' })
+  @ApiOperation({
+    summary: 'Verify meter number',
+    description: 'Verify electricity meter number',
+  })
   @ApiResponse({ status: 200, description: 'Meter details verified' })
   @ApiResponse({ status: 400, description: 'Invalid meter number' })
   @HttpCode(HttpStatus.OK)
@@ -176,7 +218,10 @@ export class VTUController {
   @Post('airtime/purchase')
   @HttpCode(HttpStatus.CREATED)
   @Idempotent()
-  @ApiOperation({ summary: 'Purchase airtime', description: 'Buy airtime for any Nigerian network' })
+  @ApiOperation({
+    summary: 'Purchase airtime',
+    description: 'Buy airtime for any Nigerian network',
+  })
   @ApiResponse({ status: 201, description: 'Airtime purchase successful' })
   @ApiResponse({ status: 400, description: 'Invalid phone number or amount' })
   purchaseAirtime(
@@ -193,7 +238,10 @@ export class VTUController {
   @Post('data/purchase')
   @HttpCode(HttpStatus.CREATED)
   @Idempotent()
-  @ApiOperation({ summary: 'Purchase data bundle', description: 'Buy data bundle for any Nigerian network' })
+  @ApiOperation({
+    summary: 'Purchase data bundle',
+    description: 'Buy data bundle for any Nigerian network',
+  })
   @ApiResponse({ status: 201, description: 'Data purchase successful' })
   purchaseData(@GetUser('id') userId: string, @Body() dto: PurchaseDataDto) {
     return this.vtuService.purchaseDataBundle(userId, dto);
@@ -205,7 +253,10 @@ export class VTUController {
   })
   @Post('cable-tv/pay')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Pay Cable TV', description: 'Subscribe to DSTV, GOTV, or StarTimes' })
+  @ApiOperation({
+    summary: 'Pay Cable TV',
+    description: 'Subscribe to DSTV, GOTV, or StarTimes',
+  })
   @ApiResponse({ status: 201, description: 'Subscription successful' })
   payCableTVSubscription(
     @GetUser('id') userId: string,
@@ -216,7 +267,10 @@ export class VTUController {
 
   @Get('showmax/plans')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Showmax plans', description: 'List available Showmax subscription plans' })
+  @ApiOperation({
+    summary: 'Get Showmax plans',
+    description: 'List available Showmax subscription plans',
+  })
   @ApiResponse({ status: 200, description: 'Plans retrieved' })
   getShowmaxPlans() {
     return this.vtuService.getShowmaxPlans();
@@ -239,7 +293,10 @@ export class VTUController {
   })
   @Post('electricity/pay')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Pay Electricity', description: 'Pay electricity bill (Prepaid/Postpaid)' })
+  @ApiOperation({
+    summary: 'Pay Electricity',
+    description: 'Pay electricity bill (Prepaid/Postpaid)',
+  })
   @ApiResponse({ status: 201, description: 'Payment successful' })
   payElectricityBill(
     @GetUser('id') userId: string,
@@ -250,7 +307,10 @@ export class VTUController {
 
   @Post('international/purchase')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Purchase international airtime', description: 'Buy airtime for international numbers' })
+  @ApiOperation({
+    summary: 'Purchase international airtime',
+    description: 'Buy airtime for international numbers',
+  })
   @ApiResponse({ status: 201, description: 'Purchase successful' })
   purchaseInternationalAirtime(
     @GetUser('id') userId: string,
@@ -263,7 +323,10 @@ export class VTUController {
 
   @Get('education/jamb/variations')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get JAMB variations', description: 'List JAMB product types (UTME, Direct Entry)' })
+  @ApiOperation({
+    summary: 'Get JAMB variations',
+    description: 'List JAMB product types (UTME, Direct Entry)',
+  })
   @ApiResponse({ status: 200, description: 'Variations retrieved' })
   getJAMBVariations() {
     return this.vtuService.getJAMBVariations();
@@ -271,7 +334,10 @@ export class VTUController {
 
   @Get('education/waec-registration/variations')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get WAEC Registration variations', description: 'List WAEC registration product types' })
+  @ApiOperation({
+    summary: 'Get WAEC Registration variations',
+    description: 'List WAEC registration product types',
+  })
   @ApiResponse({ status: 200, description: 'Variations retrieved' })
   getWAECRegistrationVariations() {
     return this.vtuService.getWAECRegistrationVariations();
@@ -279,7 +345,10 @@ export class VTUController {
 
   @Get('education/waec-result/variations')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get WAEC Result variations', description: 'List WAEC result checker product types' })
+  @ApiOperation({
+    summary: 'Get WAEC Result variations',
+    description: 'List WAEC result checker product types',
+  })
   @ApiResponse({ status: 200, description: 'Variations retrieved' })
   getWAECResultVariations() {
     return this.vtuService.getWAECResultVariations();
@@ -287,7 +356,10 @@ export class VTUController {
 
   @Post('education/jamb/verify-profile')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify JAMB Profile', description: 'Verify JAMB profile ID' })
+  @ApiOperation({
+    summary: 'Verify JAMB Profile',
+    description: 'Verify JAMB profile ID',
+  })
   @ApiResponse({ status: 200, description: 'Profile verified' })
   @ApiResponse({ status: 400, description: 'Invalid profile ID' })
   verifyJAMBProfile(@Body() dto: VerifyJAMBProfileDto) {
@@ -300,7 +372,10 @@ export class VTUController {
   })
   @Post('education/jamb/purchase')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Purchase JAMB PIN', description: 'Buy JAMB UTME/Direct Entry PIN' })
+  @ApiOperation({
+    summary: 'Purchase JAMB PIN',
+    description: 'Buy JAMB UTME/Direct Entry PIN',
+  })
   @ApiResponse({ status: 201, description: 'Purchase successful' })
   purchaseJAMBPin(
     @GetUser('id') userId: string,
@@ -315,7 +390,10 @@ export class VTUController {
   })
   @Post('education/waec-registration/purchase')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Purchase WAEC Registration', description: 'Buy WAEC registration PIN' })
+  @ApiOperation({
+    summary: 'Purchase WAEC Registration',
+    description: 'Buy WAEC registration PIN',
+  })
   @ApiResponse({ status: 201, description: 'Purchase successful' })
   purchaseWAECRegistration(
     @GetUser('id') userId: string,
@@ -330,7 +408,10 @@ export class VTUController {
   })
   @Post('education/waec-result/purchase')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Purchase WAEC Result Checker', description: 'Buy WAEC result checker PIN' })
+  @ApiOperation({
+    summary: 'Purchase WAEC Result Checker',
+    description: 'Buy WAEC result checker PIN',
+  })
   @ApiResponse({ status: 201, description: 'Purchase successful' })
   purchaseWAECResult(
     @GetUser('id') userId: string,
@@ -343,7 +424,10 @@ export class VTUController {
 
   @Get('orders')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get VTU Orders', description: 'List VTU transaction history with filters' })
+  @ApiOperation({
+    summary: 'Get VTU Orders',
+    description: 'List VTU transaction history with filters',
+  })
   @ApiResponse({ status: 200, description: 'Orders retrieved' })
   getOrders(@GetUser('id') userId: string, @Query() filters: GetOrdersDto) {
     return this.vtuService.getOrders(userId, filters);
@@ -351,7 +435,10 @@ export class VTUController {
 
   @Get('orders/:orderId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Order by ID', description: 'Get details of a specific VTU order' })
+  @ApiOperation({
+    summary: 'Get Order by ID',
+    description: 'Get details of a specific VTU order',
+  })
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   @ApiResponse({ status: 200, description: 'Order details retrieved' })
   @ApiResponse({ status: 404, description: 'Order not found' })
@@ -364,7 +451,10 @@ export class VTUController {
 
   @Get('orders/reference/:reference')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Order by Reference', description: 'Get details of a VTU order by reference' })
+  @ApiOperation({
+    summary: 'Get Order by Reference',
+    description: 'Get details of a VTU order by reference',
+  })
   @ApiParam({ name: 'reference', description: 'Transaction reference' })
   @ApiResponse({ status: 200, description: 'Order details retrieved' })
   @ApiResponse({ status: 404, description: 'Order not found' })
@@ -377,7 +467,10 @@ export class VTUController {
 
   @Post('orders/:orderId/retry')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Retry Failed Order', description: 'Retry a failed VTU transaction' })
+  @ApiOperation({
+    summary: 'Retry Failed Order',
+    description: 'Retry a failed VTU transaction',
+  })
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   @ApiResponse({ status: 200, description: 'Retry initiated' })
   retryFailedOrder(
@@ -391,7 +484,10 @@ export class VTUController {
 
   @Get('saved-recipients')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Saved Recipients', description: 'List saved VTU recipients' })
+  @ApiOperation({
+    summary: 'Get Saved Recipients',
+    description: 'List saved VTU recipients',
+  })
   @ApiResponse({ status: 200, description: 'Recipients retrieved' })
   getSavedRecipients(
     @GetUser('id') userId: string,
@@ -402,7 +498,10 @@ export class VTUController {
 
   @Post('saved-recipients/:recipientId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update Saved Recipient', description: 'Update details of a saved recipient' })
+  @ApiOperation({
+    summary: 'Update Saved Recipient',
+    description: 'Update details of a saved recipient',
+  })
   @ApiParam({ name: 'recipientId', description: 'Recipient ID' })
   @ApiResponse({ status: 200, description: 'Recipient updated' })
   updateSavedRecipient(
@@ -422,7 +521,10 @@ export class VTUController {
 
   @Post('saved-recipients/:recipientId/delete')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete Saved Recipient', description: 'Remove a saved recipient' })
+  @ApiOperation({
+    summary: 'Delete Saved Recipient',
+    description: 'Remove a saved recipient',
+  })
   @ApiParam({ name: 'recipientId', description: 'Recipient ID' })
   @ApiResponse({ status: 200, description: 'Recipient deleted' })
   deleteSavedRecipient(

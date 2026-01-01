@@ -56,7 +56,10 @@ export class CreateConversationDto {
   @IsString()
   initialMessage?: string;
 
-  @ApiPropertyOptional({ description: 'Transaction Context', type: TransactionContextDto })
+  @ApiPropertyOptional({
+    description: 'Transaction Context',
+    type: TransactionContextDto,
+  })
   @IsOptional()
   @IsObject()
   transactionContext?: TransactionContextDto;

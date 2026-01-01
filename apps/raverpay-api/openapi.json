@@ -10,9 +10,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/health": {
@@ -24,9 +22,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/auth/register": {
@@ -75,9 +71,7 @@
           }
         },
         "summary": "Register new user",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/login": {
@@ -141,9 +135,7 @@
           }
         },
         "summary": "User login",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/refresh": {
@@ -180,9 +172,7 @@
           }
         },
         "summary": "Refresh access token",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/me": {
@@ -222,9 +212,7 @@
           }
         ],
         "summary": "Get current user profile",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/forgot-password": {
@@ -263,9 +251,7 @@
           }
         },
         "summary": "Request password reset",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/verify-reset-code": {
@@ -305,9 +291,7 @@
           }
         },
         "summary": "Verify password reset code",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/reset-password": {
@@ -343,9 +327,7 @@
           }
         },
         "summary": "Reset password",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/verify-device": {
@@ -373,11 +355,7 @@
                     "example": "123456"
                   }
                 },
-                "required": [
-                  "userId",
-                  "deviceId",
-                  "code"
-                ]
+                "required": ["userId", "deviceId", "code"]
               }
             }
           }
@@ -405,9 +383,7 @@
           }
         },
         "summary": "Verify new device",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/auth/logout": {
@@ -448,9 +424,7 @@
           }
         ],
         "summary": "Logout user",
-        "tags": [
-          "Authentication"
-        ]
+        "tags": ["Authentication"]
       }
     },
     "/virtual-accounts/request": {
@@ -479,9 +453,7 @@
           }
         ],
         "summary": "Request Virtual Account",
-        "tags": [
-          "Virtual Accounts"
-        ]
+        "tags": ["Virtual Accounts"]
       }
     },
     "/virtual-accounts/me": {
@@ -500,9 +472,7 @@
           }
         ],
         "summary": "Get My Virtual Account",
-        "tags": [
-          "Virtual Accounts"
-        ]
+        "tags": ["Virtual Accounts"]
       }
     },
     "/virtual-accounts/providers": {
@@ -521,9 +491,7 @@
           }
         ],
         "summary": "Get Providers",
-        "tags": [
-          "Virtual Accounts"
-        ]
+        "tags": ["Virtual Accounts"]
       }
     },
     "/virtual-accounts/requery": {
@@ -542,9 +510,7 @@
           }
         ],
         "summary": "Requery Account",
-        "tags": [
-          "Virtual Accounts"
-        ]
+        "tags": ["Virtual Accounts"]
       }
     },
     "/notifications": {
@@ -610,9 +576,7 @@
           }
         ],
         "summary": "Get Notifications",
-        "tags": [
-          "Notifications"
-        ]
+        "tags": ["Notifications"]
       }
     },
     "/notifications/{id}/read": {
@@ -641,9 +605,7 @@
           }
         ],
         "summary": "Mark As Read",
-        "tags": [
-          "Notifications"
-        ]
+        "tags": ["Notifications"]
       }
     },
     "/notifications/read-all": {
@@ -662,9 +624,7 @@
           }
         ],
         "summary": "Mark All As Read",
-        "tags": [
-          "Notifications"
-        ]
+        "tags": ["Notifications"]
       }
     },
     "/notifications/{id}": {
@@ -693,9 +653,7 @@
           }
         ],
         "summary": "Delete Notification",
-        "tags": [
-          "Notifications"
-        ]
+        "tags": ["Notifications"]
       }
     },
     "/notification-preferences": {
@@ -714,9 +672,7 @@
           }
         ],
         "summary": "Get Preferences",
-        "tags": [
-          "Notification Preferences"
-        ]
+        "tags": ["Notification Preferences"]
       },
       "put": {
         "description": "Update user notification preferences",
@@ -743,9 +699,7 @@
           }
         ],
         "summary": "Update Preferences",
-        "tags": [
-          "Notification Preferences"
-        ]
+        "tags": ["Notification Preferences"]
       }
     },
     "/notification-preferences/reset": {
@@ -764,9 +718,7 @@
           }
         ],
         "summary": "Reset Preferences",
-        "tags": [
-          "Notification Preferences"
-        ]
+        "tags": ["Notification Preferences"]
       }
     },
     "/notification-preferences/opt-out/{category}": {
@@ -795,9 +747,7 @@
           }
         ],
         "summary": "Opt Out",
-        "tags": [
-          "Notification Preferences"
-        ]
+        "tags": ["Notification Preferences"]
       },
       "delete": {
         "description": "Opt back into a specific notification category",
@@ -824,9 +774,7 @@
           }
         ],
         "summary": "Opt In",
-        "tags": [
-          "Notification Preferences"
-        ]
+        "tags": ["Notification Preferences"]
       }
     },
     "/notification-preferences/onesignal": {
@@ -855,9 +803,7 @@
           }
         ],
         "summary": "Update OneSignal Token",
-        "tags": [
-          "Notification Preferences"
-        ]
+        "tags": ["Notification Preferences"]
       }
     },
     "/payments/webhooks/paystack": {
@@ -894,9 +840,7 @@
           }
         },
         "summary": "Paystack Webhook",
-        "tags": [
-          "Payments"
-        ]
+        "tags": ["Payments"]
       }
     },
     "/transactions/fund/card": {
@@ -931,9 +875,7 @@
           }
         ],
         "summary": "Fund wallet via card",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/verify/{reference}": {
@@ -965,9 +907,7 @@
           }
         ],
         "summary": "Verify payment",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/cancel/{reference}": {
@@ -999,9 +939,7 @@
           }
         ],
         "summary": "Cancel transaction",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/virtual-account": {
@@ -1020,9 +958,7 @@
           }
         ],
         "summary": "Get virtual account",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/banks": {
@@ -1041,9 +977,7 @@
           }
         ],
         "summary": "Get banks list",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/resolve-account": {
@@ -1075,9 +1009,7 @@
           }
         ],
         "summary": "Resolve account",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/withdraw": {
@@ -1112,9 +1044,7 @@
           }
         ],
         "summary": "Withdraw funds",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/withdrawal-config": {
@@ -1133,9 +1063,7 @@
           }
         ],
         "summary": "Get withdrawal config",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/withdrawal-preview": {
@@ -1154,9 +1082,7 @@
           }
         ],
         "summary": "Preview withdrawal fee",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/saved-bank-accounts": {
@@ -1175,9 +1101,7 @@
           }
         ],
         "summary": "Get saved accounts",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/send": {
@@ -1215,9 +1139,7 @@
           }
         ],
         "summary": "Send to user",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/lookup/{tag}": {
@@ -1249,9 +1171,7 @@
           }
         ],
         "summary": "Lookup user by tag",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/set-tag": {
@@ -1283,9 +1203,7 @@
           }
         ],
         "summary": "Set user tag",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/transactions/p2p-history": {
@@ -1323,9 +1241,7 @@
           }
         ],
         "summary": "Get P2P history",
-        "tags": [
-          "Transactions"
-        ]
+        "tags": ["Transactions"]
       }
     },
     "/wallet": {
@@ -1361,9 +1277,7 @@
           }
         ],
         "summary": "Get wallet balance",
-        "tags": [
-          "Wallet"
-        ]
+        "tags": ["Wallet"]
       }
     },
     "/wallet/limits": {
@@ -1394,9 +1308,7 @@
           }
         ],
         "summary": "Get wallet transaction limits",
-        "tags": [
-          "Wallet"
-        ]
+        "tags": ["Wallet"]
       }
     },
     "/wallet/lock": {
@@ -1431,9 +1343,7 @@
           }
         ],
         "summary": "Lock wallet",
-        "tags": [
-          "Wallet"
-        ]
+        "tags": ["Wallet"]
       }
     },
     "/wallet/unlock": {
@@ -1471,9 +1381,7 @@
           }
         ],
         "summary": "Unlock wallet",
-        "tags": [
-          "Wallet"
-        ]
+        "tags": ["Wallet"]
       }
     },
     "/wallet/transactions": {
@@ -1521,9 +1429,7 @@
           }
         ],
         "summary": "Get transaction history",
-        "tags": [
-          "Wallet"
-        ]
+        "tags": ["Wallet"]
       }
     },
     "/wallet/transactions/{id}": {
@@ -1558,9 +1464,7 @@
           }
         ],
         "summary": "Get transaction details",
-        "tags": [
-          "Wallet"
-        ]
+        "tags": ["Wallet"]
       }
     },
     "/users/profile": {
@@ -1579,9 +1483,7 @@
           }
         ],
         "summary": "Get Profile",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       },
       "put": {
         "description": "Update user profile information",
@@ -1608,9 +1510,7 @@
           }
         ],
         "summary": "Update Profile",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/change-password": {
@@ -1642,9 +1542,7 @@
           }
         ],
         "summary": "Change Password",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/verify-bvn": {
@@ -1676,9 +1574,7 @@
           }
         ],
         "summary": "Verify BVN",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/verify-nin": {
@@ -1710,9 +1606,7 @@
           }
         ],
         "summary": "Verify NIN",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/send-email-verification": {
@@ -1731,9 +1625,7 @@
           }
         ],
         "summary": "Send Email Verification",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/verify-email": {
@@ -1765,9 +1657,7 @@
           }
         ],
         "summary": "Verify Email",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/send-phone-verification": {
@@ -1786,9 +1676,7 @@
           }
         ],
         "summary": "Send Phone Verification",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/verify-phone": {
@@ -1820,9 +1708,7 @@
           }
         ],
         "summary": "Verify Phone",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/set-pin": {
@@ -1851,9 +1737,7 @@
           }
         ],
         "summary": "Set Transaction PIN",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/verify-pin": {
@@ -1882,9 +1766,7 @@
           }
         ],
         "summary": "Verify PIN",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/change-pin": {
@@ -1913,9 +1795,7 @@
           }
         ],
         "summary": "Change PIN",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/upload-avatar": {
@@ -1950,9 +1830,7 @@
           }
         ],
         "summary": "Upload Avatar",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/avatar": {
@@ -1971,9 +1849,7 @@
           }
         ],
         "summary": "Delete Avatar",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/request-account-deletion": {
@@ -2002,9 +1878,7 @@
           }
         ],
         "summary": "Request Account Deletion",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/push-token": {
@@ -2039,9 +1913,7 @@
           }
         ],
         "summary": "Update Push Token",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/limits/daily-spending": {
@@ -2053,9 +1925,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Limits"
-        ]
+        "tags": ["Limits"]
       }
     },
     "/limits/remaining": {
@@ -2067,9 +1937,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Limits"
-        ]
+        "tags": ["Limits"]
       }
     },
     "/limits/tiers": {
@@ -2081,9 +1949,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Limits"
-        ]
+        "tags": ["Limits"]
       }
     },
     "/vtu/airtime/providers": {
@@ -2102,9 +1968,7 @@
           }
         ],
         "summary": "Get airtime providers",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/data/plans/{network}": {
@@ -2133,9 +1997,7 @@
           }
         ],
         "summary": "Get data plans",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/data/sme-plans/{network}": {
@@ -2164,9 +2026,7 @@
           }
         ],
         "summary": "Get SME data plans",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/cable-tv/plans/{provider}": {
@@ -2195,9 +2055,7 @@
           }
         ],
         "summary": "Get Cable TV plans",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/electricity/providers": {
@@ -2216,9 +2074,7 @@
           }
         ],
         "summary": "Get electricity providers",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/international/countries": {
@@ -2237,9 +2093,7 @@
           }
         ],
         "summary": "Get international countries",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/international/product-types/{countryCode}": {
@@ -2268,9 +2122,7 @@
           }
         ],
         "summary": "Get international product types",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/international/operators/{countryCode}/{productTypeId}": {
@@ -2308,9 +2160,7 @@
           }
         ],
         "summary": "Get international operators",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/international/variations/{operatorId}/{productTypeId}": {
@@ -2348,9 +2198,7 @@
           }
         ],
         "summary": "Get international variations",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/cable-tv/verify": {
@@ -2382,9 +2230,7 @@
           }
         ],
         "summary": "Verify smartcard",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/electricity/verify": {
@@ -2416,9 +2262,7 @@
           }
         ],
         "summary": "Verify meter number",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/airtime/purchase": {
@@ -2450,9 +2294,7 @@
           }
         ],
         "summary": "Purchase airtime",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/data/purchase": {
@@ -2481,9 +2323,7 @@
           }
         ],
         "summary": "Purchase data bundle",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/cable-tv/pay": {
@@ -2512,9 +2352,7 @@
           }
         ],
         "summary": "Pay Cable TV",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/showmax/plans": {
@@ -2533,9 +2371,7 @@
           }
         ],
         "summary": "Get Showmax plans",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/showmax/pay": {
@@ -2564,9 +2400,7 @@
           }
         ],
         "summary": "Pay Showmax",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/electricity/pay": {
@@ -2595,9 +2429,7 @@
           }
         ],
         "summary": "Pay Electricity",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/international/purchase": {
@@ -2626,9 +2458,7 @@
           }
         ],
         "summary": "Purchase international airtime",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/jamb/variations": {
@@ -2647,9 +2477,7 @@
           }
         ],
         "summary": "Get JAMB variations",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/waec-registration/variations": {
@@ -2668,9 +2496,7 @@
           }
         ],
         "summary": "Get WAEC Registration variations",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/waec-result/variations": {
@@ -2689,9 +2515,7 @@
           }
         ],
         "summary": "Get WAEC Result variations",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/jamb/verify-profile": {
@@ -2723,9 +2547,7 @@
           }
         ],
         "summary": "Verify JAMB Profile",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/jamb/purchase": {
@@ -2754,9 +2576,7 @@
           }
         ],
         "summary": "Purchase JAMB PIN",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/waec-registration/purchase": {
@@ -2785,9 +2605,7 @@
           }
         ],
         "summary": "Purchase WAEC Registration",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/education/waec-result/purchase": {
@@ -2816,9 +2634,7 @@
           }
         ],
         "summary": "Purchase WAEC Result Checker",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/orders": {
@@ -2919,9 +2735,7 @@
           }
         ],
         "summary": "Get VTU Orders",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/orders/{orderId}": {
@@ -2953,9 +2767,7 @@
           }
         ],
         "summary": "Get Order by ID",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/orders/reference/{reference}": {
@@ -2987,9 +2799,7 @@
           }
         ],
         "summary": "Get Order by Reference",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/orders/{orderId}/retry": {
@@ -3018,9 +2828,7 @@
           }
         ],
         "summary": "Retry Failed Order",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/saved-recipients": {
@@ -3059,9 +2867,7 @@
           }
         ],
         "summary": "Get Saved Recipients",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/saved-recipients/{recipientId}": {
@@ -3100,9 +2906,7 @@
           }
         ],
         "summary": "Update Saved Recipient",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/saved-recipients/{recipientId}/delete": {
@@ -3131,9 +2935,7 @@
           }
         ],
         "summary": "Delete Saved Recipient",
-        "tags": [
-          "VTU"
-        ]
+        "tags": ["VTU"]
       }
     },
     "/vtu/webhooks/vtpass": {
@@ -3154,9 +2956,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "VTUWebhooks"
-        ]
+        "tags": ["VTUWebhooks"]
       }
     },
     "/cashback/wallet": {
@@ -3175,9 +2975,7 @@
           }
         ],
         "summary": "Get Cashback Balance",
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/cashback/history": {
@@ -3206,10 +3004,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": [
-                "EARNED",
-                "REDEEMED"
-              ],
+              "enum": ["EARNED", "REDEEMED"],
               "type": "string"
             }
           }
@@ -3225,9 +3020,7 @@
           }
         ],
         "summary": "Get Cashback History",
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/cashback/config": {
@@ -3246,9 +3039,7 @@
           }
         ],
         "summary": "Get Active Configs",
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/cashback/calculate": {
@@ -3277,9 +3068,7 @@
           }
         ],
         "summary": "Calculate Cashback",
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/cashback/admin/config": {
@@ -3296,9 +3085,7 @@
             "bearer": []
           }
         ],
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       },
       "post": {
         "operationId": "CashbackController_createConfig",
@@ -3323,9 +3110,7 @@
             "bearer": []
           }
         ],
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/cashback/admin/config/{id}": {
@@ -3361,9 +3146,7 @@
             "bearer": []
           }
         ],
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       },
       "delete": {
         "operationId": "CashbackController_deleteConfig",
@@ -3387,9 +3170,7 @@
             "bearer": []
           }
         ],
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/cashback/admin/analytics": {
@@ -3406,9 +3187,7 @@
             "bearer": []
           }
         ],
-        "tags": [
-          "Cashback"
-        ]
+        "tags": ["Cashback"]
       }
     },
     "/circle/wallets": {
@@ -3443,9 +3222,7 @@
           }
         ],
         "summary": "Create Circle wallet",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       },
       "get": {
         "description": "Retrieve all Circle wallets for authenticated user",
@@ -3465,9 +3242,7 @@
           }
         ],
         "summary": "Get user wallets",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/wallets/{id}": {
@@ -3499,9 +3274,7 @@
           }
         ],
         "summary": "Get wallet details",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       },
       "put": {
         "description": "Update wallet name or metadata",
@@ -3541,9 +3314,7 @@
           }
         ],
         "summary": "Update wallet",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/wallets/{id}/balance": {
@@ -3575,9 +3346,7 @@
           }
         ],
         "summary": "Get wallet balance",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/wallets/{id}/usdc-balance": {
@@ -3609,9 +3378,7 @@
           }
         ],
         "summary": "Get USDC balance",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/wallets/deposit-info": {
@@ -3640,9 +3407,7 @@
           }
         ],
         "summary": "Get deposit info",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions/transfer": {
@@ -3680,9 +3445,7 @@
           }
         ],
         "summary": "Transfer USDC",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions": {
@@ -3745,9 +3508,7 @@
           }
         ],
         "summary": "Get transactions",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions/{id}": {
@@ -3779,9 +3540,7 @@
           }
         ],
         "summary": "Get transaction details",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions/estimate-fee": {
@@ -3813,9 +3572,7 @@
           }
         ],
         "summary": "Estimate transaction fee",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions/{id}/cancel": {
@@ -3847,9 +3604,7 @@
           }
         ],
         "summary": "Cancel transaction",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions/{id}/accelerate": {
@@ -3881,9 +3636,7 @@
           }
         ],
         "summary": "Accelerate transaction",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/transactions/validate-address": {
@@ -3912,9 +3665,7 @@
           }
         ],
         "summary": "Validate blockchain address",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/cctp/transfer": {
@@ -3952,9 +3703,7 @@
           }
         ],
         "summary": "CCTP cross-chain transfer",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/cctp/transfers": {
@@ -4007,9 +3756,7 @@
           }
         ],
         "summary": "Get CCTP transfers",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/cctp/transfers/{id}": {
@@ -4041,9 +3788,7 @@
           }
         ],
         "summary": "Get CCTP transfer details",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/cctp/transfers/{id}/cancel": {
@@ -4075,9 +3820,7 @@
           }
         ],
         "summary": "Cancel CCTP transfer",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/cctp/estimate-fee": {
@@ -4106,9 +3849,7 @@
           }
         ],
         "summary": "Estimate CCTP fee",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/cctp/chains": {
@@ -4127,9 +3868,7 @@
           }
         ],
         "summary": "Get supported CCTP chains",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/paymaster/config": {
@@ -4148,9 +3887,7 @@
           }
         ],
         "summary": "Get Paymaster config",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/paymaster/compatible/{walletId}": {
@@ -4171,9 +3908,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/estimate-fee": {
@@ -4208,9 +3943,7 @@
           }
         ],
         "summary": "Estimate Paymaster fee",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/paymaster/transfer": {
@@ -4248,9 +3981,7 @@
           }
         ],
         "summary": "Paymaster transfer",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/paymaster/stats/{walletId}": {
@@ -4282,9 +4013,7 @@
           }
         ],
         "summary": "Get Paymaster stats",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/config": {
@@ -4303,9 +4032,7 @@
           }
         ],
         "summary": "Get Circle configuration",
-        "tags": [
-          "Circle"
-        ]
+        "tags": ["Circle"]
       }
     },
     "/circle/webhooks": {
@@ -4334,9 +4061,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "CircleWebhook"
-        ]
+        "tags": ["CircleWebhook"]
       }
     },
     "/circle/webhooks/health": {
@@ -4348,9 +4073,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "CircleWebhook"
-        ]
+        "tags": ["CircleWebhook"]
       }
     },
     "/circle/paymaster/generate-permit": {
@@ -4372,9 +4095,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/sign-permit-challenge": {
@@ -4396,9 +4117,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/submit-userop": {
@@ -4420,9 +4139,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/userop/{hash}": {
@@ -4443,9 +4160,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/events/{walletId}": {
@@ -4466,9 +4181,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/stats": {
@@ -4480,9 +4193,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/sync-events": {
@@ -4504,9 +4215,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/approve": {
@@ -4528,9 +4237,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/paymaster/approval/{walletId}/{blockchain}": {
@@ -4559,9 +4266,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Paymaster"
-        ]
+        "tags": ["Paymaster"]
       }
     },
     "/circle/user-controlled/users/create": {
@@ -4583,9 +4288,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/users/check-status": {
@@ -4597,9 +4300,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/users/token": {
@@ -4621,9 +4322,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/users/{circleUserId}/status": {
@@ -4644,9 +4343,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/wallets/create": {
@@ -4668,9 +4365,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/wallets": {
@@ -4692,9 +4387,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/wallets/sync": {
@@ -4706,9 +4399,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/auth/email/device-token": {
@@ -4730,9 +4421,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/users/{circleUserId}/security-questions": {
@@ -4763,9 +4452,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       },
       "get": {
         "operationId": "UserControlledWalletController_getSecurityQuestions",
@@ -4784,9 +4471,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/circle/user-controlled/transactions/create": {
@@ -4798,9 +4483,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UserControlledWallet"
-        ]
+        "tags": ["UserControlledWallet"]
       }
     },
     "/webhooks/paystack": {
@@ -4821,9 +4504,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PaystackWebhook"
-        ]
+        "tags": ["PaystackWebhook"]
       }
     },
     "/webhooks/resend/inbound": {
@@ -4835,9 +4516,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "ResendWebhook"
-        ]
+        "tags": ["ResendWebhook"]
       }
     },
     "/support/conversations": {
@@ -4866,9 +4545,7 @@
           }
         ],
         "summary": "Create Conversation",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       },
       "get": {
         "description": "List user conversations",
@@ -4932,9 +4609,7 @@
           }
         ],
         "summary": "Get Conversations",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/conversations/{id}": {
@@ -4963,9 +4638,7 @@
           }
         ],
         "summary": "Get Conversation",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/conversations/{id}/messages": {
@@ -5014,9 +4687,7 @@
           }
         ],
         "summary": "Get Messages",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       },
       "post": {
         "description": "Send a message in a conversation",
@@ -5053,9 +4724,7 @@
           }
         ],
         "summary": "Send Message",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/conversations/{id}/read": {
@@ -5084,9 +4753,7 @@
           }
         ],
         "summary": "Mark Read",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/conversations/{id}/rate": {
@@ -5125,9 +4792,7 @@
           }
         ],
         "summary": "Rate Conversation",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/conversations/{id}/close": {
@@ -5156,9 +4821,7 @@
           }
         ],
         "summary": "Close Conversation",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/tickets": {
@@ -5193,12 +4856,7 @@
             "description": "Ticket Status",
             "schema": {
               "type": "string",
-              "enum": [
-                "OPEN",
-                "IN_PROGRESS",
-                "RESOLVED",
-                "CLOSED"
-              ]
+              "enum": ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
             }
           },
           {
@@ -5208,12 +4866,7 @@
             "description": "Ticket Priority",
             "schema": {
               "type": "string",
-              "enum": [
-                "LOW",
-                "MEDIUM",
-                "HIGH",
-                "URGENT"
-              ]
+              "enum": ["LOW", "MEDIUM", "HIGH", "URGENT"]
             }
           },
           {
@@ -5255,9 +4908,7 @@
           }
         ],
         "summary": "Get Tickets",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/tickets/{id}": {
@@ -5286,9 +4937,7 @@
           }
         ],
         "summary": "Get Ticket",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/support/unread-count": {
@@ -5307,9 +4956,7 @@
           }
         ],
         "summary": "Get Unread Count",
-        "tags": [
-          "Support"
-        ]
+        "tags": ["Support"]
       }
     },
     "/admin/support/stats": {
@@ -5321,9 +4968,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/queue": {
@@ -5357,12 +5002,7 @@
             "description": "Ticket Status",
             "schema": {
               "type": "string",
-              "enum": [
-                "OPEN",
-                "IN_PROGRESS",
-                "RESOLVED",
-                "CLOSED"
-              ]
+              "enum": ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
             }
           },
           {
@@ -5372,12 +5012,7 @@
             "description": "Ticket Priority",
             "schema": {
               "type": "string",
-              "enum": [
-                "LOW",
-                "MEDIUM",
-                "HIGH",
-                "URGENT"
-              ]
+              "enum": ["LOW", "MEDIUM", "HIGH", "URGENT"]
             }
           },
           {
@@ -5413,9 +5048,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/agents": {
@@ -5427,9 +5060,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/conversations": {
@@ -5488,9 +5119,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/conversations/{id}": {
@@ -5511,9 +5140,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/conversations/{id}/messages": {
@@ -5554,9 +5181,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "post": {
         "operationId": "SupportAdminController_sendAgentMessage",
@@ -5585,9 +5210,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/conversations/{id}/assign": {
@@ -5608,9 +5231,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/conversations/{id}/transfer": {
@@ -5631,9 +5252,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/conversations/{id}/end": {
@@ -5654,9 +5273,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/tickets/{id}": {
@@ -5677,9 +5294,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "put": {
         "operationId": "SupportAdminController_updateTicket",
@@ -5708,9 +5323,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/tickets/{id}/assign": {
@@ -5741,9 +5354,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/tickets/{id}/resolve": {
@@ -5764,9 +5375,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/tickets/{id}/close": {
@@ -5787,9 +5396,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/help/collections": {
@@ -5801,9 +5408,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "post": {
         "operationId": "SupportAdminController_createHelpCollection",
@@ -5823,9 +5428,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/help/collections/{id}": {
@@ -5846,9 +5449,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "patch": {
         "operationId": "SupportAdminController_updateHelpCollection",
@@ -5877,9 +5478,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "delete": {
         "operationId": "SupportAdminController_deleteHelpCollection",
@@ -5898,9 +5497,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/help/articles": {
@@ -5953,9 +5550,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "post": {
         "operationId": "SupportAdminController_createHelpArticle",
@@ -5965,9 +5560,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/help/articles/{id}": {
@@ -5988,9 +5581,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "patch": {
         "operationId": "SupportAdminController_updateHelpArticle",
@@ -6009,9 +5600,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "delete": {
         "operationId": "SupportAdminController_deleteHelpArticle",
@@ -6030,9 +5619,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/help/articles/{id}/publish": {
@@ -6053,9 +5640,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/help/articles/{id}/unpublish": {
@@ -6076,9 +5661,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/canned-responses": {
@@ -6099,9 +5682,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "post": {
         "operationId": "SupportAdminController_createCannedResponse",
@@ -6121,9 +5702,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/canned-responses/{id}": {
@@ -6154,9 +5733,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       },
       "delete": {
         "operationId": "SupportAdminController_deleteCannedResponse",
@@ -6175,9 +5752,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/admin/support/canned-responses/{id}/use": {
@@ -6198,9 +5773,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "SupportAdmin"
-        ]
+        "tags": ["SupportAdmin"]
       }
     },
     "/help/collections": {
@@ -6214,9 +5787,7 @@
           }
         },
         "summary": "Get Collections",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/collections/{id}": {
@@ -6240,9 +5811,7 @@
           }
         },
         "summary": "Get Collection",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/articles/{id}": {
@@ -6266,9 +5835,7 @@
           }
         },
         "summary": "Get Article",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/articles/slug/{slug}": {
@@ -6292,9 +5859,7 @@
           }
         },
         "summary": "Get Article by Slug",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/search": {
@@ -6327,9 +5892,7 @@
           }
         },
         "summary": "Search Articles",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/popular": {
@@ -6352,9 +5915,7 @@
           }
         },
         "summary": "Get Popular Articles",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/articles/{id}/helpful": {
@@ -6388,9 +5949,7 @@
           }
         },
         "summary": "Mark Helpful",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/help/articles/{id}/view": {
@@ -6414,9 +5973,7 @@
           }
         },
         "summary": "Increment View",
-        "tags": [
-          "Help Center"
-        ]
+        "tags": ["Help Center"]
       }
     },
     "/devices": {
@@ -6435,9 +5992,7 @@
           }
         ],
         "summary": "Get User Devices",
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/active": {
@@ -6456,9 +6011,7 @@
           }
         ],
         "summary": "Get Active Device",
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/{deviceId}/logout": {
@@ -6487,9 +6040,7 @@
           }
         ],
         "summary": "Logout Device",
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/{deviceId}/trust": {
@@ -6518,9 +6069,7 @@
           }
         ],
         "summary": "Trust Device",
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/v1/crypto/wallet/initialize": {
@@ -6542,9 +6091,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/wallet": {
@@ -6556,9 +6103,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/deposit-info": {
@@ -6570,9 +6115,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/wallet/sync": {
@@ -6584,9 +6127,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/balance/{token}": {
@@ -6607,9 +6148,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/send": {
@@ -6631,9 +6170,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/transactions": {
@@ -6662,9 +6199,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/transactions/{id}": {
@@ -6685,9 +6220,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/transactions/{id}/check-status": {
@@ -6708,9 +6241,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/convert/quote": {
@@ -6732,9 +6263,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/convert": {
@@ -6756,9 +6285,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/conversions": {
@@ -6787,9 +6314,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/v1/crypto/exchange-rate": {
@@ -6801,9 +6326,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Crypto"
-        ]
+        "tags": ["Crypto"]
       }
     },
     "/app-config/rating-prompt": {
@@ -6815,9 +6338,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AppConfig"
-        ]
+        "tags": ["AppConfig"]
       }
     },
     "/app-config/admin/rating-prompt": {
@@ -6839,9 +6360,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AppConfig"
-        ]
+        "tags": ["AppConfig"]
       }
     },
     "/diagnostic/logtail-test": {
@@ -6853,9 +6372,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/diagnostic/logtail-status": {
@@ -6867,9 +6384,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/diagnostic/sentry-test": {
@@ -6881,9 +6396,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/diagnostic/debug-sentry": {
@@ -6895,9 +6408,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/diagnostic/test-database-error": {
@@ -6909,9 +6420,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/diagnostic/test-validation-error": {
@@ -6923,9 +6432,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/diagnostic/test-null-reference": {
@@ -6937,9 +6444,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Diagnostic"
-        ]
+        "tags": ["Diagnostic"]
       }
     },
     "/admin/users": {
@@ -6951,9 +6456,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/stats": {
@@ -6965,9 +6468,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}": {
@@ -6988,9 +6489,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/role": {
@@ -7021,9 +6520,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/status": {
@@ -7054,9 +6551,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/kyc-tier": {
@@ -7087,9 +6582,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/audit-logs": {
@@ -7126,9 +6619,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/lock-account": {
@@ -7159,9 +6650,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/unlock-account": {
@@ -7192,9 +6681,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/users/{userId}/unlock": {
@@ -7215,9 +6702,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminUsers"
-        ]
+        "tags": ["AdminUsers"]
       }
     },
     "/admin/transactions": {
@@ -7229,9 +6714,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/stats": {
@@ -7260,9 +6743,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/pending": {
@@ -7291,9 +6772,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/failed": {
@@ -7338,9 +6817,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/reference/{reference}": {
@@ -7361,9 +6838,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/withdrawal-configs": {
@@ -7375,9 +6850,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       },
       "post": {
         "operationId": "AdminTransactionsController_createWithdrawalConfig",
@@ -7397,9 +6870,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/withdrawal-configs/{id}": {
@@ -7420,9 +6891,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       },
       "put": {
         "operationId": "AdminTransactionsController_updateWithdrawalConfig",
@@ -7451,9 +6920,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       },
       "delete": {
         "operationId": "AdminTransactionsController_deleteWithdrawalConfig",
@@ -7472,9 +6939,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/{transactionId}": {
@@ -7495,9 +6960,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/transactions/{transactionId}/reverse": {
@@ -7528,9 +6991,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminTransactions"
-        ]
+        "tags": ["AdminTransactions"]
       }
     },
     "/admin/analytics/dashboard": {
@@ -7559,9 +7020,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAnalytics"
-        ]
+        "tags": ["AdminAnalytics"]
       }
     },
     "/admin/analytics/revenue": {
@@ -7598,9 +7057,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAnalytics"
-        ]
+        "tags": ["AdminAnalytics"]
       }
     },
     "/admin/analytics/users": {
@@ -7629,9 +7086,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAnalytics"
-        ]
+        "tags": ["AdminAnalytics"]
       }
     },
     "/admin/analytics/transactions": {
@@ -7668,9 +7123,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAnalytics"
-        ]
+        "tags": ["AdminAnalytics"]
       }
     },
     "/admin/kyc/pending": {
@@ -7682,9 +7135,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/rejected": {
@@ -7696,9 +7147,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/stats": {
@@ -7710,9 +7159,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/{userId}": {
@@ -7733,9 +7180,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/{userId}/approve-bvn": {
@@ -7766,9 +7211,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/{userId}/reject-bvn": {
@@ -7799,9 +7242,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/{userId}/approve-nin": {
@@ -7832,9 +7273,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/kyc/{userId}/reject-nin": {
@@ -7865,9 +7304,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminKYC"
-        ]
+        "tags": ["AdminKYC"]
       }
     },
     "/admin/vtu/orders": {
@@ -7936,9 +7373,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/balance": {
@@ -7950,9 +7385,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/stats": {
@@ -7981,9 +7414,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/failed": {
@@ -8012,9 +7443,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/orders/{orderId}": {
@@ -8035,9 +7464,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/orders/{orderId}/refund": {
@@ -8068,9 +7495,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/orders/{orderId}/retry": {
@@ -8091,9 +7516,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/vtu/orders/{orderId}/mark-completed": {
@@ -8114,9 +7537,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVTU"
-        ]
+        "tags": ["AdminVTU"]
       }
     },
     "/admin/wallets": {
@@ -8193,9 +7614,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/wallets/stats": {
@@ -8207,9 +7626,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/wallets/{userId}": {
@@ -8230,9 +7647,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/wallets/{userId}/lock": {
@@ -8253,9 +7668,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/wallets/{userId}/unlock": {
@@ -8276,9 +7689,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/wallets/{userId}/adjust": {
@@ -8309,9 +7720,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/wallets/{userId}/reset-limits": {
@@ -8332,9 +7741,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminWallets"
-        ]
+        "tags": ["AdminWallets"]
       }
     },
     "/admin/virtual-accounts": {
@@ -8419,9 +7826,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/stats": {
@@ -8433,9 +7838,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/unassigned": {
@@ -8447,9 +7850,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/failed": {
@@ -8486,9 +7887,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/{userId}/status": {
@@ -8509,9 +7908,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/{userId}/create": {
@@ -8532,9 +7929,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/{userId}": {
@@ -8555,9 +7950,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/{accountId}/deactivate": {
@@ -8578,9 +7971,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/virtual-accounts/{accountId}/reactivate": {
@@ -8601,9 +7992,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminVirtualAccounts"
-        ]
+        "tags": ["AdminVirtualAccounts"]
       }
     },
     "/admin/deletions": {
@@ -8656,9 +8045,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminDeletions"
-        ]
+        "tags": ["AdminDeletions"]
       }
     },
     "/admin/deletions/pending": {
@@ -8670,9 +8057,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminDeletions"
-        ]
+        "tags": ["AdminDeletions"]
       }
     },
     "/admin/deletions/{requestId}": {
@@ -8693,9 +8078,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminDeletions"
-        ]
+        "tags": ["AdminDeletions"]
       }
     },
     "/admin/deletions/{requestId}/approve": {
@@ -8716,9 +8099,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminDeletions"
-        ]
+        "tags": ["AdminDeletions"]
       }
     },
     "/admin/deletions/{requestId}/reject": {
@@ -8739,9 +8120,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminDeletions"
-        ]
+        "tags": ["AdminDeletions"]
       }
     },
     "/admin/giftcards/orders": {
@@ -8818,9 +8197,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/giftcards/pending-review": {
@@ -8832,9 +8209,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/giftcards/stats": {
@@ -8863,9 +8238,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/giftcards/{orderId}": {
@@ -8886,9 +8259,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/giftcards/{orderId}/approve": {
@@ -8919,9 +8290,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/giftcards/{orderId}/reject": {
@@ -8952,9 +8321,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/giftcards/{orderId}/adjust-amount": {
@@ -8985,9 +8352,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminGiftCards"
-        ]
+        "tags": ["AdminGiftCards"]
       }
     },
     "/admin/crypto/orders": {
@@ -9064,9 +8429,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/crypto/pending-review": {
@@ -9078,9 +8441,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/crypto/stats": {
@@ -9109,9 +8470,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/crypto/{orderId}": {
@@ -9132,9 +8491,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/crypto/{orderId}/approve": {
@@ -9165,9 +8522,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/crypto/{orderId}/reject": {
@@ -9198,9 +8553,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/crypto/{orderId}/adjust-amount": {
@@ -9231,9 +8584,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCrypto"
-        ]
+        "tags": ["AdminCrypto"]
       }
     },
     "/admin/notifications": {
@@ -9302,9 +8653,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/stats": {
@@ -9333,9 +8682,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/user/{userId}": {
@@ -9372,9 +8719,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       },
       "post": {
         "operationId": "AdminNotificationsController_sendToUser",
@@ -9403,9 +8748,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/{notificationId}": {
@@ -9426,9 +8769,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       },
       "delete": {
         "operationId": "AdminNotificationsController_deleteNotification",
@@ -9447,9 +8788,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/broadcast": {
@@ -9471,9 +8810,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/{notificationId}/read": {
@@ -9494,9 +8831,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/bulk-delete": {
@@ -9541,9 +8876,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/birthday-test/{userId}": {
@@ -9564,9 +8897,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/notifications/queue/stats": {
@@ -9578,9 +8909,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminNotifications"
-        ]
+        "tags": ["AdminNotifications"]
       }
     },
     "/admin/advanced-analytics/revenue-time-series": {
@@ -9617,9 +8946,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdvancedAnalytics"
-        ]
+        "tags": ["AdminAdvancedAnalytics"]
       }
     },
     "/admin/advanced-analytics/transaction-trends": {
@@ -9656,9 +8983,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdvancedAnalytics"
-        ]
+        "tags": ["AdminAdvancedAnalytics"]
       }
     },
     "/admin/advanced-analytics/user-growth": {
@@ -9695,9 +9020,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdvancedAnalytics"
-        ]
+        "tags": ["AdminAdvancedAnalytics"]
       }
     },
     "/admin/advanced-analytics/cohort-analysis": {
@@ -9718,9 +9041,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdvancedAnalytics"
-        ]
+        "tags": ["AdminAdvancedAnalytics"]
       }
     },
     "/admin/advanced-analytics/provider-performance": {
@@ -9749,9 +9070,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdvancedAnalytics"
-        ]
+        "tags": ["AdminAdvancedAnalytics"]
       }
     },
     "/admin/advanced-analytics/platform-overview": {
@@ -9763,9 +9082,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdvancedAnalytics"
-        ]
+        "tags": ["AdminAdvancedAnalytics"]
       }
     },
     "/admin/audit-logs": {
@@ -9842,9 +9159,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAuditLogs"
-        ]
+        "tags": ["AdminAuditLogs"]
       }
     },
     "/admin/audit-logs/stats": {
@@ -9873,9 +9188,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAuditLogs"
-        ]
+        "tags": ["AdminAuditLogs"]
       }
     },
     "/admin/audit-logs/user/{userId}": {
@@ -9912,9 +9225,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAuditLogs"
-        ]
+        "tags": ["AdminAuditLogs"]
       }
     },
     "/admin/audit-logs/resource/{resource}/{resourceId}": {
@@ -9959,9 +9270,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAuditLogs"
-        ]
+        "tags": ["AdminAuditLogs"]
       }
     },
     "/admin/audit-logs/{logId}": {
@@ -9982,9 +9291,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAuditLogs"
-        ]
+        "tags": ["AdminAuditLogs"]
       }
     },
     "/admin/admins": {
@@ -10037,9 +9344,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       },
       "post": {
         "operationId": "AdminAdminsController_createAdmin",
@@ -10059,9 +9364,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       }
     },
     "/admin/admins/stats": {
@@ -10073,9 +9376,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       }
     },
     "/admin/admins/{adminId}": {
@@ -10096,9 +9397,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       },
       "patch": {
         "operationId": "AdminAdminsController_updateAdmin",
@@ -10127,9 +9426,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       },
       "delete": {
         "operationId": "AdminAdminsController_deleteAdmin",
@@ -10148,9 +9445,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       }
     },
     "/admin/admins/{adminId}/reset-password": {
@@ -10181,9 +9476,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminAdmins"
-        ]
+        "tags": ["AdminAdmins"]
       }
     },
     "/admin/circle/config": {
@@ -10195,9 +9488,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/stats": {
@@ -10209,9 +9500,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/wallets": {
@@ -10223,9 +9512,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/wallets/user/{userId}": {
@@ -10246,9 +9533,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/wallets/{id}": {
@@ -10269,9 +9554,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/wallet-sets": {
@@ -10300,9 +9583,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/wallet-sets/{id}": {
@@ -10323,9 +9604,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/transactions": {
@@ -10337,9 +9616,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/transactions/{id}": {
@@ -10360,9 +9637,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/cctp-transfers": {
@@ -10374,9 +9649,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/cctp-transfers/{id}": {
@@ -10397,9 +9670,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/webhook-logs": {
@@ -10411,9 +9682,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/analytics": {
@@ -10425,9 +9694,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/users": {
@@ -10480,9 +9747,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/users/stats": {
@@ -10494,9 +9759,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/circle/users/{id}": {
@@ -10517,9 +9780,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminCircle"
-        ]
+        "tags": ["AdminCircle"]
       }
     },
     "/admin/emails": {
@@ -10580,9 +9841,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/stats": {
@@ -10594,9 +9853,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/outbound": {
@@ -10649,9 +9906,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/outbound/{id}": {
@@ -10672,9 +9927,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/process-from-resend": {
@@ -10686,9 +9939,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/{id}": {
@@ -10709,9 +9960,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/{id}/process": {
@@ -10732,9 +9981,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/{id}/reply": {
@@ -10765,9 +10012,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/{id}/content": {
@@ -10788,9 +10033,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/{id}/attachments/{attachmentId}": {
@@ -10819,9 +10062,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/{id}/forward": {
@@ -10842,9 +10083,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/emails/send": {
@@ -10866,9 +10105,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "AdminEmails"
-        ]
+        "tags": ["AdminEmails"]
       }
     },
     "/admin/rate-limits/stats": {
@@ -10880,9 +10117,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RateLimits"
-        ]
+        "tags": ["RateLimits"]
       }
     },
     "/admin/rate-limits/violations": {
@@ -10935,9 +10170,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RateLimits"
-        ]
+        "tags": ["RateLimits"]
       }
     },
     "/admin/rate-limits/metrics": {
@@ -10958,9 +10191,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RateLimits"
-        ]
+        "tags": ["RateLimits"]
       }
     },
     "/admin/rate-limits/top-violators": {
@@ -10981,9 +10212,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RateLimits"
-        ]
+        "tags": ["RateLimits"]
       }
     },
     "/admin/rate-limits/geographic": {
@@ -10995,9 +10224,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RateLimits"
-        ]
+        "tags": ["RateLimits"]
       }
     },
     "/admin/rate-limits/locked-accounts": {
@@ -11034,9 +10261,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RateLimits"
-        ]
+        "tags": ["RateLimits"]
       }
     }
   },
@@ -11118,13 +10343,7 @@
             "maxLength": 50
           }
         },
-        "required": [
-          "email",
-          "phone",
-          "password",
-          "firstName",
-          "lastName"
-        ]
+        "required": ["email", "phone", "password", "firstName", "lastName"]
       },
       "DeviceInfoDto": {
         "type": "object",
@@ -11142,11 +10361,7 @@
           "deviceType": {
             "type": "string",
             "description": "Device platform type",
-            "enum": [
-              "ios",
-              "android",
-              "web"
-            ],
+            "enum": ["ios", "android", "web"],
             "example": "ios"
           },
           "deviceModel": {
@@ -11165,11 +10380,7 @@
             "example": "1.2.3"
           }
         },
-        "required": [
-          "deviceId",
-          "deviceName",
-          "deviceType"
-        ]
+        "required": ["deviceId", "deviceName", "deviceType"]
       },
       "LoginDto": {
         "type": "object",
@@ -11193,10 +10404,7 @@
             ]
           }
         },
-        "required": [
-          "identifier",
-          "password"
-        ]
+        "required": ["identifier", "password"]
       },
       "RefreshTokenDto": {
         "type": "object",
@@ -11207,9 +10415,7 @@
             "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         },
-        "required": [
-          "refreshToken"
-        ]
+        "required": ["refreshToken"]
       },
       "ForgotPasswordDto": {
         "type": "object",
@@ -11221,9 +10427,7 @@
             "format": "email"
           }
         },
-        "required": [
-          "email"
-        ]
+        "required": ["email"]
       },
       "VerifyResetCodeDto": {
         "type": "object",
@@ -11243,10 +10447,7 @@
             "pattern": "^\\d{6}$"
           }
         },
-        "required": [
-          "email",
-          "code"
-        ]
+        "required": ["email", "code"]
       },
       "ResetPasswordDto": {
         "type": "object",
@@ -11378,32 +10579,17 @@
           "emailFrequency": {
             "type": "string",
             "description": "Email Frequency",
-            "enum": [
-              "IMMEDIATE",
-              "DAILY",
-              "WEEKLY",
-              "NEVER"
-            ]
+            "enum": ["IMMEDIATE", "DAILY", "WEEKLY", "NEVER"]
           },
           "smsFrequency": {
             "type": "string",
             "description": "SMS Frequency",
-            "enum": [
-              "IMMEDIATE",
-              "DAILY",
-              "WEEKLY",
-              "NEVER"
-            ]
+            "enum": ["IMMEDIATE", "DAILY", "WEEKLY", "NEVER"]
           },
           "pushFrequency": {
             "type": "string",
             "description": "Push Frequency",
-            "enum": [
-              "IMMEDIATE",
-              "DAILY",
-              "WEEKLY",
-              "NEVER"
-            ]
+            "enum": ["IMMEDIATE", "DAILY", "WEEKLY", "NEVER"]
           },
           "quietHoursEnabled": {
             "type": "boolean",
@@ -11445,9 +10631,7 @@
             "description": "OneSignal External ID"
           }
         },
-        "required": [
-          "oneSignalPlayerId"
-        ]
+        "required": ["oneSignalPlayerId"]
       },
       "PaystackCustomerDto": {
         "type": "object",
@@ -11461,10 +10645,7 @@
             "description": "Customer code"
           }
         },
-        "required": [
-          "email",
-          "customer_code"
-        ]
+        "required": ["email", "customer_code"]
       },
       "PaystackAuthorizationDto": {
         "type": "object",
@@ -11503,11 +10684,7 @@
             "description": "Bank details"
           }
         },
-        "required": [
-          "account_number",
-          "account_name",
-          "bank"
-        ]
+        "required": ["account_number", "account_name", "bank"]
       },
       "PaystackDataDto": {
         "type": "object",
@@ -11565,11 +10742,7 @@
             ]
           }
         },
-        "required": [
-          "reference",
-          "amount",
-          "status"
-        ]
+        "required": ["reference", "amount", "status"]
       },
       "PaystackWebhookDto": {
         "type": "object",
@@ -11587,10 +10760,7 @@
             ]
           }
         },
-        "required": [
-          "event",
-          "data"
-        ]
+        "required": ["event", "data"]
       },
       "FundWalletDto": {
         "type": "object",
@@ -11607,9 +10777,7 @@
             "example": "https://myapp.com/payment/callback"
           }
         },
-        "required": [
-          "amount"
-        ]
+        "required": ["amount"]
       },
       "ResolveAccountDto": {
         "type": "object",
@@ -11696,11 +10864,7 @@
             "pattern": "^\\d{4}$"
           }
         },
-        "required": [
-          "recipientTag",
-          "amount",
-          "pin"
-        ]
+        "required": ["recipientTag", "amount", "pin"]
       },
       "SetTagDto": {
         "type": "object",
@@ -11739,11 +10903,7 @@
           "gender": {
             "type": "string",
             "description": "Gender",
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "OTHER"
-            ],
+            "enum": ["MALE", "FEMALE", "OTHER"],
             "example": "MALE"
           },
           "address": {
@@ -11789,10 +10949,7 @@
             "pattern": "((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$"
           }
         },
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ]
+        "required": ["currentPassword", "newPassword"]
       },
       "VerifyBvnDto": {
         "type": "object",
@@ -11812,10 +10969,7 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           }
         },
-        "required": [
-          "bvn",
-          "dateOfBirth"
-        ]
+        "required": ["bvn", "dateOfBirth"]
       },
       "VerifyNinDto": {
         "type": "object",
@@ -11835,10 +10989,7 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           }
         },
-        "required": [
-          "nin",
-          "dateOfBirth"
-        ]
+        "required": ["nin", "dateOfBirth"]
       },
       "VerifyEmailDto": {
         "type": "object",
@@ -11851,9 +11002,7 @@
             "maxLength": 6
           }
         },
-        "required": [
-          "code"
-        ]
+        "required": ["code"]
       },
       "VerifyPhoneDto": {
         "type": "object",
@@ -11866,9 +11015,7 @@
             "maxLength": 6
           }
         },
-        "required": [
-          "code"
-        ]
+        "required": ["code"]
       },
       "SetPinDto": {
         "type": "object",
@@ -11888,10 +11035,7 @@
             "maxLength": 4
           }
         },
-        "required": [
-          "pin",
-          "confirmPin"
-        ]
+        "required": ["pin", "confirmPin"]
       },
       "VerifyPinDto": {
         "type": "object",
@@ -11904,9 +11048,7 @@
             "maxLength": 4
           }
         },
-        "required": [
-          "pin"
-        ]
+        "required": ["pin"]
       },
       "ChangePinDto": {
         "type": "object",
@@ -11933,11 +11075,7 @@
             "maxLength": 4
           }
         },
-        "required": [
-          "currentPin",
-          "newPin",
-          "confirmNewPin"
-        ]
+        "required": ["currentPin", "newPin", "confirmNewPin"]
       },
       "RequestAccountDeletionDto": {
         "type": "object",
@@ -11966,10 +11104,7 @@
             "example": "Not satisfied with the service"
           }
         },
-        "required": [
-          "password",
-          "reason"
-        ]
+        "required": ["password", "reason"]
       },
       "VerifySmartcardDto": {
         "type": "object",
@@ -11986,10 +11121,7 @@
             "pattern": "^\\d{10}$"
           }
         },
-        "required": [
-          "provider",
-          "smartcardNumber"
-        ]
+        "required": ["provider", "smartcardNumber"]
       },
       "VerifyMeterDto": {
         "type": "object",
@@ -12009,17 +11141,10 @@
             "type": "string",
             "description": "Meter type (prepaid/postpaid)",
             "example": "prepaid",
-            "enum": [
-              "prepaid",
-              "postpaid"
-            ]
+            "enum": ["prepaid", "postpaid"]
           }
         },
-        "required": [
-          "disco",
-          "meterNumber",
-          "meterType"
-        ]
+        "required": ["disco", "meterNumber", "meterType"]
       },
       "PurchaseAirtimeDto": {
         "type": "object",
@@ -12028,12 +11153,7 @@
             "type": "string",
             "description": "Mobile network provider",
             "example": "MTN",
-            "enum": [
-              "MTN",
-              "GLO",
-              "AIRTEL",
-              "9MOBILE"
-            ]
+            "enum": ["MTN", "GLO", "AIRTEL", "9MOBILE"]
           },
           "phone": {
             "type": "string",
@@ -12067,12 +11187,7 @@
             "minimum": 0
           }
         },
-        "required": [
-          "network",
-          "phone",
-          "amount",
-          "pin"
-        ]
+        "required": ["network", "phone", "amount", "pin"]
       },
       "PurchaseDataDto": {
         "type": "object",
@@ -12081,12 +11196,7 @@
             "type": "string",
             "description": "Mobile network provider",
             "example": "MTN",
-            "enum": [
-              "MTN",
-              "GLO",
-              "AIRTEL",
-              "9MOBILE"
-            ]
+            "enum": ["MTN", "GLO", "AIRTEL", "9MOBILE"]
           },
           "phone": {
             "type": "string",
@@ -12122,12 +11232,7 @@
             "example": 50
           }
         },
-        "required": [
-          "network",
-          "phone",
-          "productCode",
-          "pin"
-        ]
+        "required": ["network", "phone", "productCode", "pin"]
       },
       "PayCableTVDto": {
         "type": "object",
@@ -12136,11 +11241,7 @@
             "type": "string",
             "description": "Cable TV Provider",
             "example": "DSTV",
-            "enum": [
-              "DSTV",
-              "GOTV",
-              "STARTIMES"
-            ]
+            "enum": ["DSTV", "GOTV", "STARTIMES"]
           },
           "smartcardNumber": {
             "type": "string",
@@ -12157,10 +11258,7 @@
             "type": "string",
             "description": "Subscription type (change/renew)",
             "example": "renew",
-            "enum": [
-              "change",
-              "renew"
-            ]
+            "enum": ["change", "renew"]
           },
           "quantity": {
             "type": "number",
@@ -12221,11 +11319,7 @@
             "maxLength": 4
           }
         },
-        "required": [
-          "phoneNumber",
-          "productCode",
-          "pin"
-        ]
+        "required": ["phoneNumber", "productCode", "pin"]
       },
       "PayElectricityDto": {
         "type": "object",
@@ -12245,10 +11339,7 @@
             "type": "string",
             "description": "Meter type (prepaid/postpaid)",
             "example": "prepaid",
-            "enum": [
-              "prepaid",
-              "postpaid"
-            ]
+            "enum": ["prepaid", "postpaid"]
           },
           "amount": {
             "type": "number",
@@ -12358,16 +11449,10 @@
             "type": "string",
             "description": "Variation code (utme-mock or utme-no-mock)",
             "example": "utme-mock",
-            "enum": [
-              "utme-mock",
-              "utme-no-mock"
-            ]
+            "enum": ["utme-mock", "utme-no-mock"]
           }
         },
-        "required": [
-          "profileId",
-          "variationCode"
-        ]
+        "required": ["profileId", "variationCode"]
       },
       "PurchaseJAMBPinDto": {
         "type": "object",
@@ -12382,10 +11467,7 @@
             "type": "string",
             "description": "Variation code (utme-mock or utme-no-mock)",
             "example": "utme-mock",
-            "enum": [
-              "utme-mock",
-              "utme-no-mock"
-            ]
+            "enum": ["utme-mock", "utme-no-mock"]
           },
           "pin": {
             "type": "string",
@@ -12405,11 +11487,7 @@
             "example": 0
           }
         },
-        "required": [
-          "profileId",
-          "variationCode",
-          "pin"
-        ]
+        "required": ["profileId", "variationCode", "pin"]
       },
       "PurchaseWAECRegistrationDto": {
         "type": "object",
@@ -12442,11 +11520,7 @@
             "example": 0
           }
         },
-        "required": [
-          "phone",
-          "variationCode",
-          "pin"
-        ]
+        "required": ["phone", "variationCode", "pin"]
       },
       "PurchaseWAECResultDto": {
         "type": "object",
@@ -12479,11 +11553,7 @@
             "example": 0
           }
         },
-        "required": [
-          "phone",
-          "variationCode",
-          "pin"
-        ]
+        "required": ["phone", "variationCode", "pin"]
       },
       "UpdateSavedRecipientDto": {
         "type": "object",
@@ -12524,10 +11594,7 @@
             "minimum": 0
           }
         },
-        "required": [
-          "serviceType",
-          "amount"
-        ]
+        "required": ["serviceType", "amount"]
       },
       "CreateCashbackConfigDto": {
         "type": "object",
@@ -12581,10 +11648,7 @@
             "example": "Weekend promo for Glo Data"
           }
         },
-        "required": [
-          "serviceType",
-          "percentage"
-        ]
+        "required": ["serviceType", "percentage"]
       },
       "UpdateCashbackConfigDto": {
         "type": "object",
@@ -12639,21 +11703,13 @@
             "type": "string",
             "description": "Blockchain network for the wallet",
             "example": "ETH-SEPOLIA",
-            "enum": [
-              "ETH-SEPOLIA",
-              "MATIC-AMOY",
-              "AVAX-FUJI",
-              "SOL-DEVNET"
-            ]
+            "enum": ["ETH-SEPOLIA", "MATIC-AMOY", "AVAX-FUJI", "SOL-DEVNET"]
           },
           "accountType": {
             "type": "string",
             "description": "Account type (Smart Contract Account or Externally Owned Account)",
             "example": "SCA",
-            "enum": [
-              "SCA",
-              "EOA"
-            ]
+            "enum": ["SCA", "EOA"]
           },
           "name": {
             "type": "string",
@@ -12701,11 +11757,7 @@
             "type": "string",
             "description": "Transaction fee level",
             "example": "MEDIUM",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ]
+            "enum": ["LOW", "MEDIUM", "HIGH"]
           },
           "memo": {
             "type": "string",
@@ -12713,11 +11765,7 @@
             "example": "Payment for services"
           }
         },
-        "required": [
-          "walletId",
-          "destinationAddress",
-          "amount"
-        ]
+        "required": ["walletId", "destinationAddress", "amount"]
       },
       "EstimateFeeDto": {
         "type": "object",
@@ -12744,11 +11792,7 @@
             "example": "ETH-SEPOLIA"
           }
         },
-        "required": [
-          "walletId",
-          "destinationAddress",
-          "amount"
-        ]
+        "required": ["walletId", "destinationAddress", "amount"]
       },
       "ValidateAddressDto": {
         "type": "object",
@@ -12764,10 +11808,7 @@
             "example": "ETH-SEPOLIA"
           }
         },
-        "required": [
-          "address",
-          "blockchain"
-        ]
+        "required": ["address", "blockchain"]
       },
       "CCTPTransferDto": {
         "type": "object",
@@ -12787,11 +11828,7 @@
             "type": "string",
             "description": "Destination blockchain",
             "example": "MATIC-AMOY",
-            "enum": [
-              "ETH-SEPOLIA",
-              "MATIC-AMOY",
-              "AVAX-FUJI"
-            ]
+            "enum": ["ETH-SEPOLIA", "MATIC-AMOY", "AVAX-FUJI"]
           },
           "amount": {
             "type": "string",
@@ -12802,20 +11839,13 @@
             "type": "string",
             "description": "Transfer type (STANDARD uses native CCTP, FAST uses liquidity pools)",
             "example": "STANDARD",
-            "enum": [
-              "STANDARD",
-              "FAST"
-            ]
+            "enum": ["STANDARD", "FAST"]
           },
           "feeLevel": {
             "type": "string",
             "description": "Transaction fee level",
             "example": "MEDIUM",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ]
+            "enum": ["LOW", "MEDIUM", "HIGH"]
           }
         },
         "required": [
@@ -12847,17 +11877,10 @@
             "type": "string",
             "description": "Transfer type",
             "example": "STANDARD",
-            "enum": [
-              "STANDARD",
-              "FAST"
-            ]
+            "enum": ["STANDARD", "FAST"]
           }
         },
-        "required": [
-          "sourceChain",
-          "destinationChain",
-          "amount"
-        ]
+        "required": ["sourceChain", "destinationChain", "amount"]
       },
       "GeneratePermitDto": {
         "type": "object",
@@ -12891,11 +11914,7 @@
             "type": "string",
             "description": "Authentication method",
             "example": "EMAIL",
-            "enum": [
-              "EMAIL",
-              "PIN",
-              "SOCIAL"
-            ]
+            "enum": ["EMAIL", "PIN", "SOCIAL"]
           }
         }
       },
@@ -12908,9 +11927,7 @@
             "example": "circle_user_123456"
           }
         },
-        "required": [
-          "circleUserId"
-        ]
+        "required": ["circleUserId"]
       },
       "InitializeUserWalletDto": {
         "type": "object",
@@ -12939,10 +11956,7 @@
             "type": "string",
             "description": "Account type",
             "example": "SCA",
-            "enum": [
-              "SCA",
-              "EOA"
-            ],
+            "enum": ["SCA", "EOA"],
             "default": "SCA"
           },
           "userToken": {
@@ -12956,11 +11970,7 @@
             "example": false
           }
         },
-        "required": [
-          "circleUserId",
-          "blockchain",
-          "userToken"
-        ]
+        "required": ["circleUserId", "blockchain", "userToken"]
       },
       "ListUserWalletsDto": {
         "type": "object",
@@ -12971,9 +11981,7 @@
             "example": "user_token_abc123xyz789"
           }
         },
-        "required": [
-          "userToken"
-        ]
+        "required": ["userToken"]
       },
       "GetEmailDeviceTokenDto": {
         "type": "object",
@@ -12989,9 +11997,7 @@
             "example": "device_123456"
           }
         },
-        "required": [
-          "deviceId"
-        ]
+        "required": ["deviceId"]
       },
       "SecurityQuestionItemDto": {
         "type": "object",
@@ -13013,11 +12019,7 @@
             "minimum": 0
           }
         },
-        "required": [
-          "questionId",
-          "questionText",
-          "questionIndex"
-        ]
+        "required": ["questionId", "questionText", "questionIndex"]
       },
       "SaveSecurityQuestionsDto": {
         "type": "object",
@@ -13037,10 +12039,7 @@
             }
           }
         },
-        "required": [
-          "circleUserId",
-          "questions"
-        ]
+        "required": ["circleUserId", "questions"]
       },
       "TransactionContextDto": {
         "type": "object",
@@ -13082,10 +12081,7 @@
             "description": "Transaction Timestamp"
           }
         },
-        "required": [
-          "transactionId",
-          "transactionType"
-        ]
+        "required": ["transactionId", "transactionType"]
       },
       "CreateConversationDto": {
         "type": "object",
@@ -13118,12 +12114,7 @@
           "senderType": {
             "type": "string",
             "description": "Sender Type",
-            "enum": [
-              "USER",
-              "BOT",
-              "AGENT",
-              "SYSTEM"
-            ]
+            "enum": ["USER", "BOT", "AGENT", "SYSTEM"]
           },
           "attachments": {
             "description": "Attachment URLs",
@@ -13137,9 +12128,7 @@
             "description": "Message Metadata"
           }
         },
-        "required": [
-          "content"
-        ]
+        "required": ["content"]
       },
       "RateConversationDto": {
         "type": "object",
@@ -13155,9 +12144,7 @@
             "description": "Comment"
           }
         },
-        "required": [
-          "rating"
-        ]
+        "required": ["rating"]
       },
       "AssignTicketDto": {
         "type": "object",
@@ -13167,9 +12154,7 @@
             "description": "Agent ID"
           }
         },
-        "required": [
-          "agentId"
-        ]
+        "required": ["agentId"]
       },
       "UpdateTicketDto": {
         "type": "object",
@@ -13177,22 +12162,12 @@
           "status": {
             "type": "string",
             "description": "Ticket Status",
-            "enum": [
-              "OPEN",
-              "IN_PROGRESS",
-              "RESOLVED",
-              "CLOSED"
-            ]
+            "enum": ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
           },
           "priority": {
             "type": "string",
             "description": "Ticket Priority",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH",
-              "URGENT"
-            ]
+            "enum": ["LOW", "MEDIUM", "HIGH", "URGENT"]
           },
           "assignedAgentId": {
             "type": "string",
@@ -13220,10 +12195,7 @@
             "description": "Sort Order"
           }
         },
-        "required": [
-          "title",
-          "description"
-        ]
+        "required": ["title", "description"]
       },
       "UpdateHelpCollectionDto": {
         "type": "object",
@@ -13270,10 +12242,7 @@
             "description": "Keyboard Shortcut"
           }
         },
-        "required": [
-          "title",
-          "content"
-        ]
+        "required": ["title", "content"]
       },
       "UpdateCannedResponseDto": {
         "type": "object",
@@ -13308,9 +12277,7 @@
             "description": "Is Helpful?"
           }
         },
-        "required": [
-          "helpful"
-        ]
+        "required": ["helpful"]
       },
       "CreateCryptoWalletDto": {
         "type": "object",

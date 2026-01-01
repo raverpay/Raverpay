@@ -48,10 +48,10 @@ async function exportSwagger() {
   fs.writeFileSync(outputPath, JSON.stringify(document, null, 2));
 
   console.log(`✅ OpenAPI spec exported to: ${outputPath}`);
-  console.log(`📊 Total endpoints: ${Object.keys(document.paths || {}).length}`);
   console.log(
-    `🏷️  Total tags: ${(document.tags || []).length}`,
+    `📊 Total endpoints: ${Object.keys(document.paths || {}).length}`,
   );
+  console.log(`🏷️  Total tags: ${(document.tags || []).length}`);
   console.log(
     `📦 Total schemas: ${Object.keys(document.components?.schemas || {}).length}`,
   );

@@ -21,7 +21,8 @@ export class ChangePasswordDto {
   currentPassword: string;
 
   @ApiProperty({
-    description: 'New password (min 8 chars, mixed case, numbers/special chars)',
+    description:
+      'New password (min 8 chars, mixed case, numbers/special chars)',
     example: 'NewPassword123!',
     minLength: 8,
     maxLength: 50,

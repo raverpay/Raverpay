@@ -93,4 +93,3 @@ export class LoginDto {
   @Type(() => DeviceInfoDto)
   deviceInfo?: DeviceInfoDto;
 }
-

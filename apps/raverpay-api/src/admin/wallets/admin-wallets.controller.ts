@@ -9,7 +9,14 @@ import {
   Request,
   ParseBoolPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -76,7 +83,9 @@ export class AdminWalletsController {
 
   @ApiOperation({ summary: 'Lock a wallet' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { reason: { type: 'string' } } },
+  })
   @Throttle({ default: { limit: 20, ttl: 3600000 } }) // 20 wallet locks per hour
   @Post(':userId/lock')
   async lockWallet(
@@ -89,7 +98,9 @@ export class AdminWalletsController {
 
   @ApiOperation({ summary: 'Unlock a wallet' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { reason: { type: 'string' } } },
+  })
   @Throttle({ default: { limit: 20, ttl: 3600000 } }) // 20 wallet unlocks per hour
   @Post(':userId/unlock')
   async unlockWallet(

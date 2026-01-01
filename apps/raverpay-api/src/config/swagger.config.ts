@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 /**
  * Swagger/OpenAPI Configuration for Raverpay API
- * 
+ *
  * This configuration sets up comprehensive API documentation with:
  * - JWT authentication scheme
  * - Organized endpoint tags
@@ -36,7 +36,7 @@ import { WebhooksModule } from '../webhooks/webhooks.module'; // Corrected impor
  */
 export function setupPublicSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
-    .setTitle('Raverpay API')   
+    .setTitle('Raverpay API')
     .setDescription(
       `
 # Raverpay Fintech Platform API
@@ -59,12 +59,26 @@ Most endpoints require JWT authentication.
       `.trim(),
     )
     .setVersion('1.0.0')
-    .setContact('Raverpay Support', 'https://app.raverpay.com', 'support@raverpay.com')
+    .setContact(
+      'Raverpay Support',
+      'https://app.raverpay.com',
+      'support@raverpay.com',
+    )
     .setLicense('Proprietary', 'https://app.raverpay.com/terms')
     .addServer('http://localhost:3001', 'Local Development')
     .addServer('https://api-staging.raverpay.com', 'Staging')
     .addServer('https://api.raverpay.com', 'Production')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', name: 'JWT', description: 'Enter JWT token', in: 'header' }, 'JWT-auth')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     // Organize endpoints by tags
     .addTag('Authentication', 'User authentication and authorization')
     .addTag('Users', 'User profile and account management')
@@ -92,7 +106,8 @@ Most endpoints require JWT authentication.
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
-    operationIdFactory: (controllerKey: string, methodKey: string) => `${controllerKey}_${methodKey}`,
+    operationIdFactory: (controllerKey: string, methodKey: string) =>
+      `${controllerKey}_${methodKey}`,
     include: [
       AuthModule,
       UsersModule,
@@ -149,7 +164,17 @@ export function setupAdminSwagger(app: INestApplication): void {
     .addServer('http://localhost:3001', 'Local Development')
     .addServer('https://api-staging.raverpay.com', 'Staging')
     .addServer('https://api.raverpay.com', 'Production')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', name: 'JWT', description: 'Enter JWT token', in: 'header' }, 'JWT-auth')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .addTag('Admin - Users', 'Admin user management')
     .addTag('Admin - Wallets', 'Admin wallet operations')
     .addTag('Admin - Transactions', 'Admin transaction management')
@@ -172,7 +197,8 @@ export function setupAdminSwagger(app: INestApplication): void {
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
-    operationIdFactory: (controllerKey: string, methodKey: string) => `${controllerKey}_${methodKey}`,
+    operationIdFactory: (controllerKey: string, methodKey: string) =>
+      `${controllerKey}_${methodKey}`,
     include: [AdminModule, AuthModule],
   });
 

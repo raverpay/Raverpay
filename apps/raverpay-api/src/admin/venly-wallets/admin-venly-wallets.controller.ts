@@ -8,7 +8,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AdminVenlyWalletsService } from './admin-venly-wallets.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -69,7 +76,7 @@ export class AdminVenlyWalletsController {
     return this.venlyWalletsService.getAnalytics(startDate, endDate);
   }
 
-  @ApiOperation({ summary: 'Get user\'s crypto wallet details' })
+  @ApiOperation({ summary: "Get user's crypto wallet details" })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @Get('user/:userId')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUPPORT)
@@ -117,7 +124,9 @@ export class AdminVenlyWalletsController {
 
   @ApiOperation({ summary: 'Flag transaction as suspicious' })
   @ApiParam({ name: 'id', description: 'Transaction ID' })
-  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { reason: { type: 'string' } } },
+  })
   @Post('transactions/:id/flag')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async flagTransaction(
@@ -163,7 +172,16 @@ export class AdminVenlyWalletsController {
   }
 
   @ApiOperation({ summary: 'Update exchange rate' })
-  @ApiBody({ schema: { type: 'object', properties: { currency: { type: 'string' }, toNaira: { type: 'number' }, platformFeePercent: { type: 'number' } } } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        currency: { type: 'string' },
+        toNaira: { type: 'number' },
+        platformFeePercent: { type: 'number' },
+      },
+    },
+  })
   @Patch('exchange-rates')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async updateExchangeRate(

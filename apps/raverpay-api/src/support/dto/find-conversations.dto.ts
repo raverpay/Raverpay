@@ -23,7 +23,10 @@ export class FindConversationsDto {
   @Max(50)
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Conversation Status', enum: ConversationStatus })
+  @ApiPropertyOptional({
+    description: 'Conversation Status',
+    enum: ConversationStatus,
+  })
   @IsOptional()
   @IsEnum(ConversationStatus)
   status?: ConversationStatus;

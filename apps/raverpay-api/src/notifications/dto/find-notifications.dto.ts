@@ -26,7 +26,10 @@ export class FindNotificationsDto {
   @Max(50)
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Filter by Type', enum: NotificationType })
+  @ApiPropertyOptional({
+    description: 'Filter by Type',
+    enum: NotificationType,
+  })
   @IsOptional()
   @IsEnum(NotificationType)
   type?: NotificationType;

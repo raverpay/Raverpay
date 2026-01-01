@@ -78,12 +78,18 @@ export class PaystackDataDto {
   @IsNumber()
   fees?: number;
 
-  @ApiPropertyOptional({ description: 'Customer details', type: PaystackCustomerDto })
+  @ApiPropertyOptional({
+    description: 'Customer details',
+    type: PaystackCustomerDto,
+  })
   @IsOptional()
   @IsObject()
   customer?: PaystackCustomerDto;
 
-  @ApiPropertyOptional({ description: 'Authorization details', type: PaystackAuthorizationDto })
+  @ApiPropertyOptional({
+    description: 'Authorization details',
+    type: PaystackAuthorizationDto,
+  })
   @IsOptional()
   @IsObject()
   authorization?: PaystackAuthorizationDto;
@@ -93,7 +99,10 @@ export class PaystackDataDto {
   @IsObject()
   metadata?: Record<string, any>;
 
-  @ApiPropertyOptional({ description: 'Dedicated account details', type: PaystackDedicatedAccountDto })
+  @ApiPropertyOptional({
+    description: 'Dedicated account details',
+    type: PaystackDedicatedAccountDto,
+  })
   @IsOptional()
   @IsObject()
   dedicated_account?: PaystackDedicatedAccountDto;

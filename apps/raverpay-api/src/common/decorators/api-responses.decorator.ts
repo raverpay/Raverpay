@@ -131,7 +131,6 @@ export const ApiNotFoundErrorResponse = (resourceName = 'Resource') => {
  * Use for endpoints that return paginated data
  */
 export const ApiPaginatedResponse = (dataType: string) => {
-  return applyDecorators(
-    // You can add specific pagination response schema here
-  );
+  return applyDecorators();
+  // You can add specific pagination response schema here
 };

@@ -131,7 +131,10 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  @ApiResponse({ status: 403, description: 'Account locked due to too many failed attempts' })
+  @ApiResponse({
+    status: 403,
+    description: 'Account locked due to too many failed attempts',
+  })
   @ApiResponse({ status: 429, description: 'Too many login attempts' })
   async login(@Body() dto: LoginDto, @Req() req: Request) {
     // Extract IP address
@@ -193,7 +196,8 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Get current user profile',
-    description: 'Retrieve the authenticated user profile. Requires valid JWT token.',
+    description:
+      'Retrieve the authenticated user profile. Requires valid JWT token.',
   })
   @ApiResponse({
     status: 200,
@@ -213,7 +217,10 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or missing JWT token' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
   getMe(@GetUser() user: unknown) {
     return {
       user,
@@ -299,7 +306,8 @@ export class AuthController {
     description: 'Password reset successfully',
     schema: {
       example: {
-        message: 'Password reset successfully. You can now login with your new password.',
+        message:
+          'Password reset successfully. You can now login with your new password.',
       },
     },
   })

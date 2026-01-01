@@ -42,7 +42,10 @@ export class CashbackController {
    */
   @Get('wallet')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Cashback Balance', description: 'Get current cashback wallet balance' })
+  @ApiOperation({
+    summary: 'Get Cashback Balance',
+    description: 'Get current cashback wallet balance',
+  })
   @ApiResponse({ status: 200, description: 'Balance retrieved' })
   async getCashbackWallet(@GetUser('id') userId: string) {
     return this.cashbackService.getCashbackBalance(userId);
@@ -53,7 +56,10 @@ export class CashbackController {
    */
   @Get('history')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Cashback History', description: 'Get cashback transaction history' })
+  @ApiOperation({
+    summary: 'Get Cashback History',
+    description: 'Get cashback transaction history',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'type', required: false, enum: ['EARNED', 'REDEEMED'] })
@@ -77,7 +83,10 @@ export class CashbackController {
    */
   @Get('config')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Active Configs', description: 'Get list of active cashback offers' })
+  @ApiOperation({
+    summary: 'Get Active Configs',
+    description: 'Get list of active cashback offers',
+  })
   @ApiResponse({ status: 200, description: 'Configurations retrieved' })
   async getActiveConfigs() {
     return this.cashbackService.getActiveConfigs();
@@ -88,7 +97,10 @@ export class CashbackController {
    */
   @Post('calculate')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Calculate Cashback', description: 'Calculate potential cashback for a transaction' })
+  @ApiOperation({
+    summary: 'Calculate Cashback',
+    description: 'Calculate potential cashback for a transaction',
+  })
   @ApiResponse({ status: 200, description: 'Calculation result' })
   async calculateCashback(@Body() dto: CalculateCashbackDto) {
     return this.cashbackService.calculateCashback(

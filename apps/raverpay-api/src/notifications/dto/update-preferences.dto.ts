@@ -97,19 +97,28 @@ export class UpdateNotificationPreferencesDto {
   promotionalPush?: boolean;
 
   // Frequency controls
-  @ApiPropertyOptional({ description: 'Email Frequency', enum: ['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'] })
+  @ApiPropertyOptional({
+    description: 'Email Frequency',
+    enum: ['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'],
+  })
   @IsOptional()
   @IsString()
   @IsIn(['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'])
   emailFrequency?: string;
 
-  @ApiPropertyOptional({ description: 'SMS Frequency', enum: ['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'] })
+  @ApiPropertyOptional({
+    description: 'SMS Frequency',
+    enum: ['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'],
+  })
   @IsOptional()
   @IsString()
   @IsIn(['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'])
   smsFrequency?: string;
 
-  @ApiPropertyOptional({ description: 'Push Frequency', enum: ['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'] })
+  @ApiPropertyOptional({
+    description: 'Push Frequency',
+    enum: ['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'],
+  })
   @IsOptional()
   @IsString()
   @IsIn(['IMMEDIATE', 'DAILY', 'WEEKLY', 'NEVER'])
@@ -121,12 +130,18 @@ export class UpdateNotificationPreferencesDto {
   @IsBoolean()
   quietHoursEnabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Quiet Hours Start (HH:mm)', example: '22:00' })
+  @ApiPropertyOptional({
+    description: 'Quiet Hours Start (HH:mm)',
+    example: '22:00',
+  })
   @IsOptional()
   @IsString()
   quietHoursStart?: string; // "22:00"
 
-  @ApiPropertyOptional({ description: 'Quiet Hours End (HH:mm)', example: '06:00' })
+  @ApiPropertyOptional({
+    description: 'Quiet Hours End (HH:mm)',
+    example: '06:00',
+  })
   @IsOptional()
   @IsString()
   quietHoursEnd?: string; // "06:00"

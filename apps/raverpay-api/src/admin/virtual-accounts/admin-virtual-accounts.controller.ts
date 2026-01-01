@@ -10,7 +10,14 @@ import {
   Request,
   ParseBoolPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -105,7 +112,12 @@ export class AdminVirtualAccountsController {
 
   @ApiOperation({ summary: 'Manually create DVA for a user' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiBody({ schema: { type: 'object', properties: { preferred_bank: { type: 'string' } } } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { preferred_bank: { type: 'string' } },
+    },
+  })
   @Post(':userId/create')
   async createDVAForUser(
     @Request() req,
@@ -128,7 +140,9 @@ export class AdminVirtualAccountsController {
 
   @ApiOperation({ summary: 'Deactivate virtual account' })
   @ApiParam({ name: 'accountId', description: 'Account ID' })
-  @ApiBody({ schema: { type: 'object', properties: { reason: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { reason: { type: 'string' } } },
+  })
   @Patch(':accountId/deactivate')
   async deactivate(
     @Request() req,

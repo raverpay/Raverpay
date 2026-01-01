@@ -11,7 +11,15 @@ import {
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AdminEmailsService } from './admin-emails.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -114,8 +122,12 @@ export class AdminEmailsController {
     return this.emailsService.getOutboundEmailById(emailId, userRole, userId);
   }
 
-  @ApiOperation({ summary: 'Manually process an email from Resend by email ID' })
-  @ApiBody({ schema: { type: 'object', properties: { emailId: { type: 'string' } } } })
+  @ApiOperation({
+    summary: 'Manually process an email from Resend by email ID',
+  })
+  @ApiBody({
+    schema: { type: 'object', properties: { emailId: { type: 'string' } } },
+  })
   @Post('process-from-resend')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async processEmailFromResend(
@@ -208,7 +220,9 @@ export class AdminEmailsController {
 
   @ApiOperation({ summary: 'Forward an email to another address' })
   @ApiParam({ name: 'id', description: 'Email ID' })
-  @ApiBody({ schema: { type: 'object', properties: { toEmail: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { toEmail: { type: 'string' } } },
+  })
   @Post(':id/forward')
   async forwardEmail(
     @Param('id') emailId: string,
