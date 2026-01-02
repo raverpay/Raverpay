@@ -94,6 +94,8 @@ model User {
   circleTransactions     CircleTransaction[]
   circleCCTPTransfers    CircleCCTPTransfer[]
   circleUsers            CircleUser[]
+  modularWallets         CircleModularWallet[]
+  passkeyCredentials     PasskeyCredential[]
   sentEmails             OutboundEmail[]          @relation("SentEmails")
   receivedEmails         OutboundEmail[]          @relation("ReceivedEmails")
 
@@ -1227,6 +1229,12 @@ model CircleTransaction {
   estimatedCompleteDate DateTime?
   completedDate         DateTime?
   cancelledDate         DateTime?
+  // Transaction fee fields
+  serviceFee            String?                   // Service fee amount in USDC
+  feeCollected          Boolean                   @default(false) // Whether fee was successfully collected
+  totalAmount           String?                   // Total amount (amount + serviceFee)
+  mainTransferId        String?                   // Circle transaction ID for main transfer
+  feeTransferId         String?                   // Circle transaction ID for fee transfer
   createdAt             DateTime                  @default(now())
   updatedAt             DateTime                  @updatedAt
   user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1240,7 +1248,27 @@ model CircleTransaction {
   @@index([transactionHash])
   @@index([createdAt])
   @@index([userId, createdAt(sort: Desc)])
+  @@index([feeCollected])
   @@map("circle_transactions")
+}
+
+model FeeRetryQueue {
+  id                String   @id @default(uuid())
+  walletId          String
+  collectionWallet  String
+  fee               String   // Fee amount in USDC
+  mainTransferId    String   // Reference to main transaction
+  retryCount        Int      @default(0)
+  status            String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  lastError         String?
+  lastRetryAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([mainTransferId])
+  @@map("fee_retry_queue")
 }
 
 model CircleWebhookLog {
@@ -1703,4 +1731,43 @@ enum CCTPTransferState {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+// ============================================
+// CIRCLE MODULAR WALLETS
+// ============================================
+
+model CircleModularWallet {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  circleWalletId  String   @unique @map("circle_wallet_id")
+  address         String
+  blockchain      String
+  name            String?
+  state           String   @default("LIVE")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([address])
+  @@map("circle_modular_wallets")
+}
+
+model PasskeyCredential {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  credentialId String    @unique @map("credential_id")
+  publicKey    String    @map("public_key")
+  rpId         String?   @map("rp_id")
+  username     String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastUsedAt   DateTime? @map("last_used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("passkey_credentials")
 }

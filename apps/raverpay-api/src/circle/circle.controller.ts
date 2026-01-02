@@ -11,6 +11,7 @@ import {
   Query,
   Request,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -47,6 +48,10 @@ import {
 import { CCTPService } from './transactions/cctp.service';
 import { CircleTransactionService } from './transactions/circle-transaction.service';
 import { CircleWalletService } from './wallets/circle-wallet.service';
+import { UserControlledWalletService } from './user-controlled/user-controlled-wallet.service';
+import { ModularWalletService } from './modular/modular-wallet.service';
+import { FeeConfigurationService } from './fees/fee-configuration.service';
+import { FeeRetryService } from './fees/fee-retry.service';
 
 interface AuthRequest {
   user: { id: string; email: string; role: string };
@@ -67,11 +72,34 @@ export class CircleController {
     private readonly cctpService: CCTPService,
     private readonly configService: CircleConfigService,
     private readonly paymasterService: PaymasterService,
+    private readonly userControlledWalletService: UserControlledWalletService,
+    private readonly modularWalletService: ModularWalletService,
+    private readonly feeConfigService: FeeConfigurationService,
+    private readonly feeRetryService: FeeRetryService,
   ) {}
 
   // ============================================
   // WALLET ENDPOINTS
   // ============================================
+
+  /**
+   * Get supported blockchains
+   * GET /circle/chains
+   */
+  @Get('chains')
+  @ApiOperation({
+    summary: 'Get supported blockchains',
+    description: 'Retrieve list of supported blockchains with metadata',
+  })
+  @ApiResponse({ status: 200, description: 'Chains retrieved successfully' })
+  getSupportedChains() {
+    return {
+      success: true,
+      data: {
+        chains: this.configService.getChainMetadata(),
+      },
+    };
+  }
 
   /**
    * Create a new Circle wallet for the user
@@ -120,20 +148,58 @@ export class CircleController {
   @ApiResponse({ status: 200, description: 'Wallets retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getWallets(@Request() req: AuthRequest) {
-    const wallets = await this.walletService.getUserWallets(req.user.id);
+    // Fetch developer-controlled wallets
+    const devWallets = await this.walletService.getUserWallets(req.user.id);
+
+    // Fetch user-controlled wallets
+    const userWallets =
+      await this.userControlledWalletService.getUserControlledWallets(
+        req.user.id,
+      );
+
+    // Fetch modular wallets
+    const modularWallets = await this.modularWalletService.getUserWallets(
+      req.user.id,
+    );
 
     return {
       success: true,
-      data: wallets.map((w) => ({
-        id: w.id,
-        address: w.address,
-        blockchain: w.blockchain,
-        accountType: w.accountType,
-        state: w.state,
-        name: w.name,
-        custodyType: w.custodyType, // DEVELOPER | USER
-        createdAt: w.createdAt,
-      })),
+      data: [
+        // Developer-controlled wallets
+        ...devWallets.map((w) => ({
+          id: w.id,
+          address: w.address,
+          blockchain: w.blockchain,
+          accountType: w.accountType,
+          state: w.state,
+          name: w.name,
+          custodyType: w.custodyType,
+          type: 'DEVELOPER',
+          createdAt: w.createdAt,
+        })),
+        // User-controlled wallets
+        ...userWallets.map((w) => ({
+          id: w.id,
+          address: w.address,
+          blockchain: w.blockchain,
+          accountType: w.accountType,
+          state: w.state,
+          name: w.name,
+          custodyType: w.custodyType,
+          type: 'USER',
+          createdAt: w.createdAt,
+        })),
+        // Modular wallets
+        ...modularWallets.map((w) => ({
+          id: w.id,
+          address: w.address,
+          blockchain: w.blockchain,
+          state: w.state,
+          name: w.name,
+          type: 'MODULAR',
+          createdAt: w.createdAt,
+        })),
+      ],
     };
   }
 
@@ -871,6 +937,186 @@ export class CircleController {
     return {
       success: true,
       data: stats,
+    };
+  }
+
+  // ============================================
+  // FEE CONFIGURATION ENDPOINTS
+  // ============================================
+
+  /**
+   * Get fee configuration
+   * GET /circle/fees/config
+   */
+  @Get('fees/config')
+  @ApiOperation({
+    summary: 'Get fee configuration',
+    description: 'Retrieve current transaction fee configuration',
+  })
+  @ApiResponse({ status: 200, description: 'Fee configuration retrieved' })
+  async getFeeConfig() {
+    const config = await this.feeConfigService.getFeeConfig();
+
+    return {
+      success: true,
+      data: config,
+    };
+  }
+
+  /**
+   * Update fee configuration (Admin only)
+   * PUT /circle/fees/config
+   */
+  @Put('fees/config')
+  @ApiOperation({
+    summary: 'Update fee configuration',
+    description: 'Update transaction fee settings (Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Fee configuration updated' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async updateFeeConfig(
+    @Request() req: AuthRequest,
+    @Body()
+    body: {
+      enabled?: boolean;
+      percentage?: number;
+      minFeeUsdc?: number;
+      collectionWallets?: Record<string, string>;
+    },
+  ) {
+    // Check if user is admin or super admin
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Only admins can update fee configuration');
+    }
+
+    const updatedConfig = await this.feeConfigService.updateFeeConfig(
+      body,
+      req.user.id,
+    );
+
+    return {
+      success: true,
+      data: updatedConfig,
+      message: 'Fee configuration updated successfully',
+    };
+  }
+
+  /**
+   * Calculate fee for an amount
+   * GET /circle/fees/calculate
+   */
+  @Get('fees/calculate')
+  @ApiOperation({
+    summary: 'Calculate fee',
+    description: 'Calculate service fee for a given amount',
+  })
+  @ApiQuery({ name: 'amount', description: 'Transaction amount in USDC' })
+  @ApiResponse({ status: 200, description: 'Fee calculated' })
+  async calculateFee(@Query('amount') amount: string) {
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      return {
+        success: false,
+        error: 'Invalid amount',
+      };
+    }
+
+    const fee = await this.feeConfigService.calculateFee(amountNum);
+    const total = amountNum + fee;
+
+    return {
+      success: true,
+      data: {
+        amount: amountNum,
+        fee,
+        total,
+      },
+    };
+  }
+
+  /**
+   * Get fee statistics (Admin only)
+   * GET /circle/fees/stats
+   */
+  @Get('fees/stats')
+  @ApiOperation({
+    summary: 'Get fee statistics',
+    description: 'Retrieve fee collection statistics (Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Statistics retrieved' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async getFeeStats(@Request() req: AuthRequest) {
+    // Check if user is admin or super admin
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Only admins can view fee statistics');
+    }
+
+    // TODO: Implement aggregation queries for fee statistics
+    // For now, return basic retry queue stats
+    const retryStats = await this.feeRetryService.getRetryStats();
+
+    return {
+      success: true,
+      data: {
+        retryQueue: retryStats,
+        // Add more stats here as needed
+      },
+    };
+  }
+
+  /**
+   * Get failed fee collections (Admin only)
+   * GET /circle/fees/failed
+   */
+  @Get('fees/failed')
+  @ApiOperation({
+    summary: 'Get failed fee collections',
+    description: 'Retrieve list of failed fee collections (Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Failed fees retrieved' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async getFailedFees(@Request() req: AuthRequest) {
+    // Check if user is admin or super admin
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Only admins can view failed fees');
+    }
+
+    const failedRetries = await this.feeRetryService.getFailedRetries();
+
+    return {
+      success: true,
+      data: failedRetries,
+    };
+  }
+
+  /**
+   * Manually retry a failed fee collection (Admin only)
+   * POST /circle/fees/retry/:retryId
+   */
+  @Post('fees/retry/:retryId')
+  @ApiOperation({
+    summary: 'Retry failed fee collection',
+    description: 'Manually retry a failed fee collection (Admin only)',
+  })
+  @ApiParam({ name: 'retryId', description: 'Retry queue ID' })
+  @ApiResponse({ status: 200, description: 'Retry initiated' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  async retryFee(
+    @Request() req: AuthRequest,
+    @Param('retryId') retryId: string,
+  ) {
+    // Check if user is admin or super admin
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Only admins can retry fee collections');
+    }
+
+    const success = await this.feeRetryService.manualRetry(retryId);
+
+    return {
+      success,
+      message: success
+        ? 'Fee retry initiated successfully'
+        : 'Fee retry failed',
     };
   }
 

@@ -5,6 +5,8 @@ import { ConfigService } from '@nestjs/config';
  * Circle Configuration Service
  * Manages Circle API configuration and environment settings
  */
+import { ChainMetadata, CircleBlockchain } from '../circle.types';
+
 @Injectable()
 export class CircleConfigService {
   private readonly logger = new Logger(CircleConfigService.name);
@@ -49,7 +51,7 @@ export class CircleConfigService {
 
     // Default blockchain settings based on environment
     this.defaultBlockchain =
-      this.environment === 'testnet' ? 'MATIC-AMOY' : 'MATIC';
+      this.environment === 'testnet' ? 'BASE-SEPOLIA' : 'BASE';
     this.defaultAccountType = 'SCA';
 
     // Validate configuration
@@ -132,17 +134,76 @@ export class CircleConfigService {
    */
   getSupportedBlockchains(): string[] {
     if (this.environment === 'testnet') {
-      return [
-        'MATIC-AMOY',
-        'ETH-SEPOLIA',
-        'AVAX-FUJI',
-        'ARB-SEPOLIA',
-        'BASE-SEPOLIA',
-        'OP-SEPOLIA',
-        'SOL-DEVNET',
-      ];
+      return ['BASE-SEPOLIA', 'OP-SEPOLIA', 'ARB-SEPOLIA', 'MATIC-AMOY'];
     }
-    return ['MATIC', 'ETH', 'AVAX', 'ARB', 'BASE', 'OP', 'SOL'];
+    return ['BASE', 'OP', 'ARB', 'MATIC'];
+  }
+
+  /**
+   * Get metadata for all supported chains or a specific one
+   */
+  getChainMetadata(): ChainMetadata[] {
+    const isTestnet = this.environment === 'testnet';
+
+    const chains: ChainMetadata[] = [
+      // Base (Recommended)
+      {
+        blockchain: isTestnet ? 'BASE-SEPOLIA' : 'BASE',
+        name: isTestnet ? 'Base Sepolia' : 'Base',
+        symbol: 'ETH',
+        isTestnet,
+        isSupported: true,
+        isRecommended: true,
+        feeLabel: 'Free (Sponsored)',
+        estimatedCost: '$0.00',
+        description: 'Fastest & Cheapest. Recommended for all transactions.',
+      },
+      // Optimism
+      {
+        blockchain: isTestnet ? 'OP-SEPOLIA' : 'OP',
+        name: isTestnet ? 'Optimism Sepolia' : 'Optimism',
+        symbol: 'ETH',
+        isTestnet,
+        isSupported: true,
+        isRecommended: false,
+        feeLabel: 'Free (Sponsored)',
+        estimatedCost: '$0.00',
+        description: 'Fast, secure Layer 2 network.',
+      },
+      // Arbitrum
+      {
+        blockchain: isTestnet ? 'ARB-SEPOLIA' : 'ARB',
+        name: isTestnet ? 'Arbitrum Sepolia' : 'Arbitrum One',
+        symbol: 'ETH',
+        isTestnet,
+        isSupported: true,
+        isRecommended: false,
+        feeLabel: 'Free (Sponsored)',
+        estimatedCost: '$0.00',
+        description: 'Leading Layer 2 scaling solution.',
+      },
+      // Polygon
+      {
+        blockchain: isTestnet ? 'MATIC-AMOY' : 'MATIC',
+        name: isTestnet ? 'Polygon Amoy' : 'Polygon PoS',
+        symbol: 'MATIC',
+        isTestnet,
+        isSupported: true,
+        isRecommended: false,
+        feeLabel: 'Free (Sponsored)',
+        estimatedCost: '$0.00',
+        description: 'Established chain with low fees.',
+      },
+    ];
+
+    return chains;
+  }
+
+  /**
+   * Get metadata for a specific blockchain
+   */
+  getSingleChainMetadata(blockchain: string): ChainMetadata | undefined {
+    return this.getChainMetadata().find((c) => c.blockchain === blockchain);
   }
 
   /**
@@ -153,18 +214,14 @@ export class CircleConfigService {
     const usdcAddresses: Record<string, string> = {
       // Mainnet
       MATIC: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-      ETH: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       ARB: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
       BASE: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       OP: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
-      AVAX: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
       // Testnet
       'MATIC-AMOY': '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
-      'ETH-SEPOLIA': '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
       'ARB-SEPOLIA': '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
       'BASE-SEPOLIA': '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       'OP-SEPOLIA': '0x5fd84259d66Cd46123540766Be93DFE6D43130D7',
-      'AVAX-FUJI': '0x5425890298aed601595a70AB815c96711a31Bc65',
     };
 
     return usdcAddresses[blockchain] || null;

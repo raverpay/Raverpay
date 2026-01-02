@@ -190,4 +190,57 @@ export class AdminCircleController {
       data: user,
     };
   }
+
+  // Modular Wallets
+  @ApiOperation({ summary: 'Get paginated modular wallets' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'blockchain', required: false, type: String })
+  @Get('modular/wallets')
+  async getModularWallets(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('blockchain') blockchain?: string,
+  ) {
+    return this.adminCircleService.getModularWallets({
+      page,
+      limit,
+      search,
+      blockchain,
+    });
+  }
+
+  @ApiOperation({ summary: 'Get modular wallet by ID' })
+  @ApiParam({ name: 'id', description: 'Modular Wallet ID' })
+  @Get('modular/wallets/:id')
+  async getModularWalletById(@Param('id') id: string) {
+    const wallet = await this.adminCircleService.getModularWalletById(id);
+    return {
+      success: true,
+      data: wallet,
+    };
+  }
+
+  @ApiOperation({ summary: 'Get passkey credentials for modular wallet' })
+  @ApiParam({ name: 'id', description: 'Modular Wallet ID' })
+  @Get('modular/wallets/:id/passkeys')
+  async getModularWalletPasskeys(@Param('id') id: string) {
+    const passkeys = await this.adminCircleService.getModularWalletPasskeys(id);
+    return {
+      success: true,
+      data: passkeys,
+    };
+  }
+
+  @ApiOperation({ summary: 'Get modular wallet statistics' })
+  @Get('modular/stats')
+  async getModularWalletStats() {
+    const stats = await this.adminCircleService.getModularWalletStats();
+    return {
+      success: true,
+      data: stats,
+    };
+  }
 }

@@ -184,6 +184,43 @@ export interface CircleUser {
   };
 }
 
+export interface ModularWallet {
+  id: string;
+  userId: string;
+  circleWalletId: string;
+  address: string;
+  blockchain: CircleBlockchain;
+  name?: string;
+  state: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface PasskeyCredential {
+  id: string;
+  userId: string;
+  credentialId: string;
+  publicKey: string;
+  rpId?: string;
+  username?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastUsedAt?: string;
+}
+
+export interface ModularWalletStats {
+  totalWallets: number;
+  totalPasskeys: number;
+  totalTransactions: number;
+  walletsByBlockchain: Array<{ blockchain: string; count: number }>;
+}
+
 export interface CircleStats {
   totalWalletSets: number;
   totalWallets: number;
@@ -351,6 +388,38 @@ export const circleApi = {
     activeUsers: number;
   }> => {
     const response = await apiClient.get('/admin/circle/users/stats');
+    return response.data.data;
+  },
+
+  // Modular Wallets
+  getModularWallets: async (
+    params?: Record<string, unknown>,
+  ): Promise<PaginatedResponse<ModularWallet>> => {
+    const response = await apiClient.get<PaginatedResponse<ModularWallet>>(
+      '/admin/circle/modular/wallets',
+      { params },
+    );
+    return response.data;
+  },
+
+  getModularWalletById: async (id: string): Promise<ModularWallet> => {
+    const response = await apiClient.get<{ success: boolean; data: ModularWallet }>(
+      `/admin/circle/modular/wallets/${id}`,
+    );
+    return response.data.data;
+  },
+
+  getModularWalletPasskeys: async (walletId: string): Promise<PasskeyCredential[]> => {
+    const response = await apiClient.get<{ success: boolean; data: PasskeyCredential[] }>(
+      `/admin/circle/modular/wallets/${walletId}/passkeys`,
+    );
+    return response.data.data;
+  },
+
+  getModularWalletStats: async (): Promise<ModularWalletStats> => {
+    const response = await apiClient.get<{ success: boolean; data: ModularWalletStats }>(
+      '/admin/circle/modular/stats',
+    );
     return response.data.data;
   },
 };

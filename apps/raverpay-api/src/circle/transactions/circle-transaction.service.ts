@@ -20,6 +20,8 @@ import {
 import { CircleConfigService } from '../config/circle.config.service';
 import { EntitySecretService } from '../entity/entity-secret.service';
 import { CircleWalletService } from '../wallets/circle-wallet.service';
+import { FeeConfigurationService } from '../fees/fee-configuration.service';
+import { FeeRetryService } from '../fees/fee-retry.service';
 
 /**
  * Circle Transaction Service
@@ -35,6 +37,8 @@ export class CircleTransactionService {
     private readonly config: CircleConfigService,
     private readonly entitySecret: EntitySecretService,
     private readonly walletService: CircleWalletService,
+    private readonly feeConfigService: FeeConfigurationService,
+    private readonly feeRetryService: FeeRetryService,
   ) {}
 
   /**
@@ -62,11 +66,27 @@ export class CircleTransactionService {
     // Get wallet
     const wallet = await this.walletService.getWallet(walletId, userId);
 
+    // Validate blockchain support
+    const supportedChains = this.config.getSupportedBlockchains();
+    if (!supportedChains.includes(wallet.blockchain)) {
+      throw new BadRequestException(
+        `Blockchain ${wallet.blockchain} is no longer supported for new transactions. Please use a supported chain.`,
+      );
+    }
+
     // Validate amount
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
       throw new BadRequestException('Invalid amount');
     }
+
+    // Calculate service fee
+    const serviceFee = await this.feeConfigService.calculateFee(amountNum);
+    const totalRequired = amountNum + serviceFee;
+
+    this.logger.log(
+      `Transfer requested: ${amount} USDC + ${serviceFee} USDC fee = ${totalRequired} USDC total`,
+    );
 
     // Get USDC token address
     const usdcTokenAddress = this.config.getUsdcTokenAddress(wallet.blockchain);
@@ -76,12 +96,27 @@ export class CircleTransactionService {
       );
     }
 
-    // Check balance
+    // Check balance (must have amount + fee)
     const balance = await this.walletService.getUsdcBalance(
       wallet.circleWalletId,
     );
-    if (parseFloat(balance) < amountNum) {
-      throw new BadRequestException('Insufficient USDC balance');
+    const balanceNum = parseFloat(balance);
+
+    if (balanceNum < totalRequired) {
+      throw new BadRequestException(
+        `Insufficient balance. Required: ${totalRequired.toFixed(6)} USDC (${amount} + ${serviceFee.toFixed(6)} fee), Available: ${balance} USDC`,
+      );
+    }
+
+    // Get fee collection wallet for this blockchain
+    const collectionWallet = await this.feeConfigService.getCollectionWallet(
+      wallet.blockchain,
+    );
+
+    if (serviceFee > 0 && !collectionWallet) {
+      this.logger.warn(
+        `No collection wallet configured for ${wallet.blockchain}, proceeding without fee`,
+      );
     }
 
     try {
@@ -93,7 +128,8 @@ export class CircleTransactionService {
       const idempotencyKey = this.apiClient.generateIdempotencyKey();
       const reference = `CIR-${Date.now()}-${randomUUID().slice(0, 8).toUpperCase()}`;
 
-      const request: CreateTransferRequest = {
+      // STEP 1: Execute main transfer (User → Recipient)
+      const mainTransferRequest: CreateTransferRequest = {
         idempotencyKey,
         entitySecretCiphertext,
         walletId: wallet.circleWalletId,
@@ -106,25 +142,95 @@ export class CircleTransactionService {
       };
 
       this.logger.log(
-        `Creating transfer: ${amount} USDC from ${wallet.address} to ${destinationAddress}`,
+        `Creating main transfer: ${amount} USDC from ${wallet.address} to ${destinationAddress}`,
       );
 
-      const response = await this.apiClient.post<CreateTransferResponse>(
-        '/developer/transactions/transfer',
-        request,
+      let mainTransfer: CreateTransferResponse;
+      try {
+        const response = await this.apiClient.post<CreateTransferResponse>(
+          '/developer/transactions/transfer',
+          mainTransferRequest,
+        );
+        mainTransfer = response.data;
+      } catch (error) {
+        this.logger.error('Main transfer failed:', error);
+        throw new BadRequestException(
+          `Transfer failed: ${error.message || 'Unknown error'}`,
+        );
+      }
+
+      this.logger.log(
+        `Main transfer created: ${mainTransfer.id} - State: ${mainTransfer.state}`,
       );
 
-      const transaction = response.data;
+      // STEP 2: Execute fee transfer (User → Company) if applicable
+      let feeCollected = false;
+      let feeTransfer: CreateTransferResponse | null = null;
 
-      // Save to database
+      if (serviceFee > 0 && collectionWallet) {
+        try {
+          const feeIdempotencyKey = this.apiClient.generateIdempotencyKey();
+          const feeEntitySecretCiphertext =
+            await this.entitySecret.generateEntitySecretCiphertext();
+
+          const feeTransferRequest: CreateTransferRequest = {
+            idempotencyKey: feeIdempotencyKey,
+            entitySecretCiphertext: feeEntitySecretCiphertext,
+            walletId: wallet.circleWalletId,
+            destinationAddress: collectionWallet,
+            amounts: [serviceFee.toString()],
+            tokenAddress: usdcTokenAddress,
+            blockchain: (blockchain || wallet.blockchain) as CircleBlockchain,
+            feeLevel,
+            refId: `FEE-${reference}`,
+          };
+
+          this.logger.log(
+            `Creating fee transfer: ${serviceFee} USDC from ${wallet.address} to ${collectionWallet}`,
+          );
+
+          const feeResponse = await this.apiClient.post<CreateTransferResponse>(
+            '/developer/transactions/transfer',
+            feeTransferRequest,
+          );
+
+          feeTransfer = feeResponse.data;
+          feeCollected = true;
+
+          this.logger.log(
+            `Fee transfer created: ${feeTransfer.id} - State: ${feeTransfer.state}`,
+          );
+        } catch (feeError: any) {
+          // Fee collection failed - log but don't fail main transaction
+          this.logger.error('Fee collection failed:', {
+            error: feeError.message,
+            mainTransferId: mainTransfer.id,
+            fee: serviceFee,
+          });
+
+          // Queue for retry (don't await to avoid blocking)
+          this.feeRetryService
+            .queueFeeRetry({
+              walletId: wallet.circleWalletId,
+              collectionWallet,
+              fee: serviceFee.toString(),
+              mainTransferId: mainTransfer.id,
+            })
+            .catch((err) =>
+              this.logger.error('Failed to queue fee retry:', err),
+            );
+        }
+      }
+
+      // STEP 3: Save transaction record to database
       const dbTransaction = await this.prisma.circleTransaction.create({
         data: {
           reference,
-          circleTransactionId: transaction.id,
+          circleTransactionId: mainTransfer.id,
           userId,
           walletId: wallet.id,
           type: CircleTransactionType.TRANSFER,
-          state: transaction.state as CircleTransactionState,
+          state: mainTransfer.state as CircleTransactionState,
           sourceAddress: wallet.address,
           destinationAddress,
           tokenAddress: usdcTokenAddress,
@@ -132,17 +238,23 @@ export class CircleTransactionService {
           amounts: [amount],
           feeLevel,
           refId: memo,
+          // Fee fields
+          serviceFee: serviceFee > 0 ? serviceFee.toString() : null,
+          feeCollected,
+          totalAmount: totalRequired.toString(),
+          mainTransferId: mainTransfer.id,
+          feeTransferId: feeTransfer?.id || null,
         },
       });
 
       this.logger.log(
-        `Transfer created: ${transaction.id} (${reference}) - State: ${transaction.state}`,
+        `Transaction saved: ${dbTransaction.id} (${reference}) - Fee collected: ${feeCollected}`,
       );
 
       return {
         transactionId: dbTransaction.id, // Return database ID, not Circle transaction ID
         reference,
-        state: transaction.state,
+        state: mainTransfer.state,
       };
     } catch (error) {
       this.logger.error('Failed to create transfer:', error);

@@ -51,6 +51,14 @@ export class CircleWalletService {
       params.blockchain,
     ) as CircleBlockchain;
     const accountType = params.accountType || this.config.defaultAccountType;
+    
+    // Validate blockchain support
+    const supportedChains = this.config.getSupportedBlockchains();
+    if (!supportedChains.includes(blockchain)) {
+      throw new BadRequestException(
+        `Blockchain ${blockchain} is not supported. Supported chains: ${supportedChains.join(', ')}`,
+      );
+    }
 
     // Check if user already has a wallet on this blockchain
     const existingWallet = await this.prisma.circleWallet.findFirst({

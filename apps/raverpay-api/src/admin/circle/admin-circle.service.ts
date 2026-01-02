@@ -750,4 +750,134 @@ export class AdminCircleService {
       activeUsers,
     };
   }
+
+  /**
+   * Get paginated modular wallets with filters
+   */
+  async getModularWallets(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    blockchain?: string;
+  }) {
+    const { page = 1, limit = 20, search, blockchain } = query;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.CircleModularWalletWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { address: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { user: { firstName: { contains: search, mode: 'insensitive' } } },
+        { user: { lastName: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    if (blockchain) {
+      where.blockchain = blockchain;
+    }
+
+    const [wallets, total] = await Promise.all([
+      this.prisma.circleModularWallet.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
+      this.prisma.circleModularWallet.count({ where }),
+    ]);
+
+    return {
+      data: wallets,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get modular wallet by ID
+   */
+  async getModularWalletById(id: string) {
+    const wallet = await this.prisma.circleModularWallet.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Modular wallet not found');
+    }
+
+    return wallet;
+  }
+
+  /**
+   * Get passkey credentials for a modular wallet
+   */
+  async getModularWalletPasskeys(walletId: string) {
+    // First verify the wallet exists
+    const wallet = await this.prisma.circleModularWallet.findUnique({
+      where: { id: walletId },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Modular wallet not found');
+    }
+
+    // Get all passkeys for the user who owns this wallet
+    const passkeys = await this.prisma.passkeyCredential.findMany({
+      where: { userId: wallet.userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return passkeys;
+  }
+
+  /**
+   * Get modular wallet statistics
+   */
+  async getModularWalletStats() {
+    const [totalWallets, totalPasskeys, walletsByBlockchain] =
+      await Promise.all([
+        this.prisma.circleModularWallet.count(),
+        this.prisma.passkeyCredential.count(),
+        this.prisma.circleModularWallet.groupBy({
+          by: ['blockchain'],
+          _count: true,
+        }),
+      ]);
+
+    return {
+      totalWallets,
+      totalPasskeys,
+      totalTransactions: 0, // TODO: Implement when we track modular wallet transactions
+      walletsByBlockchain: walletsByBlockchain.map((item) => ({
+        blockchain: item.blockchain,
+        count: item._count,
+      })),
+    };
+  }
 }

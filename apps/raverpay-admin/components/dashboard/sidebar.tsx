@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
+  DollarSign,
 } from 'lucide-react';
 
 interface NavItem {

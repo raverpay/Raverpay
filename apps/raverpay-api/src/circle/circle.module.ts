@@ -20,6 +20,10 @@ import { CircleWalletService } from './wallets/circle-wallet.service';
 import { CircleTransactionService } from './transactions/circle-transaction.service';
 import { CCTPService } from './transactions/cctp.service';
 
+// Fee Services
+import { FeeConfigurationService } from './fees/fee-configuration.service';
+import { FeeRetryService } from './fees/fee-retry.service';
+
 // Paymaster Services
 import { PaymasterService } from './paymaster/paymaster.service';
 import { PermitService } from './paymaster/permit.service';
@@ -33,6 +37,10 @@ import { PaymasterController } from './paymaster/paymaster.controller';
 import { UserControlledWalletService } from './user-controlled/user-controlled-wallet.service';
 import { EmailAuthService } from './user-controlled/email-auth.service';
 import { UserControlledWalletController } from './user-controlled/user-controlled-wallet.controller';
+
+// Modular Wallet Services
+import { ModularWalletService } from './modular/modular-wallet.service';
+import { ModularWalletController } from './modular/modular-wallet.controller';
 
 // Webhook Services
 import { CircleWebhookService } from './webhooks/circle-webhook.service';
@@ -62,6 +70,7 @@ import { CircleController } from './circle.controller';
     CircleWebhookController,
     PaymasterController,
     UserControlledWalletController,
+    ModularWalletController,
   ],
   providers: [
     // Configuration
@@ -81,6 +90,10 @@ import { CircleController } from './circle.controller';
     CircleTransactionService,
     CCTPService,
 
+    // Fee Services
+    FeeConfigurationService,
+    FeeRetryService,
+
     // Paymaster Services
     PaymasterService,
     PermitService,
@@ -93,6 +106,9 @@ import { CircleController } from './circle.controller';
     UserControlledWalletService,
     EmailAuthService,
 
+    // Modular Wallet Services
+    ModularWalletService,
+
     // Webhook Services
     CircleWebhookService,
   ],
@@ -104,6 +120,8 @@ import { CircleController } from './circle.controller';
     CircleWalletService,
     CircleTransactionService,
     CCTPService,
+    FeeConfigurationService,
+    FeeRetryService,
     PaymasterService,
     PermitService,
     BundlerService,
@@ -112,6 +130,7 @@ import { CircleController } from './circle.controller';
     PaymasterApprovalService,
     UserControlledWalletService,
     EmailAuthService,
+    ModularWalletService,
     CircleWebhookService,
   ],
 })

@@ -253,6 +253,19 @@ export interface FeeEstimate {
   networkFee: string;
 }
 
+export interface ChainMetadata {
+  blockchain: CircleBlockchain;
+  name: string;
+  symbol: string;
+  isTestnet: boolean;
+  isSupported: boolean;
+  // UI fields
+  isRecommended: boolean;
+  feeLabel: string;
+  estimatedCost: string;
+  description: string;
+}
+
 // ============================================
 // WEBHOOK TYPES
 // ============================================
