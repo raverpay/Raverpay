@@ -314,6 +314,17 @@ export interface AuditLog {
   userAgent?: string | null;
   createdAt: string;
   user?: User;
+
+  // Enhanced fields
+  actorType?: 'USER' | 'ADMIN' | 'SYSTEM' | 'WEBHOOK' | 'API';
+  severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  status?: 'SUCCESS' | 'FAILURE' | 'PENDING';
+  errorMessage?: string | null;
+  executionTime?: number | null;
+  deviceId?: string | null;
+  location?: string | null;
+  oldValue?: Record<string, unknown> | null;
+  newValue?: Record<string, unknown> | null;
 }
 
 // Analytics Types

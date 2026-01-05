@@ -22,6 +22,8 @@ import { EntitySecretService } from '../entity/entity-secret.service';
 import { CircleWalletService } from '../wallets/circle-wallet.service';
 import { FeeConfigurationService } from '../fees/fee-configuration.service';
 import { FeeRetryService } from '../fees/fee-retry.service';
+import { AuditService } from '../../common/services/audit.service';
+import { AuditAction, AuditStatus } from '../../common/types/audit-log.types';
 
 /**
  * Circle Transaction Service
@@ -39,6 +41,7 @@ export class CircleTransactionService {
     private readonly walletService: CircleWalletService,
     private readonly feeConfigService: FeeConfigurationService,
     private readonly feeRetryService: FeeRetryService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -143,6 +146,25 @@ export class CircleTransactionService {
 
       this.logger.log(
         `Creating main transfer: ${amount} USDC from ${wallet.address} to ${destinationAddress}`,
+      );
+
+      // Audit log: USDC transfer initiated
+      const auditStartTime = Date.now();
+      await this.auditService.logCrypto(
+        AuditAction.USDC_TRANSFER_INITIATED,
+        userId,
+        {
+          walletId: wallet.id,
+          walletAddress: wallet.address,
+          destinationAddress,
+          amount,
+          serviceFee,
+          totalAmount: totalRequired.toString(),
+          blockchain: blockchain || wallet.blockchain,
+          feeLevel,
+          reference,
+          memo,
+        },
       );
 
       let mainTransfer: CreateTransferResponse;
@@ -251,6 +273,28 @@ export class CircleTransactionService {
         `Transaction saved: ${dbTransaction.id} (${reference}) - Fee collected: ${feeCollected}`,
       );
 
+      // Audit log: USDC transfer completed
+      await this.auditService.logCrypto(
+        AuditAction.USDC_TRANSFER_COMPLETED,
+        userId,
+        {
+          transactionId: dbTransaction.id,
+          circleTransactionId: mainTransfer.id,
+          reference,
+          walletId: wallet.id,
+          walletAddress: wallet.address,
+          destinationAddress,
+          amount,
+          serviceFee,
+          totalAmount: totalRequired.toString(),
+          blockchain: wallet.blockchain,
+          feeLevel,
+          feeCollected,
+          state: mainTransfer.state,
+          executionTimeMs: Date.now() - auditStartTime,
+        },
+      );
+
       return {
         transactionId: dbTransaction.id, // Return database ID, not Circle transaction ID
         reference,
@@ -258,6 +302,24 @@ export class CircleTransactionService {
       };
     } catch (error) {
       this.logger.error('Failed to create transfer:', error);
+
+      // Audit log: USDC transfer failed
+      await this.auditService.logCrypto(
+        AuditAction.USDC_TRANSFER_FAILED,
+        userId,
+        {
+          walletId,
+          walletAddress: wallet?.address,
+          destinationAddress,
+          amount,
+          blockchain: blockchain || wallet?.blockchain,
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
+
       throw error;
     }
   }

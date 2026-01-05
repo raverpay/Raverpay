@@ -9,6 +9,8 @@ import { CircleApiClient } from '../circle-api.client';
 import { CircleConfigService } from '../config/circle.config.service';
 import { EntitySecretService } from '../entity/entity-secret.service';
 import { CircleWalletService } from '../wallets/circle-wallet.service';
+import { AuditService } from '../../common/services/audit.service';
+import { AuditAction, AuditStatus } from '../../common/types/audit-log.types';
 import {
   CircleBlockchain,
   CircleFeeLevel,
@@ -47,6 +49,7 @@ export class CCTPService {
     private readonly config: CircleConfigService,
     private readonly entitySecret: EntitySecretService,
     private readonly walletService: CircleWalletService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -169,6 +172,23 @@ export class CCTPService {
         `Initiating CCTP transfer: ${amount} USDC from ${sourceWallet.blockchain} to ${destinationChain}`,
       );
 
+      // Audit log: CCTP transfer initiated
+      const auditStartTime = Date.now();
+      await this.auditService.logCrypto(
+        AuditAction.CCTP_TRANSFER_INITIATED,
+        userId,
+        {
+          reference,
+          sourceWalletId: sourceWallet.id,
+          sourceChain: sourceWallet.blockchain,
+          destinationChain,
+          destinationAddress,
+          amount,
+          transferType,
+          feeLevel,
+        },
+      );
+
       // For CCTP, we use a special endpoint or include CCTP parameters
       // This initiates the burn on the source chain
       const response = await this.apiClient.post<CreateTransferResponse>(
@@ -189,6 +209,22 @@ export class CCTPService {
         `CCTP transfer initiated: ${reference} - Burn transaction: ${response.data.id}`,
       );
 
+      // Audit log: CCTP transfer burn pending
+      await this.auditService.logCrypto(
+        AuditAction.CCTP_TRANSFER_INITIATED,
+        userId,
+        {
+          reference,
+          transferId: cctpTransfer.id,
+          burnTransactionId: response.data.id,
+          sourceChain: sourceWallet.blockchain,
+          destinationChain,
+          amount,
+          state: 'BURN_PENDING',
+          executionTimeMs: Date.now() - auditStartTime,
+        },
+      );
+
       return {
         reference,
         transferId: cctpTransfer.id,
@@ -196,6 +232,24 @@ export class CCTPService {
       };
     } catch (error) {
       this.logger.error('Failed to initiate CCTP transfer:', error);
+
+      // Audit log: CCTP transfer failed
+      await this.auditService.logCrypto(
+        AuditAction.CCTP_TRANSFER_FAILED,
+        userId,
+        {
+          sourceWalletId,
+          sourceChain: sourceWallet?.blockchain,
+          destinationChain,
+          destinationAddress,
+          amount,
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
+
       throw error;
     }
   }

@@ -10,6 +10,8 @@ import {
   Prisma,
   CashbackTransactionType,
 } from '@prisma/client';
+import { AuditService } from '../common/services/audit.service';
+import { AuditAction } from '../common/types/audit-log.types';
 import {
   CashbackCalculation,
   CashbackWalletBalance,
@@ -22,7 +24,10 @@ import { UpdateCashbackConfigDto } from './dto/update-cashback-config.dto';
 export class CashbackService {
   private readonly logger = new Logger(CashbackService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   // ==================== Configuration Management ====================
 
@@ -390,6 +395,24 @@ export class CashbackService {
       `Awarded ₦${cashbackAmount} cashback to user ${userId} for ${serviceType}`,
     );
 
+    // Audit log: Cashback earned
+    await this.auditService.log({
+      userId,
+      action: AuditAction.CASHBACK_EARNED,
+      resource: 'CASHBACK',
+      resourceId: transaction.id,
+      metadata: {
+        amount: cashbackAmount,
+        serviceType,
+        provider,
+        purchaseAmount: amount,
+        percentage: calculation.percentage,
+        vtuOrderId,
+        balanceBefore,
+        balanceAfter,
+      },
+    });
+
     return transaction;
   }
 
@@ -447,6 +470,20 @@ export class CashbackService {
     ]);
 
     this.logger.log(`User ${userId} redeemed ₦${amountToRedeem} cashback`);
+
+    // Audit log: Cashback redeemed
+    await this.auditService.log({
+      userId,
+      action: AuditAction.CASHBACK_REDEEMED,
+      resource: 'CASHBACK',
+      resourceId: transaction.id,
+      metadata: {
+        amount: amountToRedeem,
+        vtuOrderId,
+        balanceBefore,
+        balanceAfter,
+      },
+    });
 
     return transaction;
   }

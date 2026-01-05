@@ -9,6 +9,7 @@ import { VirtualAccountsModule } from '../virtual-accounts/virtual-accounts.modu
 import { UsersModule } from '../users/users.module';
 import { DeviceModule } from '../device/device.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { CommonModule } from '../common/common.module';
 
 /**
  * Authentication Module
@@ -27,6 +28,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     UsersModule,
     DeviceModule,
     NotificationsModule,
+    CommonModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

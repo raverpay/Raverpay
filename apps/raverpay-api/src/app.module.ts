@@ -41,6 +41,7 @@ import { LogtailModule } from './common/logging/logtail.module';
 import { PostHogModule } from './common/analytics/posthog.module';
 import { PrismaPulseModule } from './common/monitoring/prisma-pulse.module';
 import { DiagnosticModule } from './diagnostic/diagnostic.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { DiagnosticModule } from './diagnostic/diagnostic.module';
       }),
     }),
     CacheModule, // Add cache module first for global availability
+    CommonModule, // Common module with AuditService - global
     UtilsModule, // Utils module (BVN encryption) - global
     PrismaModule,
     // Monitoring & Queue Infrastructure

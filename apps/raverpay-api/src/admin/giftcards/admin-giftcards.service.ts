@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, TransactionStatus, GiftCardType } from '@prisma/client';
+import { AuditService } from '../../common/services/audit.service';
+import { AuditAction } from '../../common/types/audit-log.types';
 import {
   ApproveGiftCardDto,
   RejectGiftCardDto,
@@ -14,7 +16,10 @@ import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class AdminGiftCardsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   /**
    * Get gift card orders with filters
@@ -290,27 +295,27 @@ export class AdminGiftCardsService {
         },
       });
 
-      // Create audit log
-      await prisma.auditLog.create({
-        data: {
-          userId: adminUserId,
-          action: 'APPROVE_GIFTCARD_ORDER',
-          resource: 'GiftCardOrder',
-          resourceId: orderId,
-          metadata: {
-            orderReference: order.reference,
-            amount: order.amount.toString(),
-            brand: order.brand,
-            notes: dto.notes,
-          },
-        },
-      });
-
       return {
         order: updatedOrder,
         transaction,
       };
     });
+
+    // Audit log: Gift card order approved
+    await this.auditService.logAdmin(
+      AuditAction.GIFTCARD_ORDER_APPROVED,
+      adminUserId,
+      order.userId,
+      {
+        orderId,
+        orderReference: order.reference,
+        amount: order.amount.toString(),
+        brand: order.brand,
+        country: order.country,
+        notes: dto.notes,
+        transactionId: result.transaction.id,
+      },
+    );
 
     // TODO: Send notification to user
 
@@ -343,20 +348,20 @@ export class AdminGiftCardsService {
       },
     });
 
-    // Create audit log
-    await this.prisma.auditLog.create({
-      data: {
-        userId: adminUserId,
-        action: 'REJECT_GIFTCARD_ORDER',
-        resource: 'GiftCardOrder',
-        resourceId: orderId,
-        metadata: {
-          orderReference: order.reference,
-          reason: dto.reason,
-          notes: dto.notes,
-        },
+    // Audit log: Gift card order rejected
+    await this.auditService.logAdmin(
+      AuditAction.GIFTCARD_ORDER_REJECTED,
+      adminUserId,
+      order.userId,
+      {
+        orderId,
+        orderReference: order.reference,
+        amount: order.amount.toString(),
+        brand: order.brand,
+        reason: dto.reason,
+        notes: dto.notes,
       },
-    });
+    );
 
     // TODO: Send notification to user with reason
 

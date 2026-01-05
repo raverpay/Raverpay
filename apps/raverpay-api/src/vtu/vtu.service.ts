@@ -13,6 +13,8 @@ import { NotificationDispatcherService } from '../notifications/notification-dis
 import { CashbackService } from '../cashback/cashback.service';
 import { LimitsService, TransactionLimitType } from '../limits/limits.service';
 import { PostHogService } from '../common/analytics/posthog.service';
+import { AuditService } from '../common/services/audit.service';
+import { AuditAction, AuditStatus } from '../common/types/audit-log.types';
 import {
   PurchaseAirtimeDto,
   PurchaseDataDto,
@@ -63,6 +65,7 @@ export class VTUService {
     private readonly cashbackService: CashbackService,
     private readonly limitsService: LimitsService,
     private readonly posthogService: PostHogService,
+    private readonly auditService: AuditService,
   ) {}
 
   // ==================== Product Catalog ====================
@@ -384,6 +387,22 @@ export class VTUService {
     // 5. Calculate total (subtract cashback)
     const fee = this.calculateFee(dto.amount, 'AIRTIME');
     const total = dto.amount + fee - cashbackRedeemed;
+
+    // Audit log: Airtime purchase initiated
+    const auditStartTime = Date.now();
+    await this.auditService.logVTU(
+      AuditAction.AIRTIME_PURCHASE_INITIATED,
+      userId,
+      {
+        serviceType: 'AIRTIME',
+        network: dto.network.toUpperCase(),
+        recipient: dto.phone,
+        amount: dto.amount,
+        fee,
+        cashbackToEarn: cashbackToEarn.cashbackAmount,
+        cashbackRedeemed,
+      },
+    );
 
     // 6. Check duplicate
     await this.checkDuplicateOrder(userId, 'AIRTIME', dto.phone, dto.amount);
@@ -749,9 +768,66 @@ export class VTUService {
         },
       });
 
+      // Audit log: Airtime purchase completed or failed
+      if (vtpassResult.status === 'success') {
+        await this.auditService.logVTU(
+          AuditAction.AIRTIME_PURCHASE_COMPLETED,
+          userId,
+          {
+            serviceType: 'AIRTIME',
+            network: dto.network.toUpperCase(),
+            recipient: dto.phone,
+            amount: dto.amount,
+            fee,
+            totalAmount: total,
+            cashbackRedeemed,
+            cashbackEarned: cashbackToEarn.cashbackAmount,
+            orderId: order.id,
+            reference,
+            providerRef: vtpassResult.transactionId,
+            executionTimeMs: Date.now() - auditStartTime,
+          },
+        );
+      } else {
+        await this.auditService.logVTU(
+          AuditAction.AIRTIME_PURCHASE_FAILED,
+          userId,
+          {
+            serviceType: 'AIRTIME',
+            network: dto.network.toUpperCase(),
+            recipient: dto.phone,
+            amount: dto.amount,
+            fee,
+            orderId: order.id,
+            reference,
+            executionTimeMs: Date.now() - auditStartTime,
+            errorMessage: 'VTPass API returned failure status',
+          },
+          undefined,
+          AuditStatus.FAILURE,
+        );
+      }
+
       // RETURN IMMEDIATELY - don't wait for async operations above
       return response;
     } catch (error) {
+      // Audit log: Airtime purchase failed with error
+      await this.auditService.logVTU(
+        AuditAction.AIRTIME_PURCHASE_FAILED,
+        userId,
+        {
+          serviceType: 'AIRTIME',
+          network: dto.network.toUpperCase(),
+          recipient: dto.phone,
+          amount: dto.amount,
+          executionTimeMs: Date.now() - auditStartTime,
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
+
       // If any error occurs before response, make sure to unlock wallet
       await this.unlockWalletForTransaction(userId);
       throw error;

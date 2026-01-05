@@ -537,24 +537,41 @@ model NotificationQueue {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid())
-  userId     String?
-  action     String
-  resource   String
-  resourceId String?
-  ipAddress  String?
-  userAgent  String?
-  metadata   Json?
-  createdAt  DateTime @default(now())
-  user       User?    @relation(fields: [userId], references: [id])
+  id            String         @id @default(uuid())
+  userId        String?
+  action        String
+  resource      String
+  resourceId    String?
+  ipAddress     String?
+  userAgent     String?
+  metadata      Json?
+  createdAt     DateTime       @default(now())
+  
+  // Enhanced fields
+  actorType     ActorType?     @default(USER)
+  severity      AuditSeverity? @default(LOW)
+  status        AuditStatus?   @default(SUCCESS)
+  errorMessage  String?        @db.Text
+  executionTime Int?
+  deviceId      String?
+  location      String?
+  oldValue      Json?
+  newValue      Json?
+  
+  user          User?          @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+  @@index([actorType])
+  @@index([severity])
+  @@index([status])
   @@index([action, createdAt], map: "audit_logs_action_createdat_idx")
   @@index([resource, resourceId], map: "audit_logs_resource_resourceid_idx")
   @@index([userId, createdAt], map: "audit_logs_userid_createdat_idx")
   @@index([userId, createdAt(sort: Desc)], map: "idx_audit_logs_user")
+  @@index([severity, createdAt])
+  @@index([status, createdAt])
   @@map("audit_logs")
 }
 
@@ -1770,4 +1787,29 @@ model PasskeyCredential {
 
   @@index([userId])
   @@map("passkey_credentials")
+}
+
+// ============================================
+// AUDIT LOG ENUMS
+// ============================================
+
+enum ActorType {
+  USER
+  ADMIN
+  SYSTEM
+  WEBHOOK
+  API
+}
+
+enum AuditSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILURE
+  PENDING
 }

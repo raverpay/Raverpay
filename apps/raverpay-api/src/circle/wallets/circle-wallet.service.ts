@@ -10,6 +10,8 @@ import { CircleConfigService } from '../config/circle.config.service';
 import { EntitySecretService } from '../entity/entity-secret.service';
 import { WalletSetService } from './wallet-set.service';
 import { NotificationDispatcherService } from '../../notifications/notification-dispatcher.service';
+import { AuditService } from '../../common/services/audit.service';
+import { AuditAction } from '../../common/types/audit-log.types';
 import {
   CreateWalletRequest,
   CreateWalletResponse,
@@ -35,6 +37,7 @@ export class CircleWalletService {
     private readonly entitySecret: EntitySecretService,
     private readonly walletSetService: WalletSetService,
     private readonly notificationDispatcher: NotificationDispatcherService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -137,6 +140,20 @@ export class CircleWalletService {
 
       this.logger.log(
         `Circle wallet created: ${wallet.id} (${wallet.address}) for user ${userId}`,
+      );
+
+      // Audit log: Circle wallet created
+      await this.auditService.logCrypto(
+        AuditAction.CIRCLE_WALLET_CREATED,
+        userId,
+        {
+          walletId: wallet.id,
+          address: wallet.address,
+          blockchain: wallet.blockchain,
+          accountType: wallet.accountType,
+          walletName: wallet.name,
+          custodyType: wallet.custodyType,
+        },
       );
 
       // Send notification to user about wallet creation

@@ -18,6 +18,8 @@ import { DeviceService, DeviceInfo } from '../device/device.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { IpGeolocationService } from '../common/services/ip-geolocation.service';
 import { PostHogService } from '../common/analytics/posthog.service';
+import { AuditService } from '../common/services/audit.service';
+import { AuditAction, AuditStatus } from '../common/types/audit-log.types';
 
 /**
  * Authentication Service
@@ -38,6 +40,7 @@ export class AuthService {
     private readonly notificationDispatcher: NotificationDispatcherService,
     private readonly ipGeolocationService: IpGeolocationService,
     private readonly posthogService: PostHogService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -96,6 +99,15 @@ export class AuthService {
       });
 
       this.logger.log(`New user registered: ${user.email}`);
+
+      // Log registration audit
+      await this.auditService.logAuth(AuditAction.USER_REGISTERED, user.id, {
+        email: user.email,
+        phoneNumber: user.phone,
+        registrationMethod: 'EMAIL',
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
 
       // Note: Email verification will be sent when user visits verification screen
       // This prevents duplicate sends and allows frontend to control timing
@@ -185,7 +197,20 @@ export class AuthService {
 
     if (!isPasswordValid) {
       // NEW: Handle failed login attempt
-      await this.handleFailedLogin(user.id);
+      await this.handleFailedLogin(user.id, ipAddress);
+
+      // Log failed login attempt
+      await this.auditService.logAuth(
+        AuditAction.LOGIN_FAILED,
+        user.id,
+        {
+          identifier: dto.identifier,
+          reason: 'INVALID_PASSWORD',
+          attemptCount: user.failedLoginAttempts + 1,
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
 
       // Check if this was the 3rd failed attempt
       const updatedUser = await this.prisma.user.findUnique({
@@ -311,6 +336,20 @@ export class AuthService {
 
     this.logger.log(`User logged in: ${user.email}`);
 
+    // Log successful login
+    await this.auditService.logAuth(AuditAction.USER_LOGIN, user.id, {
+      identifier: dto.identifier,
+      loginMethod: user.twoFactorEnabled ? '2FA' : 'PASSWORD',
+      deviceId: deviceId,
+      deviceInfo: deviceInfo
+        ? {
+            deviceName: deviceInfo.deviceName,
+            deviceType: deviceInfo.deviceType,
+            deviceModel: deviceInfo.deviceModel,
+          }
+        : undefined,
+    });
+
     // Generate tokens
     const tokens = await this.generateTokens(user);
 
@@ -429,7 +468,10 @@ export class AuthService {
    * Handle failed login attempt
    * Increments failed attempts and locks account after 3 failures
    */
-  private async handleFailedLogin(userId: string): Promise<void> {
+  private async handleFailedLogin(
+    userId: string,
+    ipAddress?: string,
+  ): Promise<void> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -455,6 +497,20 @@ export class AuthService {
 
       this.logger.warn(
         `[AccountLock] User ${user.email} locked after 3 failed attempts until ${lockUntil.toISOString()}`,
+      );
+
+      // Log account locked event
+      await this.auditService.logSecurity(
+        AuditAction.ACCOUNT_LOCKED,
+        userId,
+        {
+          reason: 'MULTIPLE_FAILED_LOGINS',
+          failedAttempts,
+          lockDuration: '30 minutes',
+          lockUntil: lockUntil.toISOString(),
+        },
+        undefined,
+        'Account locked due to multiple failed login attempts',
       );
 
       // TODO: Send account locked email notification
@@ -501,6 +557,12 @@ export class AuthService {
     });
 
     this.logger.log(`[AccountUnlock] Account ${userId} automatically unlocked`);
+
+    // Log account unlock event
+    await this.auditService.logAuth(AuditAction.ACCOUNT_UNLOCKED, userId, {
+      reason: 'LOCK_PERIOD_EXPIRED',
+      unlockedBy: 'SYSTEM',
+    });
   }
 
   /**
@@ -997,6 +1059,16 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     this.logger.log(`Password reset completed for user: ${payload.sub}`);
 
+    // Log password reset completion
+    await this.auditService.logAuth(
+      AuditAction.PASSWORD_RESET_COMPLETED,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      payload.sub as string,
+      {
+        resetMethod: 'TOKEN',
+      },
+    );
+
     return { success: true, message: 'Password reset successfully' };
   }
 
@@ -1131,6 +1203,11 @@ export class AuthService {
         data: { isRevoked: true },
       });
       this.logger.log(`User logged out: ${userId} (all sessions)`);
+
+      // Log logout event
+      await this.auditService.logAuth(AuditAction.USER_LOGOUT, userId, {
+        logoutType: refreshToken ? 'SINGLE_SESSION' : 'ALL_SESSIONS',
+      });
     }
 
     // Deactivate all user devices but keep them verified

@@ -14,6 +14,8 @@ import { WalletService } from '../wallet/wallet.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
 import { LimitsService, TransactionLimitType } from '../limits/limits.service';
 import { PostHogService } from '../common/analytics/posthog.service';
+import { AuditService } from '../common/services/audit.service';
+import { AuditAction, AuditStatus } from '../common/types/audit-log.types';
 import {
   TransactionType,
   TransactionStatus,
@@ -48,6 +50,7 @@ export class TransactionsService {
     private notificationDispatcher: NotificationDispatcherService,
     private limitsService: LimitsService,
     private posthogService: PostHogService,
+    private auditService: AuditService,
   ) {}
 
   /**
@@ -337,6 +340,23 @@ export class TransactionsService {
       },
     });
 
+    // Audit log: Deposit initiated
+    await this.auditService.logTransaction(
+      AuditAction.DEPOSIT_INITIATED,
+      userId,
+      {
+        amount,
+        fee: feeCalc.fee,
+        totalAmount: totalToCharge,
+        currency: 'NGN',
+        reference,
+        paymentMethod: 'card',
+        provider: 'paystack',
+        kycTier: user.kycTier,
+        ...clientMetadata,
+      },
+    );
+
     return {
       reference,
       authorizationUrl: payment.authorization_url,
@@ -407,6 +427,25 @@ export class TransactionsService {
           },
         },
       });
+
+      // Audit log: Deposit failed
+      await this.auditService.logTransaction(
+        AuditAction.DEPOSIT_FAILED,
+        userId,
+        {
+          amount: Number(transaction.amount),
+          fee: Number(transaction.fee),
+          currency: 'NGN',
+          reference: transaction.reference,
+          paymentMethod: 'card',
+          provider: 'paystack',
+          transactionId: transaction.id,
+          paystackStatus: payment.status,
+          errorMessage: `Paystack payment failed with status: ${payment.status}`,
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
 
       return {
         status: 'failed',
@@ -639,6 +678,26 @@ export class TransactionsService {
         walletLocked: shouldLockWallet,
       },
     });
+
+    // Audit log: Deposit completed
+    await this.auditService.logTransaction(
+      AuditAction.DEPOSIT_COMPLETED,
+      userId,
+      {
+        amount: depositAmount,
+        fee: Number(transaction.fee),
+        currency: 'NGN',
+        reference: transaction.reference,
+        paymentMethod: 'card',
+        provider: 'paystack',
+        kycTier: transaction.user.kycTier,
+        transactionId: transaction.id,
+        balanceAfter: transaction.balanceAfter?.toString() ?? undefined,
+        channel: payment.channel,
+        limitExceeded: shouldLockWallet,
+        walletLocked: shouldLockWallet,
+      },
+    );
 
     return {
       status: 'success',
@@ -1277,6 +1336,31 @@ export class TransactionsService {
         },
       });
 
+      // Audit log: Withdrawal failed
+      await this.auditService.logTransaction(
+        AuditAction.WITHDRAWAL_FAILED,
+        userId,
+        {
+          amount,
+          fee: feeCalc.fee,
+          totalAmount: feeCalc.totalAmount,
+          currency: 'NGN',
+          reference: transaction.reference,
+          bankCode,
+          bankName,
+          accountNumber: accountNumber.slice(-4),
+          accountName,
+          transactionId: transaction.id,
+          refunded: true,
+          refundAmount: refundAmount.toString(),
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+          ...clientMetadata,
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
+
       throw new BadRequestException(
         'Withdrawal failed. Amount refunded to wallet.',
       );
@@ -1317,6 +1401,28 @@ export class TransactionsService {
         reference: transaction.reference,
       },
     });
+
+    // Audit log: Withdrawal initiated
+    await this.auditService.logTransaction(
+      AuditAction.WITHDRAWAL_INITIATED,
+      userId,
+      {
+        amount,
+        fee: feeCalc.fee,
+        totalAmount: feeCalc.totalAmount,
+        currency: 'NGN',
+        reference: transaction.reference,
+        bankCode,
+        bankName,
+        accountNumber: accountNumber.slice(-4),
+        accountName,
+        kycTier: user.kycTier,
+        provider: 'paystack',
+        transactionId: transaction.id,
+        narration: narration ?? undefined,
+        ...clientMetadata,
+      },
+    );
 
     return {
       reference: transaction.reference,
@@ -1804,6 +1910,24 @@ export class TransactionsService {
       },
     });
 
+    // Audit log: P2P transfer initiated
+    const auditStartTime = Date.now();
+    await this.auditService.logP2PTransfer(
+      AuditAction.P2P_TRANSFER_INITIATED,
+      senderId,
+      {
+        recipientTag,
+        recipientId: receiver.id,
+        amount,
+        fee,
+        reference,
+        senderKycTier: sender.kycTier,
+        receiverKycTier: receiver.kycTier,
+        message: message ?? undefined,
+        ...clientMetadata,
+      },
+    );
+
     // 11. Execute transfer atomically with pessimistic locking and serializable isolation
     // Retry logic for serialization conflicts (expected with concurrent requests)
     const maxRetries = 3;
@@ -2023,6 +2147,29 @@ export class TransactionsService {
               retries: attempt,
             },
           });
+
+          // Audit log: P2P transfer failed after retries
+          await this.auditService.logP2PTransfer(
+            AuditAction.P2P_TRANSFER_FAILED,
+            senderId,
+            {
+              recipientTag,
+              recipientId: receiver.id,
+              amount,
+              fee,
+              reference,
+              senderKycTier: sender.kycTier,
+              receiverKycTier: receiver.kycTier,
+              message: message ?? undefined,
+              retries: attempt,
+              executionTimeMs: Date.now() - auditStartTime,
+              errorMessage:
+                error instanceof Error ? error.message : 'Unknown error',
+              ...clientMetadata,
+            },
+            undefined,
+            AuditStatus.FAILURE,
+          );
         }
         throw error;
       }
@@ -2047,6 +2194,31 @@ export class TransactionsService {
               : 'Transaction failed after retries',
         },
       });
+
+      // Audit log: P2P transfer failed (no result)
+      await this.auditService.logP2PTransfer(
+        AuditAction.P2P_TRANSFER_FAILED,
+        senderId,
+        {
+          recipientTag,
+          recipientId: receiver.id,
+          amount,
+          fee,
+          reference,
+          senderKycTier: sender.kycTier,
+          receiverKycTier: receiver.kycTier,
+          message: message ?? undefined,
+          executionTimeMs: Date.now() - auditStartTime,
+          errorMessage:
+            lastError instanceof Error
+              ? lastError.message
+              : 'Transaction failed after retries',
+          ...clientMetadata,
+        },
+        undefined,
+        AuditStatus.FAILURE,
+      );
+
       throw lastError || new Error('Transaction failed after retries');
     }
 
@@ -2136,6 +2308,29 @@ export class TransactionsService {
 
     this.logger.log(
       `[P2P] Transfer completed: @${sender.tag} → @${receiver.tag} | ₦${amount} | Ref: ${reference}${shouldLockReceiverWallet ? ' | RECEIVER WALLET LOCKED' : ''}`,
+    );
+
+    // Audit log: P2P transfer completed
+    const auditExecutionTime = Date.now() - auditStartTime;
+    await this.auditService.logP2PTransfer(
+      AuditAction.P2P_TRANSFER_COMPLETED,
+      senderId,
+      {
+        recipientTag: receiver.tag!,
+        recipientId: receiver.id,
+        amount,
+        fee,
+        reference: result.p2pTransfer.reference,
+        senderKycTier: sender.kycTier,
+        receiverKycTier: receiver.kycTier,
+        message: message ?? undefined,
+        senderTransactionId: result.senderTxn.id,
+        receiverTransactionId: result.receiverTxn.id,
+        p2pTransferId: result.p2pTransfer.id,
+        walletLocked: shouldLockReceiverWallet,
+        executionTimeMs: auditExecutionTime,
+        ...clientMetadata,
+      },
     );
 
     // Track transaction completion
