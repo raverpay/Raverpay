@@ -1,0 +1,414 @@
+// app/crypto/index.tsx
+import { CryptoTokenCard } from "@/src/components/crypto/CryptoTokenCard";
+import { CryptoTransactionItem } from "@/src/components/crypto/CryptoTransactionItem";
+import {
+  Button,
+  Card,
+  Skeleton,
+  SkeletonCircle,
+  Text,
+} from "@/src/components/ui";
+import {
+  useCryptoTransactions,
+  useCryptoWallet,
+  useSyncBalances,
+} from "@/src/hooks/useCryptoWallet";
+import { useTheme } from "@/src/hooks/useTheme";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  AppState,
+  AppStateStatus,
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+// Note: useFocusEffect from expo-router might not be available
+// Using AppState and wallet dependency instead
+
+export default function CryptoWalletScreen() {
+  const [showSetupScreen, setShowSetupScreen] = useState(false);
+  const {
+    data: wallet,
+    isPending: isLoadingWallet,
+    refetch: loadWallet,
+  } = useCryptoWallet();
+  const { mutateAsync: syncBalances } = useSyncBalances();
+  const {
+    data: transactionsData,
+    refetch: refetchTransactions,
+    isPending: isLoadingTransactions,
+  } = useCryptoTransactions({ limit: 5 });
+
+  const balances = wallet?.balances || [];
+  const recentTransactions = transactionsData?.pages[0]?.transactions || [];
+
+  const [refreshing, setRefreshing] = useState(false);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+
+  useEffect(() => {
+    if (wallet) {
+      setShowSetupScreen(false);
+    } else {
+      setShowSetupScreen(true);
+    }
+  }, [wallet]);
+
+  const loadWalletData = useCallback(async () => {
+    try {
+      await loadWallet();
+      if (wallet) {
+        await Promise.all([syncBalances(), refetchTransactions()]);
+      }
+    } catch (err) {
+      console.error("Failed to load wallet:", err);
+    }
+  }, [loadWallet, wallet, syncBalances, refetchTransactions]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // On focus, load wallet data
+      loadWalletData();
+    }, [loadWalletData])
+  );
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([syncBalances(), refetchTransactions()]);
+    setRefreshing(false);
+  };
+
+  // Polling function - syncs balances every 30 seconds
+  const startPolling = useCallback(() => {
+    // Clear any existing interval
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    // Only poll if wallet exists
+    if (!wallet) return;
+
+    // Sync immediately
+    syncBalances().catch((err) => {
+      console.error("Polling sync failed:", err);
+    });
+
+    // Set up interval to poll every 30 seconds
+    pollingIntervalRef.current = setInterval(() => {
+      // Only poll if app is in foreground
+      if (appStateRef.current === "active" && wallet) {
+        syncBalances().catch((err) => {
+          console.error("Polling sync failed:", err);
+        });
+      }
+    }, 90000); // 90 seconds
+  }, [wallet, syncBalances]);
+
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
+  // Handle app state changes (foreground/background)
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (
+        appStateRef.current.match(/inactive|background/) &&
+        nextAppState === "active"
+      ) {
+        // App has come to foreground - sync immediately and resume polling
+        if (wallet) {
+          syncBalances().catch((err) => {
+            console.error("Foreground sync failed:", err);
+          });
+          startPolling();
+        }
+      } else if (nextAppState.match(/inactive|background/)) {
+        // App has gone to background - stop polling to save battery
+        stopPolling();
+      }
+
+      appStateRef.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [wallet, syncBalances, startPolling, stopPolling]);
+
+  // Start polling when wallet is loaded
+  useEffect(() => {
+    if (wallet && appStateRef.current === "active") {
+      startPolling();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      stopPolling();
+    };
+  }, [wallet, startPolling, stopPolling]);
+
+  const { isDark } = useTheme();
+
+  // Check if wallet exists
+  // if (!wallet && !isLoadingWallet) {
+  //   return (
+
+  //   );
+  // }
+
+  if (isLoadingWallet) {
+    return (
+      <>
+        <StatusBar style="dark" />
+        <View className="flex-1 bg-gray-50 dark:bg-gray-900 justify-center items-center">
+          <ActivityIndicator size="large" color="#5B55F6" />
+          <Text variant="body" color="secondary" className="mt-4">
+            Loading wallet...
+          </Text>
+        </View>
+      </>
+    );
+  }
+
+  // Calculate total portfolio value
+  const totalValue = balances.reduce(
+    (sum: number, b: any) => sum + parseFloat(b.usdValue),
+    0
+  );
+
+  return (
+    <View className=" bg-gray-50 dark:bg-gray-900">
+      <StatusBar style={isDark ? "light" : "dark"} />
+
+      {showSetupScreen ? (
+        <View className="h-full  justify-center items-center p-6">
+          <View className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900 items-center justify-center mb-4">
+            <Ionicons
+              name="wallet-outline"
+              size={40}
+              color={isDark ? "white" : "#5B55F6"}
+            />
+          </View>
+          <Text variant="h3" className="mb-4">
+            Setup Stablecoin Wallet
+          </Text>
+          <Text variant="body" color="secondary" align="center" className="">
+            You haven&apos;t set up your stablecoin wallet yet.
+          </Text>
+          <Text
+            variant="body"
+            color="secondary"
+            align="center"
+            className="mb-6"
+          >
+            Create one to start sending and receiving stablecoins.
+          </Text>
+          <Button
+            variant="primary"
+            size="lg"
+            onPress={() => router.push("/crypto/setup")}
+          >
+            Setup
+          </Button>
+        </View>
+      ) : (
+        <View className="w-full">
+          <View className="bg-[#5B55F6] px-6 pb-12 pt-12">
+            {/* Header */}
+
+            <View>
+              <Text variant="bodyMedium" className="">
+                <Text variant="h3">Stablecoin</Text>
+              </Text>
+            </View>
+            <Text variant="h3" className="mb-1">
+              ${totalValue.toFixed(2)}
+            </Text>
+            {/* <Text variant="h4" color="inverse" className="mb-2">
+                Total Portfolio Value
+              </Text> */}
+            {/* {isSyncing && (
+                <Text variant="caption" className="text-white/70">
+                  Syncing...
+                </Text>
+              )} */}
+          </View>
+
+          {/* Action Buttons */}
+          <View className="px-6 -mt-6 mb-6 ">
+            <Card variant="elevated" className="p-4 ">
+              <View className="flex-row justify-around">
+                <TouchableOpacity
+                  className="items-center"
+                  onPress={() => router.push("/crypto/receive")}
+                >
+                  <View className="w-12 h-12 bg-green-100 rounded-full items-center justify-center mb-2">
+                    <Ionicons name="arrow-down" size={24} color="#10B981" />
+                  </View>
+                  <Text variant="caption" weight="semibold">
+                    Receive
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="items-center"
+                  onPress={() => router.push("/crypto/send")}
+                >
+                  <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mb-2">
+                    <Ionicons name="arrow-up" size={24} color="#3B82F6" />
+                  </View>
+                  <Text variant="caption" weight="semibold">
+                    Send
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="items-center"
+                  onPress={() => router.push("/crypto/convert")}
+                >
+                  <View className="w-12 h-12 bg-purple-100 rounded-full items-center justify-center mb-2">
+                    <Ionicons
+                      name="swap-horizontal"
+                      size={24}
+                      color="#9333EA"
+                    />
+                  </View>
+                  <Text variant="caption" weight="semibold">
+                    Convert
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Card>
+          </View>
+
+          <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            contentContainerStyle={{
+              paddingBottom: 800,
+            }}
+            className="h-full w-full px-6"
+          >
+            {/* Balances */}
+            <View className="">
+              <Text variant="h4" weight="bold" className="mb-4">
+                Your Assets
+              </Text>
+
+              {balances.length === 0 ? (
+                <Card variant="elevated" className="p-6 items-center">
+                  <Text variant="body" color="secondary">
+                    No assets yet
+                  </Text>
+                  <Text variant="caption" color="tertiary" className="mt-1">
+                    Receive crypto to get started
+                  </Text>
+                </Card>
+              ) : (
+                balances.map((balance: any) => (
+                  <CryptoTokenCard
+                    key={balance.id}
+                    balance={balance}
+                    onPress={() => {
+                      // Navigate to token details if needed
+                    }}
+                  />
+                ))
+              )}
+            </View>
+
+            {/* Transactions */}
+            <View className="mt-6 mb-6">
+              <TouchableOpacity
+                className="flex-row justify-between items-center mb-4"
+                onPress={() => router.push("/crypto/transactions")}
+              >
+                <Text variant="h4" weight="bold">
+                  Recent Transactions
+                </Text>
+                <View className="flex-row items-center">
+                  <Text variant="bodyMedium" className="text-[#5B55F6] mr-2">
+                    See All
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color="#5B55F6" />
+                </View>
+              </TouchableOpacity>
+
+              <Card variant="elevated" className="overflow-hidden">
+                {isLoadingTransactions ? (
+                  <View className="p-4">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <TransactionItemSkeleton key={i} />
+                    ))}
+                  </View>
+                ) : recentTransactions.length === 0 ? (
+                  <View className="p-8 items-center">
+                    <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 items-center justify-center mb-4">
+                      <Ionicons
+                        name="receipt-outline"
+                        size={32}
+                        color="#9CA3AF"
+                      />
+                    </View>
+                    <Text variant="bodyMedium" color="secondary" align="center">
+                      No transactions yet
+                    </Text>
+                    <Text
+                      variant="caption"
+                      color="secondary"
+                      align="center"
+                      className="mt-2"
+                    >
+                      Your stablecoin transactions will appear here
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="p-4">
+                    {recentTransactions.map((transaction: any) => (
+                      <CryptoTransactionItem
+                        key={transaction.id}
+                        transaction={transaction}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Card>
+            </View>
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// Transaction Item Skeleton
+const TransactionItemSkeleton: React.FC = () => (
+  <View className="flex-row items-center py-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+    <SkeletonCircle size={48} />
+    <View className="flex-1 ml-4">
+      <Skeleton width="70%" height={16} className="mb-2" />
+      <Skeleton width="40%" height={14} />
+    </View>
+    <View className="items-end">
+      <Skeleton width={80} height={16} className="mb-2" />
+      <Skeleton width={60} height={14} />
+    </View>
+  </View>
+);

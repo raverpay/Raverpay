@@ -1,0 +1,4 @@
+// app/(tabs)/notifications.tsx
+// This is a wrapper for the notifications screen to make it work as a tab
+
+export { default } from '../notifications';

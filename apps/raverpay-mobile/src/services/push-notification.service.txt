@@ -1,0 +1,174 @@
+import { OneSignal } from "react-native-onesignal";
+import { apiClient } from "@/src/lib/api/client";
+
+/**
+ * Push Notification Service
+ * Manages OneSignal push notification integration
+ */
+class PushNotificationService {
+  /**
+   * Set external user ID (link OneSignal player with your backend user)
+   */
+  async setExternalUserId(userId: string): Promise<void> {
+    try {
+      await OneSignal.login(userId);
+      console.log(`[PushNotification] User logged in to OneSignal: ${userId}`);
+    } catch (error) {
+      console.error(
+        "[PushNotification] Failed to set external user ID:",
+        error
+      );
+    }
+  }
+
+  /**
+   * Clear external user ID (logout)
+   */
+  async clearExternalUserId(): Promise<void> {
+    try {
+      await OneSignal.logout();
+      console.log("[PushNotification] User logged out from OneSignal");
+    } catch (error) {
+      console.error(
+        "[PushNotification] Failed to clear external user ID:",
+        error
+      );
+    }
+  }
+
+  /**
+   * Get OneSignal player ID (device identifier)
+   */
+  async getPlayerId(): Promise<string | null> {
+    try {
+      const deviceState = await OneSignal.User.pushSubscription.getIdAsync();
+      return deviceState;
+    } catch (error) {
+      console.error("[PushNotification] Failed to get player ID:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if push notifications are enabled
+   */
+  async isPushEnabled(): Promise<boolean> {
+    try {
+      const permission = await OneSignal.Notifications.getPermissionAsync();
+      return permission;
+    } catch (error) {
+      console.error(
+        "[PushNotification] Failed to check push permission:",
+        error
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Request push notification permission
+   */
+  async requestPermission(): Promise<boolean> {
+    try {
+      const permission = await OneSignal.Notifications.requestPermission(true);
+      return permission;
+    } catch (error) {
+      console.error("[PushNotification] Failed to request permission:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Set up notification handlers
+   */
+  setupNotificationHandlers(
+    onNotificationOpened?: (notification: any) => void,
+    onNotificationReceived?: (notification: any) => void
+  ): void {
+    // Handle notification opened (user tapped on notification)
+    if (onNotificationOpened) {
+      OneSignal.Notifications.addEventListener("click", (event) => {
+        console.log("[PushNotification] Notification opened:", event);
+        onNotificationOpened(event);
+      });
+    }
+
+    // Handle notification received while app is in foreground
+    if (onNotificationReceived) {
+      OneSignal.Notifications.addEventListener(
+        "foregroundWillDisplay",
+        (event) => {
+          console.log(
+            "[PushNotification] Notification received in foreground:",
+            event
+          );
+          onNotificationReceived(event);
+        }
+      );
+    }
+  }
+
+  /**
+   * Add tags to user (for segmentation)
+   */
+  async addTags(tags: Record<string, string>): Promise<void> {
+    try {
+      await OneSignal.User.addTags(tags);
+      console.log("[PushNotification] Tags added:", tags);
+    } catch (error) {
+      console.error("[PushNotification] Failed to add tags:", error);
+    }
+  }
+
+  /**
+   * Remove tags from user
+   */
+  async removeTags(keys: string[]): Promise<void> {
+    try {
+      await OneSignal.User.removeTags(keys);
+      console.log("[PushNotification] Tags removed:", keys);
+    } catch (error) {
+      console.error("[PushNotification] Failed to remove tags:", error);
+    }
+  }
+
+  /**
+   * Sync OneSignal player ID with backend
+   * This allows the backend to send push notifications to the user
+   */
+  async syncPlayerIdWithBackend(userId: string): Promise<void> {
+    try {
+      const playerId = await this.getPlayerId();
+
+      if (!playerId) {
+        console.warn(
+          "[PushNotification] No player ID available, skipping sync"
+        );
+        return;
+      }
+
+      console.log("=".repeat(60));
+      console.log("📱 ONESIGNAL PUSH TOKEN INFO");
+      console.log("=".repeat(60));
+      console.log("User ID:", userId);
+      console.log("Player ID (Push Token):", playerId);
+      console.log("Syncing to backend...");
+      console.log("=".repeat(60));
+
+      await apiClient.post("/notification-preferences/onesignal", {
+        oneSignalPlayerId: playerId,
+        oneSignalExternalId: userId,
+      });
+
+      console.log("✅ Player ID successfully synced with backend!");
+      console.log("=".repeat(60));
+    } catch (error) {
+      console.error(
+        "[PushNotification] Failed to sync player ID with backend:",
+        error
+      );
+    }
+  }
+}
+
+export const pushNotificationService = new PushNotificationService();

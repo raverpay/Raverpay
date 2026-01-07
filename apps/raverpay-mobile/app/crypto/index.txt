@@ -1,0 +1,228 @@
+// app/crypto/index.tsx
+import { CryptoTokenCard } from "@/src/components/crypto/CryptoTokenCard";
+import { Button, Card, Text } from "@/src/components/ui";
+import { useCryptoWallet } from "@/src/hooks/useCryptoWallet";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+export default function CryptoWalletScreen() {
+  const {
+    wallet,
+    balances,
+    isLoadingWallet,
+    isSyncing,
+    loadWallet,
+    syncBalances,
+  } = useCryptoWallet();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadWalletData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadWalletData = async () => {
+    try {
+      await loadWallet();
+      await syncBalances();
+    } catch (err) {
+      console.error("Failed to load wallet:", err);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await syncBalances();
+    setRefreshing(false);
+  };
+
+  // Check if wallet exists
+  if (!wallet && !isLoadingWallet) {
+    return (
+      <>
+        <StatusBar style="dark" />
+        <View className="flex-1 bg-gray-50 justify-center items-center p-6">
+          <View className="w-20 h-20 rounded-full bg-purple-100 items-center justify-center mb-4">
+            <Ionicons name="wallet-outline" size={40} color="#5B55F6" />
+          </View>
+          <Text variant="h3" className="mb-4">
+            Setup Crypto Wallet
+          </Text>
+          <Text
+            variant="body"
+            color="secondary"
+            align="center"
+            className="mb-6"
+          >
+            You haven&apos;t set up your crypto wallet yet. Create one to start
+            sending and receiving crypto.
+          </Text>
+          <Button
+            variant="primary"
+            size="lg"
+            onPress={() => router.push("/crypto/setup")}
+          >
+            Setup Now
+          </Button>
+        </View>
+      </>
+    );
+  }
+
+  if (isLoadingWallet) {
+    return (
+      <>
+        <StatusBar style="dark" />
+        <View className="flex-1 bg-gray-50 justify-center items-center">
+          <ActivityIndicator size="large" color="#5B55F6" />
+          <Text variant="body" color="secondary" className="mt-4">
+            Loading wallet...
+          </Text>
+        </View>
+      </>
+    );
+  }
+
+  // Calculate total portfolio value
+  const totalValue = balances.reduce(
+    (sum, b) => sum + parseFloat(b.usdValue),
+    0
+  );
+
+  return (
+    <>
+      <StatusBar style="dark" />
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {/* Header */}
+        <View className="bg-[#5B55F6] p-6 pb-12">
+          <Text variant="caption" color="inverse" className="mb-2">
+            Total Portfolio Value
+          </Text>
+          <Text variant="h1" color="inverse" className="mb-1">
+            ${totalValue.toFixed(2)}
+          </Text>
+          {isSyncing && (
+            <Text variant="caption" className="text-white/70">
+              Syncing...
+            </Text>
+          )}
+        </View>
+
+        {/* Action Buttons */}
+        <View className="px-6 -mt-6 mb-6">
+          <Card variant="elevated" className="p-4">
+            <View className="flex-row justify-around">
+              <TouchableOpacity
+                className="items-center"
+                onPress={() => router.push("/crypto/receive")}
+              >
+                <View className="w-12 h-12 bg-green-100 rounded-full items-center justify-center mb-2">
+                  <Ionicons name="arrow-down" size={24} color="#10B981" />
+                </View>
+                <Text variant="caption" weight="semibold">
+                  Receive
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="items-center"
+                onPress={() => router.push("/crypto/send")}
+              >
+                <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mb-2">
+                  <Ionicons name="arrow-up" size={24} color="#3B82F6" />
+                </View>
+                <Text variant="caption" weight="semibold">
+                  Send
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="items-center"
+                onPress={() => router.push("/crypto/convert")}
+              >
+                <View className="w-12 h-12 bg-purple-100 rounded-full items-center justify-center mb-2">
+                  <Ionicons name="swap-horizontal" size={24} color="#9333EA" />
+                </View>
+                <Text variant="caption" weight="semibold">
+                  Convert
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
+        </View>
+
+        {/* Balances */}
+        <View className="px-6">
+          <Text variant="h4" weight="bold" className="mb-4">
+            Your Assets
+          </Text>
+
+          {balances.length === 0 ? (
+            <Card variant="elevated" className="p-6 items-center">
+              <Text variant="body" color="secondary">
+                No assets yet
+              </Text>
+              <Text variant="caption" color="tertiary" className="mt-1">
+                Receive crypto to get started
+              </Text>
+            </Card>
+          ) : (
+            balances.map((balance) => (
+              <CryptoTokenCard
+                key={balance.id}
+                balance={balance}
+                onPress={() => {
+                  // Navigate to token details if needed
+                }}
+              />
+            ))
+          )}
+        </View>
+
+        {/* Transactions */}
+        <View className="px-6 mt-6 mb-6">
+          <TouchableOpacity
+            className="flex-row justify-between items-center mb-4"
+            onPress={() => router.push("/crypto/transactions")}
+          >
+            <Text variant="h4" weight="bold">
+              Recent Transactions
+            </Text>
+            <View className="flex-row items-center">
+              <Text variant="bodyMedium" className="text-[#5B55F6] mr-2">
+                See All
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#5B55F6" />
+            </View>
+          </TouchableOpacity>
+
+          <Card
+            variant="elevated"
+            pressable
+            onPress={() => router.push("/crypto/transactions")}
+            className="p-6"
+          >
+            <Text variant="body" color="secondary" align="center">
+              View transaction history
+            </Text>
+          </Card>
+        </View>
+      </ScrollView>
+    </>
+  );
+}

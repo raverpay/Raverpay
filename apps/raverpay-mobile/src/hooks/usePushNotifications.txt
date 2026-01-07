@@ -1,0 +1,79 @@
+import { router } from "expo-router";
+import { useEffect } from "react";
+import { pushNotificationService } from "../services/push-notification.service";
+import { useAuthStore } from "../store/auth.store";
+import { useUserStore } from "../store/user.store";
+
+/**
+ * Hook to manage push notifications and sync with user auth
+ */
+export function usePushNotifications() {
+  const { isAuthenticated } = useAuthStore();
+  const { user } = useUserStore();
+
+  useEffect(() => {
+    // Setup notification handlers
+    pushNotificationService.setupNotificationHandlers(
+      // Handle notification opened (user tapped)
+      (event) => {
+        // console.log("[usePushNotifications] Notification opened:", event);
+
+        // Navigate based on notification data
+        const data = event.notification.additionalData;
+
+        if (data?.screen) {
+          // Navigate to specific screen
+          router.push(data.screen);
+        } else if (data?.category === "TRANSACTION") {
+          // Navigate to transactions screen
+          router.push("/transactions");
+        } else if (data?.category === "SECURITY") {
+          // Navigate to security settings
+          router.push("/notification-preferences");
+        } else {
+          // Default: navigate to notifications screen
+          router.push("/notifications");
+        }
+      },
+      // Handle notification received in foreground
+      (event) => {
+        // console.log("[usePushNotifications] Notification received:", event);
+        // Let the notification display (OneSignal handles this)
+        event.notification.display();
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      // User is logged in - link OneSignal with user ID
+      // console.log(
+      //   `[usePushNotifications] Linking OneSignal with user: ${user.id}`
+      // );
+
+      pushNotificationService.setExternalUserId(user.id);
+
+      // Add user tags for segmentation
+      pushNotificationService.addTags({
+        userId: user.id,
+        email: user.email || "",
+        kycTier: user.kycTier || "TIER_0",
+        phoneVerified: user.phoneVerified ? "true" : "false",
+        emailVerified: user.emailVerified ? "true" : "false",
+      });
+
+      // Sync player ID with backend for push notifications
+      pushNotificationService.syncPlayerIdWithBackend(user.id);
+    } else if (!isAuthenticated) {
+      // User logged out - clear OneSignal user
+      // console.log("[usePushNotifications] Clearing OneSignal user");
+      pushNotificationService.clearExternalUserId();
+    }
+  }, [isAuthenticated, user]);
+
+  return {
+    requestPermission: () => pushNotificationService.requestPermission(),
+    isPushEnabled: () => pushNotificationService.isPushEnabled(),
+    getPlayerId: () => pushNotificationService.getPlayerId(),
+  };
+}

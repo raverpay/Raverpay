@@ -1,0 +1,87 @@
+// app/(tabs)/wallet.tsx
+import React from 'react';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
+import { Text, Card, Button } from '@/src/components/ui';
+import { useWalletStore } from '@/src/store/wallet.store';
+import { formatCurrency } from '@/src/lib/utils/formatters';
+
+export default function WalletScreen() {
+  const { balance } = useWalletStore();
+
+  return (
+    <View className="flex-1 bg-gray-50">
+      <StatusBar style="dark" />
+
+      {/* Header */}
+      <View className="bg-white pt-16 pb-6 px-5 border-b border-gray-200">
+        <Text variant="h1">Wallet</Text>
+      </View>
+
+      {/* Content */}
+      <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false}>
+        {/* Balance Card */}
+        <Card variant="elevated" className="p-6 mb-6">
+          <Text variant="caption" color="secondary" className="mb-2">
+            Available Balance
+          </Text>
+          <Text variant="h1" className="mb-6">
+            {formatCurrency(balance)}
+          </Text>
+          <View className="flex-row gap-3">
+            <Button variant="primary" size="md" className="flex-1">
+              Add Money
+            </Button>
+            <Button variant="outline" size="md" className="flex-1">
+              Withdraw
+            </Button>
+          </View>
+        </Card>
+
+        {/* Account Details */}
+        <View className="mb-6">
+          <Text variant="h3" className="mb-4">
+            Account Details
+          </Text>
+          <Card variant="elevated" className="p-4">
+            <View className="flex-row items-center justify-between mb-3 pb-3 border-b border-gray-200">
+              <Text variant="body" color="secondary">
+                Account Number
+              </Text>
+              <View className="flex-row items-center gap-2">
+                <Text variant="bodyMedium">1234567890</Text>
+                <TouchableOpacity>
+                  <Ionicons name="copy-outline" size={20} color="#8B5CF6" />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text variant="body" color="secondary">
+                Bank Name
+              </Text>
+              <Text variant="bodyMedium">raverpay Bank</Text>
+            </View>
+          </Card>
+        </View>
+
+        {/* Transaction History */}
+        <View className="mb-6">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text variant="h3">Transaction History</Text>
+            <TouchableOpacity>
+              <Text variant="bodyMedium" className="text-[#5B55F6]">
+                See All
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <Card variant="elevated" className="p-4">
+            <Text variant="body" color="secondary" align="center">
+              No transactions yet
+            </Text>
+          </Card>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
