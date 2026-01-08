@@ -31,7 +31,7 @@ Please help me implement this feature following these guidelines:
 
 Before writing any code, please:
 
-- Review existing mobile app patterns in `apps/raverpaymobile/src/`:
+- Review existing mobile app patterns in `apps/raverpay-mobile/src/`:
   - How we structure hooks (check `hooks/` directory)
   - How we use React Query (check `lib/api/` directory)
   - How we handle API calls (check `lib/api/client.ts`)
