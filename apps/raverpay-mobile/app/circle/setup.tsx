@@ -19,7 +19,7 @@ export default function CircleSetupScreen() {
   const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { data: config, isLoading: isLoadingConfig } = useCircleConfig();
-  const { data: chainsData, isLoading: isLoadingChains } = useCircleChains();
+  const { data: chainsData, isPending: isLoadingChains } = useCircleChains();
   const { mutateAsync: createWallet, isPending: isCreating } = useCreateCircleWallet();
 
   const [selectedBlockchain, setSelectedBlockchain] = useState<CircleBlockchain | undefined>();
@@ -77,14 +77,14 @@ export default function CircleSetupScreen() {
             selectedChain={selectedBlockchain}
             onSelect={setSelectedBlockchain}
           />
-          <Text variant="caption" color="tertiary" className="mt-3">
+          {/* <Text variant="caption" color="tertiary" className="mt-3">
             Each network has different gas fees and transaction speeds. You can create wallets on
             multiple networks.
-          </Text>
+          </Text> */}
         </Card>
 
         {/* Info Cards */}
-        <Card variant="filled" className="p-4 mb-4">
+        {/* <Card variant="filled" className="p-4 mb-4">
           <View className="flex-row items-start">
             <Ionicons name="information-circle" size={20} color="#2775CA" />
             <View className="ml-3 flex-1">
@@ -107,7 +107,7 @@ export default function CircleSetupScreen() {
                 Secure & Compliant
               </Text>
               <Text variant="caption" color="secondary">
-                Your wallet is secured by Circle&apos;s enterprise-grade infrastructure with
+                Your wallet is secured by our enterprise-grade infrastructure with
                 multi-party computation (MPC) technology.
               </Text>
             </View>
@@ -122,12 +122,12 @@ export default function CircleSetupScreen() {
                 Cross-Chain Transfers
               </Text>
               <Text variant="caption" color="secondary">
-                Move USDC between blockchains using Circle&apos;s CCTP (Cross-Chain Transfer
-                Protocol) with no slippage or bridging fees.
+                Move USDC between blockchains using our CCTP (Cross-Chain Transfer Protocol) with no
+                slippage or bridging fees.
               </Text>
             </View>
           </View>
-        </Card>
+        </Card> */}
 
         {/* Features */}
         <Card variant="elevated" className="p-4 mb-6">
@@ -146,12 +146,12 @@ export default function CircleSetupScreen() {
               Bridge USDC across chains
             </Text>
           </View>
-          <View className="flex-row items-center mb-2">
+          {/* <View className="flex-row items-center mb-2">
             <Ionicons name="checkmark" size={16} color="#10B981" />
             <Text variant="body" className="ml-2 dark:text-white">
               Pay gas fees in USDC (Paymaster)
             </Text>
-          </View>
+          </View> */}
           <View className="flex-row items-center">
             <Ionicons name="checkmark" size={16} color="#10B981" />
             <Text variant="body" className="ml-2 dark:text-white">

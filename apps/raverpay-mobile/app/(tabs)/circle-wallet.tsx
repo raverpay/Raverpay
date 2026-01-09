@@ -156,7 +156,7 @@ export default function CircleWalletScreen() {
             variant="primary"
             size="lg"
             fullWidth
-            onPress={() => router.push("/circle/wallet-type-selection")}
+            onPress={() => router.push("/circle/setup")}
             className="bg-[#2775CA]"
           >
             Create USDC Wallets

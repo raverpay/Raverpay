@@ -18,6 +18,8 @@ This document outlines the missing implementations and improvements needed for t
 5. [Mobile App Fee Level Fix](#5-mobile-app-fee-level-fix)
 6. [Analytics & Billing](#6-analytics--billing)
 7. [Testing & Verification](#7-testing--verification)
+8. [Mobile App UX Issues](#8-mobile-app-ux-issues)
+9. [CoinGecko Price Integration & Portfolio Display](#9-coingecko-price-integration--portfolio-display)
 
 ---
 
@@ -460,6 +462,302 @@ No comprehensive analytics for tracking fee collection, gas costs, and profit ma
 
 ---
 
+## 8. Mobile App UX Issues
+
+**Priority:** 🟡 Medium  
+**Status:** ⏳ Not Started  
+**Impact:** User Experience, data accuracy
+
+### 8.1 Wallet Setup Screen - Filter Existing Wallets
+
+**Problem:** The wallet setup screen (`setup.tsx`) shows ALL supported networks, even networks where the user already has a wallet created.
+
+**Current Behavior:**
+- User creates a wallet on BASE-SEPOLIA
+- Goes back to setup screen
+- BASE-SEPOLIA still shows as an option to create
+- User might accidentally try to create duplicate wallet
+
+**Expected Behavior:**
+- Fetch user's existing wallets
+- Filter out networks where wallet already exists
+- Only show networks where user doesn't have a wallet yet
+- Show message if all networks already have wallets
+
+#### Tasks
+
+- [ ] **8.1.1** Fetch existing wallets in setup screen
+  ```typescript
+  // In setup.tsx
+  const { data: existingWallets } = useCircleWallets();
+  ```
+
+- [ ] **8.1.2** Filter out already-created networks from BlockchainSelector
+  ```typescript
+  const existingBlockchains = existingWallets?.map(w => w.blockchain) || [];
+  const availableChains = chainsData?.chains?.filter(
+    chain => !existingBlockchains.includes(chain.blockchain)
+  );
+  ```
+
+- [ ] **8.1.3** Show appropriate UI when all networks have wallets
+  - Display: "You already have wallets on all supported networks"
+  - Provide link to view existing wallets
+
+- [ ] **8.1.4** Update BlockchainSelector component to accept `excludeChains` prop
+  - File: `/apps/raverpay-mobile/src/components/circle/BlockchainSelector.tsx`
+
+### 8.2 Display Native Token Balances (Enhancement)
+
+**Priority:** 🟢 Low  
+**Status:** ⏳ Not Started  
+**Impact:** UX, transparency
+
+**Current Behavior:**
+The mobile app only displays USDC balance, even though the API returns all token balances.
+
+**API Response (returns ALL tokens):**
+```json
+{
+  "balances": [
+    { "token": { "symbol": "ETH-SEPOLIA", "isNative": true }, "amount": "0.01" },
+    { "token": { "symbol": "USDC", "isNative": false }, "amount": "2" }
+  ]
+}
+```
+
+**Mobile App (only shows USDC):**
+```typescript
+// circle.store.ts - Only extracts USDC
+getUsdcBalance: (walletId) => {
+  const usdcBalance = walletBalances.find((b) => b.token?.symbol === 'USDC');
+  return usdcBalance?.amount || '0';  // ❌ Ignores native tokens
+},
+```
+
+**Why This Matters:**
+1. Users may have native tokens (ETH, MATIC) from faucets or other sources
+2. Transparency - users want to see all their assets
+3. Some networks may require native tokens for gas (non-sponsored)
+
+#### Options
+
+**Option A: Keep USDC-Only (Current)**
+- App is marketed as "USDC Wallet"
+- Simpler UI, less confusion
+
+**Option B: Show All Tokens in Wallet Details**
+- Primary display: USDC balance prominently
+- Secondary: Collapsible "Other Assets" section
+
+**Option C: Show Total Portfolio Value**
+- Calculate USD value of all tokens
+- Display: "Total: $X.XX" with breakdown on tap
+
+#### Tasks (If implementing Option B)
+
+- [ ] **8.2.1** Add `getNativeBalance()` helper to circle.store.ts
+  ```typescript
+  getNativeBalance: (walletId) => {
+    const walletBalances = get().balances[walletId] || [];
+    const nativeBalance = walletBalances.find((b) => b.token?.isNative === true);
+    return nativeBalance ? { symbol: nativeBalance.token.symbol, amount: nativeBalance.amount } : null;
+  },
+  ```
+
+- [ ] **8.2.2** Update wallet UI to show native token balance
+  - Add collapsible "Other Assets" section
+  - Show native token with proper formatting
+
+- [ ] **8.2.3** Consider adding token icons for visual distinction
+  - ETH icon, MATIC icon, etc.
+
+### Files to Modify
+
+- `/apps/raverpay-mobile/app/circle/setup.tsx`
+- `/apps/raverpay-mobile/src/components/circle/BlockchainSelector.tsx`
+- `/apps/raverpay-mobile/src/store/circle.store.ts` (for native token display)
+- `/apps/raverpay-mobile/app/(tabs)/circle-wallet.tsx` (for UI updates)
+
+
+---
+
+## 9. CoinGecko Price Integration & Portfolio Display
+
+**Priority:** 🟡 Medium  
+**Status:** ⏳ Not Started  
+**Impact:** Accurate USD values, portfolio display, production-ready
+
+### Background
+
+CoinGecko integration was previously implemented but is currently **commented out** in the codebase. This needs to be re-enabled to show accurate USD values for all tokens.
+
+### Current State (Disabled)
+
+```typescript
+// File: /apps/raverpay-api/src/crypto/services/price.service.ts
+async updateAllPrices() {
+  // CoinGecko price fetching disabled
+  this.logger.warn('CoinGecko price fetching is disabled');
+  return;  // ❌ Does nothing!
+}
+```
+
+**Fallback Currently:** USDC/USDT hardcoded to $1.00, no native token prices.
+
+### Desired State
+
+Use mainnet prices for ALL tokens (including testnet), so the same code works seamlessly when moving to mainnet.
+
+| Token | CoinGecko ID | Use For |
+|-------|--------------|---------|  
+| **USDC** | `usd-coin` | All USDC on any chain |
+| **ETH** | `ethereum` | Native token on Base, Arbitrum, Optimism, ETH-Sepolia |
+| **POL** | `polygon-ecosystem-token` | Native token on Polygon, MATIC-AMOY |
+| **MATIC** | `matic-network` | Fallback for POL |
+
+### Price Mapping for Testnet
+
+| Testnet Token | Use Mainnet Price |
+|---------------|-------------------|
+| ETH-SEPOLIA | ETH |
+| USDC on BASE-SEPOLIA | USDC |
+| Tokens on MATIC-AMOY | POL |
+| Tokens on OP-SEPOLIA | ETH |
+| Tokens on ARB-SEPOLIA | ETH |
+
+### Portfolio Display Design
+
+```
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│           Total Assets                          │
+│             $184.47                             │  ← All tokens in USD
+│                                                 │
+│   USDC:                                         │
+│   • Base:     50.00 USDC    ($49.99)           │
+│   • Polygon:  75.00 USDC    ($75.23)           │
+│   • Arbitrum: 27.50 USDC    ($27.25)           │
+│                                                 │
+│   ▼ Native Tokens:                              │
+│   • 0.01 ETH (Base)         ($32.00)           │
+│   • 0.005 POL (Polygon)     ($2.25)            │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+### Caching Strategy
+
+| Setting | Value | Reason |
+|---------|-------|--------|
+| **Fetch Frequency** | Every 5 minutes | Balance accuracy vs rate limits |
+| **Cache TTL** | 10 minutes | Use cached price if fetch fails |
+| **Fallback (USDC)** | $1.00 | If CoinGecko down, assume peg |
+| **Fallback (ETH/POL)** | Last cached | Use last known price |
+| **API Tier** | Free | 10-30 calls/min (sufficient) |
+
+### Tasks
+
+#### Backend (API)
+
+- [ ] **9.1.1** Re-enable CoinGecko cron job
+  - File: `/apps/raverpay-api/src/crypto/cron/price-update.cron.ts`
+  - Uncomment the cron decorator and job logic
+  - Set to run every 5 minutes
+
+- [ ] **9.1.2** Update PriceService to fetch all needed tokens
+  - File: `/apps/raverpay-api/src/crypto/services/price.service.ts`
+  - Uncomment `updateAllPrices()` implementation
+  - Add ETH to TOKEN_IDS: `ETH: 'ethereum'`
+  - Ensure POL fallback logic works
+
+- [ ] **9.1.3** Re-enable PriceService in CryptoModule
+  - File: `/apps/raverpay-api/src/crypto/crypto.module.ts`
+  - Uncomment PriceService provider and export
+
+- [ ] **9.1.4** Create price API endpoint for mobile app
+  ```typescript
+  GET /api/prices
+  Response: {
+    prices: {
+      USDC: 0.9998,
+      ETH: 3245.50,
+      POL: 0.45
+    },
+    updatedAt: "2025-01-09T12:00:00Z"
+  }
+  ```
+
+- [ ] **9.1.5** Add price caching with Redis (optional)
+  - Cache prices in Redis for faster access
+  - TTL: 10 minutes
+
+#### Mobile App
+
+- [ ] **9.2.1** Create price service hook
+  - File: `/apps/raverpay-mobile/src/hooks/usePrices.ts`
+  ```typescript
+  export const usePrices = () => {
+    return useQuery({
+      queryKey: ['crypto-prices'],
+      queryFn: () => api.getPrices(),
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchInterval: 1000 * 60 * 5,
+    });
+  };
+  ```
+
+- [ ] **9.2.2** Add prices to Circle store
+  - File: `/apps/raverpay-mobile/src/store/circle.store.ts`
+  ```typescript
+  interface CircleState {
+    // ... existing
+    prices: Record<string, number>;  // { USDC: 0.9998, ETH: 3245.50 }
+    setPrices: (prices: Record<string, number>) => void;
+    getTokenValueUsd: (symbol: string, amount: number) => number;
+    getTotalPortfolioValue: () => number;  // All tokens in USD
+  }
+  ```
+
+- [ ] **9.2.3** Update wallet screen to show USD values
+  - File: `/apps/raverpay-mobile/app/(tabs)/circle-wallet.tsx`
+  - Show total portfolio value (all wallets, all tokens)
+  - Show per-wallet breakdown with USD values
+  - Show native token balances with USD values
+
+- [ ] **9.2.4** Add token symbol to price mapping
+  ```typescript
+  const TOKEN_PRICE_MAP = {
+    'USDC': 'USDC',
+    'ETH': 'ETH',
+    'ETH-SEPOLIA': 'ETH',  // Testnet uses mainnet price
+    'POL': 'POL',
+    'MATIC': 'POL',
+  };
+  ```
+
+- [ ] **9.2.5** Handle price loading/error states
+  - Show skeleton while loading
+  - Show last cached price if fetch fails
+  - Indicate if price is stale (>10 min old)
+
+### Files to Modify
+
+**Backend:**
+- `/apps/raverpay-api/src/crypto/cron/price-update.cron.ts`
+- `/apps/raverpay-api/src/crypto/services/price.service.ts`
+- `/apps/raverpay-api/src/crypto/crypto.module.ts`
+- `/apps/raverpay-api/src/crypto/crypto.controller.ts` (add endpoint)
+
+**Mobile:**
+- `/apps/raverpay-mobile/src/hooks/usePrices.ts` (new)
+- `/apps/raverpay-mobile/src/store/circle.store.ts`
+- `/apps/raverpay-mobile/app/(tabs)/circle-wallet.tsx`
+- `/apps/raverpay-mobile/src/services/circle.service.ts` (add getPrices)
+
+---
+
+
 ## Implementation Order
 
 ### Phase 1: Critical (Before Any Mainnet Activity)
@@ -471,10 +769,14 @@ No comprehensive analytics for tracking fee collection, gas costs, and profit ma
 4. 🟡 Network DTO Architecture (Section 2)
 5. 🟡 Collection Wallet Editing (Section 4.1)
 6. 🟡 Mobile App Fee Level Fix (Section 5)
+7. 🟡 Mobile App UX Issues (Section 8) - Filter existing wallets from setup screen
+8. 🟡 CoinGecko Price Integration (Section 9) - Re-enable prices, portfolio display
 
 ### Phase 3: Future Enhancements
-7. ⏳ Blockchain Activation/Deactivation UI (Section 4.2)
-8. ⏳ Analytics & Billing (Section 6)
+9. ⏳ Blockchain Activation/Deactivation UI (Section 4.2)
+10. ⏳ Analytics & Billing (Section 6)
+
+
 
 ---
 

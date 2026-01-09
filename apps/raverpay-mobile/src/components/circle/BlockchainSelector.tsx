@@ -303,13 +303,13 @@ export const BlockchainSelector: React.FC<BlockchainSelectorProps> = (props) => 
                     </Text>
 
                     {/* Fee Label Badge */}
-                    {metadata?.feeLabel && (
+                    {/* {metadata?.feeLabel && (
                       <View className="mt-1 bg-green-100 dark:bg-green-900 px-2 py-0.5 rounded-full">
                         <Text variant="caption" className="text-[9px] font-bold text-green-700">
                           ⚡ Free
                         </Text>
                       </View>
-                    )}
+                    )} */}
 
                     {info.isTestnet && !metadata?.feeLabel && (
                       <Text variant="caption" color="tertiary" className="text-[10px] mt-1">
