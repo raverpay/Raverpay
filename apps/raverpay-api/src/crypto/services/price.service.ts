@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import axios, { AxiosInstance } from 'axios';
 import { Decimal } from '@prisma/client/runtime/library';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 /**
  * Crypto Price Service
@@ -12,16 +13,22 @@ export class PriceService {
   private readonly logger = new Logger(PriceService.name);
   private readonly httpClient: AxiosInstance;
 
+  // In-memory price cache for faster access
+  private priceCache: Map<string, { price: number; updatedAt: Date }> = new Map();
+  private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
   // CoinGecko API IDs
-  // Note: MATIC was rebranded to POL, CoinGecko may use different IDs
-  private readonly TOKEN_IDS = {
-    MATIC: 'matic-network', // Primary ID (may need fallback)
+  private readonly TOKEN_IDS: Record<string, string> = {
+    MATIC: 'matic-network', // Legacy, but may still work
+    POL: 'polygon-ecosystem-token', // POL (ex-MATIC)
+    ETH: 'ethereum',
     USDT: 'tether',
     USDC: 'usd-coin',
+    AVAX: 'avalanche-2',
+    SOL: 'solana',
   };
 
   // Alternative IDs for MATIC/POL (try these if primary fails)
-  // Note: MATIC was migrated to POL on Sep 4, 2024. Use 'polygon-ecosystem-token' for POL price
   private readonly MATIC_ALTERNATIVE_IDS = [
     'polygon-ecosystem-token', // POL (ex-MATIC) - this is the correct one!
     'polygon',
@@ -36,81 +43,113 @@ export class PriceService {
   }
 
   /**
-   * Update all token prices from CoinGecko - COMMENTED OUT (not using CoinGecko)
+   * Update all token prices from CoinGecko (runs every 5 minutes)
    */
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async updateAllPrices() {
-    // CoinGecko price fetching disabled
-    this.logger.warn('CoinGecko price fetching is disabled');
-    return;
+    try {
+      this.logger.log('Updating crypto prices from CoinGecko...');
 
-    // COMMENTED OUT - CoinGecko API calls
-    // try {
-    //   // Build list of IDs to fetch (include MATIC alternatives)
-    //   const ids = [
-    //     ...this.MATIC_ALTERNATIVE_IDS,
-    //     this.TOKEN_IDS.USDT,
-    //     this.TOKEN_IDS.USDC,
-    //   ].join(',');
+      // Build list of IDs to fetch (include MATIC alternatives)
+      const ids = [
+        ...this.MATIC_ALTERNATIVE_IDS,
+        this.TOKEN_IDS.ETH,
+        this.TOKEN_IDS.USDT,
+        this.TOKEN_IDS.USDC,
+        this.TOKEN_IDS.AVAX,
+        this.TOKEN_IDS.SOL,
+      ].join(',');
 
-    //   const response = await this.httpClient.get('/simple/price', {
-    //     params: {
-    //       ids,
-    //       vs_currencies: 'usd',
-    //     },
-    //   });
+      const response = await this.httpClient.get('/simple/price', {
+        params: {
+          ids,
+          vs_currencies: 'usd',
+        },
+      });
 
-    //   const prices = response.data as Record<string, { usd?: number }>;
+      const prices = response.data as Record<string, { usd?: number }>;
 
-    //   // Update USDT
-    //   const usdtPrice = prices[this.TOKEN_IDS.USDT];
-    //   if (usdtPrice?.usd) {
-    //     await this.savePrice('USDT', usdtPrice.usd);
-    //   } else {
-    //     this.logger.warn(
-    //       `No price data found for USDT (${this.TOKEN_IDS.USDT})`,
-    //     );
-    //   }
+      // Update ETH
+      const ethPrice = prices[this.TOKEN_IDS.ETH];
+      if (ethPrice?.usd) {
+        await this.savePrice('ETH', ethPrice.usd);
+        this.priceCache.set('ETH', { price: ethPrice.usd, updatedAt: new Date() });
+      } else {
+        this.logger.warn(`No price data found for ETH`);
+      }
 
-    //   // Update USDC
-    //   const usdcPrice = prices[this.TOKEN_IDS.USDC];
-    //   if (usdcPrice?.usd) {
-    //     await this.savePrice('USDC', usdcPrice.usd);
-    //   } else {
-    //     this.logger.warn(
-    //       `No price data found for USDC (${this.TOKEN_IDS.USDC})`,
-    //     );
-    //   }
+      // Update USDT
+      const usdtPrice = prices[this.TOKEN_IDS.USDT];
+      if (usdtPrice?.usd) {
+        await this.savePrice('USDT', usdtPrice.usd);
+        this.priceCache.set('USDT', { price: usdtPrice.usd, updatedAt: new Date() });
+      } else {
+        this.logger.warn(`No price data found for USDT`);
+      }
 
-    //   // Update MATIC - try alternative IDs
-    //   let maticPrice: number | null = null;
-    //   let maticIdUsed: string | null = null;
+      // Update USDC
+      const usdcPrice = prices[this.TOKEN_IDS.USDC];
+      if (usdcPrice?.usd) {
+        await this.savePrice('USDC', usdcPrice.usd);
+        this.priceCache.set('USDC', { price: usdcPrice.usd, updatedAt: new Date() });
+      } else {
+        this.logger.warn(`No price data found for USDC`);
+      }
 
-    //   for (const id of this.MATIC_ALTERNATIVE_IDS) {
-    //     const priceData = prices[id];
-    //     if (priceData?.usd !== undefined) {
-    //       maticPrice = priceData.usd;
-    //       maticIdUsed = id;
-    //       break;
-    //     }
-    //   }
+      // Update AVAX
+      const avaxPrice = prices[this.TOKEN_IDS.AVAX];
+      if (avaxPrice?.usd) {
+        await this.savePrice('AVAX', avaxPrice.usd);
+        this.priceCache.set('AVAX', { price: avaxPrice.usd, updatedAt: new Date() });
+      }
 
-    //   if (maticPrice !== null) {
-    //     await this.savePrice('MATIC', maticPrice);
-    //   } else {
-    //     this.logger.warn(
-    //       `No price data found for MATIC. Tried IDs: ${this.MATIC_ALTERNATIVE_IDS.join(', ')}`,
-    //     );
-    //   }
-    // } catch (error) {
-    //   this.logger.error('Failed to update prices from CoinGecko', error);
-    //   // Don't throw - allow retries via cron
-    // }
+      // Update SOL
+      const solPrice = prices[this.TOKEN_IDS.SOL];
+      if (solPrice?.usd) {
+        await this.savePrice('SOL', solPrice.usd);
+        this.priceCache.set('SOL', { price: solPrice.usd, updatedAt: new Date() });
+      }
+
+      // Update MATIC/POL - try alternative IDs
+      let maticPrice: number | null = null;
+
+      for (const id of this.MATIC_ALTERNATIVE_IDS) {
+        const priceData = prices[id];
+        if (priceData?.usd !== undefined) {
+          maticPrice = priceData.usd;
+          break;
+        }
+      }
+
+      if (maticPrice !== null) {
+        await this.savePrice('MATIC', maticPrice);
+        await this.savePrice('POL', maticPrice);
+        this.priceCache.set('MATIC', { price: maticPrice, updatedAt: new Date() });
+        this.priceCache.set('POL', { price: maticPrice, updatedAt: new Date() });
+      } else {
+        this.logger.warn(
+          `No price data found for MATIC. Tried IDs: ${this.MATIC_ALTERNATIVE_IDS.join(', ')}`,
+        );
+      }
+
+      this.logger.log('Price update completed successfully');
+    } catch (error) {
+      this.logger.error('Failed to update prices from CoinGecko', error);
+      // Don't throw - allow retries via cron
+    }
   }
 
   /**
-   * Get latest price for a token
+   * Get latest price for a token (uses cache first)
    */
-  async getLatestPrice(symbol: string) {
+  async getLatestPrice(symbol: string): Promise<number | null> {
+    // Check in-memory cache first
+    const cached = this.priceCache.get(symbol);
+    if (cached && Date.now() - cached.updatedAt.getTime() < this.CACHE_TTL_MS) {
+      return cached.price;
+    }
+
+    // Check database
     const price = await this.prisma.cryptoPrice.findFirst({
       where: { symbol },
       orderBy: { fetchedAt: 'desc' },
@@ -124,26 +163,47 @@ export class PriceService {
       return null;
     }
 
-    return Number(price.usdPrice);
+    // Update cache
+    const priceNum = Number(price.usdPrice);
+    this.priceCache.set(symbol, { price: priceNum, updatedAt: new Date(price.fetchedAt) });
+
+    return priceNum;
   }
 
   /**
-   * Get all latest prices
+   * Get all latest prices (for API endpoint)
    */
-  async getAllLatestPrices() {
-    const symbols = Object.keys(this.TOKEN_IDS);
+  async getAllLatestPrices(): Promise<{
+    prices: Record<string, number>;
+    updatedAt: string;
+  }> {
+    const symbols = ['ETH', 'USDC', 'USDT', 'MATIC', 'POL', 'AVAX', 'SOL'];
+    const prices: Record<string, number> = {};
+    let latestUpdate = new Date(0);
 
-    const prices = await Promise.all(
+    await Promise.all(
       symbols.map(async (symbol) => {
         const price = await this.getLatestPrice(symbol);
-        return {
-          symbol,
-          usdPrice: price,
-        };
+        if (price !== null) {
+          prices[symbol] = price;
+        }
+        
+        // Track most recent update
+        const cached = this.priceCache.get(symbol);
+        if (cached && cached.updatedAt > latestUpdate) {
+          latestUpdate = cached.updatedAt;
+        }
       }),
     );
 
-    return prices;
+    // Default values
+    if (!prices['USDC']) prices['USDC'] = 1.0;
+    if (!prices['USDT']) prices['USDT'] = 1.0;
+
+    return {
+      prices,
+      updatedAt: latestUpdate.getTime() > 0 ? latestUpdate.toISOString() : new Date().toISOString(),
+    };
   }
 
   /**
@@ -187,6 +247,7 @@ export class PriceService {
   /**
    * Cleanup old prices (keep last 1000 records per token)
    */
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async cleanupOldPrices() {
     try {
       const symbols = Object.keys(this.TOKEN_IDS);
@@ -221,3 +282,4 @@ export class PriceService {
     }
   }
 }
+

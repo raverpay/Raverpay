@@ -153,14 +153,27 @@ export interface CircleDepositInfo {
   instructions?: string;
 }
 
-// Fee Estimate
-export interface CircleFeeEstimate {
+// Fee Estimate for a single level
+export interface FeeEstimateLevel {
+  gasLimit: string;
   baseFee: string;
   priorityFee: string;
   maxFee: string;
-  estimatedGas: string;
-  feeLevel: CircleFeeLevel;
-  blockchain: CircleBlockchain;
+  networkFee: string;
+}
+
+// Fee Estimate (API returns estimates for all levels)
+export interface CircleFeeEstimate {
+  low: FeeEstimateLevel;
+  medium: FeeEstimateLevel;
+  high: FeeEstimateLevel;
+  // Legacy fields for backward compatibility
+  baseFee?: string;
+  priorityFee?: string;
+  maxFee?: string;
+  estimatedGas?: string;
+  feeLevel?: CircleFeeLevel;
+  blockchain?: CircleBlockchain;
 }
 
 // CCTP Fee Estimate
@@ -201,6 +214,7 @@ export interface EstimateFeeRequest {
   destinationAddress: string;
   amount: string;
   blockchain?: CircleBlockchain;
+  feeLevel?: CircleFeeLevel;
 }
 
 export interface CCTPEstimateRequest {

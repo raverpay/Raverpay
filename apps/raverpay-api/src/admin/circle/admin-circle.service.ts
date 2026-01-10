@@ -628,6 +628,131 @@ export class AdminCircleService {
   }
 
   /**
+   * Get fee analytics data for analytics dashboard
+   */
+  async getFeeAnalytics(params: CircleAnalyticsDto) {
+    const { startDate, endDate, blockchain } = params;
+
+    const where: Prisma.CircleTransactionWhereInput = {};
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(endDate);
+      }
+    }
+
+    if (blockchain) {
+      where.blockchain = blockchain;
+    }
+
+    // Get transactions with fee info
+    const transactions = await this.prisma.circleTransaction.findMany({
+      where,
+      select: {
+        id: true,
+        reference: true,
+        amounts: true,
+        blockchain: true,
+        state: true,
+        serviceFee: true,
+        networkFee: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Calculate totals
+    let totalFeesCollected = 0;
+    let totalTransactions = 0;
+    let confirmedCount = 0;
+
+    const dailyFeesMap = new Map<string, { fees: number; count: number }>();
+    const blockchainFeesMap = new Map<string, { fees: number; count: number; confirmed: number }>();
+
+    transactions.forEach((tx) => {
+      const fee = parseFloat(tx.serviceFee || '0');
+      totalFeesCollected += fee;
+      totalTransactions++;
+
+      if (tx.state === 'CONFIRMED' || tx.state === 'COMPLETE') {
+        confirmedCount++;
+      }
+
+      // Daily aggregation
+      const date = tx.createdAt.toISOString().split('T')[0];
+      const existing = dailyFeesMap.get(date) || { fees: 0, count: 0 };
+      dailyFeesMap.set(date, {
+        fees: existing.fees + fee,
+        count: existing.count + 1,
+      });
+
+      // Blockchain aggregation
+      const bcData = blockchainFeesMap.get(tx.blockchain) || { fees: 0, count: 0, confirmed: 0 };
+      blockchainFeesMap.set(tx.blockchain, {
+        fees: bcData.fees + fee,
+        count: bcData.count + 1,
+        confirmed: bcData.confirmed + (tx.state === 'CONFIRMED' || tx.state === 'COMPLETE' ? 1 : 0),
+      });
+    });
+
+    const averageFee = totalTransactions > 0 ? totalFeesCollected / totalTransactions : 0;
+    const successRate = totalTransactions > 0 ? (confirmedCount / totalTransactions) * 100 : 0;
+
+    // Estimate gas (very rough estimate for testnet, assuming ~$0.01 per tx for L2)
+    const totalGasEstimate = totalTransactions * 0.01;
+    const netProfit = totalFeesCollected - totalGasEstimate;
+
+    const dailyFees = Array.from(dailyFeesMap.entries())
+      .map(([date, data]) => ({
+        date,
+        feesCollected: data.fees.toFixed(4),
+        transactionCount: data.count,
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const feesByBlockchain = Array.from(blockchainFeesMap.entries()).map(([bc, data]) => ({
+      blockchain: bc,
+      feesCollected: data.fees.toFixed(4),
+      transactionCount: data.count,
+      averageFee: data.count > 0 ? (data.fees / data.count).toFixed(4) : '0.00',
+      successRate: data.count > 0 ? ((data.confirmed / data.count) * 100).toFixed(1) : '0',
+    }));
+
+    const recentTransactions = transactions.slice(0, 10).map((tx) => ({
+      id: tx.id,
+      reference: tx.reference,
+      amount: tx.amounts[0] || '0',
+      feeAmount: tx.serviceFee || '0',
+      blockchain: tx.blockchain,
+      state: tx.state,
+      createdAt: tx.createdAt.toISOString(),
+    }));
+
+    return {
+      period: {
+        startDate: startDate || 'all',
+        endDate: endDate || 'all',
+        blockchain: blockchain || 'all',
+      },
+      summary: {
+        totalFeesCollected: totalFeesCollected.toFixed(4),
+        totalTransactions,
+        averageFeePerTransaction: averageFee.toFixed(4),
+        feeCollectionSuccessRate: successRate.toFixed(1),
+        totalGasEstimate: totalGasEstimate.toFixed(4),
+        netProfit: netProfit.toFixed(4),
+      },
+      feesByBlockchain,
+      dailyFees,
+      recentTransactions,
+    };
+  }
+
+  /**
    * Get paginated Circle users with filters
    */
   async getCircleUsers(query: {
@@ -879,5 +1004,80 @@ export class AdminCircleService {
         count: item._count,
       })),
     };
+  }
+
+  // ==========================================
+  // Blockchain Configuration Management
+  // ==========================================
+
+  /**
+   * Get all blockchain configurations
+   */
+  async getBlockchainConfigs() {
+    const configs = await this.prisma.blockchainConfig.findMany({
+      orderBy: { displayOrder: 'asc' },
+    });
+    return configs;
+  }
+
+  /**
+   * Get blockchain configuration by identifier
+   */
+  async getBlockchainConfig(blockchain: string) {
+    const config = await this.prisma.blockchainConfig.findUnique({
+      where: { blockchain },
+    });
+
+    if (!config) {
+      throw new NotFoundException(`Blockchain config for ${blockchain} not found`);
+    }
+
+    return config;
+  }
+
+  /**
+   * Update blockchain configuration
+   */
+  async updateBlockchainConfig(
+    blockchain: string,
+    updates: {
+      name?: string;
+      symbol?: string;
+      isEnabled?: boolean;
+      isTestnet?: boolean;
+      feeLabel?: string;
+      estimatedCost?: string;
+      description?: string;
+      isRecommended?: boolean;
+      displayOrder?: number;
+      isCCTPSupported?: boolean;
+    },
+  ) {
+    const config = await this.prisma.blockchainConfig.update({
+      where: { blockchain },
+      data: updates,
+    });
+
+    return config;
+  }
+
+  /**
+   * Enable a blockchain
+   */
+  async enableBlockchain(blockchain: string) {
+    await this.prisma.blockchainConfig.update({
+      where: { blockchain },
+      data: { isEnabled: true },
+    });
+  }
+
+  /**
+   * Disable a blockchain
+   */
+  async disableBlockchain(blockchain: string) {
+    await this.prisma.blockchainConfig.update({
+      where: { blockchain },
+      data: { isEnabled: false },
+    });
   }
 }

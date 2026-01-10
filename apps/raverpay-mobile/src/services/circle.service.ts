@@ -368,6 +368,45 @@ class CircleService {
       throw handleApiError(error);
     }
   }
+
+  // ============================================
+  // PRICES
+  // ============================================
+
+  /**
+   * Get current crypto prices (ETH, USDC, POL, etc.)
+   */
+  async getPrices(): Promise<{
+    success: boolean;
+    data: {
+      prices: Record<string, number>;
+      updatedAt: string;
+    };
+  }> {
+    try {
+      const response = await apiClient.get<{
+        success: boolean;
+        data: {
+          prices: Record<string, number>;
+          updatedAt: string;
+        };
+      }>('/v1/crypto/prices');
+      return response.data;
+    } catch (error) {
+      // Return default prices if fetch fails
+      return {
+        success: false,
+        data: {
+          prices: {
+            USDC: 1.0,
+            USDT: 1.0,
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }
+  }
 }
 
 export const circleService = new CircleService();
+

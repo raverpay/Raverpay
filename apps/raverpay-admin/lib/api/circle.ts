@@ -422,4 +422,96 @@ export const circleApi = {
     );
     return response.data.data;
   },
+
+  // Fee Analytics
+  getFeeAnalytics: async (params?: {
+    startDate?: string;
+    endDate?: string;
+    blockchain?: string;
+  }): Promise<{
+    data: {
+      period: {
+        startDate: string;
+        endDate: string;
+        blockchain?: string;
+      };
+      summary: {
+        totalFeesCollected: string;
+        totalTransactions: number;
+        averageFeePerTransaction: string;
+        feeCollectionSuccessRate: string;
+        totalGasEstimate: string;
+        netProfit: string;
+      };
+      feesByBlockchain: Array<{
+        blockchain: string;
+        feesCollected: string;
+        transactionCount: number;
+        averageFee: string;
+        successRate: string;
+      }>;
+      dailyFees: Array<{
+        date: string;
+        feesCollected: string;
+        transactionCount: number;
+      }>;
+      recentTransactions: Array<{
+        id: string;
+        reference: string;
+        amount: string;
+        feeAmount: string;
+        blockchain: string;
+        state: string;
+        createdAt: string;
+      }>;
+    };
+  }> => {
+    const response = await apiClient.get('/admin/circle/fee-analytics', { params });
+    return response.data;
+  },
+
+  // Blockchain Configuration
+  getBlockchainConfigs: async (): Promise<{
+    data: Array<{
+      blockchain: string;
+      name: string;
+      symbol: string;
+      isEnabled: boolean;
+      isTestnet: boolean;
+      feeLabel?: string;
+      estimatedCost?: string;
+      description?: string;
+      isRecommended: boolean;
+      displayOrder: number;
+      isCCTPSupported: boolean;
+    }>;
+  }> => {
+    const response = await apiClient.get('/admin/circle/blockchains');
+    return response.data;
+  },
+
+  updateBlockchainConfig: async (
+    blockchain: string,
+    data: {
+      isEnabled?: boolean;
+      feeLabel?: string;
+      estimatedCost?: string;
+      description?: string;
+      isRecommended?: boolean;
+      displayOrder?: number;
+    },
+  ): Promise<{ success: boolean }> => {
+    const response = await apiClient.put(`/admin/circle/blockchains/${blockchain}`, data);
+    return response.data;
+  },
+
+  enableBlockchain: async (blockchain: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.post(`/admin/circle/blockchains/${blockchain}/enable`);
+    return response.data;
+  },
+
+  disableBlockchain: async (blockchain: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.post(`/admin/circle/blockchains/${blockchain}/disable`);
+    return response.data;
+  },
 };

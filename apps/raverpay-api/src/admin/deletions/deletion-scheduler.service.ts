@@ -37,16 +37,16 @@ export class DeletionSchedulerService {
     this.logger.log('Starting scheduled deletion processing...');
 
     // Audit log for job started
-    await this.auditService.log({
-      userId: null,
-      action: AuditAction.JOB_STARTED,
-      resource: 'JOB',
-      metadata: {
-        jobName: 'processScheduledDeletions',
-        scheduledTime: new Date(),
-      },
-      actorType: ActorType.SYSTEM,
-    });
+    // await this.auditService.log({
+    //   userId: null,
+    //   action: AuditAction.JOB_STARTED,
+    //   resource: 'JOB',
+    //   metadata: {
+    //     jobName: 'processScheduledDeletions',
+    //     scheduledTime: new Date(),
+    //   },
+    //   actorType: ActorType.SYSTEM,
+    // });
 
     const now = new Date();
 
@@ -67,17 +67,17 @@ export class DeletionSchedulerService {
       this.logger.log('No scheduled deletions to process');
 
       // Audit log for job completed with no work
-      await this.auditService.log({
-        userId: null,
-        action: AuditAction.JOB_COMPLETED,
-        resource: 'JOB',
-        metadata: {
-          jobName: 'processScheduledDeletions',
-          deletionsProcessed: 0,
-        },
-        actorType: ActorType.SYSTEM,
-        status: AuditStatus.SUCCESS,
-      });
+      // await this.auditService.log({
+      //   userId: null,
+      //   action: AuditAction.JOB_COMPLETED,
+      //   resource: 'JOB',
+      //   metadata: {
+      //     jobName: 'processScheduledDeletions',
+      //     deletionsProcessed: 0,
+      //   },
+      //   actorType: ActorType.SYSTEM,
+      //   status: AuditStatus.SUCCESS,
+      // });
 
       return;
     }
@@ -106,19 +106,19 @@ export class DeletionSchedulerService {
     this.logger.log(`Completed processing ${dueDeletions.length} deletion(s)`);
 
     // Audit log for job completed
-    await this.auditService.log({
-      userId: null,
-      action: AuditAction.JOB_COMPLETED,
-      resource: 'JOB',
-      metadata: {
-        jobName: 'processScheduledDeletions',
-        deletionsProcessed: dueDeletions.length,
-        successCount,
-        failureCount,
-      },
-      actorType: ActorType.SYSTEM,
-      status: failureCount > 0 ? AuditStatus.PENDING : AuditStatus.SUCCESS,
-    });
+    // await this.auditService.log({
+    //   userId: null,
+    //   action: AuditAction.JOB_COMPLETED,
+    //   resource: 'JOB',
+    //   metadata: {
+    //     jobName: 'processScheduledDeletions',
+    //     deletionsProcessed: dueDeletions.length,
+    //     successCount,
+    //     failureCount,
+    //   },
+    //   actorType: ActorType.SYSTEM,
+    //   status: failureCount > 0 ? AuditStatus.PENDING : AuditStatus.SUCCESS,
+    // });
   }
 
   /**

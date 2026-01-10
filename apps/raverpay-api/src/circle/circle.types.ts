@@ -20,22 +20,29 @@ export interface CircleApiError {
 // BLOCKCHAIN TYPES
 // ============================================
 
+/**
+ * All Circle-supported blockchains (for DTO validation)
+ * DTOs should accept ALL valid Circle networks, not just enabled ones.
+ * Business logic (service layer) determines which networks are currently enabled.
+ */
 export type CircleBlockchain =
+  // Mainnet networks
   | 'ETH'
-  | 'ETH-SEPOLIA'
   | 'AVAX'
-  | 'AVAX-FUJI'
   | 'MATIC'
-  | 'MATIC-AMOY'
   | 'SOL'
-  | 'SOL-DEVNET'
   | 'ARB'
-  | 'ARB-SEPOLIA'
   | 'BASE'
-  | 'BASE-SEPOLIA'
   | 'OP'
-  | 'OP-SEPOLIA'
   | 'UNI'
+  // Testnet networks
+  | 'ETH-SEPOLIA'
+  | 'AVAX-FUJI'
+  | 'MATIC-AMOY'
+  | 'SOL-DEVNET'
+  | 'ARB-SEPOLIA'
+  | 'BASE-SEPOLIA'
+  | 'OP-SEPOLIA'
   | 'UNI-SEPOLIA';
 
 export type CircleTestnetBlockchain =

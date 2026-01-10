@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { CryptoService } from './crypto.service';
+import { PriceService } from './services/price.service';
 import {
   CreateCryptoWalletDto,
   SendCryptoDto,
@@ -22,7 +23,10 @@ import {
 
 @Controller('v1/crypto')
 export class CryptoController {
-  constructor(private readonly cryptoService: CryptoService) {}
+  constructor(
+    private readonly cryptoService: CryptoService,
+    private readonly priceService: PriceService,
+  ) {}
 
   // ============================================
   // WALLET MANAGEMENT
@@ -194,7 +198,7 @@ export class CryptoController {
   }
 
   // ============================================
-  // EXCHANGE RATES
+  // EXCHANGE RATES & PRICES
   // ============================================
 
   /**
@@ -204,6 +208,20 @@ export class CryptoController {
   @Get('exchange-rate')
   async getExchangeRate() {
     return this.cryptoService.getCurrentExchangeRate();
+  }
+
+  /**
+   * Get current crypto prices (ETH, USDC, POL, etc.)
+   * GET /v1/crypto/prices
+   * Public endpoint - no auth required
+   */
+  @Get('prices')
+  async getPrices() {
+    const data = await this.priceService.getAllLatestPrices();
+    return {
+      success: true,
+      data,
+    };
   }
 
   // ============================================
@@ -220,3 +238,4 @@ export class CryptoController {
   //   return this.cryptoService.handleVenlyWebhook(payload);
   // }
 }
+

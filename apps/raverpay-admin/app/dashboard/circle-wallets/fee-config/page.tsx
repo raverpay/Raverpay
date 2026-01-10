@@ -8,9 +8,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Save, AlertCircle, CheckCircle2, Calculator } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Loader2, Save, AlertCircle, CheckCircle2, Calculator, Wallet, Edit2 } from 'lucide-react';
 import { feesApi, type UpdateFeeConfigDto } from '@/lib/api/fees';
 import { toast } from 'sonner';
+
+// Validate Ethereum address format
+const isValidEthereumAddress = (address: string): boolean => {
+  if (!address || address === '') return true; // Allow empty
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
 
 export default function FeeConfigPage() {
   const queryClient = useQueryClient();
@@ -21,6 +35,12 @@ export default function FeeConfigPage() {
   const [minFee, setMinFee] = useState('0.0625');
   const [exampleAmount, setExampleAmount] = useState('100');
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Collection wallets state
+  const [collectionWallets, setCollectionWallets] = useState<Record<string, string>>({});
+  const [editingWallets, setEditingWallets] = useState(false);
+  const [walletChanges, setWalletChanges] = useState(false);
+  const [showWalletConfirmDialog, setShowWalletConfirmDialog] = useState(false);
 
   // Fetch current config
   const { data: configData, isLoading } = useQuery({
@@ -39,6 +59,7 @@ export default function FeeConfigPage() {
   const serverEnabled = configData?.data?.enabled;
   const serverPercentage = configData?.data?.percentage;
   const serverMinFee = configData?.data?.minFeeUsdc;
+  const serverWallets = configData?.data?.collectionWallets;
 
   // Initialize state from server data only once
   useEffect(() => {
@@ -48,16 +69,18 @@ export default function FeeConfigPage() {
       serverMinFee !== undefined &&
       !isInitialized.current
     ) {
-      // Use setTimeout to avoid synchronous setState in effect
       const timeoutId = setTimeout(() => {
         setEnabled(serverEnabled);
         setPercentage(serverPercentage.toString());
         setMinFee(serverMinFee.toString());
+        if (serverWallets) {
+          setCollectionWallets(serverWallets);
+        }
         isInitialized.current = true;
       }, 0);
       return () => clearTimeout(timeoutId);
     }
-  }, [serverEnabled, serverPercentage, serverMinFee]);
+  }, [serverEnabled, serverPercentage, serverMinFee, serverWallets]);
 
   // Update config mutation
   const updateMutation = useMutation({
@@ -65,6 +88,8 @@ export default function FeeConfigPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fee-config'] });
       setHasChanges(false);
+      setWalletChanges(false);
+      setEditingWallets(false);
       toast.success('Fee configuration updated successfully');
     },
     onError: (error: Error & { response?: { data?: { message?: string } } }) => {
@@ -91,6 +116,44 @@ export default function FeeConfigPage() {
     }
 
     updateMutation.mutate(config);
+  };
+
+  const handleSaveWallets = () => {
+    // Validate all addresses
+    for (const [chain, address] of Object.entries(collectionWallets)) {
+      if (!isValidEthereumAddress(address)) {
+        toast.error(`Invalid address format for ${chain}`);
+        return;
+      }
+    }
+
+    setShowWalletConfirmDialog(true);
+  };
+
+  const confirmSaveWallets = () => {
+    setShowWalletConfirmDialog(false);
+
+    const config: UpdateFeeConfigDto = {
+      collectionWallets,
+    };
+
+    updateMutation.mutate(config);
+  };
+
+  const handleWalletChange = (chain: string, address: string) => {
+    setCollectionWallets((prev) => ({
+      ...prev,
+      [chain]: address,
+    }));
+    setWalletChanges(true);
+  };
+
+  const handleCancelWalletEdit = () => {
+    if (serverWallets) {
+      setCollectionWallets(serverWallets);
+    }
+    setWalletChanges(false);
+    setEditingWallets(false);
   };
 
   const handleInputChange = () => {
@@ -296,25 +359,131 @@ export default function FeeConfigPage() {
         </Card>
       </div>
 
-      {/* Collection Wallets Info */}
+      {/* Collection Wallets */}
       {configData?.data?.collectionWallets && (
         <Card>
-          <CardHeader>
-            <CardTitle>Collection Wallets</CardTitle>
-            <CardDescription>Configured wallet addresses for each blockchain</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Collection Wallets
+              </CardTitle>
+              <CardDescription>
+                Wallet addresses where collected fees are sent for each blockchain
+              </CardDescription>
+            </div>
+            {!editingWallets ? (
+              <Button variant="outline" size="sm" onClick={() => setEditingWallets(true)}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Edit Wallets
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelWalletEdit}
+                  disabled={updateMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveWallets}
+                  disabled={!walletChanges || updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Save Wallets'
+                  )}
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {Object.entries(configData.data.collectionWallets).map(([chain, address]) => (
-                <div key={chain} className="p-3 border rounded-lg space-y-1">
-                  <div className="text-sm font-medium">{chain}</div>
-                  <div className="text-xs text-gray-500 font-mono truncate">{address}</div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Object.entries(collectionWallets).map(([chain, address]) => (
+                <div key={chain} className="space-y-2">
+                  <Label htmlFor={`wallet-${chain}`} className="text-sm font-medium">
+                    {chain}
+                  </Label>
+                  {editingWallets ? (
+                    <div className="space-y-1">
+                      <Input
+                        id={`wallet-${chain}`}
+                        value={address}
+                        onChange={(e) => handleWalletChange(chain, e.target.value)}
+                        placeholder="0x..."
+                        className={`font-mono text-sm ${
+                          address && !isValidEthereumAddress(address)
+                            ? 'border-red-500 focus:ring-red-500'
+                            : ''
+                        }`}
+                      />
+                      {address && !isValidEthereumAddress(address) && (
+                        <p className="text-xs text-red-500">Invalid Ethereum address format</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                      <div className="text-sm font-mono truncate">
+                        {address || (
+                          <span className="text-gray-400 italic">Not configured</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+            {editingWallets && (
+              <Alert className="mt-4 border-yellow-500">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription>
+                  <strong>Warning:</strong> Changing collection wallet addresses will affect where
+                  future fees are sent. Double-check addresses before saving.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardContent>
         </Card>
       )}
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showWalletConfirmDialog} onOpenChange={setShowWalletConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Wallet Address Changes</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to update the collection wallet addresses? This will affect where
+              future fees are sent.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 my-4 max-h-60 overflow-y-auto">
+            {Object.entries(collectionWallets).map(([chain, address]) => (
+              <div key={chain} className="flex justify-between text-sm p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                <span className="font-medium">{chain}</span>
+                <span className="font-mono text-xs truncate max-w-[250px]">
+                  {address || <span className="text-gray-400">Not set</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowWalletConfirmDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmSaveWallets} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Confirm & Save'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

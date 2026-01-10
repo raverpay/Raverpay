@@ -1180,6 +1180,29 @@ model CircleWalletSet {
   @@map("circle_wallet_sets")
 }
 
+// BlockchainConfig - Admin-managed blockchain settings
+model BlockchainConfig {
+  id              String   @id @default(uuid())
+  blockchain      String   @unique  // e.g., "BASE-SEPOLIA", "MATIC", "ETH"
+  name            String             // e.g., "Base Sepolia", "Polygon", "Ethereum"
+  symbol          String             // e.g., "ETH", "MATIC", "POL"
+  isEnabled       Boolean  @default(false)  // Admin can toggle
+  isTestnet       Boolean  @default(false)
+  feeLabel        String?            // e.g., "Free (Testnet)", "Gas Sponsored"
+  estimatedCost   String?            // e.g., "$0.00", "~$0.01"
+  description     String?
+  isRecommended   Boolean  @default(false)
+  displayOrder    Int      @default(0)
+  isCCTPSupported Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([isEnabled])
+  @@index([isTestnet])
+  @@index([displayOrder])
+  @@map("blockchain_configs")
+}
+
 model CircleWallet {
   id               String              @id @default(uuid())
   userId           String

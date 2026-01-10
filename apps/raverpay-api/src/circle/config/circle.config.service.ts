@@ -141,9 +141,18 @@ export class CircleConfigService {
 
   /**
    * Get metadata for all supported chains or a specific one
+   * Fee labels differentiate testnet (free) vs mainnet (sponsored but billed)
    */
   getChainMetadata(): ChainMetadata[] {
     const isTestnet = this.environment === 'testnet';
+
+    // Testnet: Gas is truly free (Circle doesn't bill)
+    // Mainnet: Gas is sponsored (user doesn't pay), but Circle bills platform monthly
+    const getFeeLabel = (isTestnetEnv: boolean) =>
+      isTestnetEnv ? 'Free (Testnet)' : 'Gas Sponsored';
+
+    const getEstimatedCost = (isTestnetEnv: boolean, networkType: 'l2' | 'l1') =>
+      isTestnetEnv ? '$0.00' : networkType === 'l2' ? '~$0.01' : '~$0.10';
 
     const chains: ChainMetadata[] = [
       // Base (Recommended)
@@ -154,9 +163,11 @@ export class CircleConfigService {
         isTestnet,
         isSupported: true,
         isRecommended: true,
-        feeLabel: 'Free (Sponsored)',
-        estimatedCost: '$0.00',
-        description: 'Fastest & Cheapest. Recommended for all transactions.',
+        feeLabel: getFeeLabel(isTestnet),
+        estimatedCost: getEstimatedCost(isTestnet, 'l2'),
+        description: isTestnet
+          ? 'Fastest & Cheapest. Recommended for all transactions.'
+          : 'Fastest & Cheapest. Gas fees included in platform costs.',
       },
       // Optimism
       {
@@ -166,9 +177,11 @@ export class CircleConfigService {
         isTestnet,
         isSupported: true,
         isRecommended: false,
-        feeLabel: 'Free (Sponsored)',
-        estimatedCost: '$0.00',
-        description: 'Fast, secure Layer 2 network.',
+        feeLabel: getFeeLabel(isTestnet),
+        estimatedCost: getEstimatedCost(isTestnet, 'l2'),
+        description: isTestnet
+          ? 'Fast, secure Layer 2 network.'
+          : 'Fast, secure Layer 2. Gas fees included.',
       },
       // Arbitrum
       {
@@ -178,21 +191,25 @@ export class CircleConfigService {
         isTestnet,
         isSupported: true,
         isRecommended: false,
-        feeLabel: 'Free (Sponsored)',
-        estimatedCost: '$0.00',
-        description: 'Leading Layer 2 scaling solution.',
+        feeLabel: getFeeLabel(isTestnet),
+        estimatedCost: isTestnet ? '$0.00' : '~$0.02', // Arbitrum slightly higher
+        description: isTestnet
+          ? 'Leading Layer 2 scaling solution.'
+          : 'Leading Layer 2. Gas fees included.',
       },
       // Polygon
       {
         blockchain: isTestnet ? 'MATIC-AMOY' : 'MATIC',
         name: isTestnet ? 'Polygon Amoy' : 'Polygon PoS',
-        symbol: 'MATIC',
+        symbol: 'POL', // Updated from MATIC to POL
         isTestnet,
         isSupported: true,
         isRecommended: false,
-        feeLabel: 'Free (Sponsored)',
-        estimatedCost: '$0.00',
-        description: 'Established chain with low fees.',
+        feeLabel: getFeeLabel(isTestnet),
+        estimatedCost: getEstimatedCost(isTestnet, 'l2'),
+        description: isTestnet
+          ? 'Established chain with low fees.'
+          : 'Established chain. Gas fees included.',
       },
     ];
 

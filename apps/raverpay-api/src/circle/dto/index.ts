@@ -24,11 +24,23 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 // WALLET DTOs
 // ============================================
 
+/**
+ * All Circle-supported blockchains for DTO validation
+ * DTOs accept ALL valid Circle networks; business logic checks if enabled
+ */
+const ALL_CIRCLE_BLOCKCHAINS = [
+  // Mainnet
+  'ETH', 'MATIC', 'ARB', 'BASE', 'OP', 'AVAX', 'SOL', 'UNI',
+  // Testnet
+  'ETH-SEPOLIA', 'MATIC-AMOY', 'ARB-SEPOLIA', 'BASE-SEPOLIA',
+  'OP-SEPOLIA', 'AVAX-FUJI', 'SOL-DEVNET', 'UNI-SEPOLIA',
+] as const;
+
 export class CreateCircleWalletDto {
   @ApiPropertyOptional({
     description: 'Blockchain network for the wallet',
-    example: 'ETH-SEPOLIA',
-    enum: ['ETH-SEPOLIA', 'MATIC-AMOY', 'AVAX-FUJI', 'SOL-DEVNET'],
+    example: 'BASE-SEPOLIA',
+    enum: ALL_CIRCLE_BLOCKCHAINS,
   })
   @IsOptional()
   @IsString()
@@ -154,11 +166,20 @@ export class EstimateFeeDto {
 
   @ApiPropertyOptional({
     description: 'Blockchain network',
-    example: 'ETH-SEPOLIA',
+    example: 'BASE-SEPOLIA',
   })
   @IsOptional()
   @IsString()
   blockchain?: string;
+
+  @ApiPropertyOptional({
+    description: 'Transaction fee level for estimation',
+    example: 'MEDIUM',
+    enum: ['LOW', 'MEDIUM', 'HIGH'],
+  })
+  @IsOptional()
+  @IsEnum(['LOW', 'MEDIUM', 'HIGH'])
+  feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export class CancelTransactionDto {
@@ -204,7 +225,7 @@ export class CCTPTransferDto {
   @ApiProperty({
     description: 'Destination blockchain',
     example: 'MATIC-AMOY',
-    enum: ['ETH-SEPOLIA', 'MATIC-AMOY', 'AVAX-FUJI'],
+    enum: ALL_CIRCLE_BLOCKCHAINS,
   })
   @IsString()
   destinationChain: string;

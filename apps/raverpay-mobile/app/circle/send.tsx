@@ -164,7 +164,7 @@ export default function CircleSendScreen() {
     validateAddr();
   }, [destinationAddress, selectedWallet, validateAddress]);
 
-  // Estimate fee when amount changes
+  // Estimate fee when amount or feeLevel changes
   useEffect(() => {
     const estimate = async () => {
       if (
@@ -191,15 +191,19 @@ export default function CircleSendScreen() {
             destinationAddress,
             amount,
             blockchain: selectedWallet.blockchain,
+            feeLevel, // Include feeLevel in estimation
           });
-          setEstimatedFee(result.data.maxFee);
+          // Use the fee estimate for the selected level
+          const feeLevelKey = feeLevel.toLowerCase() as 'low' | 'medium' | 'high';
+          const feeData = result.data[feeLevelKey];
+          setEstimatedFee(feeData?.networkFee ?? result.data.maxFee ?? null);
         } catch {
           setEstimatedFee(null);
         }
       }
     };
     estimate();
-  }, [amount, destinationAddress, selectedWallet, addressValid, estimateFee, chainsData]);
+  }, [amount, destinationAddress, selectedWallet, addressValid, estimateFee, chainsData, feeLevel]);
 
   // Check Paymaster compatibility when wallet changes
   // Paymaster is available for:
@@ -764,7 +768,7 @@ export default function CircleSendScreen() {
                 className={isSponsoredChain ? 'text-green-600 font-semibold' : 'dark:text-white'}
               >
                 {isSponsoredChain
-                  ? '⚡ Free (Sponsored)'
+                  ? `⚡ ${chainMeta?.feeLabel || 'Free'}`
                   : `~$${usePaymasterGas ? paymasterFeeUsdc || '0.00' : estimatedFee || '0.00'}`}
               </Text>
             </View>

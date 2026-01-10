@@ -55,16 +55,16 @@ export class BirthdaySchedulerService {
     this.logger.log('Starting birthday notification job...');
 
     // Audit log for job started
-    await this.auditService.log({
-      userId: null,
-      action: AuditAction.JOB_STARTED,
-      resource: 'JOB',
-      metadata: {
-        jobName: 'sendBirthdayNotifications',
-        scheduledTime: new Date(),
-      },
-      actorType: ActorType.SYSTEM,
-    });
+    // await this.auditService.log({
+    //   userId: null,
+    //   action: AuditAction.JOB_STARTED,
+    //   resource: 'JOB',
+    //   metadata: {
+    //     jobName: 'sendBirthdayNotifications',
+    //     scheduledTime: new Date(),
+    //   },
+    //   actorType: ActorType.SYSTEM,
+    // });
 
     try {
       const birthdayUsers = await this.findUsersWithBirthdayToday();
@@ -73,17 +73,17 @@ export class BirthdaySchedulerService {
         this.logger.log('No users with birthdays today');
 
         // Audit log for job completed with no work
-        await this.auditService.log({
-          userId: null,
-          action: AuditAction.JOB_COMPLETED,
-          resource: 'JOB',
-          metadata: {
-            jobName: 'sendBirthdayNotifications',
-            usersNotified: 0,
-          },
-          actorType: ActorType.SYSTEM,
-          status: AuditStatus.SUCCESS,
-        });
+        // await this.auditService.log({
+        //   userId: null,
+        //   action: AuditAction.JOB_COMPLETED,
+        //   resource: 'JOB',
+        //   metadata: {
+        //     jobName: 'sendBirthdayNotifications',
+        //     usersNotified: 0,
+        //   },
+        //   actorType: ActorType.SYSTEM,
+        //   status: AuditStatus.SUCCESS,
+        // });
 
         return;
       }

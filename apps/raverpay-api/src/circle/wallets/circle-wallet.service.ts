@@ -55,11 +55,11 @@ export class CircleWalletService {
     ) as CircleBlockchain;
     const accountType = params.accountType || this.config.defaultAccountType;
 
-    // Validate blockchain support
+    // Validate blockchain support (network enabled check)
     const supportedChains = this.config.getSupportedBlockchains();
     if (!supportedChains.includes(blockchain)) {
       throw new BadRequestException(
-        `Blockchain ${blockchain} is not supported. Supported chains: ${supportedChains.join(', ')}`,
+        `Network "${blockchain}" is not currently enabled. Available networks: ${supportedChains.join(', ')}`,
       );
     }
 

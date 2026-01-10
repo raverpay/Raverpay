@@ -8,36 +8,48 @@ import { TouchableOpacity, View } from 'react-native';
 interface CircleWalletCardProps {
   wallet: CircleWallet;
   usdcBalance?: string;
+  nativeBalance?: { symbol: string; amount: string } | null;
   isSelected?: boolean;
   onPress?: () => void;
   isSponsored?: boolean;
   isUnsupported?: boolean;
 }
 
-const BLOCKCHAIN_INFO: Record<CircleBlockchain, { name: string; color: string; icon: string }> = {
-  ETH: { name: 'Ethereum', color: 'bg-blue-500', icon: 'Ξ' },
-  'ETH-SEPOLIA': { name: 'Ethereum Sepolia', color: 'bg-blue-400', icon: 'Ξ' },
-  MATIC: { name: 'Polygon', color: 'bg-purple-500', icon: '⬣' },
-  'MATIC-AMOY': { name: 'Polygon Amoy', color: 'bg-purple-400', icon: '⬣' },
-  ARB: { name: 'Arbitrum', color: 'bg-sky-500', icon: 'A' },
-  'ARB-SEPOLIA': { name: 'Arbitrum Sepolia', color: 'bg-sky-400', icon: 'A' },
+const BLOCKCHAIN_INFO: Record<CircleBlockchain, { name: string; color: string; icon: string; nativeSymbol: string }> = {
+  ETH: { name: 'Ethereum', color: 'bg-blue-500', icon: 'Ξ', nativeSymbol: 'ETH' },
+  'ETH-SEPOLIA': { name: 'Ethereum Sepolia', color: 'bg-blue-400', icon: 'Ξ', nativeSymbol: 'ETH' },
+  MATIC: { name: 'Polygon', color: 'bg-purple-500', icon: '⬣', nativeSymbol: 'POL' },
+  'MATIC-AMOY': { name: 'Polygon Amoy', color: 'bg-purple-400', icon: '⬣', nativeSymbol: 'POL' },
+  ARB: { name: 'Arbitrum', color: 'bg-sky-500', icon: 'A', nativeSymbol: 'ETH' },
+  'ARB-SEPOLIA': { name: 'Arbitrum Sepolia', color: 'bg-sky-400', icon: 'A', nativeSymbol: 'ETH' },
   SOL: {
     name: 'Solana',
     color: 'bg-gradient-to-r from-purple-500 to-green-400',
     icon: '◎',
+    nativeSymbol: 'SOL',
   },
-  'SOL-DEVNET': { name: 'Solana Devnet', color: 'bg-purple-300', icon: '◎' },
-  AVAX: { name: 'Avalanche', color: 'bg-red-500', icon: '🔺' },
-  'AVAX-FUJI': { name: 'Avalanche Fuji', color: 'bg-red-400', icon: '🔺' },
-  BASE: { name: 'Base', color: 'bg-blue-600', icon: '🔵' },
-  'BASE-SEPOLIA': { name: 'Base Sepolia', color: 'bg-blue-400', icon: '🔵' },
-  OP: { name: 'Optimism', color: 'bg-red-600', icon: '🔴' },
-  'OP-SEPOLIA': { name: 'Optimism Sepolia', color: 'bg-red-400', icon: '🔴' },
+  'SOL-DEVNET': { name: 'Solana Devnet', color: 'bg-purple-300', icon: '◎', nativeSymbol: 'SOL' },
+  AVAX: { name: 'Avalanche', color: 'bg-red-500', icon: '🔺', nativeSymbol: 'AVAX' },
+  'AVAX-FUJI': { name: 'Avalanche Fuji', color: 'bg-red-400', icon: '🔺', nativeSymbol: 'AVAX' },
+  BASE: { name: 'Base', color: 'bg-blue-600', icon: '🔵', nativeSymbol: 'ETH' },
+  'BASE-SEPOLIA': { name: 'Base Sepolia', color: 'bg-blue-400', icon: '🔵', nativeSymbol: 'ETH' },
+  OP: { name: 'Optimism', color: 'bg-red-600', icon: '🔴', nativeSymbol: 'ETH' },
+  'OP-SEPOLIA': { name: 'Optimism Sepolia', color: 'bg-red-400', icon: '🔴', nativeSymbol: 'ETH' },
+};
+
+// Format native balance to a reasonable precision
+const formatNativeBalance = (amount: string): string => {
+  const num = parseFloat(amount);
+  if (num === 0) return '0';
+  if (num < 0.0001) return '<0.0001';
+  if (num < 1) return num.toFixed(4);
+  return num.toFixed(4);
 };
 
 export const CircleWalletCard: React.FC<CircleWalletCardProps> = ({
   wallet,
   usdcBalance = '0.00',
+  nativeBalance,
   isSelected = false,
   onPress,
   isSponsored = false,
@@ -47,6 +59,7 @@ export const CircleWalletCard: React.FC<CircleWalletCardProps> = ({
     name: wallet.blockchain,
     color: 'bg-gray-500',
     icon: '?',
+    nativeSymbol: 'ETH',
   };
 
   const truncatedAddress = `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}`;
@@ -139,12 +152,22 @@ export const CircleWalletCard: React.FC<CircleWalletCardProps> = ({
       </View>
 
       <View className="items-end">
+        {/* USDC Balance - Primary */}
         <Text variant="h5" weight="bold" className="text-[#2775CA]">
           ${parseFloat(usdcBalance).toFixed(2)}
         </Text>
         <Text variant="caption" color="secondary">
           USDC
         </Text>
+        
+        {/* Native Token Balance - Secondary (only show if non-zero) */}
+        {nativeBalance && parseFloat(nativeBalance.amount) > 0 && (
+          <View className="mt-1 flex-row items-center">
+            <Text variant="caption" color="secondary" className="text-xs">
+              {formatNativeBalance(nativeBalance.amount)} {blockchainInfo.nativeSymbol}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

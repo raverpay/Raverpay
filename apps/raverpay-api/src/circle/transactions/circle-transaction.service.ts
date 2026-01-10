@@ -69,11 +69,11 @@ export class CircleTransactionService {
     // Get wallet
     const wallet = await this.walletService.getWallet(walletId, userId);
 
-    // Validate blockchain support
+    // Validate blockchain support (network enabled check)
     const supportedChains = this.config.getSupportedBlockchains();
     if (!supportedChains.includes(wallet.blockchain)) {
       throw new BadRequestException(
-        `Blockchain ${wallet.blockchain} is no longer supported for new transactions. Please use a supported chain.`,
+        `Network "${wallet.blockchain}" is not currently enabled. Available networks: ${supportedChains.join(', ')}`,
       );
     }
 

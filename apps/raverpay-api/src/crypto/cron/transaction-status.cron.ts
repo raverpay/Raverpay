@@ -46,16 +46,16 @@ export class TransactionStatusCron {
     this.isRunning = true;
 
     // Audit log for job started
-    await this.auditService.log({
-      userId: null,
-      action: AuditAction.JOB_STARTED,
-      resource: 'JOB',
-      metadata: {
-        jobName: 'checkPendingTransactions',
-        scheduledTime: new Date(),
-      },
-      actorType: ActorType.SYSTEM,
-    });
+    // await this.auditService.log({
+    //   userId: null,
+    //   action: AuditAction.JOB_STARTED,
+    //   resource: 'JOB',
+    //   metadata: {
+    //     jobName: 'checkPendingTransactions',
+    //     scheduledTime: new Date(),
+    //   },
+    //   actorType: ActorType.SYSTEM,
+    // });
 
     try {
       // Find transactions that have been pending for more than 2 minutes
@@ -139,34 +139,34 @@ export class TransactionStatusCron {
       }
 
       // Audit log for job completed
-      await this.auditService.log({
-        userId: null,
-        action: AuditAction.JOB_COMPLETED,
-        resource: 'JOB',
-        metadata: {
-          jobName: 'checkPendingTransactions',
-          transactionsChecked: checkedCount,
-          transactionsUpdated: updatedCount,
-        },
-        actorType: ActorType.SYSTEM,
-        status: AuditStatus.SUCCESS,
-      });
+      // await this.auditService.log({
+      //   userId: null,
+      //   action: AuditAction.JOB_COMPLETED,
+      //   resource: 'JOB',
+      //   metadata: {
+      //     jobName: 'checkPendingTransactions',
+      //     transactionsChecked: checkedCount,
+      //     transactionsUpdated: updatedCount,
+      //   },
+      //   actorType: ActorType.SYSTEM,
+      //   status: AuditStatus.SUCCESS,
+      // });
     } catch (error) {
       this.logger.error('Error in transaction status check cron', error);
 
       // Audit log for job failed
-      await this.auditService.log({
-        userId: null,
-        action: AuditAction.JOB_FAILED,
-        resource: 'JOB',
-        metadata: {
-          jobName: 'checkPendingTransactions',
-          error: error.message,
-        },
-        actorType: ActorType.SYSTEM,
-        status: AuditStatus.FAILURE,
-        errorMessage: error.message,
-      });
+      // await this.auditService.log({
+      //   userId: null,
+      //   action: AuditAction.JOB_FAILED,
+      //   resource: 'JOB',
+      //   metadata: {
+      //     jobName: 'checkPendingTransactions',
+      //     error: error.message,
+      //   },
+      //   actorType: ActorType.SYSTEM,
+      //   status: AuditStatus.FAILURE,
+      //   errorMessage: error.message,
+      // });
     } finally {
       this.isRunning = false;
     }

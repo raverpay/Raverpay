@@ -138,3 +138,47 @@ export class CircleAnalyticsDto {
   @IsString()
   blockchain?: string;
 }
+
+export class UpdateBlockchainConfigDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  symbol?: string;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  isEnabled?: boolean;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  isTestnet?: boolean;
+
+  @IsOptional()
+  @IsString()
+  feeLabel?: string;
+
+  @IsOptional()
+  @IsString()
+  estimatedCost?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  isRecommended?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  displayOrder?: number;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  isCCTPSupported?: boolean;
+}

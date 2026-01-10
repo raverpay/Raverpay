@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Post, Param, Query, Body, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -17,6 +17,7 @@ import {
   QueryCCTPTransfersDto,
   QueryWebhookLogsDto,
   CircleAnalyticsDto,
+  UpdateBlockchainConfigDto,
 } from './admin-circle.dto';
 
 @ApiTags('Admin - Circle')
@@ -147,6 +148,16 @@ export class AdminCircleController {
     };
   }
 
+  @ApiOperation({ summary: 'Get fee analytics data' })
+  @Get('fee-analytics')
+  async getFeeAnalytics(@Query() params: CircleAnalyticsDto) {
+    const analytics = await this.adminCircleService.getFeeAnalytics(params);
+    return {
+      success: true,
+      data: analytics,
+    };
+  }
+
   @ApiOperation({ summary: 'Get paginated Circle users' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -241,6 +252,67 @@ export class AdminCircleController {
     return {
       success: true,
       data: stats,
+    };
+  }
+
+  // ==========================================
+  // Blockchain Configuration Management
+  // ==========================================
+
+  @ApiOperation({ summary: 'Get all blockchain configurations' })
+  @Get('blockchains')
+  async getBlockchainConfigs() {
+    const configs = await this.adminCircleService.getBlockchainConfigs();
+    return {
+      success: true,
+      data: configs,
+    };
+  }
+
+  @ApiOperation({ summary: 'Get blockchain configuration by ID' })
+  @ApiParam({ name: 'blockchain', description: 'Blockchain identifier (e.g., BASE-SEPOLIA)' })
+  @Get('blockchains/:blockchain')
+  async getBlockchainConfig(@Param('blockchain') blockchain: string) {
+    const config = await this.adminCircleService.getBlockchainConfig(blockchain);
+    return {
+      success: true,
+      data: config,
+    };
+  }
+
+  @ApiOperation({ summary: 'Update blockchain configuration' })
+  @ApiParam({ name: 'blockchain', description: 'Blockchain identifier' })
+  @Put('blockchains/:blockchain')
+  async updateBlockchainConfig(
+    @Param('blockchain') blockchain: string,
+    @Body() updates: UpdateBlockchainConfigDto,
+  ) {
+    const config = await this.adminCircleService.updateBlockchainConfig(blockchain, updates);
+    return {
+      success: true,
+      data: config,
+    };
+  }
+
+  @ApiOperation({ summary: 'Enable a blockchain' })
+  @ApiParam({ name: 'blockchain', description: 'Blockchain identifier' })
+  @Post('blockchains/:blockchain/enable')
+  async enableBlockchain(@Param('blockchain') blockchain: string) {
+    await this.adminCircleService.enableBlockchain(blockchain);
+    return {
+      success: true,
+      message: `Blockchain ${blockchain} has been enabled`,
+    };
+  }
+
+  @ApiOperation({ summary: 'Disable a blockchain' })
+  @ApiParam({ name: 'blockchain', description: 'Blockchain identifier' })
+  @Post('blockchains/:blockchain/disable')
+  async disableBlockchain(@Param('blockchain') blockchain: string) {
+    await this.adminCircleService.disableBlockchain(blockchain);
+    return {
+      success: true,
+      message: `Blockchain ${blockchain} has been disabled`,
     };
   }
 }
