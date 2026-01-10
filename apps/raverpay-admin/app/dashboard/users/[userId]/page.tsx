@@ -383,9 +383,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    lockAccountMutation.mutate('Suspicious activity detected.')
-                  }
+                  onClick={() => lockAccountMutation.mutate('Suspicious activity detected.')}
                   disabled={lockAccountMutation.isPending}
                   className="flex-1"
                 >
@@ -399,7 +397,9 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    unlockAccountMutation.mutate('Your account has been cleared of suspicious activity.')
+                    unlockAccountMutation.mutate(
+                      'Your account has been cleared of suspicious activity.',
+                    )
                   }
                   disabled={unlockAccountMutation.isPending}
                   className="flex-1"

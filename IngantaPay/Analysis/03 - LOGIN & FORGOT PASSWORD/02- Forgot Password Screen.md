@@ -13,16 +13,15 @@ DESIGN CHANGES:
 
 2. HEADER SECTION:
    - Back button (← Back):
-     * Position: Top-left
-     * White text color
-     * No circular background
-     * Just arrow and text, simple design
-     * OnPress: Navigate back to login
-   
+     - Position: Top-left
+     - White text color
+     - No circular background
+     - Just arrow and text, simple design
+     - OnPress: Navigate back to login
    - Remove the icon section completely:
-     * Remove the purple circular background with lock emoji
-     * Remove the 🔒 emoji icon
-     * No icon needed on this screen
+     - Remove the purple circular background with lock emoji
+     - Remove the 🔒 emoji icon
+     - No icon needed on this screen
 
 3. TITLE & SUBTITLE:
    - Title: "Forgot Password?" (white, bold, size: 32px)
@@ -31,16 +30,16 @@ DESIGN CHANGES:
    - Spacing: 16px between title and subtitle
 
 4. FORM FIELD:
-   
+
    Email or Phone Input:
    - Label: "Email or Phone" (white, size: 14px, positioned above input)
    - Input styling:
-     * Background: Dark gray (#2A2A2A or #333333)
-     * Border: None or 1px gray-700
-     * Border radius: 12px
-     * Height: 56px
-     * Text color: White
-     * Placeholder: "Enter your email or phone" (gray-500)
+     - Background: Dark gray (#2A2A2A or #333333)
+     - Border: None or 1px gray-700
+     - Border radius: 12px
+     - Height: 56px
+     - Text color: White
+     - Placeholder: "Enter your email or phone" (gray-500)
    - Left icon: Envelope/mail icon (gray-400)
    - Position: 32px below subtitle
    - Accept both email and phone number formats
@@ -69,22 +68,27 @@ DESIGN CHANGES:
 FORM VALIDATION UPDATES:
 
 Update schema to accept email OR phone:
+
 ```typescript
 const forgotPasswordSchema = z.object({
-  identifier: z.string().min(1, 'Email or phone is required').refine(
-    (value) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const phoneRegex = /^\+?[1-9]\d{9,14}$/;
-      return emailRegex.test(value) || phoneRegex.test(value);
-    },
-    { message: 'Please enter a valid email or phone number' }
-  ),
+  identifier: z
+    .string()
+    .min(1, 'Email or phone is required')
+    .refine(
+      (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[1-9]\d{9,14}$/;
+        return emailRegex.test(value) || phoneRegex.test(value);
+      },
+      { message: 'Please enter a valid email or phone number' },
+    ),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 ```
 
 Update Controller:
+
 ```typescript
 <Controller
   control={control}
@@ -107,13 +111,16 @@ Update Controller:
 ```
 
 API INTEGRATION:
+
 - Update forgotPassword function to accept identifier instead of email
 - Pass identifier to API endpoint
 - Backend should detect if it's email or phone and send OTP accordingly
 
 NAVIGATION:
+
 - After successful submission: Navigate to verify-reset-code with identifier param
 - Update router.push to pass identifier instead of email:
+
 ```typescript
 const onSubmit = async (data: ForgotPasswordFormData) => {
   try {
@@ -129,6 +136,7 @@ const onSubmit = async (data: ForgotPasswordFormData) => {
 ```
 
 TECHNICAL REQUIREMENTS:
+
 - Maintain KeyboardAvoidingView behavior
 - Keep ScrollView for better UX
 - Update hook to handle identifier instead of email
@@ -136,6 +144,7 @@ TECHNICAL REQUIREMENTS:
 - Ensure proper error messages display
 
 CLEANUP:
+
 - Remove footer section entirely
 - Remove circular icon background code
 - Simplify header to just back button

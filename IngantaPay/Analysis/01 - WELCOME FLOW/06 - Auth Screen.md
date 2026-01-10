@@ -14,16 +14,16 @@ MAJOR DESIGN CHANGES:
 2. APP PREVIEW SECTION (Top Half):
    - Add a phone mockup/preview at the top showing the main dashboard
    - Phone mockup specifications:
-     * Display an iPhone frame with content
-     * Inside frame: Show a preview of the home dashboard with:
+     - Display an iPhone frame with content
+     - Inside frame: Show a preview of the home dashboard with:
        - Red gradient card showing "Welcome back, John Kingsley"
        - Total Balance display: "₦125,000" with eye icon (visibility toggle)
        - Mosaic Code section showing: "MSC-7834-2901" with hand icon
        - Two action buttons: "Add Money" and "Send Money"
        - "Utilities & Services" section label at bottom
-     * Phone frame should have realistic bezels and notch
-     * Slight 3D perspective tilt effect
-     * Position: Top 50% of screen, centered
+     - Phone frame should have realistic bezels and notch
+     - Slight 3D perspective tilt effect
+     - Position: Top 50% of screen, centered
 
 3. WELCOME TEXT SECTION (Below phone preview):
    - Title: "Welcome To Inganta Pay" (white, bold, size: 36px, centered)
@@ -32,18 +32,17 @@ MAJOR DESIGN CHANGES:
 
 4. ACTION BUTTONS (Bottom section):
    - Primary Button: "Create Account"
-     * Background: Solid red (#C41E3A)
-     * Text: White, bold, size: 18px
-     * Border radius: 12px
-     * Height: 56px
-     * Full width with 20px horizontal padding
-     * Positioned 24px above secondary button
-   
+     - Background: Solid red (#C41E3A)
+     - Text: White, bold, size: 18px
+     - Border radius: 12px
+     - Height: 56px
+     - Full width with 20px horizontal padding
+     - Positioned 24px above secondary button
    - Secondary Button: "Login"
-     * Background: Dark gray/transparent (rgba(255, 255, 255, 0.1))
-     * Text: White, size: 18px
-     * Same dimensions as primary button
-     * 1px border: rgba(255, 255, 255, 0.2)
+     - Background: Dark gray/transparent (rgba(255, 255, 255, 0.1))
+     - Text: White, size: 18px
+     - Same dimensions as primary button
+     - 1px border: rgba(255, 255, 255, 0.2)
 
 5. FOOTER TEXT:
    - Add at bottom: "By continuing, you agree to our Terms & Privacy Policy"
@@ -69,6 +68,7 @@ MAJOR DESIGN CHANGES:
    - Use react-native-reanimated for smooth animations
 
 TECHNICAL REQUIREMENTS:
+
 - StatusBar: Set to 'light' style (white icons/text)
 - Maintain safe area padding (especially for iPhone notch/island)
 - Buttons should have press states (opacity: 0.8 when pressed)
@@ -77,6 +77,7 @@ TECHNICAL REQUIREMENTS:
 - Keep dark theme consistency throughout
 
 COLOR PALETTE:
+
 - Background: #0A0A0A or #1A1A1A
 - Primary Red: #C41E3A
 - White: #FFFFFF

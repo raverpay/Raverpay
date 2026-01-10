@@ -3,7 +3,7 @@
 **Created:** 2025-01-09  
 **Updated:** 2025-01-10  
 **Status:** In Progress  
-**Priority:** High  
+**Priority:** High
 
 This document outlines the missing implementations and improvements needed for the Circle USDC transfer flow with gas sponsorship.
 
@@ -30,9 +30,11 @@ This document outlines the missing implementations and improvements needed for t
 **Impact:** Fee collection will fail without this
 
 ### Problem
+
 Collection wallet addresses are empty strings in the default configuration. Without valid company wallet addresses, fee collection will fail.
 
 ### Current State
+
 ```typescript
 // File: /apps/raverpay-api/src/circle/fees/fee-configuration.service.ts
 collectionWallets: {
@@ -64,6 +66,7 @@ collectionWallets: {
 - [ ] **1.3** Add validation on app startup to warn if collection wallets are not configured
 
 ### Files to Modify
+
 - `/apps/raverpay-api/src/circle/fees/fee-configuration.service.ts`
 - Database: `system_config` table
 
@@ -80,15 +83,18 @@ collectionWallets: {
 **DTOs should include ALL Circle-supported networks, NOT just enabled ones.**
 
 ### Why?
+
 DTOs are for **input validation** (is this a valid Circle network?), NOT for **business logic** (is this network enabled?).
 
 If we restrict DTOs to only enabled networks:
+
 1. Admin enables a new network via dashboard
 2. User tries to use that network
 3. ❌ API throws DTO validation error BEFORE business logic runs
 4. Bad UX - error comes from wrong layer
 
 ### Correct Architecture
+
 ```
 Layer 1: DTO Validation
 ├── Accept ALL valid Circle networks (ETH, MATIC, ARB, BASE, OP, AVAX, SOL, etc.)
@@ -104,9 +110,11 @@ Layer 2: Business Logic (Service Layer)
 ### All Circle-Supported Networks (for DTOs)
 
 **Mainnet:**
+
 - ETH, MATIC, ARB, BASE, OP, AVAX, SOL
 
 **Testnet:**
+
 - ETH-SEPOLIA, MATIC-AMOY, ARB-SEPOLIA, BASE-SEPOLIA, OP-SEPOLIA, AVAX-FUJI, SOL-DEVNET
 
 ### Tasks
@@ -114,12 +122,13 @@ Layer 2: Business Logic (Service Layer)
 - [x] **2.1** Update DTOs to include ALL Circle-supported networks
   - File: `/apps/raverpay-api/src/circle/dto/index.ts`
   - Include both mainnet and testnet variants
+
   ```typescript
   enum: [
     // Mainnet
     'ETH', 'MATIC', 'ARB', 'BASE', 'OP', 'AVAX', 'SOL',
     // Testnet
-    'ETH-SEPOLIA', 'MATIC-AMOY', 'ARB-SEPOLIA', 'BASE-SEPOLIA', 
+    'ETH-SEPOLIA', 'MATIC-AMOY', 'ARB-SEPOLIA', 'BASE-SEPOLIA',
     'OP-SEPOLIA', 'AVAX-FUJI', 'SOL-DEVNET'
   ]
   ```
@@ -140,6 +149,7 @@ Layer 2: Business Logic (Service Layer)
   - **Note:** Already implemented in cctp.service.ts and paymaster services
 
 ### Files to Modify
+
 - `/apps/raverpay-api/src/circle/dto/index.ts`
 - `/apps/raverpay-api/src/circle/circle.types.ts`
 - `/apps/raverpay-api/src/circle/wallets/circle-wallet.service.ts` (add enabled check)
@@ -154,11 +164,14 @@ Layer 2: Business Logic (Service Layer)
 **Impact:** Accurate cost display, revenue planning
 
 ### Problem
+
 Current code shows ALL networks as "Free (Sponsored)" regardless of environment. This is:
+
 - ✅ **Correct for testnet** - Circle provides free gas for development
 - ❌ **Incorrect for mainnet** - Circle bills you monthly for gas consumed
 
 ### Current State
+
 ```typescript
 // File: /apps/raverpay-api/src/circle/config/circle.config.service.ts
 {
@@ -169,33 +182,36 @@ Current code shows ALL networks as "Free (Sponsored)" regardless of environment.
 ```
 
 ### Mainnet Reality
+
 On mainnet with Gas Station:
+
 1. Circle **sponsors** the gas (user doesn't need native tokens)
 2. Circle **bills you** monthly for the gas consumed
 3. You should factor this into your service fee OR display estimated gas costs
 
 ### Recommended Fee Labels
 
-| Environment | Network | Fee Label | Estimated Cost |
-|-------------|---------|-----------|----------------|
-| Testnet | BASE-SEPOLIA | "Free (Testnet)" | $0.00 |
-| Testnet | OP-SEPOLIA | "Free (Testnet)" | $0.00 |
-| Testnet | ARB-SEPOLIA | "Free (Testnet)" | $0.00 |
-| Testnet | MATIC-AMOY | "Free (Testnet)" | $0.00 |
-| **Mainnet** | BASE | "Gas Sponsored" | ~$0.001-$0.01 |
-| **Mainnet** | OP | "Gas Sponsored" | ~$0.001-$0.01 |
-| **Mainnet** | ARB | "Gas Sponsored" | ~$0.01-$0.05 |
-| **Mainnet** | MATIC | "Gas Sponsored" | ~$0.001-$0.01 |
+| Environment | Network      | Fee Label        | Estimated Cost |
+| ----------- | ------------ | ---------------- | -------------- |
+| Testnet     | BASE-SEPOLIA | "Free (Testnet)" | $0.00          |
+| Testnet     | OP-SEPOLIA   | "Free (Testnet)" | $0.00          |
+| Testnet     | ARB-SEPOLIA  | "Free (Testnet)" | $0.00          |
+| Testnet     | MATIC-AMOY   | "Free (Testnet)" | $0.00          |
+| **Mainnet** | BASE         | "Gas Sponsored"  | ~$0.001-$0.01  |
+| **Mainnet** | OP           | "Gas Sponsored"  | ~$0.001-$0.01  |
+| **Mainnet** | ARB          | "Gas Sponsored"  | ~$0.01-$0.05   |
+| **Mainnet** | MATIC        | "Gas Sponsored"  | ~$0.001-$0.01  |
 
 ### Tasks
 
 - [x] **3.1** Update `getChainMetadata()` to differentiate testnet vs mainnet
+
   ```typescript
   {
     blockchain: isTestnet ? 'BASE-SEPOLIA' : 'BASE',
     feeLabel: isTestnet ? 'Free (Testnet)' : 'Gas Sponsored',
     estimatedCost: isTestnet ? '$0.00' : '~$0.01',
-    description: isTestnet 
+    description: isTestnet
       ? 'Testnet - no real costs'
       : 'Gas fees billed to platform, included in service fee',
   }
@@ -220,6 +236,7 @@ On mainnet with Gas Station:
   - Add accurate explanation of testnet vs mainnet costs
 
 ### Files to Modify
+
 - `/apps/raverpay-api/src/circle/config/circle.config.service.ts`
 - `/apps/raverpay-mobile/app/circle/send.tsx` (UI messaging)
 
@@ -236,6 +253,7 @@ On mainnet with Gas Station:
 **Problem:** Admin can view collection wallets but cannot edit them in the UI.
 
 **Current State:**
+
 - Fee config page shows wallets as read-only
 - API already supports updating `collectionWallets` via `PUT /circle/fees/config`
 
@@ -244,7 +262,6 @@ On mainnet with Gas Station:
 - [x] **4.1.1** Add editable input fields for each collection wallet address
   - File: `/apps/raverpay-admin/app/dashboard/circle-wallets/fee-config/page.tsx`
   - **Implemented:** Edit mode toggle, inline editing with validation
-  
 - [x] **4.1.2** Add validation for wallet addresses (valid Ethereum address format)
   - **Implemented:** `isValidEthereumAddress` function validates 0x prefix and 40 hex chars
 
@@ -256,6 +273,7 @@ On mainnet with Gas Station:
 **Problem:** Supported blockchains are hardcoded. Admins cannot enable/disable networks.
 
 **Current State:**
+
 - Networks are defined in `getSupportedBlockchains()` method
 - No database-backed configuration
 
@@ -288,6 +306,7 @@ On mainnet with Gas Station:
 **Problem:** Admin can view collection wallets but cannot edit them in the UI.
 
 **Current State:**
+
 - Fee config page shows wallets as read-only
 - API already supports updating `collectionWallets` via `PUT /circle/fees/config`
 
@@ -295,7 +314,6 @@ On mainnet with Gas Station:
 
 - [ ] **4.1.1** Add editable input fields for each collection wallet address
   - File: `/apps/raverpay-admin/app/dashboard/circle-wallets/fee-config/page.tsx`
-  
 - [ ] **4.1.2** Add validation for wallet addresses (valid Ethereum address format)
 
 - [ ] **4.1.3** Add confirmation modal before saving wallet address changes
@@ -305,12 +323,14 @@ On mainnet with Gas Station:
 **Problem:** Supported blockchains are hardcoded. Admins cannot enable/disable networks.
 
 **Current State:**
+
 - Networks are defined in `getSupportedBlockchains()` method
 - No database-backed configuration
 
 #### Tasks
 
 - [ ] **4.2.1** Create database model for blockchain configuration
+
   ```prisma
   model BlockchainConfig {
     id              String   @id @default(uuid())
@@ -326,7 +346,7 @@ On mainnet with Gas Station:
     displayOrder    Int      @default(0)
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
-    
+
     @@map("blockchain_configs")
   }
   ```
@@ -354,6 +374,7 @@ On mainnet with Gas Station:
   - "Recommended" badge toggle
 
 ### Files to Create/Modify
+
 - `/apps/raverpay-api/prisma/schema.prisma` - Add new model
 - `/apps/raverpay-api/src/circle/config/blockchain-config.service.ts` - New service
 - `/apps/raverpay-api/src/admin/circle/admin-circle.controller.ts` - Add endpoints
@@ -369,9 +390,11 @@ On mainnet with Gas Station:
 **Impact:** UX, accurate fee estimation
 
 ### Problem
+
 When user toggles fee level (LOW/MEDIUM/HIGH), the estimated gas fee is NOT recalculated.
 
 ### Current State
+
 ```typescript
 // File: /apps/raverpay-mobile/app/circle/send.tsx (lines 167-202)
 useEffect(() => {
@@ -393,17 +416,19 @@ useEffect(() => {
 ### Tasks
 
 - [x] **5.1** Add `feeLevel` to the estimation API call
+
   ```typescript
   const result = await estimateFee({
     walletId: selectedWallet.id,
     destinationAddress,
     amount,
     blockchain: selectedWallet.blockchain,
-    feeLevel,  // Add this
+    feeLevel, // Add this
   });
   ```
 
 - [x] **5.2** Add `feeLevel` to the `useEffect` dependency array
+
   ```typescript
   }, [amount, destinationAddress, selectedWallet, addressValid, estimateFee, chainsData, feeLevel]);
   ```
@@ -419,12 +444,15 @@ useEffect(() => {
   - File: `/apps/raverpay-mobile/src/hooks/useCircleWallet.ts`
 
 ### Note on Sponsored Chains
+
 Even with sponsored gas, fee level affects:
+
 1. Transaction speed (confirmation time)
 2. Paymaster fee estimates (if using USDC for gas)
 3. Future non-sponsored networks
 
 ### Files to Modify
+
 - `/apps/raverpay-mobile/app/circle/send.tsx`
 - `/apps/raverpay-mobile/src/hooks/useCircleWallet.ts`
 - `/apps/raverpay-api/src/circle/dto/index.ts` (if needed)
@@ -439,9 +467,11 @@ Even with sponsored gas, fee level affects:
 **Impact:** Business operations, reporting
 
 ### Problem
+
 No comprehensive analytics for tracking fee collection, gas costs, and profit margins.
 
 ### Current State
+
 - Basic retry queue stats available via `GET /circle/fees/stats`
 - No aggregated analytics
 - No Circle invoice reconciliation
@@ -477,6 +507,7 @@ No comprehensive analytics for tracking fee collection, gas costs, and profit ma
   - Alert on discrepancies
 
 ### Files Created
+
 - `/apps/raverpay-admin/app/dashboard/circle-wallets/analytics/page.tsx`
 - API endpoint: `GET /admin/circle/fee-analytics`
 - Admin API: `getFeeAnalytics()` in circle.ts
@@ -534,12 +565,14 @@ No comprehensive analytics for tracking fee collection, gas costs, and profit ma
 **Problem:** The wallet setup screen (`setup.tsx`) shows ALL supported networks, even networks where the user already has a wallet created.
 
 **Current Behavior:**
+
 - User creates a wallet on BASE-SEPOLIA
 - Goes back to setup screen
 - BASE-SEPOLIA still shows as an option to create
 - User might accidentally try to create duplicate wallet
 
 **Expected Behavior:**
+
 - Fetch user's existing wallets
 - Filter out networks where wallet already exists
 - Only show networks where user doesn't have a wallet yet
@@ -548,16 +581,18 @@ No comprehensive analytics for tracking fee collection, gas costs, and profit ma
 #### Tasks
 
 - [x] **8.1.1** Fetch existing wallets in setup screen
+
   ```typescript
   // In setup.tsx
   const { data: existingWallets } = useCircleWallets();
   ```
 
 - [x] **8.1.2** Filter out already-created networks from BlockchainSelector
+
   ```typescript
-  const existingBlockchains = existingWallets?.map(w => w.blockchain) || [];
+  const existingBlockchains = existingWallets?.map((w) => w.blockchain) || [];
   const availableChains = chainsData?.chains?.filter(
-    chain => !existingBlockchains.includes(chain.blockchain)
+    (chain) => !existingBlockchains.includes(chain.blockchain),
   );
   ```
 
@@ -601,8 +636,6 @@ Implemented Option B - Show native token balance alongside USDC in wallet cards.
 - `/apps/raverpay-mobile/app/circle/setup.tsx`
 - `/apps/raverpay-mobile/src/store/circle.store.ts` - Added getNativeBalance, getAllBalances
 - `/apps/raverpay-mobile/src/components/circle/CircleWalletCard.tsx` - Shows native balance
-
-
 
 ---
 
@@ -669,12 +702,17 @@ CoinGecko integration was previously commented out. Now re-enabled to show accur
 ### Files Created/Modified
 
 **Backend:**
+
 - `/apps/raverpay-api/src/crypto/services/price.service.ts` - Re-enabled CoinGecko
 - `/apps/raverpay-api/src/crypto/crypto.controller.ts` - Added GET /v1/crypto/prices
 
 **Mobile:**
+
 - `/apps/raverpay-mobile/src/hooks/usePrices.ts` - New hook
 - `/apps/raverpay-mobile/src/services/circle.service.ts` - Added getPrices()
+
+  ```
+
   ```
 
 - [ ] **9.2.5** Handle price loading/error states
@@ -685,12 +723,14 @@ CoinGecko integration was previously commented out. Now re-enabled to show accur
 ### Files to Modify
 
 **Backend:**
+
 - `/apps/raverpay-api/src/crypto/cron/price-update.cron.ts`
 - `/apps/raverpay-api/src/crypto/services/price.service.ts`
 - `/apps/raverpay-api/src/crypto/crypto.module.ts`
 - `/apps/raverpay-api/src/crypto/crypto.controller.ts` (add endpoint)
 
 **Mobile:**
+
 - `/apps/raverpay-mobile/src/hooks/usePrices.ts` (new)
 - `/apps/raverpay-mobile/src/store/circle.store.ts`
 - `/apps/raverpay-mobile/app/(tabs)/circle-wallet.tsx`
@@ -698,15 +738,16 @@ CoinGecko integration was previously commented out. Now re-enabled to show accur
 
 ---
 
-
 ## Implementation Order
 
 ### Phase 1: Critical (Before Any Mainnet Activity)
+
 1. 🔴 Company Treasury Wallets (Section 1)
 2. 🔴 Gas Fee Display Fix (Section 3)
 3. 🟡 Testing & Verification (Section 7)
 
 ### Phase 2: Architecture & Admin
+
 4. 🟡 Network DTO Architecture (Section 2)
 5. 🟡 Collection Wallet Editing (Section 4.1)
 6. 🟡 Mobile App Fee Level Fix (Section 5)
@@ -714,62 +755,68 @@ CoinGecko integration was previously commented out. Now re-enabled to show accur
 8. 🟡 CoinGecko Price Integration (Section 9) - Re-enable prices, portfolio display
 
 ### Phase 3: Future Enhancements
+
 9. ⏳ Blockchain Activation/Deactivation UI (Section 4.2)
 10. ⏳ Analytics & Billing (Section 6)
-
-
 
 ---
 
 ## Quick Reference: Key Files
 
 ### Backend (API)
-| File | Purpose |
-|------|---------|
-| `src/circle/config/circle.config.service.ts` | Chain configuration, metadata |
-| `src/circle/fees/fee-configuration.service.ts` | Fee config, collection wallets |
-| `src/circle/fees/fee-retry.service.ts` | Failed fee retry logic |
+
+| File                                                    | Purpose                        |
+| ------------------------------------------------------- | ------------------------------ |
+| `src/circle/config/circle.config.service.ts`            | Chain configuration, metadata  |
+| `src/circle/fees/fee-configuration.service.ts`          | Fee config, collection wallets |
+| `src/circle/fees/fee-retry.service.ts`                  | Failed fee retry logic         |
 | `src/circle/transactions/circle-transaction.service.ts` | Transfer flow (2 transactions) |
-| `src/circle/webhooks/circle-webhook.service.ts` | Webhook processing |
-| `src/circle/circle.controller.ts` | API endpoints |
-| `src/circle/dto/index.ts` | Request validation (DTOs) |
-| `src/circle/circle.types.ts` | TypeScript types |
-| `src/admin/circle/admin-circle.service.ts` | Admin operations |
+| `src/circle/webhooks/circle-webhook.service.ts`         | Webhook processing             |
+| `src/circle/circle.controller.ts`                       | API endpoints                  |
+| `src/circle/dto/index.ts`                               | Request validation (DTOs)      |
+| `src/circle/circle.types.ts`                            | TypeScript types               |
+| `src/admin/circle/admin-circle.service.ts`              | Admin operations               |
 
 ### Mobile App
-| File | Purpose |
-|------|---------|
-| `app/circle/send.tsx` | Transfer UI, fee level selection |
-| `src/hooks/useCircleWallet.ts` | API hooks |
-| `src/services/paymaster.service.ts` | Paymaster integration |
+
+| File                                | Purpose                          |
+| ----------------------------------- | -------------------------------- |
+| `app/circle/send.tsx`               | Transfer UI, fee level selection |
+| `src/hooks/useCircleWallet.ts`      | API hooks                        |
+| `src/services/paymaster.service.ts` | Paymaster integration            |
 
 ### Admin Dashboard
-| File | Purpose |
-|------|---------|
-| `app/dashboard/circle-wallets/fee-config/page.tsx` | Fee configuration UI |
+
+| File                                                   | Purpose              |
+| ------------------------------------------------------ | -------------------- |
+| `app/dashboard/circle-wallets/fee-config/page.tsx`     | Fee configuration UI |
 | `app/dashboard/circle-wallets/fee-collection/page.tsx` | Fee collection stats |
-| `app/dashboard/circle-wallets/fee-retries/page.tsx` | Failed fee retries |
+| `app/dashboard/circle-wallets/fee-retries/page.tsx`    | Failed fee retries   |
 
 ---
 
 ## Important Notes
 
 ### Gas Fee Realities
+
 - **Testnet:** Gas is truly free (Circle doesn't bill)
 - **Mainnet:** Gas is sponsored (user doesn't pay native tokens) BUT Circle bills platform monthly
 
 ### Service Fee (Current)
+
 - Fixed 0.5% of transfer amount
 - Minimum fee: 0.0625 USDC (~₦100 at ₦1,600/$)
 - Configurable via admin dashboard
 
 ### Transfer Flow
+
 - Uses TWO separate Circle API transactions:
   1. Main transfer (User → Recipient)
   2. Fee transfer (User → Company Treasury Wallet)
 - Failed fee collections retry up to 3 times automatically
 
 ### DTO vs Business Logic
+
 - **DTOs:** Validate input format (is it a valid network name?)
 - **Business Logic:** Check business rules (is network enabled?)
 - Keep these concerns separated for flexibility

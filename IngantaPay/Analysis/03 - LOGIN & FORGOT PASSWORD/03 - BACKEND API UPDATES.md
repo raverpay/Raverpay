@@ -6,20 +6,22 @@ POST /api/auth/login
 
 Current body:
 {
-  "identifier": "email@example.com", // was "email"
-  "password": "password123",
-  "deviceInfo": {...}
+"identifier": "email@example.com", // was "email"
+"password": "password123",
+"deviceInfo": {...}
 }
 
 New logic:
+
 - Accept "identifier" field (can be email OR phone)
 - Detect format automatically:
-  * If contains "@", treat as email
-  * If numeric (with optional + prefix), treat as phone
+  - If contains "@", treat as email
+  - If numeric (with optional + prefix), treat as phone
 - Query database: WHERE email = ? OR phone = ?
 - Return same response structure
 
 Example implementation logic:
+
 ```javascript
 // Determine if identifier is email or phone
 const isEmail = identifier.includes('@');
@@ -31,9 +33,7 @@ if (!isEmail && !isPhone) {
 
 // Query user
 const user = await User.findOne({
-  where: isEmail 
-    ? { email: identifier }
-    : { phone: identifier }
+  where: isEmail ? { email: identifier } : { phone: identifier },
 });
 
 if (!user) {
@@ -49,25 +49,27 @@ POST /api/auth/forgot-password
 
 Current body:
 {
-  "email": "user@example.com"
+"email": "user@example.com"
 }
 
 New body:
 {
-  "identifier": "user@example.com" // or phone number
+"identifier": "user@example.com" // or phone number
 }
 
 New logic:
+
 - Accept identifier (email or phone)
 - Detect format
 - Generate OTP (6-digit code)
 - Store in password_reset_tokens table with expiry (15 minutes)
 - Send OTP via:
-  * Email if identifier is email
-  * SMS if identifier is phone number
+  - Email if identifier is email
+  - SMS if identifier is phone number
 - Return success message
 
 Response:
+
 ```json
 {
   "success": true,
@@ -83,11 +85,12 @@ POST /api/auth/verify-reset-code
 
 Body:
 {
-  "identifier": "user@example.com",
-  "code": "123456"
+"identifier": "user@example.com",
+"code": "123456"
 }
 
 Logic:
+
 - Find valid (non-expired) reset token for identifier
 - Verify code matches
 - Mark token as verified
@@ -99,12 +102,13 @@ POST /api/auth/reset-password
 
 Body:
 {
-  "identifier": "user@example.com",
-  "code": "123456", // Verified code
-  "newPassword": "newSecurePassword123"
+"identifier": "user@example.com",
+"code": "123456", // Verified code
+"newPassword": "newSecurePassword123"
 }
 
 Logic:
+
 - Verify code is still valid and verified
 - Hash new password
 - Update user password
@@ -116,6 +120,7 @@ Logic:
 5. SMS INTEGRATION:
 
 Install SMS service (Twilio, AWS SNS, or African SMS providers like Africa's Talking):
+
 ```bash
 npm install twilio
 # or
@@ -123,21 +128,19 @@ npm install africastalking
 ```
 
 Create SMS service:
+
 ```javascript
 // services/sms.service.js
 const twilio = require('twilio');
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 async function sendOTP(phoneNumber, code) {
   try {
     await client.messages.create({
       body: `Your Inganta Pay reset code is: ${code}. Valid for 15 minutes.`,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber
+      to: phoneNumber,
     });
     return true;
   } catch (error) {
@@ -152,6 +155,7 @@ module.exports = { sendOTP };
 6. UPDATE DATABASE SCHEMA:
 
 ALTER password_reset_tokens table:
+
 ```sql
 ALTER TABLE password_reset_tokens
 ADD COLUMN identifier VARCHAR(255) NOT NULL, -- email or phone
@@ -180,6 +184,7 @@ Add to .env:
 9. ERROR HANDLING:
 
 Return appropriate errors:
+
 - Invalid identifier format
 - User not found
 - OTP expired
@@ -190,6 +195,7 @@ Return appropriate errors:
 10. TESTING:
 
 Test cases:
+
 - Login with email
 - Login with phone
 - Forgot password with email

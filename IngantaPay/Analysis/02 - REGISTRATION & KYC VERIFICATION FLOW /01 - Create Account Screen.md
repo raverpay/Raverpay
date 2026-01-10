@@ -2,8 +2,6 @@ IMAGE 1: Create Account Screen
 Corresponding Screen: app/(auth)/register.tsx
 MOBILE APP PROMPT:
 
-
-
 Update the current registration screen in app/(auth)/register.tsx to match the new Inganta Pay design with these requirements:
 
 DESIGN CHANGES:
@@ -15,9 +13,9 @@ DESIGN CHANGES:
 
 2. HEADER SECTION:
    - Keep the back button but update styling:
-     * Remove the circular white/gray background
-     * Use simple left arrow (←) with white color
-     * Position: top-left, no background circle
+     - Remove the circular white/gray background
+     - Use simple left arrow (←) with white color
+     - Position: top-left, no background circle
    - Update title: "Create Account" (white, bold, size: 28px)
    - Update subtitle: "Join Inganta Pay and start using palm biometric payments" (gray-400, size: 16px)
    - Remove the "Step X of 3" text and step indicators completely
@@ -43,44 +41,38 @@ DESIGN CHANGES:
    - Placeholder color: Gray-500
    - Label color: White, size: 14px, positioned above input
    - Icons: Position on LEFT side, gray color
-   
 5. SPECIFIC FIELD REQUIREMENTS:
    - Full Name:
-     * Label: "Full Name"
-     * Icon: User/person icon (left side)
-     * Placeholder: "Enter your full name"
-     * Update backend/form to accept single fullName field instead of firstName + lastName
-   
+     - Label: "Full Name"
+     - Icon: User/person icon (left side)
+     - Placeholder: "Enter your full name"
+     - Update backend/form to accept single fullName field instead of firstName + lastName
    - Phone Number:
-     * Label: "Phone Number"
-     * Icon: Phone icon (left side)
-     * Placeholder: "+256 700 000 000"
-     * Pre-fill country code or add country selector
-   
+     - Label: "Phone Number"
+     - Icon: Phone icon (left side)
+     - Placeholder: "+256 700 000 000"
+     - Pre-fill country code or add country selector
    - Email Address:
-     * Label: "Email Address"
-     * Icon: Envelope/mail icon (left side)
-     * Placeholder: "your.email@example.com"
-   
+     - Label: "Email Address"
+     - Icon: Envelope/mail icon (left side)
+     - Placeholder: "your.email@example.com"
    - Address:
-     * Label: "Address"
-     * Icon: Location/map pin icon (left side)
-     * Placeholder: "123 Kampala Road, Nigeria"
-     * Make this a MULTILINE input (min 3 rows, max 5 rows)
-     * Height: Auto-expand with content
-   
+     - Label: "Address"
+     - Icon: Location/map pin icon (left side)
+     - Placeholder: "123 Kampala Road, Nigeria"
+     - Make this a MULTILINE input (min 3 rows, max 5 rows)
+     - Height: Auto-expand with content
    - Password:
-     * Label: "Password"
-     * Icon: Lock icon (left side)
-     * Placeholder: "Create a strong password"
-     * Right icon: Eye icon for show/hide toggle
-     * REMOVE password strength indicator
-   
+     - Label: "Password"
+     - Icon: Lock icon (left side)
+     - Placeholder: "Create a strong password"
+     - Right icon: Eye icon for show/hide toggle
+     - REMOVE password strength indicator
    - Referral Code:
-     * Label: "Referral Code (Optional)"
-     * Icon: Gift/present icon (left side)
-     * Placeholder: "Enter referral code"
-     * This field is NOT required
+     - Label: "Referral Code (Optional)"
+     - Icon: Gift/present icon (left side)
+     - Placeholder: "Enter referral code"
+     - This field is NOT required
 
 6. SUBMIT BUTTON:
    - Text: "Create Account"
@@ -107,24 +99,28 @@ DESIGN CHANGES:
    - "By creating an account..." terms text (move to welcome screen instead)
 
 FORM VALIDATION UPDATES:
+
 - Update registerSchema to use single fullName field:
+
 ```typescript
-  const registerSchema = z.object({
-    fullName: z.string().min(3, 'Full name must be at least 3 characters'),
-    phone: phoneSchema,
-    email: emailSchema,
-    address: z.string().min(10, 'Please provide a complete address'),
-    password: passwordSchema,
-    referralCode: z.string().optional(),
-  });
+const registerSchema = z.object({
+  fullName: z.string().min(3, 'Full name must be at least 3 characters'),
+  phone: phoneSchema,
+  email: emailSchema,
+  address: z.string().min(10, 'Please provide a complete address'),
+  password: passwordSchema,
+  referralCode: z.string().optional(),
+});
 ```
 
 NAVIGATION BEHAVIOR:
+
 - After successful registration, navigate to KYC verification overview screen
 - Update onSubmit to call new registration endpoint with updated fields
 - Back button should go back to welcome screen
 
 TECHNICAL REQUIREMENTS:
+
 - Use KeyboardAvoidingView to handle keyboard properly
 - ScrollView should show all fields without pagination
 - Maintain form validation with updated schema
@@ -186,74 +182,79 @@ API ENDPOINTS TO CREATE/UPDATE:
 
 1. POST /api/auth/register
    Request body:
+
 ```json
-   {
-     "fullName": "John Doe",
-     "email": "john@example.com",
-     "phone": "+256700000000",
-     "address": "123 Kampala Road, Nigeria",
-     "password": "SecurePass123!",
-     "referralCode": "REF123" // optional
-   }
+{
+  "fullName": "John Doe",
+  "email": "john@example.com",
+  "phone": "+256700000000",
+  "address": "123 Kampala Road, Nigeria",
+  "password": "SecurePass123!",
+  "referralCode": "REF123" // optional
+}
 ```
-   
-   Logic:
-   - Validate all required fields
-   - Check if referralCode exists (if provided) and is valid
-   - Hash password using bcrypt
-   - Create user with kycStatus = 'pending'
-   - Send verification email
-   - Return JWT token + user object
-   
-   Response (201):
+
+Logic:
+
+- Validate all required fields
+- Check if referralCode exists (if provided) and is valid
+- Hash password using bcrypt
+- Create user with kycStatus = 'pending'
+- Send verification email
+- Return JWT token + user object
+
+Response (201):
+
 ```json
-   {
-     "success": true,
-     "data": {
-       "user": {
-         "id": "uuid",
-         "fullName": "John Doe",
-         "email": "john@example.com",
-         "phone": "+256700000000",
-         "address": "123 Kampala Road, Nigeria",
-         "kycStatus": "pending",
-         "emailVerified": false
-       },
-       "token": "jwt_token_here"
-     }
-   }
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "uuid",
+      "fullName": "John Doe",
+      "email": "john@example.com",
+      "phone": "+256700000000",
+      "address": "123 Kampala Road, Nigeria",
+      "kycStatus": "pending",
+      "emailVerified": false
+    },
+    "token": "jwt_token_here"
+  }
+}
 ```
 
 2. GET /api/kyc/status
    - Returns current KYC status for authenticated user
    - Include referenceId if submitted
-   
 3. POST /api/kyc/personal-information (Step 1)
    Request body:
+
 ```json
-   {
-     "firstName": "John",
-     "lastName": "Doe",
-     "dateOfBirth": "1990-01-15",
-     "gender": "male",
-     "nationality": "Nigerian"
-   }
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "dateOfBirth": "1990-01-15",
+  "gender": "male",
+  "nationality": "Nigerian"
+}
 ```
-   
-   Logic:
-   - Save to KYCPersonalInfo table
-   - Update user kycStatus to 'in_progress'
-   
+
+Logic:
+
+- Save to KYCPersonalInfo table
+- Update user kycStatus to 'in_progress'
+
 4. POST /api/kyc/address-details (Step 2)
    Request body:
+
 ```json
-   {
-     "streetAddress": "123 Main St",
-     "city": "Kampala",
-     "district": "Central",
-     "country": "Uganda",
-     "postalCode": "12345"
-   }
+{
+  "streetAddress": "123 Main St",
+  "city": "Kampala",
+  "district": "Central",
+  "country": "Uganda",
+  "postalCode": "12345"
+}
 ```
 
 5. POST /api/kyc/upload-document (Step 3)
@@ -274,18 +275,20 @@ API ENDPOINTS TO CREATE/UPDATE:
    - Update user kycStatus to 'submitted'
    - Set kycSubmittedAt timestamp
    - Trigger notification to admin dashboard
-   
+
    Response:
+
 ```json
-   {
-     "success": true,
-     "message": "KYC submitted successfully",
-     "referenceId": "KYC-2025-1007-3039",
-     "estimatedReviewTime": "1-2 business days"
-   }
+{
+  "success": true,
+  "message": "KYC submitted successfully",
+  "referenceId": "KYC-2025-1007-3039",
+  "estimatedReviewTime": "1-2 business days"
+}
 ```
 
 VALIDATION & SECURITY:
+
 - Add rate limiting to prevent spam registrations
 - Implement email verification before KYC submission
 - Validate file uploads (max size 5MB, allowed types: jpg, png, pdf)
@@ -293,6 +296,7 @@ VALIDATION & SECURITY:
 - Implement proper error handling with descriptive messages
 
 REFERRAL SYSTEM (if applicable):
+
 - Track referralCode usage
 - Create ReferralTracking table to log successful referrals
 - Implement reward/bonus logic for valid referrals

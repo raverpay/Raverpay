@@ -34,6 +34,7 @@ apps/mobile/
 ## 2. Theme & Styling Rules
 
 ### ALWAYS Use Centralized Colors
+
 - Colors are defined in `src/constants/colors.ts`
 - NEVER hardcode color values in components
 - When updating brand colors, update `colors.ts` first
@@ -48,11 +49,13 @@ import { colors } from '@/src/constants/colors';
 ```
 
 ### Support Dark Mode
+
 - Always consider both light and dark themes
 - Use `useTheme()` hook when needed
 - Test changes in both modes
 
 ### Typography
+
 - Typography is defined in `src/constants/typography.ts`
 - Use the `Text` component from `src/components/ui/Text.tsx`
 - Never create inline text styles
@@ -68,7 +71,9 @@ import { colors } from '@/src/constants/colors';
 ## 3. Component Rules
 
 ### Use Existing Components
+
 Before creating new components, check if these exist:
+
 - `Button` - For all button actions
 - `Input` - For all text inputs
 - `Card` - For card containers
@@ -80,11 +85,13 @@ Before creating new components, check if these exist:
 - `ConfirmationModal` - For confirmations
 
 ### Component Location
+
 - UI components go in `src/components/ui/`
 - Feature components go in `src/components/[feature]/`
 - Screen-specific components stay in the screen file
 
 ### Component Exports
+
 - All UI components should be exported from `src/components/ui/index.ts`
 
 ---
@@ -92,17 +99,20 @@ Before creating new components, check if these exist:
 ## 4. State Management Rules
 
 ### Use Zustand Stores
+
 - Stores are in `src/store/`
 - Each store should be a separate file
 - Use persistence only when needed
 
 ### Existing Stores
+
 - `auth-store.ts` - Authentication state
 - `user-store.ts` - User data
 - `wallet-store.ts` - Wallet data
 - `onboarding-store.ts` - Onboarding state
 
 ### Adding New State
+
 ```typescript
 // src/store/[name]-store.ts
 import { create } from 'zustand';
@@ -123,8 +133,8 @@ export const useMyStore = create<MyState>()(
     {
       name: 'my-store',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 ```
 
@@ -133,16 +143,19 @@ export const useMyStore = create<MyState>()(
 ## 5. API Integration Rules
 
 ### API Client
+
 - Use the API client in `src/lib/api-client.ts`
 - Never create axios instances elsewhere
 - Handle errors consistently
 
 ### Service Functions
+
 - Create service functions in `src/services/`
 - Group by feature (auth.service.ts, wallet.service.ts)
 - Return typed responses
 
 ### React Query
+
 - Use React Query for server state
 - Hooks should be in `src/hooks/`
 - Cache appropriately
@@ -162,11 +175,13 @@ export function useMyData() {
 ## 6. Navigation Rules
 
 ### Use Expo Router
+
 - Screens go in `app/` directory
 - Use typed routes when possible
 - Protect authenticated routes
 
 ### Navigation Patterns
+
 ```typescript
 import { router } from 'expo-router';
 
@@ -189,6 +204,7 @@ router.back();
 ## 7. Form Handling Rules
 
 ### Use React Hook Form + Zod
+
 - Forms use `react-hook-form`
 - Validation uses `zod` schemas
 - Controller pattern for inputs
@@ -224,17 +240,20 @@ const { control, handleSubmit } = useForm({
 ## 8. Code Style Rules
 
 ### TypeScript
+
 - Always use TypeScript
 - Define types in `src/types/`
 - Avoid `any` - use `unknown` if needed
 
 ### Naming Conventions
+
 - Components: PascalCase (`MyComponent.tsx`)
 - Hooks: camelCase with `use` prefix (`useMyHook.ts`)
 - Constants: SCREAMING_SNAKE_CASE
 - Functions: camelCase
 
 ### File Naming
+
 - Components: `ComponentName.tsx`
 - Hooks: `useHookName.ts`
 - Types: `feature.types.ts`
@@ -245,18 +264,21 @@ const { control, handleSubmit } = useForm({
 ## 9. Comment Patterns
 
 ### Removing Code
+
 ```typescript
 // OLD_RAVERPAY: Description of what this was
 // <ComponentThatWasRemoved prop={value} />
 ```
 
 ### TODO Comments
+
 ```typescript
 // TODO: Description of what needs to be done
 // FIXME: Description of bug to fix
 ```
 
 ### Section Comments
+
 ```typescript
 // ===============================
 // SECTION: Authentication
@@ -268,6 +290,7 @@ const { control, handleSubmit } = useForm({
 ## 10. Testing Checklist
 
 Before committing changes:
+
 - [ ] App builds without errors
 - [ ] No TypeScript errors
 - [ ] No ESLint warnings
@@ -309,16 +332,18 @@ import { Ionicons } from '@expo/vector-icons';
 ## 12. IngantaPay Specific
 
 ### Brand Colors
+
 ```typescript
-primary: '#C41E3A'   // Red
-primaryDark: '#991B1B'
-primaryLight: '#DC2626'
-background: '#0A0A0A' // Black (auth screens)
-card: '#2A2A2A'       // Dark gray
-accent: '#F59E0B'     // Yellow (links)
+primary: '#C41E3A'; // Red
+primaryDark: '#991B1B';
+primaryLight: '#DC2626';
+background: '#0A0A0A'; // Black (auth screens)
+card: '#2A2A2A'; // Dark gray
+accent: '#F59E0B'; // Yellow (links)
 ```
 
 ### Brand Name
+
 - Always use "Inganta Pay" (with space)
 - App name in config: "Inganta Pay"
 - Package identifier: "com.ingantapay.app"

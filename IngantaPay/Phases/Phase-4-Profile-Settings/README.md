@@ -16,41 +16,49 @@ This phase focuses on redesigning the profile screen and all related settings sc
 ## Scope
 
 ### Mobile App - Updated Screens
-| Screen | File Path | Changes |
-|--------|-----------|---------|
-| Profile (Main) | `app/(tabs)/profile.tsx` | Complete redesign |
-| Edit Profile | `app/edit-profile.tsx` | Simplified form, dark theme |
+
+| Screen            | File Path                   | Changes                        |
+| ----------------- | --------------------------- | ------------------------------ |
+| Profile (Main)    | `app/(tabs)/profile.tsx`    | Complete redesign              |
+| Edit Profile      | `app/edit-profile.tsx`      | Simplified form, dark theme    |
 | Security Settings | `app/security-settings.tsx` | Add security score, dark theme |
 
 ### Mobile App - New Screens
-| Screen | File Path | Purpose |
-|--------|-----------|---------|
-| App Settings | `app/app-settings.tsx` | Consolidated settings |
-| Mosaic Code Details | `app/mosaic-code-details.tsx` | View QR code, share |
-| About | `app/about.tsx` | App information |
+
+| Screen              | File Path                     | Purpose               |
+| ------------------- | ----------------------------- | --------------------- |
+| App Settings        | `app/app-settings.tsx`        | Consolidated settings |
+| Mosaic Code Details | `app/mosaic-code-details.tsx` | View QR code, share   |
+| About               | `app/about.tsx`               | App information       |
 
 ### Backend API (Optional Updates)
-| Endpoint | Changes |
-|----------|---------|
-| GET /users/security-score | New endpoint (optional) |
-| PUT /users/notification-preferences | Update endpoint |
-| GET /users/mosaic-code | New endpoint (optional) |
+
+| Endpoint                            | Changes                 |
+| ----------------------------------- | ----------------------- |
+| GET /users/security-score           | New endpoint (optional) |
+| PUT /users/notification-preferences | Update endpoint         |
+| GET /users/mosaic-code              | New endpoint (optional) |
 
 ## Timeline Estimate
+
 - **Estimated Duration**: 6-8 hours
 - **Risk Level**: Low
 
 ## Dependencies
+
 - Phase 1 (Renaming) complete
 - Phase 2 (Theme colors) complete
 
 ## AI Analysis Source
+
 All designs are based on:
+
 - `/IngantaPay/Analysis/05 - PROFILE SCREENS/`
 
 ## Key Design Changes
 
 ### Profile Screen
+
 - Centered profile picture (112x112px)
 - Centered name and email
 - KYC Verified badge (if approved)
@@ -59,16 +67,19 @@ All designs are based on:
 - Red Logout button at bottom
 
 ### Edit Profile
+
 - Simplified to: Full Name (readonly), Email (readonly), Phone (readonly), Address (editable)
 - Remove: DOB, Gender, Nationality, City, State
 - Red camera button on avatar
 
 ### Security Settings
+
 - New Security Score card with shield icon and gradient
 - Authentication toggles: Biometric, Palm, 2FA
 - Password & PIN navigation items
 
 ### App Settings (New)
+
 - Notification toggles: Push, Email, SMS
 - Appearance: Dark Mode toggle
 - About navigation

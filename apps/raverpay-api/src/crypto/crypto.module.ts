@@ -13,8 +13,7 @@ import { CryptoBalanceService } from './services/crypto-balance.service';
 import { CryptoSendService } from './services/crypto-send.service';
 import { ConversionService } from './services/conversion.service';
 import { ExchangeRateService } from './services/exchange-rate.service';
-// PriceService - COMMENTED OUT (not using CoinGecko price fetching)
-// import { PriceService } from './services/price.service';
+import { PriceService } from './services/price.service';
 
 // Cron jobs
 import { BalanceSyncCron } from './cron/balance-sync.cron';
@@ -45,8 +44,7 @@ import { WalletModule } from '../wallet/wallet.module';
     CryptoSendService,
     ConversionService,
     ExchangeRateService,
-    // PriceService - COMMENTED OUT (not using CoinGecko price fetching)
-    // PriceService,
+    PriceService,
 
     // Cron jobs
     BalanceSyncCron,
@@ -59,8 +57,7 @@ import { WalletModule } from '../wallet/wallet.module';
     CryptoWalletService,
     CryptoBalanceService,
     ExchangeRateService,
-    // PriceService - COMMENTED OUT (not using CoinGecko price fetching)
-    // PriceService,
+    PriceService,
   ],
 })
 export class CryptoModule {}

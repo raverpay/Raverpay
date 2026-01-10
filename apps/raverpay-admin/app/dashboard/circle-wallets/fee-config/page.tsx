@@ -428,9 +428,7 @@ export default function FeeConfigPage() {
                   ) : (
                     <div className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
                       <div className="text-sm font-mono truncate">
-                        {address || (
-                          <span className="text-gray-400 italic">Not configured</span>
-                        )}
+                        {address || <span className="text-gray-400 italic">Not configured</span>}
                       </div>
                     </div>
                   )}
@@ -456,13 +454,16 @@ export default function FeeConfigPage() {
           <DialogHeader>
             <DialogTitle>Confirm Wallet Address Changes</DialogTitle>
             <DialogDescription>
-              Are you sure you want to update the collection wallet addresses? This will affect where
-              future fees are sent.
+              Are you sure you want to update the collection wallet addresses? This will affect
+              where future fees are sent.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 my-4 max-h-60 overflow-y-auto">
             {Object.entries(collectionWallets).map(([chain, address]) => (
-              <div key={chain} className="flex justify-between text-sm p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <div
+                key={chain}
+                className="flex justify-between text-sm p-2 bg-gray-50 dark:bg-gray-800 rounded"
+              >
                 <span className="font-medium">{chain}</span>
                 <span className="font-mono text-xs truncate max-w-[250px]">
                   {address || <span className="text-gray-400">Not set</span>}

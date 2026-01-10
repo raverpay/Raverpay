@@ -11,33 +11,32 @@ SCREEN DESIGN:
 
 2. TOP SECTION (Centered):
    - Palm icon:
-     * Circular background (100px diameter, dark yellow/gold #B45309)
-     * White/yellow palm hand icon centered
-   
+     - Circular background (100px diameter, dark yellow/gold #B45309)
+     - White/yellow palm hand icon centered
    - Title: "Enroll Your Palm" (white, bold, size: 28px, centered)
    - Subtitle: "Visit any of our partner locations to complete your palm biometric enrollment" (gray-400, size: 16px, centered, line-height: 24px)
 
 3. ENROLLMENT CENTERS LIST:
    - Section title: "Nearby Enrollment Centers" (white, bold, size: 20px)
-   
+
    Location Card 1 - Shoprite Lugogo:
    - Background: Green gradient (#047857 to #059669)
    - Border radius: 16px
    - Padding: 20px
    - Content:
-     * Name: "Shoprite Lugogo" (white, bold, size: 18px)
-     * Badge: "Available" (green-400, pill shape, top-right)
-     * Address: "📍 Lugogo Mall, Kampala" (white, size: 14px)
-     * Distance: "1.2 km away" (white, size: 14px)
-     * Button: "Get Directions" (white background, green text, full width, rounded)
-   
+     - Name: "Shoprite Lugogo" (white, bold, size: 18px)
+     - Badge: "Available" (green-400, pill shape, top-right)
+     - Address: "📍 Lugogo Mall, Kampala" (white, size: 14px)
+     - Distance: "1.2 km away" (white, size: 14px)
+     - Button: "Get Directions" (white background, green text, full width, rounded)
+
    Location Card 2 - Quality Supermarket:
    - Same styling as Card 1
    - Name: "Quality Supermarket"
    - Available badge
    - Address: "📍 Garden City, Kampala"
    - Distance: "2.5 km away"
-   
+
    Location Card 3 - Game Store Ntinda:
    - Same structure
    - Name: "Game Store Ntinda"
@@ -52,28 +51,31 @@ SCREEN DESIGN:
    - Padding: 16px
    - Title: "What to expect:" (white, bold)
    - List items:
-     * "The process takes about 2 minutes"
-     * "Bring a valid ID for verification"
-     * "Your palm data is encrypted and secure"
-     * "Start using palm payments immediately"
+     - "The process takes about 2 minutes"
+     - "Bring a valid ID for verification"
+     - "Your palm data is encrypted and secure"
+     - "Start using palm payments immediately"
    - Use bullet points or numbered list
    - Text: Gray-400, size: 14px
 
 FEATURES:
+
 - Get Directions button: Open in Maps app with coordinates
 - Skip for now: Navigate to main app without palm enrollment
 - Track enrollment status in user profile
 
 API ENDPOINTS (Backend):
+
 - GET /api/palm-enrollment/centers?lat={lat}&lng={lng}
-  * Return nearby enrollment centers
+  - Return nearby enrollment centers
 - POST /api/palm-enrollment/request
-  * Log that user visited enrollment center (scan QR code at location)
+  - Log that user visited enrollment center (scan QR code at location)
 
 NAVIGATION:
+
 - This can be shown:
-  * After KYC approval
-  * From settings/profile later
-  * As an optional onboarding step
+  - After KYC approval
+  - From settings/profile later
+  - As an optional onboarding step
 
 Create with map integration (expo-location) and proper error handling.

@@ -4,8 +4,8 @@ EMAIL TEMPLATE: Password Reset OTP
 
 Subject: Your Inganta Pay Password Reset Code
 
-Body:
----
+## Body:
+
 Hello,
 
 You requested to reset your Inganta Pay password. Use the code below to continue:
@@ -20,13 +20,13 @@ For security reasons, never share this code with anyone.
 
 Best regards,
 Inganta Pay Team
+
 ---
 
 SMS TEMPLATE: Password Reset OTP
 
-Body:
----
-Your Inganta Pay reset code is: {{OTP_CODE}}. Valid for 15 minutes. Never share this code.
----
+## Body:
+
+## Your Inganta Pay reset code is: {{OTP_CODE}}. Valid for 15 minutes. Never share this code.
 
 CHARACTER COUNT: 89 characters (within 160 SMS limit)

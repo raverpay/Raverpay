@@ -151,8 +151,10 @@ export class CircleConfigService {
     const getFeeLabel = (isTestnetEnv: boolean) =>
       isTestnetEnv ? 'Free (Testnet)' : 'Gas Sponsored';
 
-    const getEstimatedCost = (isTestnetEnv: boolean, networkType: 'l2' | 'l1') =>
-      isTestnetEnv ? '$0.00' : networkType === 'l2' ? '~$0.01' : '~$0.10';
+    const getEstimatedCost = (
+      isTestnetEnv: boolean,
+      networkType: 'l2' | 'l1',
+    ) => (isTestnetEnv ? '$0.00' : networkType === 'l2' ? '~$0.01' : '~$0.10');
 
     const chains: ChainMetadata[] = [
       // Base (Recommended)

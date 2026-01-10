@@ -14,7 +14,7 @@ SCREEN DESIGN:
 2. ID TYPE SELECTION:
    - Label: "Select ID Type" (white, bold, size: 18px)
    - 3 selectable card options:
-   
+
    Card 1 - National ID:
    - Icon: ID card icon (circular gray background)
    - Text: "National ID" (white, size: 18px)
@@ -23,12 +23,12 @@ SCREEN DESIGN:
    - Border radius: 16px
    - Height: 80px
    - Add selection indicator (checkmark or border highlight when selected)
-   
+
    Card 2 - Passport:
    - Same styling
    - Icon: Passport/document icon
    - Text: "Passport"
-   
+
    Card 3 - Driver's License:
    - Same styling
    - Icon: License/card icon
@@ -46,8 +46,10 @@ SCREEN DESIGN:
    - OnPress: Store selected ID type → Navigate to document upload screen
 
 STATE:
+
 - Track selectedIdType: 'national_id' | 'passport' | 'drivers_license' | null
 - Update UI based on selection
 
 NAVIGATION:
+
 - After selection + Continue: Navigate to /kyc/upload-document with idType param

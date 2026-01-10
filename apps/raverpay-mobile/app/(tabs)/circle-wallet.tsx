@@ -1,17 +1,17 @@
-import { CircleTransactionItem } from "@/src/components/circle";
-import { Button, Card, Text } from "@/src/components/ui";
+import { CircleTransactionItem } from '@/src/components/circle';
+import { Button, Card, Text } from '@/src/components/ui';
 import {
   useAllWalletBalances,
   useCircleConfig,
   useCircleTransactions,
   useCircleWallets,
-} from "@/src/hooks/useCircleWallet";
-import { useTheme } from "@/src/hooks/useTheme";
-import { useCircleStore } from "@/src/store/circle.store";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useState } from "react";
+} from '@/src/hooks/useCircleWallet';
+import { useTheme } from '@/src/hooks/useTheme';
+import { useCircleStore } from '@/src/store/circle.store';
+import { Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -19,16 +19,12 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
 
 export default function CircleWalletScreen() {
   const { isDark } = useTheme();
   const { data: config, isLoading: isLoadingConfig } = useCircleConfig();
-  const {
-    data: wallets,
-    isPending: isLoadingWallets,
-    refetch,
-  } = useCircleWallets();
+  const { data: wallets, isPending: isLoadingWallets, refetch } = useCircleWallets();
 
   // console.log("wallets", wallets);
   const {
@@ -47,10 +43,9 @@ export default function CircleWalletScreen() {
   const { refetch: refetchBalances } = useAllWalletBalances(walletIds);
 
   // Load recent transactions (limit to 5)
-  const { data: transactionsData, refetch: refetchTransactions } =
-    useCircleTransactions({
-      limit: 5,
-    });
+  const { data: transactionsData, refetch: refetchTransactions } = useCircleTransactions({
+    limit: 5,
+  });
 
   // Cleanup old balances when wallets change
   React.useEffect(() => {
@@ -65,7 +60,7 @@ export default function CircleWalletScreen() {
       refetch();
       refetchBalances();
       refetchTransactions();
-    }, [refetch, refetchBalances, refetchTransactions])
+    }, [refetch, refetchBalances, refetchTransactions]),
   );
 
   const handleRefresh = async () => {
@@ -75,8 +70,7 @@ export default function CircleWalletScreen() {
   };
 
   // Get recent transactions (flatten pages and take first 5)
-  const recentTransactions =
-    transactionsData?.pages.flatMap((page) => page.data).slice(0, 5) || [];
+  const recentTransactions = transactionsData?.pages.flatMap((page) => page.data).slice(0, 5) || [];
 
   // Deduplicate wallets by ID to prevent React duplicate key errors
   const uniqueWallets = React.useMemo(() => {
@@ -98,7 +92,7 @@ export default function CircleWalletScreen() {
   if (!isLoadingWallets && (!wallets || wallets.length === 0)) {
     return (
       <>
-        <StatusBar style={isDark ? "light" : "dark"} />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <View className="flex-1 bg-gray-50 dark:bg-gray-900 justify-center items-center p-6">
           {/* USDC Logo */}
           <View className="w-24 h-24 rounded-full bg-[#2775CA] items-center justify-center mb-6">
@@ -107,21 +101,12 @@ export default function CircleWalletScreen() {
             </Text>
           </View>
 
-          <Text
-            variant="h3"
-            weight="bold"
-            className="mb-2 text-center dark:text-white"
-          >
+          <Text variant="h3" weight="bold" className="mb-2 text-center dark:text-white">
             USDC Wallet
           </Text>
-          <Text
-            variant="body"
-            color="secondary"
-            align="center"
-            className="mb-6 px-4"
-          >
-            Create your Circle USDC wallet to send and receive stablecoins
-            across multiple blockchains.
+          <Text variant="body" color="secondary" align="center" className="mb-6 px-4">
+            Create your Circle USDC wallet to send and receive stablecoins across multiple
+            blockchains.
           </Text>
 
           {/* Features List */}
@@ -156,7 +141,7 @@ export default function CircleWalletScreen() {
             variant="primary"
             size="lg"
             fullWidth
-            onPress={() => router.push("/circle/setup")}
+            onPress={() => router.push('/circle/setup')}
             className="bg-[#2775CA]"
           >
             Create USDC Wallets
@@ -169,7 +154,7 @@ export default function CircleWalletScreen() {
   if (isLoadingWallets || isLoadingConfig) {
     return (
       <>
-        <StatusBar style={isDark ? "light" : "dark"} />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <View className="flex-1 bg-gray-50 dark:bg-gray-900 justify-center items-center">
           <ActivityIndicator size="large" color="#2775CA" />
           <Text variant="body" color="secondary" className="mt-4">
@@ -185,9 +170,7 @@ export default function CircleWalletScreen() {
       <StatusBar style="light" />
       <ScrollView
         className="flex-1 bg-gray-50 dark:bg-gray-900"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* Header with Balance */}
         <View className="bg-[#5B55F6] pt-12 p-6 pb-12 border-b-0 rounded-b-3xl">
@@ -207,14 +190,10 @@ export default function CircleWalletScreen() {
           <View className="flex-row justify-between items-center">
             <View className=" h-full">
               <Text variant="h4" className="opacity-80 mb-1">
-                {/* {selectedWallet ? "Balance" : "Total Balance"} */}Total
-                Assets
+                {/* {selectedWallet ? "Balance" : "Total Balance"} */}Total Assets
               </Text>
               <Text variant="h2" weight="bold">
-                $
-                {selectedWallet
-                  ? getUsdcBalance(selectedWallet.id)
-                  : totalBalance}
+                ${selectedWallet ? getUsdcBalance(selectedWallet.id) : totalBalance}
               </Text>
               {/* <Text variant="caption" className="opacity-70 mt-1">
             USDC
@@ -233,13 +212,8 @@ export default function CircleWalletScreen() {
                 >
                   <View className="flex-1">
                     <View className="flex-row items-center gap-2">
-                      <Text
-                        variant="bodyMedium"
-                        weight="semibold"
-                        className="text-white"
-                      >
-                        {selectedWallet?.blockchain ||
-                          uniqueWallets[0]?.blockchain}
+                      <Text variant="bodyMedium" weight="semibold" className="text-white">
+                        {selectedWallet?.blockchain || uniqueWallets[0]?.blockchain}
                       </Text>
                       {/* {selectedWallet?.custodyType && (
                       <View
@@ -275,7 +249,7 @@ export default function CircleWalletScreen() {
             <View className="flex-row justify-around">
               <TouchableOpacity
                 className="items-center"
-                onPress={() => router.push("/circle/receive")}
+                onPress={() => router.push('/circle/receive')}
               >
                 <View className="w-12 h-12 bg-green-100 rounded-full items-center justify-center mb-2">
                   <Ionicons name="arrow-down" size={24} color="#10B981" />
@@ -287,7 +261,7 @@ export default function CircleWalletScreen() {
 
               <TouchableOpacity
                 className="items-center"
-                onPress={() => router.push("/circle/send")}
+                onPress={() => router.push('/circle/send')}
               >
                 <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mb-2">
                   <Ionicons name="arrow-up" size={24} color="#3B82F6" />
@@ -299,14 +273,10 @@ export default function CircleWalletScreen() {
 
               <TouchableOpacity
                 className="items-center"
-                onPress={() => router.push("/circle/bridge")}
+                onPress={() => router.push('/circle/bridge')}
               >
                 <View className="w-12 h-12 bg-purple-100 rounded-full items-center justify-center mb-2">
-                  <Ionicons
-                    name="git-compare-outline"
-                    size={24}
-                    color="#9333EA"
-                  />
+                  <Ionicons name="git-compare-outline" size={24} color="#9333EA" />
                 </View>
                 <Text variant="caption" weight="semibold">
                   Bridge
@@ -315,7 +285,7 @@ export default function CircleWalletScreen() {
 
               <TouchableOpacity
                 className="items-center"
-                onPress={() => router.push("/circle/setup")}
+                onPress={() => router.push('/circle/setup')}
               >
                 <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mb-2">
                   <Ionicons name="add" size={24} color="#3B82F6" />
@@ -332,7 +302,7 @@ export default function CircleWalletScreen() {
         <View className="px-6 mb-6">
           <TouchableOpacity
             className="flex-row justify-between items-center mb-4"
-            onPress={() => router.push("/circle/transactions")}
+            onPress={() => router.push('/circle/transactions')}
           >
             <Text variant="h5" weight="bold" className="dark:text-white">
               Recent Activity
@@ -341,11 +311,7 @@ export default function CircleWalletScreen() {
               <Text variant="bodyMedium" className="text-[#2775CA] mr-1">
                 View All
               </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color={isDark ? "white" : "#2775CA"}
-              />
+              <Ionicons name="chevron-forward" size={16} color={isDark ? 'white' : '#2775CA'} />
             </View>
           </TouchableOpacity>
 
@@ -355,11 +321,7 @@ export default function CircleWalletScreen() {
                 <View key={transaction.id} className="mt-2">
                   <CircleTransactionItem
                     transaction={transaction}
-                    onPress={() =>
-                      router.push(
-                        `/circle/transaction-details?id=${transaction.id}`
-                      )
-                    }
+                    onPress={() => router.push(`/circle/transaction-details?id=${transaction.id}`)}
                   />
                   {index < recentTransactions.length - 1 && (
                     <View className="h-px bg-gray-200 dark:bg-gray-700" />
@@ -371,7 +333,7 @@ export default function CircleWalletScreen() {
             <Card
               variant="outlined"
               pressable
-              onPress={() => router.push("/circle/transactions")}
+              onPress={() => router.push('/circle/transactions')}
               className="p-6"
             >
               <View className="items-center">
@@ -391,19 +353,15 @@ export default function CircleWalletScreen() {
               <View className="flex-row items-center">
                 <Ionicons
                   name={
-                    config.environment === "testnet"
-                      ? "flask-outline"
-                      : "shield-checkmark-outline"
+                    config.environment === 'testnet' ? 'flask-outline' : 'shield-checkmark-outline'
                   }
                   size={20}
-                  color={
-                    config.environment === "testnet" ? "#F59E0B" : "#10B981"
-                  }
+                  color={config.environment === 'testnet' ? '#F59E0B' : '#10B981'}
                 />
                 <Text variant="caption" color="secondary" className="ml-2">
-                  {config.environment === "testnet"
-                    ? "Connected to Testnet"
-                    : "Connected to Mainnet"}
+                  {config.environment === 'testnet'
+                    ? 'Connected to Testnet'
+                    : 'Connected to Mainnet'}
                 </Text>
               </View>
             </Card>
@@ -423,10 +381,7 @@ export default function CircleWalletScreen() {
           onPress={() => setShowWalletSelector(false)}
           className="flex-1 justify-end bg-black/80"
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             <View className="bg-white dark:bg-gray-800 rounded-t-3xl min-h-[50%] max-h-[100%]">
               {/* Header */}
               <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -434,11 +389,7 @@ export default function CircleWalletScreen() {
                   Select Wallet
                 </Text>
                 <TouchableOpacity onPress={() => setShowWalletSelector(false)}>
-                  <Ionicons
-                    name="close"
-                    size={24}
-                    color={isDark ? "#fff" : "#000"}
-                  />
+                  <Ionicons name="close" size={24} color={isDark ? '#fff' : '#000'} />
                 </TouchableOpacity>
               </View>
 
@@ -456,7 +407,7 @@ export default function CircleWalletScreen() {
                         setShowWalletSelector(false);
                       }}
                       className={`p-4 border-b border-gray-100 dark:border-gray-700 ${
-                        isSelected ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                        isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                       }`}
                     >
                       <View className="flex-row items-center justify-between">
@@ -473,54 +424,42 @@ export default function CircleWalletScreen() {
                             {wallet.custodyType && (
                               <View
                                 className={`px-2 py-0.5 rounded ${
-                                  wallet.custodyType === "USER"
-                                    ? "bg-blue-100 dark:bg-blue-900/50"
-                                    : "bg-green-100 dark:bg-green-900/50"
+                                  wallet.custodyType === 'USER'
+                                    ? 'bg-blue-100 dark:bg-blue-900/50'
+                                    : 'bg-green-100 dark:bg-green-900/50'
                                 }`}
                               >
                                 <Text
                                   variant="caption"
                                   className={`text-xs ${
-                                    wallet.custodyType === "USER"
-                                      ? "text-blue-700 dark:text-blue-300"
-                                      : "text-green-700 dark:text-green-300"
+                                    wallet.custodyType === 'USER'
+                                      ? 'text-blue-700 dark:text-blue-300'
+                                      : 'text-green-700 dark:text-green-300'
                                   }`}
                                 >
-                                  {wallet.custodyType === "USER"
-                                    ? "🔑 Non-Custodial"
-                                    : "🛡️ Custodial"}
+                                  {wallet.custodyType === 'USER'
+                                    ? '🔑 Non-Custodial'
+                                    : '🛡️ Custodial'}
                                 </Text>
                               </View>
                             )}
                           </View>
 
                           {/* Address */}
-                          <Text
-                            variant="caption"
-                            color="secondary"
-                            className="mb-1"
-                          >
+                          <Text variant="caption" color="secondary" className="mb-1">
                             {wallet.address.slice(0, 30)}...
                             {wallet.address.slice(-8)}
                           </Text>
 
                           {/* Balance */}
-                          <Text
-                            variant="body"
-                            weight="semibold"
-                            className="text-[#2775CA]"
-                          >
+                          <Text variant="body" weight="semibold" className="text-[#2775CA]">
                             ${balance} USDC
                           </Text>
                         </View>
 
                         {/* Selected indicator */}
                         {isSelected && (
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={24}
-                            color="#2775CA"
-                          />
+                          <Ionicons name="checkmark-circle" size={24} color="#2775CA" />
                         )}
                       </View>
                     </TouchableOpacity>

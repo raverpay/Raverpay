@@ -14,7 +14,8 @@ export class PriceService {
   private readonly httpClient: AxiosInstance;
 
   // In-memory price cache for faster access
-  private priceCache: Map<string, { price: number; updatedAt: Date }> = new Map();
+  private priceCache: Map<string, { price: number; updatedAt: Date }> =
+    new Map();
   private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
   // CoinGecko API IDs
@@ -73,7 +74,10 @@ export class PriceService {
       const ethPrice = prices[this.TOKEN_IDS.ETH];
       if (ethPrice?.usd) {
         await this.savePrice('ETH', ethPrice.usd);
-        this.priceCache.set('ETH', { price: ethPrice.usd, updatedAt: new Date() });
+        this.priceCache.set('ETH', {
+          price: ethPrice.usd,
+          updatedAt: new Date(),
+        });
       } else {
         this.logger.warn(`No price data found for ETH`);
       }
@@ -82,7 +86,10 @@ export class PriceService {
       const usdtPrice = prices[this.TOKEN_IDS.USDT];
       if (usdtPrice?.usd) {
         await this.savePrice('USDT', usdtPrice.usd);
-        this.priceCache.set('USDT', { price: usdtPrice.usd, updatedAt: new Date() });
+        this.priceCache.set('USDT', {
+          price: usdtPrice.usd,
+          updatedAt: new Date(),
+        });
       } else {
         this.logger.warn(`No price data found for USDT`);
       }
@@ -91,7 +98,10 @@ export class PriceService {
       const usdcPrice = prices[this.TOKEN_IDS.USDC];
       if (usdcPrice?.usd) {
         await this.savePrice('USDC', usdcPrice.usd);
-        this.priceCache.set('USDC', { price: usdcPrice.usd, updatedAt: new Date() });
+        this.priceCache.set('USDC', {
+          price: usdcPrice.usd,
+          updatedAt: new Date(),
+        });
       } else {
         this.logger.warn(`No price data found for USDC`);
       }
@@ -100,14 +110,20 @@ export class PriceService {
       const avaxPrice = prices[this.TOKEN_IDS.AVAX];
       if (avaxPrice?.usd) {
         await this.savePrice('AVAX', avaxPrice.usd);
-        this.priceCache.set('AVAX', { price: avaxPrice.usd, updatedAt: new Date() });
+        this.priceCache.set('AVAX', {
+          price: avaxPrice.usd,
+          updatedAt: new Date(),
+        });
       }
 
       // Update SOL
       const solPrice = prices[this.TOKEN_IDS.SOL];
       if (solPrice?.usd) {
         await this.savePrice('SOL', solPrice.usd);
-        this.priceCache.set('SOL', { price: solPrice.usd, updatedAt: new Date() });
+        this.priceCache.set('SOL', {
+          price: solPrice.usd,
+          updatedAt: new Date(),
+        });
       }
 
       // Update MATIC/POL - try alternative IDs
@@ -124,8 +140,14 @@ export class PriceService {
       if (maticPrice !== null) {
         await this.savePrice('MATIC', maticPrice);
         await this.savePrice('POL', maticPrice);
-        this.priceCache.set('MATIC', { price: maticPrice, updatedAt: new Date() });
-        this.priceCache.set('POL', { price: maticPrice, updatedAt: new Date() });
+        this.priceCache.set('MATIC', {
+          price: maticPrice,
+          updatedAt: new Date(),
+        });
+        this.priceCache.set('POL', {
+          price: maticPrice,
+          updatedAt: new Date(),
+        });
       } else {
         this.logger.warn(
           `No price data found for MATIC. Tried IDs: ${this.MATIC_ALTERNATIVE_IDS.join(', ')}`,
@@ -165,7 +187,10 @@ export class PriceService {
 
     // Update cache
     const priceNum = Number(price.usdPrice);
-    this.priceCache.set(symbol, { price: priceNum, updatedAt: new Date(price.fetchedAt) });
+    this.priceCache.set(symbol, {
+      price: priceNum,
+      updatedAt: new Date(price.fetchedAt),
+    });
 
     return priceNum;
   }
@@ -187,7 +212,7 @@ export class PriceService {
         if (price !== null) {
           prices[symbol] = price;
         }
-        
+
         // Track most recent update
         const cached = this.priceCache.get(symbol);
         if (cached && cached.updatedAt > latestUpdate) {
@@ -202,7 +227,10 @@ export class PriceService {
 
     return {
       prices,
-      updatedAt: latestUpdate.getTime() > 0 ? latestUpdate.toISOString() : new Date().toISOString(),
+      updatedAt:
+        latestUpdate.getTime() > 0
+          ? latestUpdate.toISOString()
+          : new Date().toISOString(),
     };
   }
 
@@ -282,4 +310,3 @@ export class PriceService {
     }
   }
 }
-

@@ -1,4 +1,13 @@
-import { Controller, Get, Put, Post, Param, Query, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Post,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -270,10 +279,14 @@ export class AdminCircleController {
   }
 
   @ApiOperation({ summary: 'Get blockchain configuration by ID' })
-  @ApiParam({ name: 'blockchain', description: 'Blockchain identifier (e.g., BASE-SEPOLIA)' })
+  @ApiParam({
+    name: 'blockchain',
+    description: 'Blockchain identifier (e.g., BASE-SEPOLIA)',
+  })
   @Get('blockchains/:blockchain')
   async getBlockchainConfig(@Param('blockchain') blockchain: string) {
-    const config = await this.adminCircleService.getBlockchainConfig(blockchain);
+    const config =
+      await this.adminCircleService.getBlockchainConfig(blockchain);
     return {
       success: true,
       data: config,
@@ -287,7 +300,10 @@ export class AdminCircleController {
     @Param('blockchain') blockchain: string,
     @Body() updates: UpdateBlockchainConfigDto,
   ) {
-    const config = await this.adminCircleService.updateBlockchainConfig(blockchain, updates);
+    const config = await this.adminCircleService.updateBlockchainConfig(
+      blockchain,
+      updates,
+    );
     return {
       success: true,
       data: config,

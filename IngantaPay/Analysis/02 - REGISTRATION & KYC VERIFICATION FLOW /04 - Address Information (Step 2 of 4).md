@@ -13,29 +13,29 @@ SCREEN DESIGN:
    - Progress bar: 50% filled (2/4 steps)
 
 2. FORM FIELDS:
-   
+
    Street Address:
    - Label: "Street Address"
    - Icon: Home icon (left)
    - Placeholder: "Enter your street address"
    - Multiline: false
-   
+
    City / Town:
    - Label: "City / Town"
    - Icon: Map pin icon (left)
    - Placeholder: "Enter your city"
-   
+
    District / State:
    - Label: "District / State"
    - Icon: Map pin icon (left)
    - Placeholder: "Enter your district"
-   
+
    Country:
    - Label: "Country"
    - Icon: Map pin icon (left)
    - Placeholder: "Enter your country"
    - Consider using country dropdown/picker
-   
+
    Postal Code:
    - Label: "Postal Code"
    - Placeholder: "Enter postal code (if applicable)"

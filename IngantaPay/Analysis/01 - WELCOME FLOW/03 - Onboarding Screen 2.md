@@ -16,11 +16,11 @@ SCREEN 2 DESIGN SPECIFICATIONS:
 2. MAIN ILLUSTRATION:
    - Center card with same styling as Screen 1 (rounded corners, deep red gradient background)
    - Inside card: Display a secure wallet/wristband illustration:
-     * Show a wearable device/smart wristband (pinkish/rose gradient with white sides)
-     * Device should have a lock icon in the center
-     * Add horizontal lines below lock (representing secure data)
-     * Small red indicator dot at top-right of device
-     * Subtle glow/shadow around the device for premium feel
+     - Show a wearable device/smart wristband (pinkish/rose gradient with white sides)
+     - Device should have a lock icon in the center
+     - Add horizontal lines below lock (representing secure data)
+     - Small red indicator dot at top-right of device
+     - Subtle glow/shadow around the device for premium feel
    - Card dimensions and styling: Same as Screen 1
 
 3. TEXT CONTENT:
@@ -45,6 +45,7 @@ SCREEN 2 DESIGN SPECIFICATIONS:
    - Swipe right: Go to Screen 1
 
 TECHNICAL NOTES:
+
 - Reuse the same layout structure from Screen 1
 - Only swap the illustration content and text
 - Keep all animations and transitions consistent

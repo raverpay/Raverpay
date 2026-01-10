@@ -30,10 +30,8 @@ export default function CircleSetupScreen() {
   const availableChains = useMemo(() => {
     const allChains = chainsData?.chains || [];
     const existingBlockchains = existingWallets?.map((w) => w.blockchain) || [];
-    
-    return allChains.filter(
-      (chain) => !existingBlockchains.includes(chain.blockchain)
-    );
+
+    return allChains.filter((chain) => !existingBlockchains.includes(chain.blockchain));
   }, [chainsData, existingWallets]);
 
   // Check if user has wallets on all supported networks

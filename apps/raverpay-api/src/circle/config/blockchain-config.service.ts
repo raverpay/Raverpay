@@ -198,17 +198,19 @@ export class BlockchainConfigService implements OnModuleInit {
   async seedDefaultConfigs(): Promise<void> {
     try {
       const existingCount = await this.prisma.blockchainConfig.count();
-      
+
       if (existingCount === 0) {
         this.logger.log('Seeding default blockchain configurations...');
-        
+
         for (const config of DEFAULT_BLOCKCHAIN_CONFIGS) {
           await this.prisma.blockchainConfig.create({
             data: config,
           });
         }
-        
-        this.logger.log(`Seeded ${DEFAULT_BLOCKCHAIN_CONFIGS.length} blockchain configurations`);
+
+        this.logger.log(
+          `Seeded ${DEFAULT_BLOCKCHAIN_CONFIGS.length} blockchain configurations`,
+        );
       }
     } catch (error) {
       this.logger.error('Failed to seed blockchain configurations:', error);
@@ -230,8 +232,10 @@ export class BlockchainConfigService implements OnModuleInit {
         this.cache.set(config.blockchain, config);
       }
       this.cacheLastUpdated = new Date();
-      
-      this.logger.debug(`Refreshed blockchain config cache with ${configs.length} entries`);
+
+      this.logger.debug(
+        `Refreshed blockchain config cache with ${configs.length} entries`,
+      );
     } catch (error) {
       this.logger.error('Failed to refresh blockchain config cache:', error);
     }
@@ -252,7 +256,9 @@ export class BlockchainConfigService implements OnModuleInit {
     if (this.isCacheStale()) {
       await this.refreshCache();
     }
-    return Array.from(this.cache.values()).sort((a, b) => a.displayOrder - b.displayOrder);
+    return Array.from(this.cache.values()).sort(
+      (a, b) => a.displayOrder - b.displayOrder,
+    );
   }
 
   /**
@@ -295,9 +301,9 @@ export class BlockchainConfigService implements OnModuleInit {
 
     // Update cache
     this.cache.set(blockchain, updated);
-    
+
     this.logger.log(`Updated blockchain config: ${blockchain}`);
-    
+
     return updated;
   }
 

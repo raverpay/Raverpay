@@ -32,7 +32,7 @@ export const usePrices = () => {
  */
 export const getTokenPrice = (
   prices: Record<string, number> | undefined,
-  symbol: string
+  symbol: string,
 ): number | null => {
   if (!prices) return null;
 
@@ -67,7 +67,7 @@ export const getTokenPrice = (
 export const calculateUsdValue = (
   prices: Record<string, number> | undefined,
   symbol: string,
-  amount: string | number
+  amount: string | number,
 ): number => {
   const price = getTokenPrice(prices, symbol);
   if (price === null) return 0;

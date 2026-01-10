@@ -10,11 +10,10 @@ SCREEN DESIGN:
 
 2. TOP SECTION (Centered):
    - Success icon:
-     * Large circular container (120px diameter)
-     * Dark green background (#065F46 or #047857)
-     * White checkmark icon with circular arrow (refresh/complete symbol)
-     * Add subtle shadow/glow effect
-   
+     - Large circular container (120px diameter)
+     - Dark green background (#065F46 or #047857)
+     - White checkmark icon with circular arrow (refresh/complete symbol)
+     - Add subtle shadow/glow effect
    - Title: "KYC Submitted Successfully" (white, bold, size: 28px, centered)
    - Subtitle: "Your documents are being reviewed. We'll notify you once verification is complete." (gray-400, size: 16px, centered, line-height: 24px)
 
@@ -24,8 +23,8 @@ SCREEN DESIGN:
    - Padding: 20px
    - Icon: Clock icon (left side, gray)
    - Content:
-     * Title: "Review in Progress" (white, bold, size: 18px)
-     * Description: "Verification typically takes 1-2 business days. You can use limited features while we review your documents." (gray-400, size: 14px, line-height: 22px)
+     - Title: "Review in Progress" (white, bold, size: 18px)
+     - Description: "Verification typically takes 1-2 business days. You can use limited features while we review your documents." (gray-400, size: 14px, line-height: 22px)
 
 4. REFERENCE ID:
    - Label: "Reference ID:" (gray-500, size: 14px)
@@ -40,6 +39,7 @@ SCREEN DESIGN:
    - OnPress: Navigate to main app (dashboard/tabs) with limited access
 
 STATE MANAGEMENT:
+
 - Update user kycStatus to 'submitted' in local state
 - Store referenceId for future reference
 - Update UI throughout app to show "KYC Pending" badges/restrictions

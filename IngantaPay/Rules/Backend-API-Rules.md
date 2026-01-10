@@ -38,6 +38,7 @@ apps/api/
 ## 2. NestJS Module Pattern
 
 ### Standard Module Structure
+
 Each feature module should follow this structure:
 
 ```
@@ -56,6 +57,7 @@ src/modules/[feature]/
 ```
 
 ### Module Registration
+
 ```typescript
 // [feature].module.ts
 @Module({
@@ -72,13 +74,16 @@ export class FeatureModule {}
 ## 3. Database Rules (Prisma)
 
 ### Schema Location
+
 - Main schema: `prisma/schema.prisma`
 - DO NOT split into multiple files
 
 ### Migration Pattern (Prisma Workaround)
+
 For complex changes, use manual SQL migrations:
 
 1. Create SQL file in `prisma/` folder:
+
    ```sql
    -- prisma/add_kyc_tables.sql
    ALTER TABLE users ADD COLUMN kyc_status VARCHAR(50);
@@ -88,19 +93,24 @@ For complex changes, use manual SQL migrations:
 2. Apply using `prisma/apply-migration.js` or manually
 
 ### Naming Conventions
+
 - Tables: snake_case plural (`users`, `transactions`)
 - Columns: snake_case (`created_at`, `user_id`)
 - Foreign keys: `[related_table]_id`
 - Indexes: `idx_[table]_[column]`
 
 ### Required Fields
+
 Every table should have:
+
 - `id` - UUID primary key
 - `createdAt` - Creation timestamp
 - `updatedAt` - Update timestamp
 
 ### Index Strategy
+
 Always add indexes for:
+
 - Foreign keys
 - Frequently queried columns
 - Composite indexes for common queries
@@ -110,6 +120,7 @@ Always add indexes for:
 ## 4. API Design Rules
 
 ### RESTful Conventions
+
 ```
 GET    /api/[resource]          # List
 GET    /api/[resource]/:id      # Get one
@@ -120,6 +131,7 @@ DELETE /api/[resource]/:id      # Delete
 ```
 
 ### Response Format
+
 ```typescript
 // Success response
 {
@@ -150,6 +162,7 @@ DELETE /api/[resource]/:id      # Delete
 ```
 
 ### Versioning
+
 - API version in path: `/api/v1/[resource]`
 - Current version: v1 (or unversioned)
 
@@ -158,6 +171,7 @@ DELETE /api/[resource]/:id      # Delete
 ## 5. DTO & Validation Rules
 
 ### Use class-validator
+
 ```typescript
 // dto/create-feature.dto.ts
 import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
@@ -177,6 +191,7 @@ export class CreateFeatureDto {
 ```
 
 ### Swagger Documentation
+
 ```typescript
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -193,7 +208,9 @@ export class CreateFeatureDto {
 ```
 
 ### Transform Pipes
+
 Use class-transformer for data transformation:
+
 ```typescript
 import { Transform } from 'class-transformer';
 
@@ -207,16 +224,18 @@ email: string;
 ## 6. Authentication & Authorization
 
 ### Auth Guards
+
 - `JwtGuard` - Requires valid JWT
 - `AdminGuard` - Requires admin role
 - `OptionalAuthGuard` - Auth optional
 
 ### Using Guards
+
 ```typescript
 @UseGuards(JwtGuard)
 @Controller('protected')
 export class ProtectedController {
-  
+
   @UseGuards(AdminGuard)
   @Get('admin-only')
   adminRoute() { ... }
@@ -224,6 +243,7 @@ export class ProtectedController {
 ```
 
 ### Getting User in Controllers
+
 ```typescript
 @Get('me')
 getMe(@CurrentUser() user: User) {
@@ -236,11 +256,13 @@ getMe(@CurrentUser() user: User) {
 ## 7. Service Layer Rules
 
 ### Business Logic Location
+
 - ALL business logic goes in services
 - Controllers ONLY handle HTTP concerns
 - Services are reusable across modules
 
 ### Error Handling
+
 ```typescript
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
@@ -248,27 +270,28 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 export class FeatureService {
   async getById(id: string) {
     const item = await this.prisma.feature.findUnique({ where: { id } });
-    
+
     if (!item) {
       throw new NotFoundException('Feature not found');
     }
-    
+
     return item;
   }
-  
+
   async create(dto: CreateFeatureDto) {
     const exists = await this.prisma.feature.findFirst({ where: { ... } });
-    
+
     if (exists) {
       throw new BadRequestException('Feature already exists');
     }
-    
+
     return this.prisma.feature.create({ data: dto });
   }
 }
 ```
 
 ### Transaction Handling
+
 ```typescript
 async transferFunds(fromId: string, toId: string, amount: number) {
   return this.prisma.$transaction(async (tx) => {
@@ -277,13 +300,13 @@ async transferFunds(fromId: string, toId: string, amount: number) {
       where: { userId: fromId },
       data: { balance: { decrement: amount } },
     });
-    
+
     // Credit receiver
     await tx.wallet.update({
       where: { userId: toId },
       data: { balance: { increment: amount } },
     });
-    
+
     // Create transaction records
     // ...
   });
@@ -295,11 +318,13 @@ async transferFunds(fromId: string, toId: string, amount: number) {
 ## 8. Email & Notification Rules
 
 ### Email Templates
+
 - Location: `src/modules/email/templates/`
 - Format: Handlebars (`.hbs`)
 - Always include: subject, HTML body, text fallback
 
 ### Sending Emails
+
 ```typescript
 await this.emailService.send({
   to: user.email,
@@ -310,6 +335,7 @@ await this.emailService.send({
 ```
 
 ### Brand Name in Emails
+
 - Always use "Inganta Pay" (with space)
 - Update all email templates when rebranding
 
@@ -318,10 +344,12 @@ await this.emailService.send({
 ## 9. Background Jobs (BullMQ)
 
 ### Queue Naming
+
 - Queues: `[feature]-queue` (e.g., `email-queue`)
 - Jobs: descriptive names (e.g., `send-welcome-email`)
 
 ### Job Processing
+
 ```typescript
 @Processor('email-queue')
 export class EmailProcessor {
@@ -337,13 +365,14 @@ export class EmailProcessor {
 ## 10. Logging & Monitoring
 
 ### Logger Usage
+
 ```typescript
 import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class FeatureService {
   private readonly logger = new Logger(FeatureService.name);
-  
+
   async doSomething() {
     this.logger.log('Starting operation');
     this.logger.debug('Debug info', { data: ... });
@@ -353,7 +382,9 @@ export class FeatureService {
 ```
 
 ### Sensitive Data
+
 NEVER log:
+
 - Passwords
 - API keys
 - Full credit card numbers
@@ -364,18 +395,22 @@ NEVER log:
 ## 11. Code Style Rules
 
 ### File Naming
+
 - Controllers: `[feature].controller.ts`
 - Services: `[feature].service.ts`
 - Modules: `[feature].module.ts`
 - DTOs: `[action]-[feature].dto.ts`
 
 ### Import Order
+
 1. NestJS imports
 2. Third-party imports
 3. Local imports (sorted alphabetically)
 
 ### Dependency Injection
+
 Always use constructor injection:
+
 ```typescript
 @Injectable()
 export class FeatureService {
@@ -391,23 +426,25 @@ export class FeatureService {
 ## 12. Testing Rules
 
 ### Test File Location
+
 - Unit tests: Same folder as source (`[file].spec.ts`)
 - E2E tests: `test/` folder
 
 ### Test Structure
+
 ```typescript
 describe('FeatureService', () => {
   let service: FeatureService;
-  
+
   beforeEach(async () => {
     // Setup
   });
-  
+
   describe('methodName', () => {
     it('should do expected behavior', async () => {
       // Test
     });
-    
+
     it('should throw error when invalid', async () => {
       // Test error case
     });
@@ -420,6 +457,7 @@ describe('FeatureService', () => {
 ## 13. Environment Variables
 
 ### Required Variables
+
 ```env
 # Database
 DATABASE_URL=
@@ -441,7 +479,9 @@ CIRCLE_API_KEY=
 ```
 
 ### Accessing Config
+
 Use ConfigService, never `process.env`:
+
 ```typescript
 constructor(private readonly config: ConfigService) {
   this.apiKey = this.config.get('PAYSTACK_SECRET_KEY');
@@ -453,7 +493,9 @@ constructor(private readonly config: ConfigService) {
 ## 14. API Documentation
 
 ### Swagger Tags
+
 Every controller should have tags:
+
 ```typescript
 @ApiTags('Users')
 @Controller('users')
@@ -461,6 +503,7 @@ export class UsersController {}
 ```
 
 ### Operation Documentation
+
 ```typescript
 @ApiOperation({ summary: 'Create a new user' })
 @ApiResponse({ status: 201, description: 'User created successfully' })
@@ -474,18 +517,23 @@ create(@Body() dto: CreateUserDto) {}
 ## 15. IngantaPay Specific
 
 ### Brand Name
+
 - In code comments: "Inganta Pay" or "IngantaPay"
 - In user-facing strings: "Inganta Pay"
 - In technical identifiers: "ingantapay" (lowercase)
 
 ### Email Subject Lines
+
 All emails should include "Inganta Pay":
+
 - "Welcome to Inganta Pay"
 - "Your Inganta Pay Transaction"
 - "Inganta Pay Password Reset"
 
 ### Webhook Handling
+
 For payment webhooks (Paystack, Circle, etc.):
+
 - Verify signatures
 - Log all incoming webhooks
 - Use idempotency checks

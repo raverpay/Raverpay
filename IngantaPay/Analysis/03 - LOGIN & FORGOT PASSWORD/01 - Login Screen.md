@@ -27,20 +27,20 @@ DESIGN CHANGES:
    - Spacing: 64px from top of safe area
 
 4. FORM FIELDS:
-   
+
    Email or Phone Field:
    - Label: "Email or Phone" (white, size: 14px, positioned above input)
    - Input styling:
-     * Background: Dark gray (#2A2A2A or #333333)
-     * Border: None or subtle 1px gray-700
-     * Border radius: 12px
-     * Height: 56px
-     * Text color: White
-     * Placeholder: "Enter your email or phone" (gray-500)
+     - Background: Dark gray (#2A2A2A or #333333)
+     - Border: None or subtle 1px gray-700
+     - Border radius: 12px
+     - Height: 56px
+     - Text color: White
+     - Placeholder: "Enter your email or phone" (gray-500)
    - Left icon: Envelope/mail icon (gray-400)
    - Update to accept either email OR phone number
    - Validation: Accept both email format and phone format
-   
+
    Password Field:
    - Label: "Password" (white, size: 14px)
    - Same input styling as above
@@ -82,19 +82,23 @@ DESIGN CHANGES:
 FORM VALIDATION UPDATES:
 
 Update the schema to accept email OR phone:
+
 ```typescript
 const loginSchema = z.object({
-  identifier: z.string().min(1, 'Email or phone is required').refine(
-    (value) => {
-      // Check if it's a valid email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      // Check if it's a valid phone (10-15 digits, optionally starting with +)
-      const phoneRegex = /^\+?[1-9]\d{9,14}$/;
-      
-      return emailRegex.test(value) || phoneRegex.test(value);
-    },
-    { message: 'Please enter a valid email or phone number' }
-  ),
+  identifier: z
+    .string()
+    .min(1, 'Email or phone is required')
+    .refine(
+      (value) => {
+        // Check if it's a valid email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Check if it's a valid phone (10-15 digits, optionally starting with +)
+        const phoneRegex = /^\+?[1-9]\d{9,14}$/;
+
+        return emailRegex.test(value) || phoneRegex.test(value);
+      },
+      { message: 'Please enter a valid email or phone number' },
+    ),
   password: passwordSchema,
 });
 
@@ -102,6 +106,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 ```
 
 Update the form field:
+
 ```typescript
 <Controller
   control={control}
@@ -124,18 +129,21 @@ Update the form field:
 ```
 
 BIOMETRIC AUTHENTICATION UPDATES:
+
 - Remove the biometric login button from UI completely
 - Keep the biometric logic in the background for future use
 - Remove all UI elements related to Face ID/Fingerprint
 - Keep isBiometricEnabled and related hooks but don't show in UI
 
 NAVIGATION BEHAVIOR:
+
 - Remove back button functionality (this is a main entry point)
 - Login button: Submit form → API call → Navigate based on response
 - "Sign up" link: Navigate to register screen
 - "Forgot Password?" link: Navigate to forgot-password screen
 
 TECHNICAL REQUIREMENTS:
+
 - Update API call to use "identifier" instead of "email"
 - Backend should handle both email and phone login
 - Maintain device fingerprint logic
@@ -144,6 +152,7 @@ TECHNICAL REQUIREMENTS:
 - Clean up unused biometric UI code
 
 REMOVE THESE SECTIONS COMPLETELY:
+
 - User greeting logic and state
 - Biometric button component
 - "OR" divider

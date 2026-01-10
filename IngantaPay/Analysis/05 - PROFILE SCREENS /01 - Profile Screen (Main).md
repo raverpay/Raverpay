@@ -24,11 +24,12 @@ Current: Card with circular avatar, name, email, tier badge, and action buttons
 New: Centered profile display with different layout
 
 Changes Required:
+
 ```typescript
 <View className="bg-black pt-16 pb-6">
   {/* Title */}
   <Text variant="h3" className="text-white px-5 mb-8">Profile</Text>
-  
+
   {/* Profile Picture - Centered */}
   <View className="items-center mb-6">
     {user?.avatar ? (
@@ -75,7 +76,7 @@ Changes Required:
         {user?.mosaicCode || '705 - 5745 - 3411'}
       </Text>
     </View>
-    <TouchableOpacity 
+    <TouchableOpacity
       className="bg-[#4A4A4A] rounded-xl px-4 py-2"
       onPress={() => router.push('/mosaic-code-details')}
     >
@@ -91,10 +92,11 @@ Current: Multiple sections with cards
 New: Dark cards with consistent styling
 
 Remove ALL current sections and replace with:
+
 ```typescript
 <ScrollView className="flex-1 bg-black px-5">
   {/* Edit Profile */}
-  <TouchableOpacity 
+  <TouchableOpacity
     className="bg-[#2A2A2A] rounded-2xl p-4 flex-row items-center mb-3"
     onPress={() => router.push('/edit-profile')}
   >
@@ -108,7 +110,7 @@ Remove ALL current sections and replace with:
   </TouchableOpacity>
 
   {/* Security */}
-  <TouchableOpacity 
+  <TouchableOpacity
     className="bg-[#2A2A2A] rounded-2xl p-4 flex-row items-center mb-3"
     onPress={() => router.push('/security-settings')}
   >
@@ -122,7 +124,7 @@ Remove ALL current sections and replace with:
   </TouchableOpacity>
 
   {/* App Settings */}
-  <TouchableOpacity 
+  <TouchableOpacity
     className="bg-[#2A2A2A] rounded-2xl p-4 flex-row items-center mb-3"
     onPress={() => router.push('/app-settings')}
   >
@@ -136,7 +138,7 @@ Remove ALL current sections and replace with:
   </TouchableOpacity>
 
   {/* Help & Support */}
-  <TouchableOpacity 
+  <TouchableOpacity
     className="bg-[#2A2A2A] rounded-2xl p-4 flex-row items-center mb-3"
     onPress={() => router.push('/support')}
   >
@@ -150,7 +152,7 @@ Remove ALL current sections and replace with:
   </TouchableOpacity>
 
   {/* Logout Button */}
-  <TouchableOpacity 
+  <TouchableOpacity
     className="bg-[#C41E3A] rounded-2xl p-4 flex-row items-center justify-center mt-6 mb-8"
     onPress={handleLogout}
     disabled={isLoggingOut}
@@ -166,6 +168,7 @@ Remove ALL current sections and replace with:
 5. REMOVE COMPLETELY:
 
 From current design:
+
 - Light header with border
 - Card-based user info section
 - Tier badge display (move to separate tier details screen)
@@ -193,6 +196,7 @@ From current design:
 7. NEW FEATURES TO ADD:
 
 Mosaic Code Display:
+
 - Dark card background (#3A3A3A)
 - Label: "Mosaic Code" (gray)
 - Code: Yellow/gold text (#F59E0B or #FBBF24)
@@ -201,6 +205,7 @@ Mosaic Code Display:
 - OnPress: Navigate to mosaic-code-details screen
 
 KYC Verified Badge:
+
 - Only show if user.kycStatus === 'APPROVED'
 - Dark pill background (#3A3A3A)
 - Green checkmark icon
@@ -210,6 +215,7 @@ KYC Verified Badge:
 8. MENU ITEM SPECIFICATIONS:
 
 Each menu item card:
+
 - Background: Dark gray (#2A2A2A)
 - Border radius: 16px
 - Padding: 16px
@@ -218,18 +224,21 @@ Each menu item card:
 - No border between items
 
 Icon Container (left):
+
 - Size: 48x48px
 - Background: Darker gray (#3A3A3A)
 - Border radius: 24px (full circle)
 - Icon: White, 24px
 
 Text (center):
+
 - Color: White
 - Size: 16px
 - Weight: Medium
 - Flex: 1
 
 Chevron (right):
+
 - Color: Dark gray (#666)
 - Size: 20px
 
@@ -248,6 +257,7 @@ Chevron (right):
 10. COLOR PALETTE:
 
 Replace throughout:
+
 ```typescript
 const colors = {
   background: '#0A0A0A',
@@ -266,6 +276,7 @@ const colors = {
 11. NAVIGATION UPDATES:
 
 Update all navigation:
+
 - Edit Profile → /edit-profile (no changes)
 - Security → /security-settings (no changes)
 - App Settings → /app-settings (NEW SCREEN)
@@ -275,17 +286,20 @@ Update all navigation:
 12. STATE MANAGEMENT:
 
 Keep existing logic for:
+
 - User data fetching
 - Logout functionality
 - Loading states
 - Error handling
 
 Remove logic for:
+
 - P2P username handling (move to separate feature if needed)
 - Tier badge display (move to tier details screen)
 - Multiple section rendering
 
 TECHNICAL REQUIREMENTS:
+
 - Maintain ScrollView for proper scrolling
 - Keep SafeAreaView for proper spacing
 - Maintain all existing hooks (useAuth, useUserStore, useTheme)

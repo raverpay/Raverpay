@@ -5,6 +5,7 @@ AI PROMPT:
 Analyze the current splash screen in app/(auth)/welcome.tsx (the section that shows when hasSeenWelcome is true) and update it to match the Inganta Pay splash screen design with these requirements:
 
 DESIGN CHANGES:
+
 1. Background: Change from gray (bg-gray-50 dark:bg-gray-900) to solid black (#000000 or #0A0A0A)
 2. Logo Design: Replace the current splash-icon.png with a new centered logo featuring:
    - A red circular background (use color: #C41E3A or similar deep red)
@@ -18,6 +19,7 @@ DESIGN CHANGES:
    - Use easeOut curve for more premium feel
 
 TECHNICAL REQUIREMENTS:
+
 - Maintain StatusBar with light style (white icons) since background is black
 - Keep the auto-navigation timer (2 seconds) for returning users
 - Ensure the logo remains perfectly centered both vertically and horizontally

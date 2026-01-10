@@ -1,6 +1,5 @@
 IMAGE 2: Onboarding Screen 1 - "Pay With Palm"
 
-
 Corresponding RaverPay Screen: This appears to be a new onboarding carousel screen (not currently in the codebase)
 AI PROMPT:
 
@@ -16,9 +15,9 @@ SCREEN 1 - "PAY WITH PALM" DESIGN:
    - Center a large card/container with rounded corners (border-radius: 24px)
    - Card background: Deep red gradient (from #8B1C1C at top to #C41E3A at bottom)
    - Inside card: Display hexagonal grid pattern with icons:
-     * 3x3 grid of hexagons (some filled white, some gray/transparent)
-     * Filled hexagons contain icons: hand icon (top center), hourglass icon (middle left), scan/QR icon (middle center), card/wallet icon (bottom center)
-     * One hexagon at top should have a hanging lamp/pendant effect
+     - 3x3 grid of hexagons (some filled white, some gray/transparent)
+     - Filled hexagons contain icons: hand icon (top center), hourglass icon (middle left), scan/QR icon (middle center), card/wallet icon (bottom center)
+     - One hexagon at top should have a hanging lamp/pendant effect
    - Card size: 80% of screen width, aspect ratio 1:1
    - Add subtle shadow beneath card
 
@@ -46,6 +45,7 @@ SCREEN 1 - "PAY WITH PALM" DESIGN:
    - Safe area aware padding
 
 TECHNICAL IMPLEMENTATION:
+
 - Use react-native-reanimated for smooth slide transitions
 - Implement swipe gestures (left/right) using react-native-gesture-handler
 - Make "Skip" button navigate to welcome/auth screen

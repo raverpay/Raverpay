@@ -16,12 +16,12 @@ SCREEN 3 DESIGN SPECIFICATIONS:
 2. MAIN ILLUSTRATION:
    - Center card with red gradient background (same as previous screens)
    - Inside card: Display payment success visualization:
-     * Background: Subtle map/network lines pattern (geometric red lines connecting nodes)
-     * Top overlay: White rounded pill badge saying "Payment Successful" with small red star/checkmark icon
-     * Below badge: 3 white rounded rectangular cards/slots arranged horizontally
-     * First slot should have a red progress indicator/line (active state)
-     * Other two slots are empty/inactive (white outline only)
-     * Cards should appear as bill/receipt representations
+     - Background: Subtle map/network lines pattern (geometric red lines connecting nodes)
+     - Top overlay: White rounded pill badge saying "Payment Successful" with small red star/checkmark icon
+     - Below badge: 3 white rounded rectangular cards/slots arranged horizontally
+     - First slot should have a red progress indicator/line (active state)
+     - Other two slots are empty/inactive (white outline only)
+     - Cards should appear as bill/receipt representations
    - Same card dimensions as previous screens
 
 3. TEXT CONTENT:
@@ -41,6 +41,7 @@ SCREEN 3 DESIGN SPECIFICATIONS:
    - "Skip" → welcome/auth screen
 
 TECHNICAL IMPLEMENTATION:
+
 - Add subtle animation to the "Payment Successful" badge (fade in or slide down effect)
 - Consider adding micro-interaction when card appears (scale in animation)
 - Keep gesture controls consistent with previous screens

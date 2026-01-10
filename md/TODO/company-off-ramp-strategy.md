@@ -26,12 +26,12 @@ This document outlines how RaverPay will convert accumulated USDC to Naira to ma
 
 ### Your Current Capacity
 
-| Metric | Value |
-|--------|-------|
-| Initial Naira Float | ₦1,000,000 |
-| At rate ₦1,550/USDC | ~$645 capacity |
-| Expected Daily Volume | $1,500 - $2,000 |
-| **Gap** | Need ₦2.3M - ₦3.1M float |
+| Metric                | Value                    |
+| --------------------- | ------------------------ |
+| Initial Naira Float   | ₦1,000,000               |
+| At rate ₦1,550/USDC   | ~$645 capacity           |
+| Expected Daily Volume | $1,500 - $2,000          |
+| **Gap**               | Need ₦2.3M - ₦3.1M float |
 
 ### The Cycle
 
@@ -52,11 +52,13 @@ Need to off-ramp USDC to replenish float
 ### Why You Need Off-Ramp
 
 Without off-ramping USDC:
+
 1. USDC accumulates in collection wallet (asset)
 2. Naira float depletes (liability paid out)
 3. Eventually: **No Naira to pay users**
 
 With regular off-ramping:
+
 1. Convert USDC → Naira (via P2P/OTC)
 2. Naira enters bank account
 3. Float replenished
@@ -128,16 +130,17 @@ End of Day: Time to off-ramp!
 
 ### Option A: Binance P2P (Recommended for Start)
 
-| Aspect | Details |
-|--------|---------|
-| **How it works** | Sell USDC to Nigerian buyers for Naira |
-| **Speed** | 15-30 minutes per transaction |
-| **Fees** | 0% Binance fee, but spread in rates |
-| **Effective Rate** | Usually 0.5-1.5% below market |
-| **Limits** | Depends on your Binance verification |
-| **Effort** | Manual - need to check trades |
+| Aspect             | Details                                |
+| ------------------ | -------------------------------------- |
+| **How it works**   | Sell USDC to Nigerian buyers for Naira |
+| **Speed**          | 15-30 minutes per transaction          |
+| **Fees**           | 0% Binance fee, but spread in rates    |
+| **Effective Rate** | Usually 0.5-1.5% below market          |
+| **Limits**         | Depends on your Binance verification   |
+| **Effort**         | Manual - need to check trades          |
 
 **Process:**
+
 1. Transfer USDC from Circle collection wallet → Binance
 2. Create P2P sell order
 3. Buyer sends Naira to your bank
@@ -145,12 +148,14 @@ End of Day: Time to off-ramp!
 5. Naira now in your bank account
 
 **Pros:**
+
 - Fast
 - Low fees
 - No relationship needed
 - Can start immediately
 
 **Cons:**
+
 - Manual process
 - Time-consuming for large volumes
 - Need to manage counterparty risk
@@ -159,31 +164,35 @@ End of Day: Time to off-ramp!
 
 ### Option B: OTC Desk (Yellow Card, Quidax)
 
-| Aspect | Details |
-|--------|---------|
-| **How it works** | Direct sale to exchange/desk |
-| **Speed** | Same day (1-4 hours) |
-| **Fees** | 1-3% negotiable |
-| **Min Volume** | Usually $500+ |
-| **Effort** | Medium - need to contact them |
+| Aspect           | Details                       |
+| ---------------- | ----------------------------- |
+| **How it works** | Direct sale to exchange/desk  |
+| **Speed**        | Same day (1-4 hours)          |
+| **Fees**         | 1-3% negotiable               |
+| **Min Volume**   | Usually $500+                 |
+| **Effort**       | Medium - need to contact them |
 
 **Process:**
+
 1. Contact OTC desk (WhatsApp/Email)
 2. Get quote for your USDC amount
 3. Send USDC to their wallet
 4. They send Naira to your bank
 
 **Nigerian OTC Contacts:**
+
 - Yellow Card: business@yellowcard.io
 - Quidax: support@quidax.com
 - Luno: (institutional desk)
 
 **Pros:**
+
 - Handles larger volumes
 - Less time per transaction
 - Professional counterparty
 
 **Cons:**
+
 - Higher fees for small amounts
 - Need to build relationship
 - May have minimum amounts
@@ -192,14 +201,15 @@ End of Day: Time to off-ramp!
 
 ### Option C: Circle Partner Off-Ramp (Future)
 
-| Aspect | Details |
-|--------|---------|
+| Aspect           | Details                      |
+| ---------------- | ---------------------------- |
 | **How it works** | Circle's official fiat rails |
-| **Speed** | 1-3 business days |
-| **Fees** | 1-2% |
-| **Requirements** | Circle partnership, KYB |
+| **Speed**        | 1-3 business days            |
+| **Fees**         | 1-2%                         |
+| **Requirements** | Circle partnership, KYB      |
 
 This is the ideal long-term solution but requires:
+
 - Business verification with Circle
 - Banking partnership
 - Regulatory compliance
@@ -210,12 +220,12 @@ This is the ideal long-term solution but requires:
 
 ### Option D: Crypto Card + Cash Advance (Emergency Only)
 
-| Aspect | Details |
-|--------|---------|
+| Aspect           | Details                                   |
+| ---------------- | ----------------------------------------- |
 | **How it works** | Load USDC to crypto card, withdraw at ATM |
-| **Speed** | Instant |
-| **Fees** | 2-4% + ATM fees |
-| **Limits** | Low daily limits |
+| **Speed**        | Instant                                   |
+| **Fees**         | 2-4% + ATM fees                           |
+| **Limits**       | Low daily limits                          |
 
 **Only for emergencies** - fees are high.
 
@@ -240,11 +250,13 @@ Daily Routine:
 ### Phase 2: OTC Relationship (Month 2+)
 
 Once you have:
+
 - Consistent $1,000+/day volume
 - Track record of 30+ days
 - Relationship with OTC desk
 
 Negotiate:
+
 - Better rates (1-1.5%)
 - Faster processing
 - Dedicated contact
@@ -252,6 +264,7 @@ Negotiate:
 ### Phase 3: Automated Rails (Month 6+)
 
 Explore:
+
 - Circle partnership
 - Banking integration
 - Automated USDC → Naira pipeline
@@ -262,12 +275,12 @@ Explore:
 
 ### Float Thresholds
 
-| Level | Float Balance | Action |
-|-------|---------------|--------|
-| 🟢 **Healthy** | > ₦500,000 | Normal operations |
-| 🟡 **Warning** | ₦200,000 - ₦500,000 | Schedule off-ramp, monitor closely |
-| 🔴 **Critical** | < ₦200,000 | Urgent off-ramp, pause large conversions |
-| ⛔ **Emergency** | < ₦50,000 | Pause ALL conversions, emergency off-ramp |
+| Level            | Float Balance       | Action                                    |
+| ---------------- | ------------------- | ----------------------------------------- |
+| 🟢 **Healthy**   | > ₦500,000          | Normal operations                         |
+| 🟡 **Warning**   | ₦200,000 - ₦500,000 | Schedule off-ramp, monitor closely        |
+| 🔴 **Critical**  | < ₦200,000          | Urgent off-ramp, pause large conversions  |
+| ⛔ **Emergency** | < ₦50,000           | Pause ALL conversions, emergency off-ramp |
 
 ### Daily Checklist
 
@@ -275,6 +288,7 @@ Explore:
 ## Daily Float Check
 
 ### Morning (9 AM)
+
 - [ ] Check Naira float balance
 - [ ] Check USDC accumulated
 - [ ] Check pending conversions
@@ -282,11 +296,13 @@ Explore:
 - [ ] Calculate if off-ramp needed today
 
 ### Afternoon (2 PM)
+
 - [ ] Execute off-ramp if needed
 - [ ] Verify Naira received
 - [ ] Update tracking sheet
 
 ### Evening (6 PM)
+
 - [ ] Final balance check
 - [ ] Log day's statistics
 - [ ] Plan for tomorrow
@@ -297,10 +313,10 @@ Explore:
 ```
 IF USDC accumulated > $500 AND Naira float < ₦500,000:
   → Off-ramp 80% of USDC
-  
+
 IF USDC accumulated > $1,000 (regardless of float):
   → Off-ramp excess above $200 reserve
-  
+
 IF Naira float < ₦200,000:
   → URGENT off-ramp immediately
   → Consider pausing conversions temporarily
@@ -309,6 +325,7 @@ IF Naira float < ₦200,000:
 ### Reserve Policy
 
 Always keep:
+
 - **USDC Reserve:** $100-200 (for emergencies)
 - **Naira Reserve:** ₦200,000 (for small withdrawals)
 
@@ -424,13 +441,13 @@ Create `/dashboard/treasury/off-ramp/page.tsx`:
 
 Add to dashboard notifications:
 
-| Trigger | Alert |
-|---------|-------|
-| Float < ₦500,000 | 🟡 Float Running Low |
-| Float < ₦200,000 | 🔴 Float Critical - Off-ramp Now |
-| Float < ₦50,000 | ⛔ EMERGENCY - Pause Conversions |
-| USDC > $1,000 | 📊 Consider Off-Ramping |
-| No off-ramp in 3 days | ⚠️ Review Float Status |
+| Trigger               | Alert                            |
+| --------------------- | -------------------------------- |
+| Float < ₦500,000      | 🟡 Float Running Low             |
+| Float < ₦200,000      | 🔴 Float Critical - Off-ramp Now |
+| Float < ₦50,000       | ⛔ EMERGENCY - Pause Conversions |
+| USDC > $1,000         | 📊 Consider Off-Ramping          |
+| No off-ramp in 3 days | ⚠️ Review Float Status           |
 
 ---
 
@@ -443,7 +460,6 @@ When volume justifies ($5,000+/day):
 1. **Auto-Detection**
    - System monitors float balance
    - Auto-alerts when off-ramp needed
-   
 2. **One-Click Off-Ramp**
    - Pre-configured OTC connection
    - Admin clicks "Off-Ramp Now"
@@ -466,8 +482,8 @@ interface OffRampProvider {
 
 // Providers to integrate
 const providers: OffRampProvider[] = [
-  new BinanceP2PProvider(),    // Requires Binance API
-  new YellowCardProvider(),    // Requires Yellow Card API
+  new BinanceP2PProvider(), // Requires Binance API
+  new YellowCardProvider(), // Requires Yellow Card API
   new CircleOffRampProvider(), // Requires Circle partnership
 ];
 ```
@@ -509,31 +525,31 @@ const providers: OffRampProvider[] = [
 model CompanyOffRamp {
   id                String   @id @default(uuid())
   reference         String   @unique  // OFR-XXXXXX
-  
+
   // Amount
   usdcAmount        Decimal
   ngnAmount         Decimal
   rate              Decimal  // ₦/USDC
-  
+
   // Method
   method            String   // BINANCE_P2P, YELLOW_CARD, QUIDAX, OTHER
   providerReference String?  // External ref from provider
-  
+
   // Status
   status            String   @default("COMPLETED")  // PENDING, COMPLETED, FAILED
-  
+
   // Bank
   bankName          String?
   accountNumber     String?
-  
+
   // Audit
   createdBy         String   // Admin who logged it
   createdByEmail    String
   notes             String?
-  
+
   createdAt         DateTime @default(now())
   completedAt       DateTime?
-  
+
   @@index([createdAt])
   @@index([method])
   @@map("company_off_ramps")
@@ -627,13 +643,13 @@ Response: {
 
 ## Risk Mitigation
 
-| Risk | Mitigation |
-|------|------------|
-| P2P scammer | Only trade with verified users, use escrow |
-| Rate volatility | Lock rate before confirming, complete quickly |
-| Bank account frozen | Use multiple receiving accounts |
-| Low liquidity on P2P | Build relationships with reliable traders |
-| Naira devaluation | Off-ramp frequently, don't hold excess NGN |
+| Risk                 | Mitigation                                    |
+| -------------------- | --------------------------------------------- |
+| P2P scammer          | Only trade with verified users, use escrow    |
+| Rate volatility      | Lock rate before confirming, complete quickly |
+| Bank account frozen  | Use multiple receiving accounts               |
+| Low liquidity on P2P | Build relationships with reliable traders     |
+| Naira devaluation    | Off-ramp frequently, don't hold excess NGN    |
 
 ---
 

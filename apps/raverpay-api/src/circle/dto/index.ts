@@ -30,10 +30,23 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  */
 const ALL_CIRCLE_BLOCKCHAINS = [
   // Mainnet
-  'ETH', 'MATIC', 'ARB', 'BASE', 'OP', 'AVAX', 'SOL', 'UNI',
+  'ETH',
+  'MATIC',
+  'ARB',
+  'BASE',
+  'OP',
+  'AVAX',
+  'SOL',
+  'UNI',
   // Testnet
-  'ETH-SEPOLIA', 'MATIC-AMOY', 'ARB-SEPOLIA', 'BASE-SEPOLIA',
-  'OP-SEPOLIA', 'AVAX-FUJI', 'SOL-DEVNET', 'UNI-SEPOLIA',
+  'ETH-SEPOLIA',
+  'MATIC-AMOY',
+  'ARB-SEPOLIA',
+  'BASE-SEPOLIA',
+  'OP-SEPOLIA',
+  'AVAX-FUJI',
+  'SOL-DEVNET',
+  'UNI-SEPOLIA',
 ] as const;
 
 export class CreateCircleWalletDto {

@@ -10,14 +10,13 @@ SCREEN DESIGN:
 
 2. CONTENT (Centered):
    - Profile image:
-     * Circular (180px diameter)
-     * Display the captured selfie
-     * Border: 2px white
+     - Circular (180px diameter)
+     - Display the captured selfie
+     - Border: 2px white
    - Success checkmark icon:
-     * Green circular background (40px)
-     * White checkmark icon
-     * Position: Top-right of profile image (overlapping)
-   
+     - Green circular background (40px)
+     - White checkmark icon
+     - Position: Top-right of profile image (overlapping)
    - Title: "Identity Verified" (white, bold, size: 32px, centered)
    - Subtitle: "Your smile just unlocked a world of possibilities.😊" (gray-400, size: 16px, centered)
    - Spacing: 24px between elements
@@ -30,6 +29,7 @@ SCREEN DESIGN:
    - OnPress: Navigate to KYC submission (final confirmation)
 
 ANIMATION:
+
 - Fade in profile image
 - Scale in checkmark with bounce effect
 - Delay text appearance slightly for better UX

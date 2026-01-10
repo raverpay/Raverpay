@@ -48,7 +48,11 @@ interface CircleState {
   getWalletBalance: (walletId: string) => CircleBalance[];
   getUsdcBalance: (walletId: string) => string;
   getNativeBalance: (walletId: string) => { symbol: string; amount: string } | null;
-  getAllBalances: (walletId: string) => { usdc: string; native: { symbol: string; amount: string } | null; others: CircleBalance[] };
+  getAllBalances: (walletId: string) => {
+    usdc: string;
+    native: { symbol: string; amount: string } | null;
+    others: CircleBalance[];
+  };
   getTotalUsdcBalance: () => string;
 
   // Clear all Circle data
@@ -118,17 +122,23 @@ export const useCircleStore = create<CircleState>()(
       getNativeBalance: (walletId) => {
         const walletBalances = get().balances[walletId] || [];
         const nativeBalance = walletBalances.find((b) => b.token?.isNative === true);
-        return nativeBalance ? { symbol: nativeBalance.token!.symbol, amount: nativeBalance.amount } : null;
+        return nativeBalance
+          ? { symbol: nativeBalance.token!.symbol, amount: nativeBalance.amount }
+          : null;
       },
       getAllBalances: (walletId) => {
         const walletBalances = get().balances[walletId] || [];
         const usdcBalance = walletBalances.find((b) => b.token?.symbol === 'USDC');
         const nativeBalance = walletBalances.find((b) => b.token?.isNative === true);
-        const others = walletBalances.filter((b) => b.token?.symbol !== 'USDC' && !b.token?.isNative);
-        
+        const others = walletBalances.filter(
+          (b) => b.token?.symbol !== 'USDC' && !b.token?.isNative,
+        );
+
         return {
           usdc: usdcBalance?.amount || '0',
-          native: nativeBalance ? { symbol: nativeBalance.token!.symbol, amount: nativeBalance.amount } : null,
+          native: nativeBalance
+            ? { symbol: nativeBalance.token!.symbol, amount: nativeBalance.amount }
+            : null,
           others,
         };
       },

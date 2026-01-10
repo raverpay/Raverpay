@@ -671,7 +671,10 @@ export class AdminCircleService {
     let confirmedCount = 0;
 
     const dailyFeesMap = new Map<string, { fees: number; count: number }>();
-    const blockchainFeesMap = new Map<string, { fees: number; count: number; confirmed: number }>();
+    const blockchainFeesMap = new Map<
+      string,
+      { fees: number; count: number; confirmed: number }
+    >();
 
     transactions.forEach((tx) => {
       const fee = parseFloat(tx.serviceFee || '0');
@@ -691,16 +694,24 @@ export class AdminCircleService {
       });
 
       // Blockchain aggregation
-      const bcData = blockchainFeesMap.get(tx.blockchain) || { fees: 0, count: 0, confirmed: 0 };
+      const bcData = blockchainFeesMap.get(tx.blockchain) || {
+        fees: 0,
+        count: 0,
+        confirmed: 0,
+      };
       blockchainFeesMap.set(tx.blockchain, {
         fees: bcData.fees + fee,
         count: bcData.count + 1,
-        confirmed: bcData.confirmed + (tx.state === 'CONFIRMED' || tx.state === 'COMPLETE' ? 1 : 0),
+        confirmed:
+          bcData.confirmed +
+          (tx.state === 'CONFIRMED' || tx.state === 'COMPLETE' ? 1 : 0),
       });
     });
 
-    const averageFee = totalTransactions > 0 ? totalFeesCollected / totalTransactions : 0;
-    const successRate = totalTransactions > 0 ? (confirmedCount / totalTransactions) * 100 : 0;
+    const averageFee =
+      totalTransactions > 0 ? totalFeesCollected / totalTransactions : 0;
+    const successRate =
+      totalTransactions > 0 ? (confirmedCount / totalTransactions) * 100 : 0;
 
     // Estimate gas (very rough estimate for testnet, assuming ~$0.01 per tx for L2)
     const totalGasEstimate = totalTransactions * 0.01;
@@ -714,13 +725,19 @@ export class AdminCircleService {
       }))
       .sort((a, b) => b.date.localeCompare(a.date));
 
-    const feesByBlockchain = Array.from(blockchainFeesMap.entries()).map(([bc, data]) => ({
-      blockchain: bc,
-      feesCollected: data.fees.toFixed(4),
-      transactionCount: data.count,
-      averageFee: data.count > 0 ? (data.fees / data.count).toFixed(4) : '0.00',
-      successRate: data.count > 0 ? ((data.confirmed / data.count) * 100).toFixed(1) : '0',
-    }));
+    const feesByBlockchain = Array.from(blockchainFeesMap.entries()).map(
+      ([bc, data]) => ({
+        blockchain: bc,
+        feesCollected: data.fees.toFixed(4),
+        transactionCount: data.count,
+        averageFee:
+          data.count > 0 ? (data.fees / data.count).toFixed(4) : '0.00',
+        successRate:
+          data.count > 0
+            ? ((data.confirmed / data.count) * 100).toFixed(1)
+            : '0',
+      }),
+    );
 
     const recentTransactions = transactions.slice(0, 10).map((tx) => ({
       id: tx.id,
@@ -1029,7 +1046,9 @@ export class AdminCircleService {
     });
 
     if (!config) {
-      throw new NotFoundException(`Blockchain config for ${blockchain} not found`);
+      throw new NotFoundException(
+        `Blockchain config for ${blockchain} not found`,
+      );
     }
 
     return config;

@@ -15,7 +15,10 @@ interface CircleWalletCardProps {
   isUnsupported?: boolean;
 }
 
-const BLOCKCHAIN_INFO: Record<CircleBlockchain, { name: string; color: string; icon: string; nativeSymbol: string }> = {
+const BLOCKCHAIN_INFO: Record<
+  CircleBlockchain,
+  { name: string; color: string; icon: string; nativeSymbol: string }
+> = {
   ETH: { name: 'Ethereum', color: 'bg-blue-500', icon: 'Ξ', nativeSymbol: 'ETH' },
   'ETH-SEPOLIA': { name: 'Ethereum Sepolia', color: 'bg-blue-400', icon: 'Ξ', nativeSymbol: 'ETH' },
   MATIC: { name: 'Polygon', color: 'bg-purple-500', icon: '⬣', nativeSymbol: 'POL' },
@@ -159,7 +162,7 @@ export const CircleWalletCard: React.FC<CircleWalletCardProps> = ({
         <Text variant="caption" color="secondary">
           USDC
         </Text>
-        
+
         {/* Native Token Balance - Secondary (only show if non-zero) */}
         {nativeBalance && parseFloat(nativeBalance.amount) > 0 && (
           <View className="mt-1 flex-row items-center">

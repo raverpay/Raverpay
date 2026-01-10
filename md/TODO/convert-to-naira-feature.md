@@ -3,7 +3,7 @@
 **Created:** 2025-01-09  
 **Status:** Planning  
 **Priority:** High  
-**Feature Name:** Convert to Naira  
+**Feature Name:** Convert to Naira
 
 This document outlines the implementation of the USDC to Naira conversion feature (Off-Ramp).
 
@@ -37,16 +37,16 @@ An off-ramp feature that allows users to convert their USDC tokens to Naira, whi
 
 ### Key Points
 
-| Aspect | Details |
-|--------|---------|
-| **Input** | USDC from user's Circle wallet |
-| **Output** | Naira credited to user's existing RaverPay wallet (`type: NAIRA`) |
-| **Rate Source** | CoinGecko (USDC/USD + USD/NGN) |
-| **Payout Method** | Credit to in-app Naira wallet |
-| **Approval** | Dual approval: ADMIN first approval → SUPER_ADMIN final approval |
-| **Limits** | Min: $5, Max: $1,000 (configurable) |
-| **Destination** | Company collection wallet (read-only, shown to user) |
-| **PIN Required** | Yes - user must enter PIN to authorize USDC transfer |
+| Aspect            | Details                                                           |
+| ----------------- | ----------------------------------------------------------------- |
+| **Input**         | USDC from user's Circle wallet                                    |
+| **Output**        | Naira credited to user's existing RaverPay wallet (`type: NAIRA`) |
+| **Rate Source**   | CoinGecko (USDC/USD + USD/NGN)                                    |
+| **Payout Method** | Credit to in-app Naira wallet                                     |
+| **Approval**      | Dual approval: ADMIN first approval → SUPER_ADMIN final approval  |
+| **Limits**        | Min: $5, Max: $1,000 (configurable)                               |
+| **Destination**   | Company collection wallet (read-only, shown to user)              |
+| **PIN Required**  | Yes - user must enter PIN to authorize USDC transfer              |
 
 ### Revenue Model
 
@@ -56,7 +56,7 @@ User pays TWO types of fees:
 1. USDC TRANSFER FEE (same as normal send transactions)
    ├─ Service Fee: 0.5% of amount (min ₦100 equivalent)
    └─ Gas Fee: Sponsored (testnet) or paid by platform (mainnet)
-   
+
 2. CONVERSION SPREAD (platform margin)
    ├─ CoinGecko Rate: 1 USDC = ₦1,599.68
    ├─ Platform Rate:  1 USDC = ₦1,550 (3% spread)
@@ -64,6 +64,7 @@ User pays TWO types of fees:
 ```
 
 **Example (100 USDC conversion):**
+
 ```
 USDC Transfer Fee:    0.50 USDC (0.5% service fee)
 Net USDC to convert:  99.50 USDC
@@ -156,11 +157,11 @@ enum WalletType {
 
 ### Rate Lock Mechanism
 
-| Setting | Value |
-|---------|-------|
-| **Lock Duration** | 15 minutes |
-| **After Expiry** | User must request new quote |
-| **Stored Data** | Rate, amounts, timestamp |
+| Setting           | Value                       |
+| ----------------- | --------------------------- |
+| **Lock Duration** | 15 minutes                  |
+| **After Expiry**  | User must request new quote |
+| **Stored Data**   | Rate, amounts, timestamp    |
 
 ---
 
@@ -171,6 +172,7 @@ enum WalletType {
 **Security Concern:** A single admin could abuse wallet crediting to gift money to friends or themselves.
 
 **Solution:** Two-step approval process:
+
 1. **ADMIN** reviews and gives first approval
 2. **SUPER_ADMIN** reviews and gives final approval (credits wallet)
 
@@ -243,14 +245,14 @@ enum WalletType {
 
 ### Admin Actions by Role
 
-| Action | ADMIN | SUPER_ADMIN | Description |
-|--------|-------|-------------|-------------|
-| **View Pending** | ✅ | ✅ | See all pending conversions |
-| **First Approval** | ✅ | ✅ | Initial review and approval |
-| **Final Approval & Credit** | ❌ | ✅ | Credit user's wallet |
-| **Reject** | ✅ | ✅ | Any admin can reject |
-| **View History** | ✅ | ✅ | See completed conversions |
-| **Edit Settings** | ❌ | ✅ | Change limits, rates |
+| Action                      | ADMIN | SUPER_ADMIN | Description                 |
+| --------------------------- | ----- | ----------- | --------------------------- |
+| **View Pending**            | ✅    | ✅          | See all pending conversions |
+| **First Approval**          | ✅    | ✅          | Initial review and approval |
+| **Final Approval & Credit** | ❌    | ✅          | Credit user's wallet        |
+| **Reject**                  | ✅    | ✅          | Any admin can reject        |
+| **View History**            | ✅    | ✅          | See completed conversions   |
+| **Edit Settings**           | ❌    | ✅          | Change limits, rates        |
 
 ### Approval Modal (First Approval - ADMIN)
 
@@ -340,6 +342,7 @@ enum WalletType {
 ### Approval Tracking
 
 All approvals tracked with:
+
 - Who approved (userId, email)
 - When approved (timestamp)
 - What role (ADMIN / SUPER_ADMIN)
@@ -354,38 +357,38 @@ All approvals tracked with:
 
 ```typescript
 // 1. Get USDC/USD rate from CoinGecko
-const usdcToUsd = await coinGecko.getPrice('usd-coin', 'usd');  // e.g., 0.9998
+const usdcToUsd = await coinGecko.getPrice('usd-coin', 'usd'); // e.g., 0.9998
 
 // 2. Get USD/NGN rate from CoinGecko
-const usdToNgn = await coinGecko.getPrice('usd', 'ngn');  // e.g., 1600
+const usdToNgn = await coinGecko.getPrice('usd', 'ngn'); // e.g., 1600
 
 // 3. Calculate raw USDC/NGN rate
-const rawRate = usdcToUsd * usdToNgn;  // e.g., 1599.68
+const rawRate = usdcToUsd * usdToNgn; // e.g., 1599.68
 
 // 4. Apply platform spread (configurable)
-const spreadPercent = 3;  // 3% margin for platform
-const platformRate = rawRate * (1 - spreadPercent / 100);  // e.g., 1551.69
+const spreadPercent = 3; // 3% margin for platform
+const platformRate = rawRate * (1 - spreadPercent / 100); // e.g., 1551.69
 
 // 5. Round down for cleaner display
-const displayRate = Math.floor(platformRate);  // e.g., 1551
+const displayRate = Math.floor(platformRate); // e.g., 1551
 ```
 
 ### CoinGecko API Calls
 
-| Data Needed | CoinGecko Endpoint | Frequency |
-|-------------|---------------------|-----------|
-| USDC/USD | `/simple/price?ids=usd-coin&vs_currencies=usd` | Every 5 min |
-| USD/NGN | `/simple/price?ids=usd&vs_currencies=ngn` | Every 5 min |
+| Data Needed | CoinGecko Endpoint                             | Frequency   |
+| ----------- | ---------------------------------------------- | ----------- |
+| USDC/USD    | `/simple/price?ids=usd-coin&vs_currencies=usd` | Every 5 min |
+| USD/NGN     | `/simple/price?ids=usd&vs_currencies=ngn`      | Every 5 min |
 
 **Note:** CoinGecko provides USD/NGN as they track fiat rates too.
 
 ### Fee Structure
 
-| Fee Type | Default Value | Configurable |
-|----------|---------------|--------------|
-| **Spread** | 3% | ✅ Yes (admin) |
-| **Fixed Fee** | ₦0 | ✅ Yes (admin) |
-| **Min Fee** | ₦100 | ✅ Yes (admin) |
+| Fee Type      | Default Value | Configurable   |
+| ------------- | ------------- | -------------- |
+| **Spread**    | 3%            | ✅ Yes (admin) |
+| **Fixed Fee** | ₦0            | ✅ Yes (admin) |
+| **Min Fee**   | ₦100          | ✅ Yes (admin) |
 
 **Example Calculation:**
 
@@ -421,16 +424,16 @@ Updated for Dual Approval system:
 
 ### State Definitions
 
-| State | Description | Next States |
-|-------|-------------|-------------|
-| **QUOTED** | User viewing quote, rate locked | PENDING_TRANSFER, EXPIRED |
-| **PENDING_TRANSFER** | USDC transfer initiated, waiting confirmation | PENDING_APPROVAL, FAILED |
-| **PENDING_APPROVAL** | USDC confirmed, waiting ADMIN first approval | PENDING_FINAL_APPROVAL, REJECTED |
-| **PENDING_FINAL_APPROVAL** | ADMIN approved, waiting SUPER_ADMIN final | COMPLETED, REJECTED |
-| **COMPLETED** | Naira credited to user's wallet | (terminal) |
-| **EXPIRED** | Quote expired (15 min) | (terminal) |
-| **FAILED** | USDC transfer failed | (terminal) |
-| **REJECTED** | Any admin rejected the conversion | (terminal) |
+| State                      | Description                                   | Next States                      |
+| -------------------------- | --------------------------------------------- | -------------------------------- |
+| **QUOTED**                 | User viewing quote, rate locked               | PENDING_TRANSFER, EXPIRED        |
+| **PENDING_TRANSFER**       | USDC transfer initiated, waiting confirmation | PENDING_APPROVAL, FAILED         |
+| **PENDING_APPROVAL**       | USDC confirmed, waiting ADMIN first approval  | PENDING_FINAL_APPROVAL, REJECTED |
+| **PENDING_FINAL_APPROVAL** | ADMIN approved, waiting SUPER_ADMIN final     | COMPLETED, REJECTED              |
+| **COMPLETED**              | Naira credited to user's wallet               | (terminal)                       |
+| **EXPIRED**                | Quote expired (15 min)                        | (terminal)                       |
+| **FAILED**                 | USDC transfer failed                          | (terminal)                       |
+| **REJECTED**               | Any admin rejected the conversion             | (terminal)                       |
 
 ---
 
@@ -440,26 +443,26 @@ Integrated with existing `NotificationDispatcherService`.
 
 ### User Notifications
 
-| Event | Channel | Template |
-|-------|---------|----------|
-| **Quote Created** | In-App | "Rate locked! Complete within 15 minutes." |
-| **Conversion Submitted** | Push, Email, In-App | "Your conversion of {amount} USDC has been submitted." |
-| **USDC Transfer Confirmed** | Push, In-App | "We've received your {amount} USDC. Pending approval." |
-| **First Approval Received** | In-App | "Your conversion is being reviewed by our team." |
-| **Conversion Approved & Credited** | Push, Email, In-App | "₦{nairaAmount} has been credited to your wallet! 🎉" |
-| **Conversion Rejected** | Push, Email, In-App | "Your conversion was rejected. Reason: {reason}" |
-| **Quote Expiring Soon** | Push | "Your rate expires in 5 minutes. Complete now!" |
-| **Quote Expired** | In-App | "Your quote has expired. Request a new one." |
+| Event                              | Channel             | Template                                               |
+| ---------------------------------- | ------------------- | ------------------------------------------------------ |
+| **Quote Created**                  | In-App              | "Rate locked! Complete within 15 minutes."             |
+| **Conversion Submitted**           | Push, Email, In-App | "Your conversion of {amount} USDC has been submitted." |
+| **USDC Transfer Confirmed**        | Push, In-App        | "We've received your {amount} USDC. Pending approval." |
+| **First Approval Received**        | In-App              | "Your conversion is being reviewed by our team."       |
+| **Conversion Approved & Credited** | Push, Email, In-App | "₦{nairaAmount} has been credited to your wallet! 🎉"  |
+| **Conversion Rejected**            | Push, Email, In-App | "Your conversion was rejected. Reason: {reason}"       |
+| **Quote Expiring Soon**            | Push                | "Your rate expires in 5 minutes. Complete now!"        |
+| **Quote Expired**                  | In-App              | "Your quote has expired. Request a new one."           |
 
 ### Admin Notifications
 
-| Event | Channel | Recipients |
-|-------|---------|------------|
+| Event                                     | Channel          | Recipients         |
+| ----------------------------------------- | ---------------- | ------------------ |
 | **New Conversion Pending First Approval** | Email, Dashboard | ADMIN, SUPER_ADMIN |
-| **Conversion Awaiting Final Approval** | Email, Dashboard | SUPER_ADMIN only |
-| **High Value Conversion** (>$500) | Email, SMS | SUPER_ADMIN only |
-| **Conversion Rejected** | Dashboard | All admins |
-| **Daily Summary** | Email | SUPER_ADMIN |
+| **Conversion Awaiting Final Approval**    | Email, Dashboard | SUPER_ADMIN only   |
+| **High Value Conversion** (>$500)         | Email, SMS       | SUPER_ADMIN only   |
+| **Conversion Rejected**                   | Dashboard        | All admins         |
+| **Daily Summary**                         | Email            | SUPER_ADMIN        |
 
 ### Notification Templates (Create in email templates)
 
@@ -477,16 +480,16 @@ All conversion actions must be logged for compliance and security.
 
 ### Audit Events to Log
 
-| Event | Logged Data |
-|-------|-------------|
-| **QUOTE_CREATED** | userId, amount, rate, expiresAt |
-| **CONVERSION_INITIATED** | userId, conversionId, circleTransactionId |
-| **USDC_TRANSFER_CONFIRMED** | conversionId, transactionHash, amount |
-| **FIRST_APPROVAL** | conversionId, adminId, adminEmail, adminRole, notes |
-| **FINAL_APPROVAL** | conversionId, adminId, adminEmail, adminRole, notes |
-| **NAIRA_CREDITED** | conversionId, userId, walletId, amount, balanceAfter |
-| **CONVERSION_REJECTED** | conversionId, adminId, reason, refundOption |
-| **QUOTE_EXPIRED** | conversionId, userId |
+| Event                       | Logged Data                                          |
+| --------------------------- | ---------------------------------------------------- |
+| **QUOTE_CREATED**           | userId, amount, rate, expiresAt                      |
+| **CONVERSION_INITIATED**    | userId, conversionId, circleTransactionId            |
+| **USDC_TRANSFER_CONFIRMED** | conversionId, transactionHash, amount                |
+| **FIRST_APPROVAL**          | conversionId, adminId, adminEmail, adminRole, notes  |
+| **FINAL_APPROVAL**          | conversionId, adminId, adminEmail, adminRole, notes  |
+| **NAIRA_CREDITED**          | conversionId, userId, walletId, amount, balanceAfter |
+| **CONVERSION_REJECTED**     | conversionId, adminId, reason, refundOption          |
+| **QUOTE_EXPIRED**           | conversionId, userId                                 |
 
 ### Audit Log Schema
 
@@ -503,7 +506,7 @@ model AuditLog {
   ipAddress   String?  // For security
   userAgent   String?  // Browser/device info
   createdAt   DateTime @default(now())
-  
+
   @@index([entityType, entityId])
   @@index([userId])
   @@index([action])
@@ -519,30 +522,29 @@ If you already have an AuditLog model, reuse it. Otherwise, create one following
 ### Audit Log Viewer (Admin Dashboard)
 
 Create `/dashboard/audit-logs/page.tsx`:
+
 - Filter by action type
 - Filter by date range
 - Filter by admin
 - Search by entity ID
 - Export to CSV
 
-
-
 ## 8. Configuration & Limits
 
 ### Admin-Configurable Settings
 
-| Setting | Default | Min | Max | Notes |
-|---------|---------|-----|-----|-------|
-| `conversionEnabled` | `true` | - | - | Enable/disable feature |
-| `minAmountUsd` | `5` | 1 | 100 | Minimum conversion |
-| `maxAmountUsd` | `1000` | 100 | 50000 | Maximum conversion |
-| `dailyLimitUsd` | `5000` | 100 | 100000 | Per-user daily limit |
-| `spreadPercent` | `3` | 0 | 10 | Platform margin % |
-| `fixedFeeNgn` | `0` | 0 | 10000 | Fixed fee per txn |
-| `minFeeNgn` | `100` | 0 | 5000 | Minimum fee floor |
-| `quoteTtlMinutes` | `15` | 5 | 60 | Rate lock duration |
-| `requireKyc` | `false` | - | - | Require KYC for large txns |
-| `kycThresholdUsd` | `100` | 50 | 1000 | KYC required above this |
+| Setting             | Default | Min | Max    | Notes                      |
+| ------------------- | ------- | --- | ------ | -------------------------- |
+| `conversionEnabled` | `true`  | -   | -      | Enable/disable feature     |
+| `minAmountUsd`      | `5`     | 1   | 100    | Minimum conversion         |
+| `maxAmountUsd`      | `1000`  | 100 | 50000  | Maximum conversion         |
+| `dailyLimitUsd`     | `5000`  | 100 | 100000 | Per-user daily limit       |
+| `spreadPercent`     | `3`     | 0   | 10     | Platform margin %          |
+| `fixedFeeNgn`       | `0`     | 0   | 10000  | Fixed fee per txn          |
+| `minFeeNgn`         | `100`   | 0   | 5000   | Minimum fee floor          |
+| `quoteTtlMinutes`   | `15`    | 5   | 60     | Rate lock duration         |
+| `requireKyc`        | `false` | -   | -      | Require KYC for large txns |
+| `kycThresholdUsd`   | `100`   | 50  | 1000   | KYC required above this    |
 
 ### Storage
 
@@ -578,65 +580,65 @@ model NairaConversion {
   reference             String                  @unique  // CNV-XXXXXX
   userId                String
   user                  User                    @relation(fields: [userId], references: [id])
-  
+
   // Source (USDC)
   sourceWalletId        String                  // Circle wallet ID
   sourceBlockchain      String                  // e.g., "BASE-SEPOLIA"
   sourceAmount          Decimal                 // USDC amount before fee
   usdcFee               Decimal                 // USDC transfer fee (0.5%)
   netUsdcAmount         Decimal                 // After fee
-  
+
   // Destination (Company collection wallet)
   destinationWalletId   String                  // Company collection wallet ID
   destinationAddress    String                  // Company wallet address
-  
+
   // Rates (locked at quote time)
   usdcToUsdRate         Decimal                 // CoinGecko USDC/USD
   usdToNgnRate          Decimal                 // CoinGecko USD/NGN
   platformRate          Decimal                 // After spread (₦/USDC)
   spreadPercent         Decimal                 // Spread applied
-  
+
   // Output
   nairaAmount           Decimal                 // Final Naira to credit
-  
+
   // State (with dual approval)
   state                 NairaConversionState    @default(QUOTED)
-  
+
   // USDC Transfer
   circleTransactionId   String?                 // Circle transaction ID
   transactionHash       String?                 // Blockchain tx hash
   usdcConfirmedAt       DateTime?
-  
+
   // FIRST APPROVAL (ADMIN)
   firstApprovalBy       String?                 // Admin user ID
   firstApprovalByEmail  String?                 // For display
   firstApprovalAt       DateTime?
   firstApprovalNotes    String?
-  
+
   // FINAL APPROVAL (SUPER_ADMIN)
   finalApprovalBy       String?                 // SuperAdmin user ID
   finalApprovalByEmail  String?                 // For display
   finalApprovalAt       DateTime?
   finalApprovalNotes    String?
-  
+
   // Rejection (any admin)
   rejectedBy            String?
   rejectedByEmail       String?
   rejectedAt            DateTime?
   rejectionReason       String?
   refundOption          String?                 // REFUND, HOLD, FORFEIT
-  
+
   // Naira Credit
   nairaWalletId         String?                 // User's Naira wallet ID
   nairaTransactionId    String?                 // Transaction record ID
   creditedAt            DateTime?
-  
+
   // Timestamps
   quotedAt              DateTime                @default(now())
   quoteExpiresAt        DateTime
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
-  
+
   @@index([userId])
   @@index([state])
   @@index([createdAt])
@@ -689,11 +691,10 @@ model Transaction {
 ```
 
 When crediting Naira wallet, create a Transaction record with:
+
 - `type: DEPOSIT` or add new type `CONVERSION`
 - `description: "USDC to Naira conversion - CNV-XXXXXX"`
 - `metadata: { conversionId, sourceAmount, rate }`
-
-
 
 ---
 
@@ -779,12 +780,12 @@ GET /api/admin/convert-to-naira?state=PENDING_FINAL_APPROVAL&page=1
 Response: {
   success: true,
   data: [...],
-  meta: { 
-    total, 
-    page, 
-    limit, 
+  meta: {
+    total,
+    page,
+    limit,
     pendingFirstApproval: 5,
-    pendingFinalApproval: 2 
+    pendingFinalApproval: 2
   }
 }
 
@@ -886,7 +887,6 @@ Body: {
   // ... other settings
 }
 ```
-
 
 ---
 
@@ -1158,8 +1158,8 @@ When admin approves a conversion, the Naira is "created" in the user's wallet. T
 
 Every conversion creates two entries:
 
-| Debit (Asset) | Credit (Liability) |
-|---------------|-------------------|
+| Debit (Asset)                         | Credit (Liability)              |
+| ------------------------------------- | ------------------------------- |
 | USDC in collection wallet (+100 USDC) | User's Naira wallet (+₦154,000) |
 
 ### Company Treasury Dashboard
@@ -1207,12 +1207,12 @@ Every conversion creates two entries:
 
 ### Treasury Alerts
 
-| Condition | Alert |
-|-----------|-------|
-| Net Position < ₦500,000 | ⚠️ Low float warning |
-| Net Position < ₦0 | 🔴 CRITICAL - Pause conversions |
-| USDC > $2,000 accumulated | 📊 Consider off-ramping batch |
-| Daily volume > $1,500 | ⚠️ Approaching capacity |
+| Condition                 | Alert                           |
+| ------------------------- | ------------------------------- |
+| Net Position < ₦500,000   | ⚠️ Low float warning            |
+| Net Position < ₦0         | 🔴 CRITICAL - Pause conversions |
+| USDC > $2,000 accumulated | 📊 Consider off-ramping batch   |
+| Daily volume > $1,500     | ⚠️ Approaching capacity         |
 
 ### Solvency Check Before Approval
 
@@ -1233,14 +1233,15 @@ if (nairaToCredit > availableNaira) {
 
 ### Your Capacity
 
-| Metric | Value |
-|--------|-------|
-| Initial Float | ₦1,000,000 |
-| At ₦1,550/USDC | ~$645 capacity |
-| Expected Volume | $1,500-2,000/day |
-| Gap | Need ₦2.3M - ₦3.1M float |
+| Metric          | Value                    |
+| --------------- | ------------------------ |
+| Initial Float   | ₦1,000,000               |
+| At ₦1,550/USDC  | ~$645 capacity           |
+| Expected Volume | $1,500-2,000/day         |
+| Gap             | Need ₦2.3M - ₦3.1M float |
 
 **Solutions:**
+
 1. Off-ramp USDC daily to replenish float
 2. Start with lower limits, grow as float grows
 3. Larger transactions require off-ramp first
@@ -1316,21 +1317,22 @@ if (nairaToCredit > availableNaira) {
 **Risk:** A single admin could gift money to friends.
 
 **Fix Required:**
+
 - Apply dual approval to ANY wallet credit operation
 - All manual wallet adjustments must go through the same ADMIN → SUPER_ADMIN flow
 - Log all wallet balance changes in audit log
 
 ### 15.2 Security Measures
 
-| Measure | Implementation |
-|---------|----------------|
-| **Dual Approval** | ADMIN first, SUPER_ADMIN final for all credits |
-| **Audit Logging** | Every action logged with admin ID, timestamp, IP |
-| **Confirmation Modals** | Required notes field, explicit confirmation |
-| **Role-Based Access** | Only SUPER_ADMIN can do final credit |
-| **Daily Limits** | Cap on total conversions per day |
-| **Alert on High Value** | SUPER_ADMIN notified for >$500 conversions |
-| **Solvency Checks** | Cannot approve if insufficient float |
+| Measure                 | Implementation                                   |
+| ----------------------- | ------------------------------------------------ |
+| **Dual Approval**       | ADMIN first, SUPER_ADMIN final for all credits   |
+| **Audit Logging**       | Every action logged with admin ID, timestamp, IP |
+| **Confirmation Modals** | Required notes field, explicit confirmation      |
+| **Role-Based Access**   | Only SUPER_ADMIN can do final credit             |
+| **Daily Limits**        | Cap on total conversions per day                 |
+| **Alert on High Value** | SUPER_ADMIN notified for >$500 conversions       |
+| **Solvency Checks**     | Cannot approve if insufficient float             |
 
 ### 15.3 Files to Audit/Fix
 
@@ -1356,7 +1358,6 @@ After implementing this feature:
 1. **Company Off-Ramp Strategy** - How RaverPay converts accumulated USDC to Naira
    - Options: Circle Partner, Binance P2P, OTC desk
    - Create tracking dashboard for off-ramp transactions
-   
 2. **Liquidity Management** - Ensuring Naira availability
    - Daily off-ramp batch job
    - Alerts when float is low

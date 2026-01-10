@@ -20,28 +20,32 @@ Section title: "Notifications" (white, bold, 18px)
 
 Items with toggles:
 a. Push Notifications
-   - Icon: bell (blue #3B82F6)
-   - Title: "Push Notifications"
-   - Subtitle: "Receive app notifications"
-   - Toggle: Red/gray
+
+- Icon: bell (blue #3B82F6)
+- Title: "Push Notifications"
+- Subtitle: "Receive app notifications"
+- Toggle: Red/gray
 
 b. Email Notifications
-   - Icon: bell (green #10B981)
-   - Title: "Email Notifications"
-   - Subtitle: "Receive email updates"
-   - Toggle: Red/gray
+
+- Icon: bell (green #10B981)
+- Title: "Email Notifications"
+- Subtitle: "Receive email updates"
+- Toggle: Red/gray
 
 c. SMS Notifications
-   - Icon: bell (purple #A855F7)
-   - Title: "SMS Notifications"
-   - Subtitle: "Receive SMS alerts"
-   - Toggle: Red/gray
+
+- Icon: bell (purple #A855F7)
+- Title: "SMS Notifications"
+- Subtitle: "Receive SMS alerts"
+- Toggle: Red/gray
 
 3. APPEARANCE SECTION:
 
 Section title: "Appearance" (white, bold)
 
 Single item:
+
 - Icon: sun/moon (orange #F97316)
 - Title: "Dark Mode"
 - Subtitle: "Use dark theme"
@@ -50,6 +54,7 @@ Single item:
 Note: This replaces the full theme-settings screen. Just a simple dark mode toggle.
 
 Logic:
+
 ```typescript
 const { mode, setThemeMode, isDark } = useTheme();
 const [darkModeEnabled, setDarkModeEnabled] = useState(isDark);
@@ -66,6 +71,7 @@ const handleDarkModeToggle = () => {
 Section title: "About" (white, bold)
 
 Single navigation item:
+
 - Icon: information-circle (gray #6B7280)
 - Title: "About Inganta Pay"
 - Subtitle: "Version 1.0.0"
@@ -73,6 +79,7 @@ Single navigation item:
 - OnPress: Navigate to /about
 
 COMPONENT STRUCTURE:
+
 ```typescript
 import { ScreenHeader, Text } from '@/src/components/ui';
 import { useTheme } from '@/src/hooks/useTheme';
@@ -85,12 +92,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AppSettingsScreen() {
   const { isDark, mode, setThemeMode } = useTheme();
-  
+
   // Notification states
   const [pushEnabled, setPushEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [smsEnabled, setSmsEnabled] = useState(false);
-  
+
   // Dark mode state
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDark);
 
@@ -104,7 +111,7 @@ export default function AppSettingsScreen() {
       const push = await AsyncStorage.getItem('notifications_push');
       const email = await AsyncStorage.getItem('notifications_email');
       const sms = await AsyncStorage.getItem('notifications_sms');
-      
+
       if (push !== null) setPushEnabled(push === 'true');
       if (email !== null) setEmailEnabled(email === 'true');
       if (sms !== null) setSmsEnabled(sms === 'true');
@@ -119,7 +126,7 @@ export default function AppSettingsScreen() {
   ) => {
     try {
       await AsyncStorage.setItem(`notifications_${type}`, value.toString());
-      
+
       switch (type) {
         case 'push':
           setPushEnabled(value);
@@ -154,7 +161,7 @@ export default function AppSettingsScreen() {
         {/* Notifications Section */}
         <View className="mb-6">
           <Text variant="h4" className="text-white mb-3">Notifications</Text>
-          
+
           <SettingToggleItem
             icon="notifications"
             iconBg="#3B82F6"
@@ -163,7 +170,7 @@ export default function AppSettingsScreen() {
             value={pushEnabled}
             onToggle={(v) => handleNotificationToggle('push', v)}
           />
-          
+
           <SettingToggleItem
             icon="mail"
             iconBg="#10B981"
@@ -172,7 +179,7 @@ export default function AppSettingsScreen() {
             value={emailEnabled}
             onToggle={(v) => handleNotificationToggle('email', v)}
           />
-          
+
           <SettingToggleItem
             icon="chatbubble"
             iconBg="#A855F7"
@@ -186,7 +193,7 @@ export default function AppSettingsScreen() {
         {/* Appearance Section */}
         <View className="mb-6">
           <Text variant="h4" className="text-white mb-3">Appearance</Text>
-          
+
           <SettingToggleItem
             icon={darkModeEnabled ? "moon" : "sunny"}
             iconBg="#F97316"
@@ -200,7 +207,7 @@ export default function AppSettingsScreen() {
         {/* About Section */}
         <View className="mb-8">
           <Text variant="h4" className="text-white mb-3">About</Text>
-          
+
           <TouchableOpacity
             className="bg-[#2A2A2A] rounded-2xl p-4 flex-row items-center"
             onPress={() => router.push('/about')}
@@ -242,18 +249,18 @@ const SettingToggleItem: React.FC<SettingToggleItemProps> = ({
 }) => {
   return (
     <View className="bg-[#2A2A2A] rounded-2xl p-4 flex-row items-center mb-3">
-      <View 
+      <View
         className="w-12 h-12 rounded-full items-center justify-center mr-4"
         style={{ backgroundColor: iconBg }}
       >
         <Ionicons name={icon} size={24} color="white" />
       </View>
-      
+
       <View className="flex-1">
         <Text variant="bodyMedium" className="text-white">{title}</Text>
         <Text variant="caption" className="text-gray-400">{subtitle}</Text>
       </View>
-      
+
       <Switch
         value={value}
         onValueChange={onToggle}
@@ -301,6 +308,7 @@ Body: {
   smsNotifications: boolean
 }
 ```
+
 ```
 
 ---
@@ -340,10 +348,10 @@ CHANGES:
   options={{
     title: 'Home',
     tabBarIcon: ({ color, focused }) => (
-      <Ionicons 
-        name={focused ? 'home' : 'home-outline'} 
-        size={24} 
-        color={color} 
+      <Ionicons
+        name={focused ? 'home' : 'home-outline'}
+        size={24}
+        color={color}
       />
     ),
   }}
@@ -354,10 +362,10 @@ CHANGES:
   options={{
     title: 'Wallet',
     tabBarIcon: ({ color, focused }) => (
-      <Ionicons 
-        name={focused ? 'wallet' : 'wallet-outline'} 
-        size={24} 
-        color={color} 
+      <Ionicons
+        name={focused ? 'wallet' : 'wallet-outline'}
+        size={24}
+        color={color}
       />
     ),
   }}
@@ -368,10 +376,10 @@ CHANGES:
   options={{
     title: 'Rewards',
     tabBarIcon: ({ color, focused }) => (
-      <Ionicons 
-        name={focused ? 'gift' : 'gift-outline'} 
-        size={24} 
-        color={color} 
+      <Ionicons
+        name={focused ? 'gift' : 'gift-outline'}
+        size={24}
+        color={color}
       />
     ),
   }}
@@ -382,10 +390,10 @@ CHANGES:
   options={{
     title: 'Profile',
     tabBarIcon: ({ color, focused }) => (
-      <Ionicons 
-        name={focused ? 'person' : 'person-outline'} 
-        size={24} 
-        color={color} 
+      <Ionicons
+        name={focused ? 'person' : 'person-outline'}
+        size={24}
+        color={color}
       />
     ),
   }}
@@ -393,6 +401,7 @@ CHANGES:
 ```
 
 3. REMOVE RED ACCENT:
+
 - No more red/purple colors in tab bar
 - Active: White
 - Inactive: Gray
@@ -400,10 +409,12 @@ CHANGES:
 - Border: Subtle gray
 
 4. ICON BEHAVIOR:
+
 - Use filled icons when tab is active
 - Use outline icons when tab is inactive
 - Size: 24px
 - Color changes based on state
+
 ```
 
 ---
@@ -496,3 +507,4 @@ code: string, // "705-5745-3411"
 formatted: string, // Display format
 qrCode: string // Base64 QR code image (optional)
 }
+```

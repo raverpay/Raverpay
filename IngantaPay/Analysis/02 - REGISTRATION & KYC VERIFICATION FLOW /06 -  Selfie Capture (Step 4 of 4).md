@@ -13,14 +13,14 @@ SCREEN DESIGN:
 2. CAMERA VIEW:
    - Full-screen camera preview (use expo-camera or react-native-vision-camera)
    - Overlay with rounded rectangle frame:
-     * Rounded corners with red bracket indicators at 4 corners
-     * Portrait orientation frame
-     * Semi-transparent dark overlay outside frame
+     - Rounded corners with red bracket indicators at 4 corners
+     - Portrait orientation frame
+     - Semi-transparent dark overlay outside frame
    - Guide text: "Scanning your face" (white, centered below camera)
    - Progress bar below text:
-     * Green color (#10B981)
-     * Animating from 0% to 100% during capture
-     * Show percentage or indeterminate loading
+     - Green color (#10B981)
+     - Animating from 0% to 100% during capture
+     - Show percentage or indeterminate loading
    - Helper text: "Please keep your face centered on the screen and facing forward" (gray, centered at bottom)
 
 3. CAMERA LOGIC:
@@ -36,10 +36,12 @@ SCREEN DESIGN:
    - Confirm: Upload to API → Navigate to verification complete
 
 API: POST /api/kyc/upload-selfie
+
 - Send image as multipart/form-data
 - Compress image before upload (max 2MB)
 
 PERMISSIONS:
+
 - Handle camera permission denied gracefully
 - Show helpful message if permission denied
 

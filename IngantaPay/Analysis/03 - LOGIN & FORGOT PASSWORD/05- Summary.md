@@ -21,11 +21,11 @@ Backend API:
 
 Testing Checklist:
 
- Login with email works
- Login with phone works
- Forgot password with email sends OTP via email
- Forgot password with phone sends OTP via SMS
- Invalid OTP codes are rejected
- Expired OTP codes are handled
- Rate limiting works correctly
- SMS fallback to email if SMS fails
+Login with email works
+Login with phone works
+Forgot password with email sends OTP via email
+Forgot password with phone sends OTP via SMS
+Invalid OTP codes are rejected
+Expired OTP codes are handled
+Rate limiting works correctly
+SMS fallback to email if SMS fails

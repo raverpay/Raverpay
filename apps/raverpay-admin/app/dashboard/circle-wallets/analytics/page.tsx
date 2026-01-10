@@ -272,9 +272,7 @@ export default function CircleAnalyticsPage() {
             </div>
             <p className="text-xs text-gray-500 flex items-center mt-1">
               Net Profit:{' '}
-              <span className="text-green-500 ml-1">
-                ${analytics?.summary.netProfit || '0.00'}
-              </span>
+              <span className="text-green-500 ml-1">${analytics?.summary.netProfit || '0.00'}</span>
             </p>
           </CardContent>
         </Card>
@@ -391,8 +389,8 @@ export default function CircleAnalyticsPage() {
                         tx.state === 'CONFIRMED'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : tx.state === 'PENDING'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                       }`}
                     >
                       {tx.state}

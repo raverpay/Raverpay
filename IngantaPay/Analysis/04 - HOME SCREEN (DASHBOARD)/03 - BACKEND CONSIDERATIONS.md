@@ -5,6 +5,7 @@ If implementing virtual account numbers (Mosaic Code):
    - Generate unique account number for each user on registration
    - Format: XXX-XXXX-XXXX (for display) or 10-digit number
    - Store in users table:
+
 ```sql
      ALTER TABLE users
      ADD COLUMN virtual_account_number VARCHAR(20),
@@ -19,6 +20,7 @@ If implementing virtual account numbers (Mosaic Code):
    - Update transaction history
 
 3. API ENDPOINT:
+
 ```typescript
    GET /api/wallet/virtual-account
    Response: {
