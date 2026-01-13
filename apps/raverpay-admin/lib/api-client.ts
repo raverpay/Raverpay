@@ -1,6 +1,14 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { generateIdempotencyKey, requiresIdempotencyKey } from './utils/idempotency';
 
+// Extend Window interface for re-auth token storage
+declare global {
+  interface Window {
+    __reAuthToken?: string;
+    __reAuthTokenExpiry?: number;
+  }
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 // Create axios instance
@@ -23,14 +31,14 @@ apiClient.interceptors.request.use(
 
     // Add re-authentication token if available and not expired
     if (typeof window !== 'undefined') {
-      const reAuthToken = (window as any).__reAuthToken;
-      const reAuthTokenExpiry = (window as any).__reAuthTokenExpiry;
+      const reAuthToken = window.__reAuthToken;
+      const reAuthTokenExpiry = window.__reAuthTokenExpiry;
       if (reAuthToken && reAuthTokenExpiry && Date.now() < reAuthTokenExpiry) {
         config.headers['X-Recent-Auth-Token'] = reAuthToken;
       } else {
         // Clear expired token
-        delete (window as any).__reAuthToken;
-        delete (window as any).__reAuthTokenExpiry;
+        delete window.__reAuthToken;
+        delete window.__reAuthTokenExpiry;
       }
     }
 

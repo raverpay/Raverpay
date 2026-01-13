@@ -22,6 +22,14 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AxiosError } from 'axios';
 
+// Extend Window interface for re-auth token storage
+declare global {
+  interface Window {
+    __reAuthToken?: string;
+    __reAuthTokenExpiry?: number;
+  }
+}
+
 const reAuthSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
@@ -57,8 +65,10 @@ export function ReAuthModal({
     onSuccess: (data) => {
       // Store re-auth token in memory (not localStorage for security)
       // The token will be sent in X-Recent-Auth-Token header
-      (window as any).__reAuthToken = data.reAuthToken;
-      (window as any).__reAuthTokenExpiry = Date.now() + data.expiresIn * 1000;
+      if (typeof window !== 'undefined') {
+        window.__reAuthToken = data.reAuthToken;
+        window.__reAuthTokenExpiry = Date.now() + data.expiresIn * 1000;
+      }
 
       reset();
       onOpenChange(false);

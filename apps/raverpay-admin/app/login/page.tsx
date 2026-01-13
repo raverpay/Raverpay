@@ -77,21 +77,28 @@ export default function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: LoginFormData) => authApi.login(email, password),
     onSuccess: (data) => {
-      // Check if user has admin access
-      const allowedRoles = ['ADMIN', 'SUPER_ADMIN', 'SUPPORT'];
-      if (!allowedRoles.includes(data.user.role)) {
-        toast.error('Access Denied', {
-          description: 'You do not have permission to access the admin dashboard.',
-        });
-        return;
-      }
-
-      // Check if MFA is required
+      // Check if MFA is required FIRST (before accessing data.user)
       if (data.mfaRequired && data.tempToken) {
         setMfaRequired(true);
         setTempToken(data.tempToken);
         toast.info('MFA Required', {
           description: 'Please enter your MFA code to continue',
+        });
+        return;
+      }
+
+      // Check if user has admin access (only if MFA not required)
+      if (!data.user) {
+        toast.error('Login Failed', {
+          description: 'Invalid response from server',
+        });
+        return;
+      }
+
+      const allowedRoles = ['ADMIN', 'SUPER_ADMIN', 'SUPPORT'];
+      if (!allowedRoles.includes(data.user.role)) {
+        toast.error('Access Denied', {
+          description: 'You do not have permission to access the admin dashboard.',
         });
         return;
       }
