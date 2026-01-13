@@ -144,7 +144,10 @@ export default function IpWhitelistPage() {
 
   useEffect(() => {
     if (currentIpData?.ipAddress) {
-      setCurrentIp(currentIpData.ipAddress);
+      // Defer state update to avoid synchronous setState in effect
+      setTimeout(() => {
+        setCurrentIp(currentIpData.ipAddress);
+      }, 0);
     }
   }, [currentIpData]);
 
