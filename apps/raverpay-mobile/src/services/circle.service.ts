@@ -393,6 +393,7 @@ class CircleService {
       }>('/v1/crypto/prices');
       return response.data;
     } catch (error) {
+      console.error('Error fetching crypto prices:', error);
       // Return default prices if fetch fails
       return {
         success: false,

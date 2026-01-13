@@ -88,7 +88,7 @@ export default function CircleSetupScreen() {
             <View className="items-center">
               <Ionicons name="checkmark-circle" size={48} color="#10B981" />
               <Text variant="h6" weight="semibold" align="center" className="mt-3 dark:text-white">
-                You're All Set!
+                You are All Set!
               </Text>
               <Text variant="body" color="secondary" align="center" className="mt-2">
                 You already have wallets on all supported networks.
