@@ -256,7 +256,7 @@ describe.skip('AuthService - MFA', () => {
 
     it('should increment failed attempts on invalid code', async () => {
       const secretObj = speakeasy.generateSecret({ length: 32 });
-      const secret = secretObj.base32!;
+      const secret = secretObj.base32;
 
       const adminUser = {
         id: 'admin-1',
@@ -429,7 +429,7 @@ describe.skip('AuthService - MFA', () => {
   describe('regenerateBackupCodes', () => {
     it('should generate new backup codes', async () => {
       const secretObj = speakeasy.generateSecret({ length: 32 });
-      const secret = secretObj.base32!;
+      const secret = secretObj.base32;
       const mfaCode = speakeasy.totp({ secret, encoding: 'base32' });
 
       const adminUser = {
