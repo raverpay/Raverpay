@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { IpWhitelistGuard } from './ip-whitelist.guard';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../services/audit.service';
@@ -20,6 +20,10 @@ describe('IpWhitelistGuard', () => {
 
   const mockAuditService = {
     log: jest.fn(),
+  };
+
+  const mockReflector = {
+    getAllAndOverride: jest.fn().mockReturnValue(undefined),
   };
 
   const createMockContext = (
@@ -47,7 +51,10 @@ describe('IpWhitelistGuard', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IpWhitelistGuard,
-        Reflector,
+        {
+          provide: Reflector,
+          useValue: mockReflector,
+        },
         {
           provide: PrismaService,
           useValue: mockPrismaService,
@@ -65,6 +72,7 @@ describe('IpWhitelistGuard', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    mockReflector.getAllAndOverride.mockReturnValue(undefined);
   });
 
   describe('canActivate', () => {
@@ -110,9 +118,10 @@ describe('IpWhitelistGuard', () => {
 
       const context = createMockContext(adminUser, '192.168.1.100');
 
-      const result = await guard.canActivate(context);
-
-      expect(result).toBe(false);
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockAuditService.log).toHaveBeenCalled();
     });
 
     it('should support CIDR notation', async () => {
@@ -174,7 +183,7 @@ describe('IpWhitelistGuard', () => {
       expect(
         mockPrismaService.adminIpWhitelist.updateMany,
       ).toHaveBeenCalledWith({
-        where: { id: whitelistEntry.id },
+        where: { ipAddress: '192.168.1.1' },
         data: expect.objectContaining({
           lastUsedAt: expect.any(Date),
           usageCount: { increment: 1 },

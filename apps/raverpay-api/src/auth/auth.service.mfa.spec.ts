@@ -6,6 +6,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { DeviceService } from '../device/device.service';
 import { AuditService } from '../common/services/audit.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
+import { VirtualAccountsService } from '../virtual-accounts/virtual-accounts.service';
+import { UsersService } from '../users/users.service';
+import { IpGeolocationService } from '../common/services/ip-geolocation.service';
+import { PostHogService } from '../common/analytics/posthog.service';
 import { MfaEncryptionUtil } from '../utils/mfa-encryption.util';
 import { UserRole } from '@prisma/client';
 import * as speakeasy from 'speakeasy';
@@ -73,6 +77,22 @@ describe('AuthService - MFA', () => {
         {
           provide: NotificationDispatcherService,
           useValue: mockNotificationDispatcher,
+        },
+        {
+          provide: VirtualAccountsService,
+          useValue: {},
+        },
+        {
+          provide: UsersService,
+          useValue: {},
+        },
+        {
+          provide: IpGeolocationService,
+          useValue: {},
+        },
+        {
+          provide: PostHogService,
+          useValue: {},
         },
         {
           provide: MfaEncryptionUtil,

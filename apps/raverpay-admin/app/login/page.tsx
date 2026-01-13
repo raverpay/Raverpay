@@ -182,44 +182,44 @@ export default function LoginPage() {
         <CardContent>
           {!mfaRequired ? (
             <form onSubmit={handleLoginSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@raverpay.com"
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@raverpay.com"
                   {...registerLogin('email')}
-                disabled={loginMutation.isPending}
-              />
+                  disabled={loginMutation.isPending}
+                />
                 {loginErrors.email && (
                   <p className="text-sm text-destructive">{loginErrors.email.message}</p>
                 )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                    {...registerLogin('password')}
-                  disabled={loginMutation.isPending}
-                />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    {...registerLogin('password')}
+                    disabled={loginMutation.isPending}
+                  />
+                </div>
                 {loginErrors.password && (
                   <p className="text-sm text-destructive">{loginErrors.password.message}</p>
-              )}
-            </div>
+                )}
+              </div>
 
-            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-              {loginMutation.isPending ? (
-                <>
+              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? (
+                  <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
                 )}
               </Button>
             </form>
@@ -308,9 +308,9 @@ export default function LoginPage() {
                         </>
                       ) : (
                         'Verify Backup Code'
-              )}
-            </Button>
-          </form>
+                      )}
+                    </Button>
+                  </form>
 
                   <div className="text-center">
                     <Button

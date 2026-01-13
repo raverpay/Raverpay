@@ -155,16 +155,16 @@ export class IpWhitelistGuard implements CanActivate {
       try {
         // IPv4 CIDR check
         if (isIPv4(clientIp)) {
-          const address = new Address4(whitelistEntry);
+          const networkAddress = new Address4(whitelistEntry);
           const clientAddress = new Address4(clientIp);
-          return address.isInSubnet(clientAddress);
+          return clientAddress.isInSubnet(networkAddress);
         }
 
         // IPv6 CIDR check
         if (isIPv6(clientIp)) {
-          const address = new Address6(whitelistEntry);
+          const networkAddress = new Address6(whitelistEntry);
           const clientAddress = new Address6(clientIp);
-          return address.isInSubnet(clientAddress);
+          return clientAddress.isInSubnet(networkAddress);
         }
       } catch (error) {
         this.logger.error(`Invalid CIDR notation: ${whitelistEntry}`, error);
