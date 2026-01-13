@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -140,10 +140,13 @@ export default function IpWhitelistPage() {
   const { data: currentIpData, isLoading: isLoadingIp } = useQuery({
     queryKey: ['current-ip'],
     queryFn: () => securityApi.getCurrentIp(),
-    onSuccess: (data) => {
-      setCurrentIp(data.ipAddress);
-    },
   });
+
+  useEffect(() => {
+    if (currentIpData?.ipAddress) {
+      setCurrentIp(currentIpData.ipAddress);
+    }
+  }, [currentIpData]);
 
   // Check MFA status
   const { data: mfaStatus } = useMfaQuery({
