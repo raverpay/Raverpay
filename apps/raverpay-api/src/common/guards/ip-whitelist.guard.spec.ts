@@ -16,6 +16,9 @@ describe('IpWhitelistGuard', () => {
       findMany: jest.fn(),
       updateMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   };
 
   const mockAuditService = {
@@ -80,6 +83,10 @@ describe('IpWhitelistGuard', () => {
   afterEach(() => {
     jest.clearAllMocks();
     mockReflector.getAllAndOverride.mockReturnValue(undefined);
+    // Reset default mock for user.findUnique
+    mockPrismaService.user.findUnique.mockResolvedValue({
+      ipWhitelistGracePeriodUntil: null,
+    });
   });
 
   describe('canActivate', () => {
@@ -103,6 +110,11 @@ describe('IpWhitelistGuard', () => {
         role: UserRole.ADMIN,
       };
 
+      // Mock grace period check - no grace period
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: null,
+      });
+
       mockPrismaService.adminIpWhitelist.findMany.mockResolvedValue([
         { id: '1', ipAddress: '192.168.1.1', isActive: true },
       ]);
@@ -112,6 +124,7 @@ describe('IpWhitelistGuard', () => {
       const result = await guard.canActivate(context);
 
       expect(result).toBe(true);
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalled();
       expect(mockPrismaService.adminIpWhitelist.findMany).toHaveBeenCalled();
     });
 
@@ -121,6 +134,11 @@ describe('IpWhitelistGuard', () => {
         role: UserRole.ADMIN,
       };
 
+      // Mock grace period check - no grace period
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: null,
+      });
+
       mockPrismaService.adminIpWhitelist.findMany.mockResolvedValue([]);
 
       const context = createMockContext(adminUser, '192.168.1.100');
@@ -128,6 +146,7 @@ describe('IpWhitelistGuard', () => {
       await expect(guard.canActivate(context)).rejects.toThrow(
         ForbiddenException,
       );
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalled();
       expect(mockAuditService.log).toHaveBeenCalled();
     });
 
@@ -136,6 +155,11 @@ describe('IpWhitelistGuard', () => {
         id: 'admin-1',
         role: UserRole.ADMIN,
       };
+
+      // Mock grace period check - no grace period
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: null,
+      });
 
       mockPrismaService.adminIpWhitelist.findMany.mockResolvedValue([
         { id: '1', ipAddress: '192.168.1.0/24', isActive: true },
@@ -153,6 +177,11 @@ describe('IpWhitelistGuard', () => {
         id: 'admin-1',
         role: UserRole.ADMIN,
       };
+
+      // Mock grace period check - no grace period
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: null,
+      });
 
       mockPrismaService.adminIpWhitelist.findMany.mockResolvedValue([
         { id: '1', ipAddress: '10.0.0.1', isActive: true },
@@ -172,6 +201,11 @@ describe('IpWhitelistGuard', () => {
         id: 'admin-1',
         role: UserRole.ADMIN,
       };
+
+      // Mock grace period check - no grace period
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: null,
+      });
 
       const whitelistEntry = {
         id: '1',
@@ -196,6 +230,60 @@ describe('IpWhitelistGuard', () => {
           usageCount: { increment: 1 },
         }),
       });
+    });
+
+    it('should allow admin with active grace period even without whitelisted IP', async () => {
+      const adminUser = {
+        id: 'admin-1',
+        role: UserRole.ADMIN,
+      };
+
+      // Mock grace period check - active grace period (24 hours from now)
+      const gracePeriodUntil = new Date();
+      gracePeriodUntil.setHours(gracePeriodUntil.getHours() + 24);
+
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: gracePeriodUntil,
+      });
+
+      // No whitelist entries
+      mockPrismaService.adminIpWhitelist.findMany.mockResolvedValue([]);
+
+      const context = createMockContext(adminUser, '192.168.1.100');
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalled();
+      // Should not check whitelist when grace period is active
+      expect(mockPrismaService.adminIpWhitelist.findMany).not.toHaveBeenCalled();
+    });
+
+    it('should block admin with expired grace period and no whitelisted IP', async () => {
+      const adminUser = {
+        id: 'admin-1',
+        role: UserRole.ADMIN,
+      };
+
+      // Mock grace period check - expired grace period (24 hours ago)
+      const gracePeriodUntil = new Date();
+      gracePeriodUntil.setHours(gracePeriodUntil.getHours() - 24);
+
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        ipWhitelistGracePeriodUntil: gracePeriodUntil,
+      });
+
+      // No whitelist entries
+      mockPrismaService.adminIpWhitelist.findMany.mockResolvedValue([]);
+
+      const context = createMockContext(adminUser, '192.168.1.100');
+
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalled();
+      expect(mockPrismaService.adminIpWhitelist.findMany).toHaveBeenCalled();
+      expect(mockAuditService.log).toHaveBeenCalled();
     });
   });
 });
