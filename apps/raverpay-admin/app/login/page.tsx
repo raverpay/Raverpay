@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ApiError } from '@/types';
+import { ApiError, User } from '@/types';
 import { AxiosError } from 'axios';
 import { PasswordChangeModal } from '@/components/security/password-change-modal';
 
@@ -51,6 +51,7 @@ export default function LoginPage() {
   const [tempToken, setTempToken] = useState<string | null>(null);
   const [passwordChangeRequired, setPasswordChangeRequired] = useState(false);
   const [passwordChangeToken, setPasswordChangeToken] = useState<string | null>(null);
+  const [passwordChangeUser, setPasswordChangeUser] = useState<User | null>(null); // Store user to check MFA status
   const [useBackupCode, setUseBackupCode] = useState(false);
 
   const {
@@ -80,7 +81,23 @@ export default function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: LoginFormData) => authApi.login(email, password),
     onSuccess: (data) => {
-      // Check if MFA is required FIRST (before accessing data.user)
+      // Check if password change is required FIRST (before MFA check)
+      if (data.mustChangePassword && data.passwordChangeToken) {
+        setPasswordChangeRequired(true);
+        setPasswordChangeToken(data.passwordChangeToken);
+        // Store user object to check MFA status in modal
+        if (data.user) {
+          setPasswordChangeUser(data.user);
+        }
+        // DO NOT call setAuth here - it would set isAuthenticated=true and cause redirect loop
+        // The password change modal will call setAuth after successful password change
+        toast.info('Password Change Required', {
+          description: 'You must change your password before accessing the dashboard',
+        });
+        return;
+      }
+
+      // Check if MFA is required (before accessing data.user)
       if (data.mfaRequired && data.tempToken) {
         setMfaRequired(true);
         setTempToken(data.tempToken);
@@ -375,9 +392,11 @@ export default function LoginPage() {
         <PasswordChangeModal
           open={passwordChangeRequired}
           passwordChangeToken={passwordChangeToken}
+          user={passwordChangeUser}
           onSuccess={() => {
             setPasswordChangeRequired(false);
             setPasswordChangeToken(null);
+            setPasswordChangeUser(null);
             router.push('/dashboard');
           }}
         />

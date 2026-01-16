@@ -371,13 +371,14 @@ export class AdminAdminsService {
 
     // Handle MFA setup if requested
     let mfaQrCode: string | null = null;
-    const mfaBackupCodes: string[] = [];
+    let mfaBackupCodes: string[] = [];
     let mfaStatus = 'Set up on first login';
 
     if (dto.sendMfaSetup) {
       try {
         const mfaSetup = await this.authService.setupMfa(admin.id);
         mfaQrCode = mfaSetup.qrCode;
+        mfaBackupCodes = mfaSetup.backupCodes || [];
 
         mfaStatus = 'QR code attached to email - Scan with authenticator app';
 
@@ -418,6 +419,7 @@ export class AdminAdminsService {
           ipWhitelistStatus,
           mfaStatus,
           hasMfaQrCode: !!mfaQrCode,
+          backupCodes: mfaBackupCodes.length > 0 ? mfaBackupCodes : undefined,
         });
 
         // Prepare attachments (MFA QR code if available)

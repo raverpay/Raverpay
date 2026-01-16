@@ -10,6 +10,7 @@ export function adminWelcomeEmailTemplate(data: {
   ipWhitelistStatus: string;
   mfaStatus: string;
   hasMfaQrCode: boolean;
+  backupCodes?: string[];
 }): {
   html: string;
   subject: string;
@@ -99,6 +100,23 @@ export function adminWelcomeEmailTemplate(data: {
                         <p style="margin: 15px 0 5px 0; font-size: 15px; color: #333333;">
                           <strong>MFA QR Code:</strong> Attached to this email. Scan with your authenticator app.
                         </p>
+                        ${
+                          data.backupCodes && data.backupCodes.length > 0
+                            ? `
+                        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                          <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333; font-weight: 600;">
+                            🔐 Backup Codes (Save these securely - single use only):
+                          </p>
+                          <div style="font-family: monospace; font-size: 13px; color: #333333; line-height: 1.8;">
+                            ${data.backupCodes.map((code, index) => `${index + 1}. ${code}`).join('<br>')}
+                          </div>
+                          <p style="margin: 10px 0 0 0; font-size: 12px; color: #856404; font-style: italic;">
+                            ⚠️ These codes are single-use only. Store them securely. You can regenerate them after logging in.
+                          </p>
+                        </div>
+                        `
+                            : ''
+                        }
                       `
                           : ''
                       }

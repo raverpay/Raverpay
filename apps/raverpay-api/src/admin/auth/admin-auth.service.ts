@@ -118,18 +118,42 @@ export class AdminAuthService {
         throw new BadRequestException('MFA code is required');
       }
 
-      // Try TOTP code first
-      const secret = this.mfaEncryption.decryptSecret(user.twoFactorSecret);
-      const isValidTotp = speakeasy.totp.verify({
-        secret,
-        encoding: 'base32',
-        token: dto.mfaCode,
-        window: 1,
-      });
+      // Validate MFA code format: must be 6 digits (TOTP) or 8 digits (backup code)
+      const mfaCodeRegex = /^\d{6}$|^\d{8}$/;
+      if (!mfaCodeRegex.test(dto.mfaCode)) {
+        await this.auditService.log({
+          userId: user.id,
+          action: AuditAction.MFA_VERIFICATION_FAILED,
+          resource: 'AUTH',
+          status: AuditStatus.FAILURE,
+          severity: AuditSeverity.MEDIUM,
+          metadata: {
+            reason: 'INVALID_MFA_CODE_FORMAT',
+            ipAddress,
+            codeLength: dto.mfaCode.length,
+          },
+        });
 
-      // If TOTP fails, try backup code
+        throw new BadRequestException(
+          'MFA code must be 6 digits (TOTP) or 8 digits (backup code)',
+        );
+      }
+
+      // Try TOTP code first (6 digits)
+      let isValidTotp = false;
+      if (dto.mfaCode.length === 6) {
+        const secret = this.mfaEncryption.decryptSecret(user.twoFactorSecret);
+        isValidTotp = speakeasy.totp.verify({
+          secret,
+          encoding: 'base32',
+          token: dto.mfaCode,
+          window: 1,
+        });
+      }
+
+      // If TOTP fails or code is 8 digits, try backup code
       let isValidBackup = false;
-      if (!isValidTotp) {
+      if (!isValidTotp && dto.mfaCode.length === 8) {
         const backupCodes = user.mfaBackupCodes || [];
         for (const backupCode of backupCodes) {
           try {
@@ -161,6 +185,7 @@ export class AdminAuthService {
           metadata: {
             reason: 'PASSWORD_CHANGE_MFA_FAILED',
             ipAddress,
+            codeLength: dto.mfaCode.length,
           },
         });
 

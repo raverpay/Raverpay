@@ -249,29 +249,41 @@ export class AuthService {
       user.role === UserRole.SUPER_ADMIN;
 
     // Check IP whitelist for admin users BEFORE MFA verification
-    if (isAdmin && ipAddress && ipAddress !== 'unknown') {
-      const isIpWhitelisted = await this.checkIpWhitelist(ipAddress, user.id);
-      if (!isIpWhitelisted) {
+    if (isAdmin) {
+      if (!ipAddress || ipAddress === 'unknown') {
         this.logger.warn(
-          `Blocked admin login from non-whitelisted IP: ${ipAddress} for user: ${user.email}`,
+          `⚠️ IP address not detected for admin login: ${user.email}. This may indicate a proxy/load balancer configuration issue.`,
         );
+        // Still allow login but log warning - IP whitelist check will be skipped
+      } else {
+        const isIpWhitelisted = await this.checkIpWhitelist(ipAddress, user.id);
+        if (!isIpWhitelisted) {
+          this.logger.warn(
+            `🚫 Blocked admin login from non-whitelisted IP: ${ipAddress} for user: ${user.email}`,
+          );
 
-        await this.auditService.log({
-          userId: user.id,
-          action: AuditAction.IP_BLOCKED,
-          resource: 'AUTH',
-          status: AuditStatus.FAILURE,
-          severity: AuditSeverity.HIGH,
-          metadata: {
-            blockedIp: ipAddress,
-            attemptedRoute: '/auth/login',
-            reason: 'IP_NOT_WHITELISTED',
-          },
-        });
+          await this.auditService.log({
+            userId: user.id,
+            action: AuditAction.IP_BLOCKED,
+            resource: 'AUTH',
+            status: AuditStatus.FAILURE,
+            severity: AuditSeverity.HIGH,
+            metadata: {
+              blockedIp: ipAddress,
+              attemptedRoute: '/auth/login',
+              reason: 'IP_NOT_WHITELISTED',
+              userEmail: user.email,
+            },
+          });
 
-        throw new ForbiddenException(
-          'Access denied: Your IP address is not whitelisted for admin access. Please contact support.',
-        );
+          throw new ForbiddenException(
+            'Access denied: Your IP address is not whitelisted for admin access. Please contact support.',
+          );
+        } else {
+          this.logger.log(
+            `✅ IP whitelist check passed for admin: ${user.email} from IP: ${ipAddress}`,
+          );
+        }
       }
     }
 
@@ -412,6 +424,49 @@ export class AuthService {
 
     this.logger.log(`User logged in: ${user.email}`);
 
+    // Check if password change is required (for admin users without MFA)
+    // This check happens BEFORE generating tokens
+    if (isAdmin && user.mustChangePassword) {
+      // Generate password-change token (15 minute expiry)
+      const passwordChangeToken = this.jwtService.sign(
+        {
+          sub: user.id,
+          purpose: 'password-change',
+          email: user.email,
+        },
+        { expiresIn: '15m' },
+      );
+
+      // Remove password from response
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = user;
+
+      this.logger.log(
+        `Password change required for admin user: ${user.email} (IP: ${ipAddress})`,
+      );
+
+      // Log password change required event
+      await this.auditService.log({
+        userId: user.id,
+        action: AuditAction.PASSWORD_CHANGE_REQUIRED,
+        resource: 'AUTH',
+        status: AuditStatus.SUCCESS,
+        severity: AuditSeverity.MEDIUM,
+        metadata: {
+          reason: 'FIRST_LOGIN',
+          ipAddress,
+        },
+      });
+
+      return {
+        mustChangePassword: true,
+        passwordChangeToken,
+        message: 'Password change required on first login',
+        user: userWithoutPassword,
+        // DO NOT return tokens - user must change password first
+      };
+    }
+
     // Log successful login
     await this.auditService.logAuth(AuditAction.USER_LOGIN, user.id, {
       identifier: dto.identifier,
@@ -426,8 +481,8 @@ export class AuthService {
         : undefined,
     });
 
-    // Generate tokens
-    const tokens = await this.generateTokens(user);
+    // Generate tokens (only if password change is not required)
+    const tokens = await this.generateTokens(user, deviceInfo, ipAddress);
 
     // Identify user in PostHog
     this.posthogService.identify(user.id, {

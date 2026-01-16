@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 
 import { authApi } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/auth-store';
+import { User } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -24,39 +25,48 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AxiosError } from 'axios';
 
-const passwordChangeSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        'Password must contain uppercase, lowercase, number, and special character',
-      ),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-    mfaCode: z.string().min(1, 'MFA code is required'),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  })
-  .refine((data) => data.newPassword !== data.currentPassword, {
-    message: 'New password must be different from current password',
-    path: ['newPassword'],
-  });
+// Dynamic schema based on MFA status
+const createPasswordChangeSchema = (mfaRequired: boolean) =>
+  z
+    .object({
+      currentPassword: z.string().min(1, 'Current password is required'),
+      newPassword: z
+        .string()
+        .min(8, 'Password must be at least 8 characters')
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+          'Password must contain uppercase, lowercase, number, and special character',
+        ),
+      confirmPassword: z.string().min(1, 'Please confirm your password'),
+      mfaCode: mfaRequired
+        ? z
+            .string()
+            .min(1, 'MFA code is required')
+            .regex(/^\d{6}$|^\d{8}$/, 'MFA code must be 6 digits (TOTP) or 8 digits (backup code)')
+        : z.string().optional(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ['confirmPassword'],
+    })
+    .refine((data) => data.newPassword !== data.currentPassword, {
+      message: 'New password must be different from current password',
+      path: ['newPassword'],
+    });
 
 type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;
 
 interface PasswordChangeModalProps {
   open: boolean;
   passwordChangeToken: string;
+  user?: User | null; // User object to check MFA status
   onSuccess?: () => void;
 }
 
 export function PasswordChangeModal({
   open,
   passwordChangeToken,
+  user,
   onSuccess,
 }: PasswordChangeModalProps) {
   const router = useRouter();
@@ -64,6 +74,13 @@ export function PasswordChangeModal({
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { setAuth } = useAuthStore();
+
+  // Check if MFA is enabled
+  const mfaRequired = user?.twoFactorEnabled === true;
+
+  // Create schema based on MFA requirement
+  const passwordChangeSchema = createPasswordChangeSchema(mfaRequired);
+  type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;
 
   const {
     register,
@@ -81,7 +98,7 @@ export function PasswordChangeModal({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
         confirmPassword: data.confirmPassword,
-        mfaCode: data.mfaCode,
+        mfaCode: data.mfaCode || undefined, // Only send if provided
       }),
     onSuccess: (data) => {
       // Update auth store with new tokens
@@ -142,8 +159,8 @@ export function PasswordChangeModal({
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Please enter your current password, choose a new secure password, and verify with your
-              MFA code.
+              Please enter your current password and choose a new secure password.
+              {mfaRequired && ' You will also need to verify with your MFA code.'}
             </AlertDescription>
           </Alert>
 
@@ -239,23 +256,26 @@ export function PasswordChangeModal({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="mfa-code">MFA Code</Label>
-            <Input
-              id="mfa-code"
-              type="text"
-              placeholder="Enter 6-digit MFA code"
-              maxLength={6}
-              {...register('mfaCode')}
-              disabled={changePasswordMutation.isPending}
-            />
-            {errors.mfaCode && (
-              <p className="text-sm text-destructive">{errors.mfaCode.message}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Enter the code from your authenticator app or use a backup code
-            </p>
-          </div>
+          {mfaRequired && (
+            <div className="space-y-2">
+              <Label htmlFor="mfa-code">MFA Code</Label>
+              <Input
+                id="mfa-code"
+                type="text"
+                placeholder="Enter 6-digit MFA code or 8-digit backup code"
+                maxLength={8}
+                className="text-center text-xl tracking-widest font-mono"
+                {...register('mfaCode')}
+                disabled={changePasswordMutation.isPending}
+              />
+              {errors.mfaCode && (
+                <p className="text-sm text-destructive">{errors.mfaCode.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Enter the code from your authenticator app or use a backup code
+              </p>
+            </div>
+          )}
 
           <Button type="submit" disabled={changePasswordMutation.isPending} className="w-full">
             {changePasswordMutation.isPending ? (
