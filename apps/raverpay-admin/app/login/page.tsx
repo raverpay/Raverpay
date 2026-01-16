@@ -131,9 +131,58 @@ export default function LoginPage() {
       router.push('/dashboard');
     },
     onError: (error: AxiosError<ApiError>) => {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-      toast.error('Login Failed', {
-        description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = Array.isArray(errorData?.message)
+        ? errorData.message[0]
+        : errorData?.message || 'Login failed. Please try again.';
+
+      // Parse error message to determine error type and show appropriate message
+      let title = 'Login Failed';
+      let description = errorMessage;
+
+      if (statusCode === 401) {
+        const lowerMessage = errorMessage.toLowerCase();
+        if (lowerMessage.includes('locked')) {
+          title = 'Account Locked';
+          description = errorMessage; // Backend message includes time remaining
+        } else if (lowerMessage.includes('banned')) {
+          title = 'Account Banned';
+          description = 'Your account has been banned. Please contact support for assistance.';
+        } else if (lowerMessage.includes('suspended')) {
+          title = 'Account Suspended';
+          description = 'Your account has been suspended. Please contact support for assistance.';
+        } else if (lowerMessage.includes('deleted') || lowerMessage.includes('does not exist')) {
+          title = 'Account Not Found';
+          description =
+            'No account found with these credentials. Please check your email and password.';
+        } else if (lowerMessage.includes('invalid') || lowerMessage.includes('credentials')) {
+          title = 'Invalid Credentials';
+          description = 'The email or password you entered is incorrect. Please try again.';
+        } else if (lowerMessage.includes('ip') || lowerMessage.includes('whitelist')) {
+          title = 'Access Restricted';
+          description = errorMessage; // Backend message explains IP restriction
+        } else {
+          title = 'Authentication Failed';
+          description = errorMessage;
+        }
+      } else if (statusCode === 403) {
+        title = 'Access Denied';
+        description = 'You do not have permission to access the admin dashboard.';
+      } else if (statusCode === 429) {
+        title = 'Too Many Attempts';
+        description = 'Too many login attempts. Please wait a moment before trying again.';
+      } else if (statusCode === 400) {
+        title = 'Invalid Input';
+        description = errorMessage;
+      } else if (statusCode === 404) {
+        title = 'Service Unavailable';
+        description = 'The login service is currently unavailable. Please try again later.';
+      }
+
+      toast.error(title, {
+        description,
+        duration: 5000,
       });
     },
   });
@@ -170,9 +219,42 @@ export default function LoginPage() {
       router.push('/dashboard');
     },
     onError: (error: AxiosError<ApiError>) => {
-      const errorMessage = error.response?.data?.message || 'Invalid MFA code';
-      toast.error('Verification Failed', {
-        description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = Array.isArray(errorData?.message)
+        ? errorData.message[0]
+        : errorData?.message || 'Invalid MFA code';
+
+      // Parse error message to determine error type and show appropriate message
+      let title = 'Verification Failed';
+      let description = errorMessage;
+
+      if (statusCode === 401) {
+        const lowerMessage = errorMessage.toLowerCase();
+        if (lowerMessage.includes('locked')) {
+          title = 'Account Locked';
+          description = errorMessage; // Backend message includes time remaining
+        } else if (lowerMessage.includes('invalid') || lowerMessage.includes('code')) {
+          title = 'Invalid MFA Code';
+          description = errorMessage; // Backend message includes attempt count
+        } else if (lowerMessage.includes('expired') || lowerMessage.includes('session')) {
+          title = 'Session Expired';
+          description = 'Your verification session has expired. Please log in again.';
+        } else {
+          title = 'MFA Verification Failed';
+          description = errorMessage;
+        }
+      } else if (statusCode === 429) {
+        title = 'Too Many Attempts';
+        description = 'Too many verification attempts. Please wait a moment before trying again.';
+      } else if (statusCode === 400) {
+        title = 'Invalid Input';
+        description = errorMessage;
+      }
+
+      toast.error(title, {
+        description,
+        duration: 5000,
       });
     },
   });
@@ -209,9 +291,48 @@ export default function LoginPage() {
       router.push('/dashboard');
     },
     onError: (error: AxiosError<ApiError>) => {
-      const errorMessage = error.response?.data?.message || 'Invalid backup code';
-      toast.error('Verification Failed', {
-        description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = Array.isArray(errorData?.message)
+        ? errorData.message[0]
+        : errorData?.message || 'Invalid backup code';
+
+      // Parse error message to determine error type and show appropriate message
+      let title = 'Verification Failed';
+      let description = errorMessage;
+
+      if (statusCode === 401) {
+        const lowerMessage = errorMessage.toLowerCase();
+        if (lowerMessage.includes('locked')) {
+          title = 'Account Locked';
+          description = errorMessage; // Backend message includes time remaining
+        } else if (
+          lowerMessage.includes('invalid') ||
+          lowerMessage.includes('backup') ||
+          lowerMessage.includes('code')
+        ) {
+          title = 'Invalid Backup Code';
+          description = errorMessage; // Backend message includes attempt count
+        } else if (lowerMessage.includes('expired') || lowerMessage.includes('session')) {
+          title = 'Session Expired';
+          description = 'Your verification session has expired. Please log in again.';
+        } else {
+          title = 'Backup Code Verification Failed';
+          description = errorMessage;
+        }
+      } else if (statusCode === 429) {
+        title = 'Too Many Attempts';
+        description = 'Too many verification attempts. Please wait a moment before trying again.';
+      } else if (statusCode === 400) {
+        title = 'Invalid Input';
+        description = errorMessage;
+      }
+
+      console.log(title, description);
+
+      toast.error(title, {
+        description,
+        duration: 5000,
       });
     },
   });

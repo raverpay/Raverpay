@@ -119,8 +119,17 @@ export class AdminAuthService {
     const isMfaEnabled = user.twoFactorEnabled === true;
     const needsMfaVerification = hasMfaSecret; // Require MFA if secret exists (pre-provisioned or enabled)
 
+    // Log MFA requirement check for debugging
+    this.logger.warn(
+      `[PASSWORD CHANGE MFA CHECK] user=${user.id}, email=${user.email}, hasMfaSecret=${hasMfaSecret}, isMfaEnabled=${isMfaEnabled}, needsMfaVerification=${needsMfaVerification}, twoFactorSecretExists=${!!user.twoFactorSecret}`,
+    );
+
     if (needsMfaVerification) {
-      if (!dto.mfaCode) {
+      // CRITICAL: Check for missing, empty, or whitespace-only MFA code
+      if (!dto.mfaCode || typeof dto.mfaCode !== 'string' || dto.mfaCode.trim().length === 0) {
+        this.logger.error(
+          `[MFA CODE MISSING] user=${user.id}, email=${user.email}, mfaCodeProvided=${!!dto.mfaCode}, mfaCodeType=${typeof dto.mfaCode}, mfaCodeValue=${dto.mfaCode}`,
+        );
         throw new BadRequestException(
           'MFA code is required. Please enter the code from your authenticator app or use a backup code.',
         );
@@ -136,9 +145,12 @@ export class AdminAuthService {
         );
       }
 
+      // Trim whitespace from MFA code
+      const trimmedMfaCode = dto.mfaCode.trim();
+
       // Validate MFA code format: must be 6 digits (TOTP) or 8 digits (backup code)
       const mfaCodeRegex = /^\d{6}$|^\d{8}$/;
-      if (!mfaCodeRegex.test(dto.mfaCode)) {
+      if (!mfaCodeRegex.test(trimmedMfaCode)) {
         await this.auditService.log({
           userId: user.id,
           action: AuditAction.MFA_VERIFICATION_FAILED,
@@ -178,13 +190,13 @@ export class AdminAuthService {
 
       // Try TOTP code first (6 digits)
       let isValidTotp = false;
-      if (dto.mfaCode.length === 6) {
+      if (trimmedMfaCode.length === 6) {
         try {
           // CRITICAL: Verify TOTP code - must return exactly true to be valid
           const verifyResult = speakeasy.totp.verify({
             secret,
             encoding: 'base32',
-            token: dto.mfaCode,
+            token: trimmedMfaCode,
             window: 1, // Allow 30 seconds clock drift
           });
 
@@ -194,7 +206,7 @@ export class AdminAuthService {
 
           // Log verification attempt for debugging (use warn level so it's visible)
           this.logger.warn(
-            `[MFA VERIFICATION] user=${user.id}, email=${user.email}, code=${dto.mfaCode}, secretLength=${secret.length}, verifyResult=${verifyResult}, isValidTotp=${isValidTotp}, isTemporarySecret=${isTemporarySecret}`,
+            `[MFA VERIFICATION] user=${user.id}, email=${user.email}, code=${trimmedMfaCode}, secretLength=${secret.length}, verifyResult=${verifyResult}, isValidTotp=${isValidTotp}, isTemporarySecret=${isTemporarySecret}`,
           );
 
           // Additional safety check: if verifyResult is not explicitly true, ensure isValidTotp is false
@@ -215,23 +227,32 @@ export class AdminAuthService {
         // Code is not 6 digits, so TOTP verification won't be attempted
         isValidTotp = false;
         this.logger.warn(
-          `[MFA VERIFICATION] Code length is ${dto.mfaCode.length}, not 6 digits. Skipping TOTP verification.`,
+          `[MFA VERIFICATION] Code length is ${trimmedMfaCode.length}, not 6 digits. Skipping TOTP verification.`,
         );
       }
 
       // If TOTP fails or code is 8 digits, try backup code
       let isValidBackup = false;
       let matchedBackupIndex = -1;
-      if (!isValidTotp && dto.mfaCode.length === 8) {
+      if (!isValidTotp && trimmedMfaCode.length === 8) {
         const backupCodes = user.mfaBackupCodes || [];
+        this.logger.warn(
+          `[MFA BACKUP CODE CHECK] user=${user.id}, email=${user.email}, backupCodesCount=${backupCodes.length}`,
+        );
         for (let i = 0; i < backupCodes.length; i++) {
           try {
-            isValidBackup = await argon2.verify(backupCodes[i], dto.mfaCode);
+            isValidBackup = await argon2.verify(backupCodes[i], trimmedMfaCode);
             if (isValidBackup) {
               matchedBackupIndex = i;
+              this.logger.warn(
+                `[MFA BACKUP CODE MATCH] user=${user.id}, email=${user.email}, matchedIndex=${i}`,
+              );
               break;
             }
-          } catch {
+          } catch (error) {
+            this.logger.warn(
+              `[MFA BACKUP CODE VERIFY ERROR] user=${user.id}, index=${i}, error=${error instanceof Error ? error.message : String(error)}`,
+            );
             continue;
           }
         }
@@ -242,7 +263,7 @@ export class AdminAuthService {
       if (!isValidTotp && !isValidBackup) {
         // MFA verification failed - DO NOT allow password change
         this.logger.error(
-          `[MFA VERIFICATION FAILED] user=${user.id}, email=${user.email}, code=${dto.mfaCode}, codeLength=${dto.mfaCode.length}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}, isTemporarySecret=${isTemporarySecret}, secretExists=${!!secret}`,
+          `[MFA VERIFICATION FAILED - PASSWORD CHANGE BLOCKED] user=${user.id}, email=${user.email}, code=${trimmedMfaCode}, codeLength=${trimmedMfaCode.length}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}, isTemporarySecret=${isTemporarySecret}, secretExists=${!!secret}, hasMfaSecret=${hasMfaSecret}`,
         );
 
         // Increment failed attempts
@@ -264,7 +285,8 @@ export class AdminAuthService {
           metadata: {
             reason: 'PASSWORD_CHANGE_MFA_FAILED',
             ipAddress,
-            codeLength: dto.mfaCode.length,
+            codeLength: trimmedMfaCode.length,
+            codeProvided: trimmedMfaCode.substring(0, 2) + '****', // Log partial code for debugging (first 2 chars only)
             attemptCount: updatedUser.mfaFailedAttempts,
             isPreProvisioned: isTemporarySecret,
             isValidTotp,
@@ -302,7 +324,7 @@ export class AdminAuthService {
       if (!isValidTotp && !isValidBackup) {
         // This should never happen if the code above is correct, but add defensive check
         this.logger.error(
-          `[CRITICAL ERROR] MFA verification check passed but both isValidTotp and isValidBackup are false! user=${user.id}, email=${user.email}, code=${dto.mfaCode}`,
+          `[CRITICAL ERROR] MFA verification check passed but both isValidTotp and isValidBackup are false! user=${user.id}, email=${user.email}, code=${trimmedMfaCode}`,
         );
         throw new UnauthorizedException('MFA verification failed');
       }
@@ -317,7 +339,7 @@ export class AdminAuthService {
       }
 
       this.logger.warn(
-        `[MFA VERIFICATION SUCCESS] user=${user.id}, email=${user.email}, method=${isValidTotp ? 'TOTP' : 'BACKUP'}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}, code=${dto.mfaCode}`,
+        `[MFA VERIFICATION SUCCESS] user=${user.id}, email=${user.email}, method=${isValidTotp ? 'TOTP' : 'BACKUP'}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}, codeLength=${trimmedMfaCode.length}`,
       );
 
       // MFA verification successful!

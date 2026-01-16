@@ -441,8 +441,18 @@ export class AuthService {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userWithoutPassword } = user;
 
+      // Include MFA requirement information for frontend
+      // For security, we don't send the actual secret, but we indicate if MFA is required
+      const userResponse = {
+        ...userWithoutPassword,
+        // Include a flag indicating MFA is required (if secret exists)
+        requiresMfa: !!user.twoFactorSecret,
+        // Include twoFactorEnabled status
+        twoFactorEnabled: user.twoFactorEnabled || false,
+      };
+
       this.logger.log(
-        `Password change required for admin user: ${user.email} (IP: ${ipAddress})`,
+        `Password change required for admin user: ${user.email} (IP: ${ipAddress}), requiresMfa=${userResponse.requiresMfa}`,
       );
 
       // Log password change required event
@@ -455,6 +465,7 @@ export class AuthService {
         metadata: {
           reason: 'FIRST_LOGIN',
           ipAddress,
+          requiresMfa: userResponse.requiresMfa,
         },
       });
 
@@ -462,7 +473,7 @@ export class AuthService {
         mustChangePassword: true,
         passwordChangeToken,
         message: 'Password change required on first login',
-        user: userWithoutPassword,
+        user: userResponse,
         // DO NOT return tokens - user must change password first
       };
     }
@@ -2120,11 +2131,20 @@ export class AuthService {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userWithoutPassword } = user;
 
+      // Include MFA requirement information for frontend
+      const userResponse = {
+        ...userWithoutPassword,
+        // Include a flag indicating MFA is required (if secret exists)
+        requiresMfa: !!user.twoFactorSecret,
+        // Include twoFactorEnabled status
+        twoFactorEnabled: user.twoFactorEnabled || false,
+      };
+
       return {
         mustChangePassword: true,
         passwordChangeToken,
         message: 'Password change required on first login',
-        user: userWithoutPassword,
+        user: userResponse,
       };
     }
 

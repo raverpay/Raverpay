@@ -212,12 +212,45 @@ export class AdminSecurityService {
       throw new NotFoundException('IP whitelist entry not found');
     }
 
+    // If IP address is being updated, validate it
+    if (dto.ipAddress !== undefined && dto.ipAddress !== entry.ipAddress) {
+      if (!this.validateIpAddress(dto.ipAddress)) {
+        throw new BadRequestException(
+          'Invalid IP address format. Must be a valid IPv4, IPv6, or CIDR notation (e.g., "203.0.113.45" or "203.0.113.0/24")',
+        );
+      }
+
+      // Check if the new IP address already exists (unique constraint)
+      const existing = await this.prisma.adminIpWhitelist.findUnique({
+        where: { ipAddress: dto.ipAddress },
+      });
+
+      if (existing && existing.id !== id) {
+        throw new ConflictException(
+          'IP address is already whitelisted for another entry',
+        );
+      }
+    }
+
+    const updateData: {
+      ipAddress?: string;
+      description?: string;
+      isActive?: boolean;
+    } = {};
+
+    if (dto.ipAddress !== undefined) {
+      updateData.ipAddress = dto.ipAddress;
+    }
+    if (dto.description !== undefined) {
+      updateData.description = dto.description;
+    }
+    if (dto.isActive !== undefined) {
+      updateData.isActive = dto.isActive;
+    }
+
     const updated = await this.prisma.adminIpWhitelist.update({
       where: { id },
-      data: {
-        description: dto.description,
-        isActive: dto.isActive,
-      },
+      data: updateData,
       include: {
         creator: {
           select: {
@@ -233,16 +266,21 @@ export class AdminSecurityService {
     // Log action
     await this.auditService.log({
       userId: entry.createdBy,
-      action: AuditAction.IP_WHITELIST_REMOVED,
+      action: AuditAction.IP_WHITELIST_UPDATED,
       resource: 'SECURITY',
       resourceId: id,
       status: AuditStatus.SUCCESS,
       severity: AuditSeverity.MEDIUM,
       metadata: {
-        ipAddress: entry.ipAddress,
+        oldIpAddress: entry.ipAddress,
+        newIpAddress: updated.ipAddress,
         changes: dto,
       },
     });
+
+    this.logger.log(
+      `IP whitelist entry updated: ${entry.ipAddress} -> ${updated.ipAddress}`,
+    );
 
     return updated;
   }

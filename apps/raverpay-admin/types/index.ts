@@ -46,6 +46,7 @@ export interface User {
   // MFA fields
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string | null;
+  requiresMfa?: boolean; // Flag indicating if MFA is required (for password change)
 }
 
 // Wallet Types

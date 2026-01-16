@@ -73,9 +73,10 @@ export function PasswordChangeModal({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { setAuth } = useAuthStore();
 
-  // Check if MFA is required: if twoFactorSecret exists (pre-provisioned or enabled)
+  // Check if MFA is required: use requiresMfa flag if available, otherwise check twoFactorSecret
   // This allows pre-provisioned MFA to be verified during password change
-  const mfaRequired = !!user?.twoFactorSecret;
+  // The backend sends requiresMfa flag to indicate MFA is required even if secret is not in response
+  const mfaRequired = user?.requiresMfa ?? !!user?.twoFactorSecret;
 
   // Create schema based on MFA requirement
   const passwordChangeSchema = createPasswordChangeSchema(mfaRequired);
@@ -86,19 +87,28 @@ export function PasswordChangeModal({
     handleSubmit,
     formState: { errors },
     reset,
+    setError,
   } = useForm<PasswordChangeFormData>({
     resolver: zodResolver(passwordChangeSchema),
   });
 
   const changePasswordMutation = useMutation({
-    mutationFn: (data: PasswordChangeFormData) =>
-      authApi.changePassword({
+    mutationFn: (data: PasswordChangeFormData) => {
+      // Ensure mfaCode is sent when MFA is required
+      const requestData: any = {
         passwordChangeToken,
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
         confirmPassword: data.confirmPassword,
-        mfaCode: data.mfaCode, // Only send if provided
-      }),
+      };
+
+      // Always include mfaCode if MFA is required (even if empty, backend will validate)
+      if (mfaRequired) {
+        requestData.mfaCode = data.mfaCode || '';
+      }
+
+      return authApi.changePassword(requestData);
+    },
     onSuccess: (data) => {
       // Update auth store with new tokens
       setAuth(data.user, data.accessToken, data.refreshToken);
@@ -120,10 +130,88 @@ export function PasswordChangeModal({
         router.push('/dashboard');
       }
     },
-    onError: (error: AxiosError<{ message?: string }>) => {
-      const errorMessage = error.response?.data?.message || 'Failed to change password';
-      toast.error('Password Change Failed', {
-        description: errorMessage,
+    onError: (error: AxiosError<{ message?: string | string[] }>) => {
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = Array.isArray(errorData?.message)
+        ? errorData.message[0]
+        : errorData?.message || 'Failed to change password';
+
+      // Parse error message to determine error type and show appropriate message
+      let title = 'Password Change Failed';
+      let description = errorMessage;
+
+      // Set field-level errors for better UX
+      if (statusCode === 401) {
+        if (errorMessage.toLowerCase().includes('current password') || errorMessage.toLowerCase().includes('incorrect')) {
+          title = 'Invalid Current Password';
+          description = 'The current password you entered is incorrect. Please try again.';
+          setError('currentPassword', {
+            type: 'manual',
+            message: 'Current password is incorrect',
+          });
+        } else if (errorMessage.toLowerCase().includes('mfa') || errorMessage.toLowerCase().includes('code')) {
+          title = 'Invalid MFA Code';
+          description = errorMessage; // Keep the backend message as it includes attempt count
+          if (mfaRequired) {
+            setError('mfaCode', {
+              type: 'manual',
+              message: errorMessage,
+            });
+          }
+        } else if (errorMessage.toLowerCase().includes('expired') || errorMessage.toLowerCase().includes('session')) {
+          title = 'Session Expired';
+          description = 'Your password change session has expired. Please log in again.';
+        } else {
+          title = 'Authentication Failed';
+          description = errorMessage;
+        }
+      } else if (statusCode === 400) {
+        if (errorMessage.toLowerCase().includes('match') || errorMessage.toLowerCase().includes('confirmation')) {
+          title = 'Passwords Do Not Match';
+          description = 'The new password and confirmation password do not match. Please try again.';
+          setError('confirmPassword', {
+            type: 'manual',
+            message: 'Passwords do not match',
+          });
+        } else if (errorMessage.toLowerCase().includes('different') || errorMessage.toLowerCase().includes('same')) {
+          title = 'Invalid New Password';
+          description = 'The new password must be different from your current password.';
+          setError('newPassword', {
+            type: 'manual',
+            message: 'New password must be different from current password',
+          });
+        } else if (errorMessage.toLowerCase().includes('mfa') || errorMessage.toLowerCase().includes('required')) {
+          title = 'MFA Code Required';
+          description = 'Please enter your MFA code from your authenticator app or use a backup code.';
+          if (mfaRequired) {
+            setError('mfaCode', {
+              type: 'manual',
+              message: 'MFA code is required',
+            });
+          }
+        } else if (errorMessage.toLowerCase().includes('password') && errorMessage.toLowerCase().includes('character')) {
+          title = 'Invalid Password Format';
+          description = errorMessage; // Keep validation messages as they're descriptive
+          setError('newPassword', {
+            type: 'manual',
+            message: errorMessage,
+          });
+        } else {
+          title = 'Invalid Input';
+          description = errorMessage;
+        }
+      } else if (statusCode === 403) {
+        title = 'Access Denied';
+        description = 'You do not have permission to change your password at this time.';
+      } else if (statusCode === 429) {
+        title = 'Too Many Attempts';
+        description = 'Too many failed attempts. Please wait a moment before trying again.';
+      }
+
+      toast.error(title, {
+        description,
+        duration: 5000, // Show for 5 seconds so user can read it
       });
     },
   });

@@ -42,6 +42,7 @@ export interface CreateIpWhitelistDto {
 }
 
 export interface UpdateIpWhitelistDto {
+  ipAddress?: string;
   description?: string;
   isActive?: boolean;
 }

@@ -45,6 +45,15 @@ export class CreateIpWhitelistDto {
 
 export class UpdateIpWhitelistDto {
   @ApiPropertyOptional({
+    description:
+      'IP address or CIDR range (e.g., "203.0.113.45" or "203.0.113.0/24")',
+    example: '203.0.113.0/24',
+  })
+  @IsString()
+  @IsOptional()
+  ipAddress?: string;
+
+  @ApiPropertyOptional({
     description: 'Description of the IP',
     example: 'Office WiFi - Updated',
   })
