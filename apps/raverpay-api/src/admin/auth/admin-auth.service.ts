@@ -126,7 +126,11 @@ export class AdminAuthService {
 
     if (needsMfaVerification) {
       // CRITICAL: Check for missing, empty, or whitespace-only MFA code
-      if (!dto.mfaCode || typeof dto.mfaCode !== 'string' || dto.mfaCode.trim().length === 0) {
+      if (
+        !dto.mfaCode ||
+        typeof dto.mfaCode !== 'string' ||
+        dto.mfaCode.trim().length === 0
+      ) {
         this.logger.error(
           `[MFA CODE MISSING] user=${user.id}, email=${user.email}, mfaCodeProvided=${!!dto.mfaCode}, mfaCodeType=${typeof dto.mfaCode}, mfaCodeValue=${dto.mfaCode}`,
         );

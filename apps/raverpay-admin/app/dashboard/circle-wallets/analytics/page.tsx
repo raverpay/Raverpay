@@ -28,7 +28,6 @@ import {
   DollarSign,
   Activity,
   ArrowUpRight,
-  ArrowDownRight,
   Download,
   Calendar,
   BarChart3,

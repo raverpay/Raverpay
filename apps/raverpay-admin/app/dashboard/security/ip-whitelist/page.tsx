@@ -137,7 +137,7 @@ export default function IpWhitelistPage() {
   });
 
   // Fetch current IP address
-  const { data: currentIpData, isLoading: isLoadingIp } = useQuery({
+  const { data: currentIpData } = useQuery({
     queryKey: ['current-ip'],
     queryFn: () => securityApi.getCurrentIp(),
   });
@@ -242,6 +242,7 @@ export default function IpWhitelistPage() {
   };
 
   const handleMfaVerified = (code: string) => {
+    console.log('code', code);
     if (pendingIpData) {
       // For now, proceed with adding IP after MFA verification
       // In a real implementation, you'd send the MFA code to the backend

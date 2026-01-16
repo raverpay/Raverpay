@@ -4,7 +4,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { PasswordChangeModal } from '@/components/security/password-change-modal';
-import { authApi } from '@/lib/api/auth';
 import { toast } from 'sonner';
 
 const PUBLIC_ROUTES = ['/login', '/forgot-password', '/circle-challenge', '/circle-modular'];

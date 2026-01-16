@@ -17,7 +17,6 @@ import {
   Check,
   RefreshCw,
   AlertCircle,
-  Lock,
   Monitor,
   Network,
   ArrowRight,

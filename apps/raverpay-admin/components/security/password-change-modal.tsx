@@ -95,7 +95,7 @@ export function PasswordChangeModal({
   const changePasswordMutation = useMutation({
     mutationFn: (data: PasswordChangeFormData) => {
       // Ensure mfaCode is sent when MFA is required
-      const requestData: any = {
+      const requestData: unknown = {
         passwordChangeToken,
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
@@ -143,14 +143,20 @@ export function PasswordChangeModal({
 
       // Set field-level errors for better UX
       if (statusCode === 401) {
-        if (errorMessage.toLowerCase().includes('current password') || errorMessage.toLowerCase().includes('incorrect')) {
+        if (
+          errorMessage.toLowerCase().includes('current password') ||
+          errorMessage.toLowerCase().includes('incorrect')
+        ) {
           title = 'Invalid Current Password';
           description = 'The current password you entered is incorrect. Please try again.';
           setError('currentPassword', {
             type: 'manual',
             message: 'Current password is incorrect',
           });
-        } else if (errorMessage.toLowerCase().includes('mfa') || errorMessage.toLowerCase().includes('code')) {
+        } else if (
+          errorMessage.toLowerCase().includes('mfa') ||
+          errorMessage.toLowerCase().includes('code')
+        ) {
           title = 'Invalid MFA Code';
           description = errorMessage; // Keep the backend message as it includes attempt count
           if (mfaRequired) {
@@ -159,7 +165,10 @@ export function PasswordChangeModal({
               message: errorMessage,
             });
           }
-        } else if (errorMessage.toLowerCase().includes('expired') || errorMessage.toLowerCase().includes('session')) {
+        } else if (
+          errorMessage.toLowerCase().includes('expired') ||
+          errorMessage.toLowerCase().includes('session')
+        ) {
           title = 'Session Expired';
           description = 'Your password change session has expired. Please log in again.';
         } else {
@@ -167,30 +176,44 @@ export function PasswordChangeModal({
           description = errorMessage;
         }
       } else if (statusCode === 400) {
-        if (errorMessage.toLowerCase().includes('match') || errorMessage.toLowerCase().includes('confirmation')) {
+        if (
+          errorMessage.toLowerCase().includes('match') ||
+          errorMessage.toLowerCase().includes('confirmation')
+        ) {
           title = 'Passwords Do Not Match';
-          description = 'The new password and confirmation password do not match. Please try again.';
+          description =
+            'The new password and confirmation password do not match. Please try again.';
           setError('confirmPassword', {
             type: 'manual',
             message: 'Passwords do not match',
           });
-        } else if (errorMessage.toLowerCase().includes('different') || errorMessage.toLowerCase().includes('same')) {
+        } else if (
+          errorMessage.toLowerCase().includes('different') ||
+          errorMessage.toLowerCase().includes('same')
+        ) {
           title = 'Invalid New Password';
           description = 'The new password must be different from your current password.';
           setError('newPassword', {
             type: 'manual',
             message: 'New password must be different from current password',
           });
-        } else if (errorMessage.toLowerCase().includes('mfa') || errorMessage.toLowerCase().includes('required')) {
+        } else if (
+          errorMessage.toLowerCase().includes('mfa') ||
+          errorMessage.toLowerCase().includes('required')
+        ) {
           title = 'MFA Code Required';
-          description = 'Please enter your MFA code from your authenticator app or use a backup code.';
+          description =
+            'Please enter your MFA code from your authenticator app or use a backup code.';
           if (mfaRequired) {
             setError('mfaCode', {
               type: 'manual',
               message: 'MFA code is required',
             });
           }
-        } else if (errorMessage.toLowerCase().includes('password') && errorMessage.toLowerCase().includes('character')) {
+        } else if (
+          errorMessage.toLowerCase().includes('password') &&
+          errorMessage.toLowerCase().includes('character')
+        ) {
           title = 'Invalid Password Format';
           description = errorMessage; // Keep validation messages as they're descriptive
           setError('newPassword', {
