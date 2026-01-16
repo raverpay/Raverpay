@@ -828,4 +828,36 @@ export class AuthController {
   ) {
     return this.authService.verifyPasswordReauth(userId, dto.password);
   }
+
+  /**
+   * Verify MFA code for re-authentication
+   * Returns a short-lived token (15 minutes) for sensitive operations
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('verify-mfa-reauth')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Verify MFA code for re-authentication',
+    description:
+      'Verify MFA code (TOTP or backup code) and return a short-lived re-authentication token (15 minutes) for sensitive operations.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'MFA verified, re-auth token generated',
+    schema: {
+      example: {
+        reAuthToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        expiresIn: 900, // 15 minutes in seconds
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'MFA not enabled' })
+  @ApiResponse({ status: 401, description: 'Invalid MFA code' })
+  async verifyMfaReauth(
+    @GetUser('id') userId: string,
+    @Body() dto: { mfaCode: string },
+  ) {
+    return this.authService.verifyMfaReauth(userId, dto.mfaCode);
+  }
 }

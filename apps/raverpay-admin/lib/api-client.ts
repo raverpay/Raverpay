@@ -73,6 +73,25 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    // Handle 428 Precondition Required (Password Change or Re-Auth)
+    if (error.response?.status === 428) {
+      const errorData = error.response.data as { error?: string; mustChangePassword?: boolean };
+      
+      // Password change required - handled by auth provider or login page
+      if (errorData.error === 'PasswordChangeRequired' || errorData.mustChangePassword) {
+        // Don't reject - let the component handle it
+        // The auth provider or login page will show the password change modal
+        return Promise.reject(error);
+      }
+      
+      // Re-authentication required - handled by component using ReAuthModal
+      if (errorData.error === 'ReAuthenticationRequired') {
+        // Don't reject - let the component handle it
+        // Components should use useReAuth hook to show re-auth modal
+        return Promise.reject(error);
+      }
+    }
+
     // If 401 and we haven't retried yet, try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

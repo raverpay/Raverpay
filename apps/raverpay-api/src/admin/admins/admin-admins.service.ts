@@ -414,7 +414,7 @@ export class AdminAdminsService {
           password: dto.password, // Send plain password in email
           loginUrl:
             this.configService.get<string>('ADMIN_LOGIN_URL') ||
-            'https://admin.raverpay.com/login',
+            'https://myadmin.raverpay.com/login',
           ipWhitelistStatus,
           mfaStatus,
           hasMfaQrCode: !!mfaQrCode,
@@ -1031,7 +1031,7 @@ export class AdminAdminsService {
         email: admin.email,
         loginUrl:
           this.configService.get<string>('ADMIN_LOGIN_URL') ||
-          'https://admin.raverpay.com/login',
+          'https://myadmin.raverpay.com/login',
         ipAddress: dto.ipAddress,
         ipWhitelistStatus,
         mfaStatus,

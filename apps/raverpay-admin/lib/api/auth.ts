@@ -28,6 +28,21 @@ export interface Session {
 export interface LoginResponse extends AuthResponse {
   mfaRequired?: boolean;
   tempToken?: string;
+  mustChangePassword?: boolean;
+  passwordChangeToken?: string;
+}
+
+export interface ChangePasswordRequest {
+  passwordChangeToken: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  mfaCode: string;
+}
+
+export interface ChangePasswordResponse extends AuthResponse {
+  reAuthToken?: string;
+  expiresIn?: number;
 }
 
 export const authApi = {
@@ -61,16 +76,16 @@ export const authApi = {
     return response.data;
   },
 
-  verifyMfaCode: async (tempToken: string, code: string): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/mfa/verify', {
+  verifyMfaCode: async (tempToken: string, code: string): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>('/auth/mfa/verify', {
       tempToken,
       code,
     });
     return response.data;
   },
 
-  verifyBackupCode: async (tempToken: string, backupCode: string): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/mfa/verify-backup', {
+  verifyBackupCode: async (tempToken: string, backupCode: string): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>('/auth/mfa/verify-backup', {
       tempToken,
       backupCode,
     });
@@ -123,6 +138,27 @@ export const authApi = {
     const response = await apiClient.post('/auth/verify-password-reauth', {
       password,
     });
+    return response.data;
+  },
+
+  verifyMfaReauth: async (
+    mfaCode: string,
+  ): Promise<{
+    reAuthToken: string;
+    expiresIn: number;
+  }> => {
+    const response = await apiClient.post('/auth/verify-mfa-reauth', {
+      mfaCode,
+    });
+    return response.data;
+  },
+
+  // Password change (for first login)
+  changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
+    const response = await apiClient.post<ChangePasswordResponse>(
+      '/admin/auth/change-password',
+      data,
+    );
     return response.data;
   },
 };

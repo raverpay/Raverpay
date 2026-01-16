@@ -2663,4 +2663,101 @@ export class AuthService {
       expiresIn: 900, // 15 minutes in seconds
     };
   }
+
+  /**
+   * Verify MFA code for re-authentication
+   * Returns short-lived token for sensitive operations
+   *
+   * @param userId - User ID
+   * @param mfaCode - MFA code (TOTP or backup code)
+   * @returns Re-authentication token
+   */
+  async verifyMfaReauth(userId: string, mfaCode: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Check if user has MFA enabled
+    if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new BadRequestException('MFA is not enabled for this user');
+    }
+
+    // Verify MFA code (TOTP or backup code)
+    let isMfaValid = false;
+    const secret = this.mfaEncryption.decryptSecret(user.twoFactorSecret);
+    isMfaValid = speakeasy.totp.verify({
+      secret,
+      encoding: 'base32',
+      token: mfaCode,
+      window: 1,
+    });
+
+    if (!isMfaValid) {
+      // Check backup codes if TOTP failed
+      const backupCodes = user.mfaBackupCodes || [];
+      let matchedIndex = -1;
+      for (let i = 0; i < backupCodes.length; i++) {
+        try {
+          const isValid = await argon2.verify(backupCodes[i], mfaCode);
+          if (isValid) {
+            matchedIndex = i;
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+
+      if (matchedIndex !== -1) {
+        isMfaValid = true;
+        // Remove used backup code
+        const updatedBackupCodes = [...backupCodes];
+        updatedBackupCodes.splice(matchedIndex, 1);
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { mfaBackupCodes: updatedBackupCodes },
+        });
+        await this.auditService.log({
+          userId: user.id,
+          action: AuditAction.MFA_BACKUP_CODE_USED,
+          resource: 'AUTH',
+          status: AuditStatus.SUCCESS,
+          severity: AuditSeverity.MEDIUM,
+          metadata: { purpose: 'reauthentication' },
+        });
+      }
+    }
+
+    if (!isMfaValid) {
+      throw new UnauthorizedException('Invalid MFA code or backup code');
+    }
+
+    // Generate short-lived re-auth token (15 minutes)
+    const reAuthToken = this.jwtService.sign(
+      {
+        sub: user.id,
+        purpose: 'reauth',
+      },
+      { expiresIn: '15m' },
+    );
+
+    // Log re-authentication
+    await this.auditService.log({
+      userId,
+      action: AuditAction.MFA_VERIFICATION_SUCCESS,
+      resource: 'AUTH',
+      status: AuditStatus.SUCCESS,
+      severity: AuditSeverity.MEDIUM,
+      metadata: { purpose: 'reauthentication' },
+    });
+
+    return {
+      reAuthToken,
+      expiresIn: 900, // 15 minutes in seconds
+    };
+  }
 }

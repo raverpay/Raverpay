@@ -3,7 +3,16 @@
 import { use, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, RotateCcw, Undo2, User, Smartphone } from 'lucide-react';
+import {
+  ArrowLeft,
+  RotateCcw,
+  Undo2,
+  User,
+  Smartphone,
+  AlertCircle,
+  CheckCircle2,
+  Gift,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -15,10 +24,53 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, formatCurrency, getApiErrorMessage } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface EducationCard {
   Serial: string;
   Pin: string;
+}
+
+interface VTUOrderResponse {
+  order: {
+    id: string;
+    reference: string;
+    userId: string;
+    serviceType: string;
+    provider: string;
+    recipient: string;
+    productCode: string;
+    productName: string;
+    amount: string;
+    status: string;
+    providerRef: string | null;
+    providerToken: string | null;
+    providerResponse: Record<string, unknown> | null;
+    transactionId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    completedAt: string | null;
+    cashbackEarned: string;
+    cashbackRedeemed: string;
+    cashbackPercentage: string;
+    refundedAt?: string | null;
+    refundReason?: string | null;
+    failureReason?: string | null;
+    user?: {
+      id: string;
+      email: string;
+      phone: string;
+      firstName: string;
+      lastName: string;
+    };
+  };
+  transaction: {
+    id: string;
+    amount: string;
+    type: string;
+    status: string;
+    createdAt: string;
+  } | null;
 }
 
 export default function VTUDetailPage({ params }: { params: Promise<{ orderId: string }> }) {
@@ -27,9 +79,20 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
   const queryClient = useQueryClient();
   const [refundReason, setRefundReason] = useState('');
 
-  const { data: order, isLoading } = useQuery({
+  const { data: response, isLoading } = useQuery<VTUOrderResponse>({
     queryKey: ['vtu-order', resolvedParams.orderId],
-    queryFn: () => vtuApi.getById(resolvedParams.orderId),
+    queryFn: async () => {
+      const data = await vtuApi.getById(resolvedParams.orderId);
+      // Handle both response structures (legacy and new)
+      if ('order' in data && 'transaction' in data) {
+        return data as unknown as VTUOrderResponse;
+      }
+      // If it's the old structure, wrap it - API returns full order object
+      return {
+        order: data as unknown as VTUOrderResponse['order'],
+        transaction: null,
+      };
+    },
   });
 
   const refundMutation = useMutation({
@@ -72,7 +135,7 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
     );
   }
 
-  if (!order) {
+  if (!response || !response.order) {
     return (
       <div className="flex flex-col items-center justify-center h-[400px]">
         <p className="text-muted-foreground">Order not found</p>
@@ -83,8 +146,16 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
     );
   }
 
+  const order = response.order;
+  const transaction = response.transaction;
   const canRefund = order.status === 'COMPLETED' && !order.refundedAt;
   const canRetry = order.status === 'FAILED';
+
+  // Extract error from providerResponse
+  const providerError =
+    order.providerResponse && 'error' in order.providerResponse
+      ? String(order.providerResponse.error)
+      : null;
 
   return (
     <div className="space-y-6">
@@ -98,6 +169,15 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
           <p className="text-muted-foreground font-mono">{order.reference}</p>
         </div>
       </div>
+
+      {/* Error Alert for Failed Orders */}
+      {order.status === 'FAILED' && providerError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Order Failed</AlertTitle>
+          <AlertDescription>{providerError}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Order Information */}
@@ -122,26 +202,36 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Type</p>
+                <p className="text-sm font-medium text-muted-foreground">Service Type</p>
                 <p className="text-sm flex items-center gap-2">
-                  {order.type === 'AIRTIME' ? (
-                    <Smartphone className="h-4 w-4" />
-                  ) : (
-                    <Smartphone className="h-4 w-4" />
-                  )}
-                  {order.type}
+                  <Smartphone className="h-4 w-4" />
+                  {order.serviceType}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Network</p>
-                <p className="text-sm">{order.network || 'N/A'}</p>
+                <p className="text-sm font-medium text-muted-foreground">Provider</p>
+                <p className="text-sm font-medium">{order.provider || 'N/A'}</p>
               </div>
             </div>
 
+            {order.productName && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Product</p>
+                  <p className="text-sm">{order.productName}</p>
+                  {order.productCode && (
+                    <p className="text-xs text-muted-foreground font-mono mt-1">
+                      Code: {order.productCode}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
-                <p className="text-sm font-mono">{order.phoneNumber}</p>
+                <p className="text-sm font-medium text-muted-foreground">Recipient</p>
+                <p className="text-sm font-mono">{order.recipient}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Amount</p>
@@ -149,25 +239,66 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
               </div>
             </div>
 
-            {order.dataBundle && (
+            {/* Cashback Information */}
+            {(parseFloat(order.cashbackEarned) > 0 ||
+              parseFloat(order.cashbackRedeemed) > 0 ||
+              parseFloat(order.cashbackPercentage) > 0) && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Gift className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-medium">Cashback Information</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Percentage</p>
+                    <p className="font-medium">{order.cashbackPercentage}%</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Earned</p>
+                    <p className="font-medium text-green-600">
+                      {formatCurrency(parseFloat(order.cashbackEarned))}
+                    </p>
+                  </div>
+                  {parseFloat(order.cashbackRedeemed) > 0 && (
+                    <div>
+                      <p className="text-muted-foreground">Redeemed</p>
+                      <p className="font-medium text-orange-600">
+                        {formatCurrency(parseFloat(order.cashbackRedeemed))}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Provider Reference */}
+            {order.providerRef && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Data Bundle</p>
-                <p className="text-sm">{order.dataBundle}</p>
+                <p className="text-sm font-medium text-muted-foreground">Provider Reference</p>
+                <p className="text-sm font-mono">{order.providerRef}</p>
+              </div>
+            )}
+
+            {/* Transaction ID */}
+            {order.transactionId && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Transaction ID</p>
+                <p className="text-sm font-mono">{order.transactionId}</p>
               </div>
             )}
 
             {/* Education Services - Display PINs/Tokens */}
-            {(order.type === 'JAMB' ||
-              order.type === 'WAEC_REGISTRATION' ||
-              order.type === 'WAEC_RESULT') &&
+            {(order.serviceType === 'JAMB' ||
+              order.serviceType === 'WAEC_REGISTRATION' ||
+              order.serviceType === 'WAEC_RESULT') &&
               order.providerToken && (
                 <div className="rounded-lg border border-primary bg-primary/5 p-4">
                   <p className="text-sm font-medium text-primary mb-2">
-                    {order.type === 'JAMB' && 'JAMB PIN'}
-                    {order.type === 'WAEC_REGISTRATION' && 'Registration Token'}
-                    {order.type === 'WAEC_RESULT' && 'Result Checker Cards'}
+                    {order.serviceType === 'JAMB' && 'JAMB PIN'}
+                    {order.serviceType === 'WAEC_REGISTRATION' && 'Registration Token'}
+                    {order.serviceType === 'WAEC_RESULT' && 'Result Checker Cards'}
                   </p>
-                  {order.type === 'WAEC_RESULT' ? (
+                  {order.serviceType === 'WAEC_RESULT' ? (
                     <div className="space-y-2">
                       {(() => {
                         try {
@@ -224,7 +355,9 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
               <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
                 <p className="text-sm font-medium text-destructive">Order Refunded</p>
                 <p className="text-xs text-muted-foreground mt-1">{formatDate(order.refundedAt)}</p>
-                {order.refundReason && <p className="text-xs mt-2">{order.refundReason}</p>}
+                {order.refundReason && (
+                  <p className="text-xs mt-2 text-muted-foreground">{order.refundReason}</p>
+                )}
               </div>
             )}
 
@@ -265,33 +398,63 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
               </div>
             )}
 
-            {order.provider && (
+            {/* Transaction Information */}
+            {transaction && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Provider</p>
-                <p className="text-sm">{order.provider}</p>
-                {order.providerReference && (
-                  <p className="text-xs text-muted-foreground font-mono mt-1">
-                    {order.providerReference}
-                  </p>
-                )}
+                <p className="text-sm font-medium text-muted-foreground mb-2">Transaction</p>
+                <div className="p-3 rounded-lg border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <StatusBadge status={transaction.status} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Amount</span>
+                    <span className="text-sm font-medium">
+                      {formatCurrency(parseFloat(transaction.amount))}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Type</span>
+                    <span className="text-sm">{transaction.type}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Created</span>
+                    <span className="text-xs">{formatDate(transaction.createdAt)}</span>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Provider Response - Enhanced Error Display */}
             {order.providerResponse && Object.keys(order.providerResponse).length > 0 && (
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">Provider Response</p>
-                <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-40">
-                  {JSON.stringify(order.providerResponse, null, 2)}
-                </pre>
+                {providerError ? (
+                  <Alert variant="destructive" className="mb-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="font-medium">{providerError}</AlertDescription>
+                  </Alert>
+                ) : order.status === 'COMPLETED' ? (
+                  <Alert>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>Order completed successfully</AlertDescription>
+                  </Alert>
+                ) : null}
+                <div className="rounded-lg border bg-muted/50 p-3">
+                  <pre className="text-xs overflow-auto max-h-40 whitespace-pre-wrap break-words">
+                    {JSON.stringify(order.providerResponse, null, 2)}
+                  </pre>
+                </div>
               </div>
             )}
 
-            {order.metadata && Object.keys(order.metadata).length > 0 && (
+            {/* Provider Reference */}
+            {order.providerRef && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Metadata</p>
-                <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-40">
-                  {JSON.stringify(order.metadata, null, 2)}
-                </pre>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Provider Reference</p>
+                <div className="p-3 rounded-lg border bg-muted/50">
+                  <p className="text-sm font-mono">{order.providerRef}</p>
+                </div>
               </div>
             )}
           </CardContent>

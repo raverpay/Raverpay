@@ -40,6 +40,11 @@ export interface User {
   lockedUntil?: string | null;
   failedLoginAttempts?: number;
   lastFailedLoginAt?: string | null;
+  // Password change fields
+  mustChangePassword?: boolean;
+  passwordChangedAt?: string | null;
+  // MFA fields
+  twoFactorEnabled?: boolean;
 }
 
 // Wallet Types

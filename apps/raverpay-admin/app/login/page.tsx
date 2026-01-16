@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ApiError } from '@/types';
 import { AxiosError } from 'axios';
+import { PasswordChangeModal } from '@/components/security/password-change-modal';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -48,6 +49,8 @@ export default function LoginPage() {
   const [showPassword] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [tempToken, setTempToken] = useState<string | null>(null);
+  const [passwordChangeRequired, setPasswordChangeRequired] = useState(false);
+  const [passwordChangeToken, setPasswordChangeToken] = useState<string | null>(null);
   const [useBackupCode, setUseBackupCode] = useState(false);
 
   const {
@@ -124,6 +127,25 @@ export default function LoginPage() {
       return authApi.verifyMfaCode(tempToken, code);
     },
     onSuccess: (data) => {
+      // Check if password change is required
+      if (data.mustChangePassword && data.passwordChangeToken) {
+        setPasswordChangeRequired(true);
+        setPasswordChangeToken(data.passwordChangeToken);
+        // Store user info temporarily (will be updated after password change)
+        if (data.user) {
+          setAuth(data.user, data.accessToken || '', data.refreshToken || '');
+        }
+        return;
+      }
+
+      // Normal login flow
+      if (!data.user) {
+        toast.error('Login Failed', {
+          description: 'Invalid response from server',
+        });
+        return;
+      }
+
       setAuth(data.user, data.accessToken, data.refreshToken);
       toast.success('Welcome back!', {
         description: `Logged in as ${data.user.firstName} ${data.user.lastName}`,
@@ -144,6 +166,25 @@ export default function LoginPage() {
       return authApi.verifyBackupCode(tempToken, backupCode);
     },
     onSuccess: (data) => {
+      // Check if password change is required
+      if (data.mustChangePassword && data.passwordChangeToken) {
+        setPasswordChangeRequired(true);
+        setPasswordChangeToken(data.passwordChangeToken);
+        // Store user info temporarily (will be updated after password change)
+        if (data.user) {
+          setAuth(data.user, data.accessToken || '', data.refreshToken || '');
+        }
+        return;
+      }
+
+      // Normal login flow
+      if (!data.user) {
+        toast.error('Login Failed', {
+          description: 'Invalid response from server',
+        });
+        return;
+      }
+
       setAuth(data.user, data.accessToken, data.refreshToken);
       toast.success('Welcome back!', {
         description: `Logged in as ${data.user.firstName} ${data.user.lastName}`,
@@ -328,6 +369,19 @@ export default function LoginPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Password Change Modal */}
+      {passwordChangeRequired && passwordChangeToken && (
+        <PasswordChangeModal
+          open={passwordChangeRequired}
+          passwordChangeToken={passwordChangeToken}
+          onSuccess={() => {
+            setPasswordChangeRequired(false);
+            setPasswordChangeToken(null);
+            router.push('/dashboard');
+          }}
+        />
+      )}
     </div>
   );
 }

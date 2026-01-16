@@ -6,7 +6,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { VTPassService } from './services/vtpass.service';
+import { VTPassService, VTPassException } from './services/vtpass.service';
 import { WalletService } from '../wallet/wallet.service';
 import { UsersService } from '../users/users.service';
 import { NotificationDispatcherService } from '../notifications/notification-dispatcher.service';
@@ -567,12 +567,32 @@ export class VTUService {
         });
       } catch (error) {
         this.logger.error('[Airtime] VTPass API failed:', error);
+
+        // Extract VTpass error details
+        let vtpassErrorCode: string | undefined;
+        let vtpassErrorMessage: string | undefined;
+        let errorMessage = 'Failed to process airtime purchase. Your wallet has been refunded.';
+
+        if (error instanceof VTPassException) {
+          vtpassErrorCode = error.vtpassCode;
+          vtpassErrorMessage = error.message;
+          errorMessage = error.message;
+        } else if (error instanceof BadRequestException) {
+          errorMessage = error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
         // Update order as failed
         await this.prisma.vTUOrder.update({
           where: { id: order.id },
           data: {
             status: 'FAILED',
-            providerResponse: { error: 'VTPass API error' },
+            providerResponse: {
+              error: errorMessage,
+              vtpassErrorCode,
+              vtpassErrorMessage,
+            },
           },
         });
 
@@ -587,12 +607,10 @@ export class VTUService {
           );
         }
 
-        // Refund immediately
-        await this.refundFailedOrder(order.id);
+        // Refund immediately with error details
+        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
 
-        throw new BadRequestException(
-          'Failed to process airtime purchase. Your wallet has been refunded.',
-        );
+        throw new BadRequestException(errorMessage);
       }
 
       // 15. Prepare response data FIRST (before async operations)
@@ -637,7 +655,37 @@ export class VTUService {
 
       // 17. If failed, refund and reverse cashback asynchronously
       if (vtpassResult.status !== 'success') {
-        this.refundFailedOrder(order.id).catch((error) =>
+        // Update transaction status to FAILED
+        this.prisma.transaction
+          .findUnique({
+            where: { reference },
+            select: { metadata: true },
+          })
+          .then((tx) => {
+            return this.prisma.transaction.update({
+              where: { reference },
+              data: {
+                status: 'FAILED',
+                failedAt: new Date(),
+                metadata: {
+                  ...((tx?.metadata as Record<string, unknown>) || {}),
+                  vtpassErrorCode: '016', // Transaction failed
+                  vtpassErrorMessage: 'VTPass API returned failure status',
+                  refunded: true,
+                  refundedAt: new Date().toISOString(),
+                },
+              },
+            });
+          })
+          .catch((error) =>
+            this.logger.error('Failed to update transaction status', error),
+          );
+
+        this.refundFailedOrder(
+          order.id,
+          '016',
+          'VTPass API returned failure status',
+        ).catch((error) =>
           this.logger.error('Failed to refund order', error),
         );
 
@@ -789,6 +837,16 @@ export class VTUService {
           },
         );
       } else {
+        // Get VTpass error details from order providerResponse if available
+        const providerResponse = order.providerResponse as
+          | Record<string, unknown>
+          | null;
+        const vtpassErrorCode =
+          (providerResponse?.vtpassErrorCode as string) || '016';
+        const vtpassErrorMessage =
+          (providerResponse?.vtpassErrorMessage as string) ||
+          'VTPass API returned failure status';
+
         await this.auditService.logVTU(
           AuditAction.AIRTIME_PURCHASE_FAILED,
           userId,
@@ -801,7 +859,8 @@ export class VTUService {
             orderId: order.id,
             reference,
             executionTimeMs: Date.now() - auditStartTime,
-            errorMessage: 'VTPass API returned failure status',
+            errorMessage: vtpassErrorMessage,
+            vtpassErrorCode,
           },
           undefined,
           AuditStatus.FAILURE,
@@ -811,6 +870,17 @@ export class VTUService {
       // RETURN IMMEDIATELY - don't wait for async operations above
       return response;
     } catch (error) {
+      // Extract VTpass error details for audit log
+      let errorMessage = 'Unknown error';
+      let vtpassErrorCode: string | undefined;
+
+      if (error instanceof VTPassException) {
+        errorMessage = error.message;
+        vtpassErrorCode = error.vtpassCode;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
       // Audit log: Airtime purchase failed with error
       await this.auditService.logVTU(
         AuditAction.AIRTIME_PURCHASE_FAILED,
@@ -821,8 +891,8 @@ export class VTUService {
           recipient: dto.phone,
           amount: dto.amount,
           executionTimeMs: Date.now() - auditStartTime,
-          errorMessage:
-            error instanceof Error ? error.message : 'Unknown error',
+          errorMessage,
+          vtpassErrorCode,
         },
         undefined,
         AuditStatus.FAILURE,
@@ -1062,11 +1132,32 @@ export class VTUService {
         });
       } catch (error) {
         this.logger.error('[Data] VTPass API failed:', error);
+
+        // Extract VTpass error details
+        let vtpassErrorCode: string | undefined;
+        let vtpassErrorMessage: string | undefined;
+        let errorMessage = 'Failed to process data purchase. Your wallet has been refunded.';
+
+        if (error instanceof VTPassException) {
+          vtpassErrorCode = error.vtpassCode;
+          vtpassErrorMessage = error.message;
+          errorMessage = error.message;
+        } else if (error instanceof BadRequestException) {
+          errorMessage = error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        // Update order as failed
         await this.prisma.vTUOrder.update({
           where: { id: order.id },
           data: {
             status: 'FAILED',
-            providerResponse: { error: 'VTPass API error' },
+            providerResponse: {
+              error: errorMessage,
+              vtpassErrorCode,
+              vtpassErrorMessage,
+            },
           },
         });
 
@@ -1081,11 +1172,10 @@ export class VTUService {
           );
         }
 
-        await this.refundFailedOrder(order.id);
+        // Refund immediately with error details
+        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
 
-        throw new BadRequestException(
-          'Failed to process data purchase. Your wallet has been refunded.',
-        );
+        throw new BadRequestException(errorMessage);
       }
 
       // 13. Prepare response data FIRST (before async operations)
@@ -1131,7 +1221,37 @@ export class VTUService {
 
       // 15. If failed, refund and reverse cashback asynchronously
       if (vtpassResult.status !== 'success') {
-        this.refundFailedOrder(order.id).catch((error) =>
+        // Update transaction status to FAILED
+        this.prisma.transaction
+          .findUnique({
+            where: { reference },
+            select: { metadata: true },
+          })
+          .then((tx) => {
+            return this.prisma.transaction.update({
+              where: { reference },
+              data: {
+                status: 'FAILED',
+                failedAt: new Date(),
+                metadata: {
+                  ...((tx?.metadata as Record<string, unknown>) || {}),
+                  vtpassErrorCode: '016', // Transaction failed
+                  vtpassErrorMessage: 'VTPass API returned failure status',
+                  refunded: true,
+                  refundedAt: new Date().toISOString(),
+                },
+              },
+            });
+          })
+          .catch((error) =>
+            this.logger.error('Failed to update transaction status', error),
+          );
+
+        this.refundFailedOrder(
+          order.id,
+          '016',
+          'VTPass API returned failure status',
+        ).catch((error) =>
           this.logger.error('Failed to refund order', error),
         );
 
@@ -1417,19 +1537,39 @@ export class VTUService {
         });
       } catch (error) {
         this.logger.error('[Cable TV] VTPass API failed:', error);
+
+        // Extract VTpass error details
+        let vtpassErrorCode: string | undefined;
+        let vtpassErrorMessage: string | undefined;
+        let errorMessage = 'Failed to process cable TV payment. Your wallet has been refunded.';
+
+        if (error instanceof VTPassException) {
+          vtpassErrorCode = error.vtpassCode;
+          vtpassErrorMessage = error.message;
+          errorMessage = error.message;
+        } else if (error instanceof BadRequestException) {
+          errorMessage = error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        // Update order as failed
         await this.prisma.vTUOrder.update({
           where: { id: order.id },
           data: {
             status: 'FAILED',
-            providerResponse: { error: 'VTPass API error' },
+            providerResponse: {
+              error: errorMessage,
+              vtpassErrorCode,
+              vtpassErrorMessage,
+            },
           },
         });
 
-        await this.refundFailedOrder(order.id);
+        // Refund immediately with error details
+        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
 
-        throw new BadRequestException(
-          'Failed to process cable TV payment. Your wallet has been refunded.',
-        );
+        throw new BadRequestException(errorMessage);
       }
 
       // 10. Update order
@@ -1919,19 +2059,39 @@ export class VTUService {
         });
       } catch (error) {
         this.logger.error('[Electricity] VTPass API failed:', error);
+
+        // Extract VTpass error details
+        let vtpassErrorCode: string | undefined;
+        let vtpassErrorMessage: string | undefined;
+        let errorMessage = 'Failed to process electricity payment. Your wallet has been refunded.';
+
+        if (error instanceof VTPassException) {
+          vtpassErrorCode = error.vtpassCode;
+          vtpassErrorMessage = error.message;
+          errorMessage = error.message;
+        } else if (error instanceof BadRequestException) {
+          errorMessage = error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        // Update order as failed
         await this.prisma.vTUOrder.update({
           where: { id: order.id },
           data: {
             status: 'FAILED',
-            providerResponse: { error: 'VTPass API error' },
+            providerResponse: {
+              error: errorMessage,
+              vtpassErrorCode,
+              vtpassErrorMessage,
+            },
           },
         });
 
-        await this.refundFailedOrder(order.id);
+        // Refund immediately with error details
+        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
 
-        throw new BadRequestException(
-          'Failed to process electricity payment. Your wallet has been refunded.',
-        );
+        throw new BadRequestException(errorMessage);
       }
 
       // 9. Update order
@@ -2000,7 +2160,37 @@ export class VTUService {
 
       // 12. If failed, refund asynchronously
       if (vtpassResult.status !== 'success') {
-        this.refundFailedOrder(order.id).catch((error) =>
+        // Update transaction status to FAILED
+        this.prisma.transaction
+          .findUnique({
+            where: { reference },
+            select: { metadata: true },
+          })
+          .then((tx) => {
+            return this.prisma.transaction.update({
+              where: { reference },
+              data: {
+                status: 'FAILED',
+                failedAt: new Date(),
+                metadata: {
+                  ...((tx?.metadata as Record<string, unknown>) || {}),
+                  vtpassErrorCode: '016', // Transaction failed
+                  vtpassErrorMessage: 'VTPass API returned failure status',
+                  refunded: true,
+                  refundedAt: new Date().toISOString(),
+                },
+              },
+            });
+          })
+          .catch((error) =>
+            this.logger.error('Failed to update transaction status', error),
+          );
+
+        this.refundFailedOrder(
+          order.id,
+          '016',
+          'VTPass API returned failure status',
+        ).catch((error) =>
           this.logger.error('Failed to refund order', error),
         );
       }
@@ -2342,7 +2532,11 @@ export class VTUService {
 
   // ==================== Refund Failed Order ====================
 
-  async refundFailedOrder(orderId: string) {
+  async refundFailedOrder(
+    orderId: string,
+    vtpassErrorCode?: string,
+    vtpassErrorMessage?: string,
+  ) {
     this.logger.log(`[Refund] Processing refund for order: ${orderId}`);
 
     const order = await this.prisma.vTUOrder.findUnique({
@@ -2374,7 +2568,23 @@ export class VTUService {
       transaction.totalAmount,
     );
 
-    // Refund to wallet
+    // Prepare error metadata
+    const existingMetadata =
+      (transaction.metadata as Record<string, unknown>) || {};
+    const errorMetadata = {
+      ...existingMetadata,
+      refunded: true,
+      refundedAt: new Date().toISOString(),
+      ...(vtpassErrorCode && { vtpassErrorCode }),
+      ...(vtpassErrorMessage && { vtpassErrorMessage }),
+      ...(order.providerResponse && {
+        vtpassResponseDescription:
+          (order.providerResponse as Record<string, unknown>)
+            ?.response_description || null,
+      }),
+    };
+
+    // Refund to wallet and update original transaction status
     await this.prisma.$transaction([
       this.prisma.wallet.update({
         where: {
@@ -2388,6 +2598,17 @@ export class VTUService {
           ledgerBalance: { increment: transaction.totalAmount },
         },
       }),
+      // Update original transaction to FAILED
+      this.prisma.transaction.update({
+        where: { reference: order.reference },
+        data: {
+          status: 'FAILED',
+          failedAt: new Date(),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          metadata: JSON.parse(JSON.stringify(errorMetadata)),
+        },
+      }),
+      // Create refund transaction
       this.prisma.transaction.create({
         data: {
           reference: `REFUND_${order.reference}`,
@@ -2403,6 +2624,8 @@ export class VTUService {
           metadata: {
             originalReference: order.reference,
             orderId: order.id,
+            vtpassErrorCode,
+            vtpassErrorMessage,
           },
         },
       }),

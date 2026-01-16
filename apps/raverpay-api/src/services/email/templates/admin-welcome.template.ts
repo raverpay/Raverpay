@@ -14,7 +14,7 @@ export function adminWelcomeEmailTemplate(data: {
   html: string;
   subject: string;
 } {
-  const subject = 'Welcome to RaverPay Admin Dashboard - Action Required';
+  const subject = 'Welcome to Raverpay Admin Dashboard - Action Required';
 
   const html = `
     <!DOCTYPE html>
@@ -36,7 +36,7 @@ export function adminWelcomeEmailTemplate(data: {
                 <tr>
                   <td style="background: #5b55f6; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
                     <h2 style="margin: 15px 0 0 0; color: #ffffff; font-size: 24px; font-weight: 700;">
-                      Welcome to RaverPay Admin Dashboard
+                      Welcome to Raverpay Admin Dashboard
                     </h2>
                     <p style="margin: 10px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">
                       Your admin account has been created
@@ -76,7 +76,7 @@ export function adminWelcomeEmailTemplate(data: {
                     <!-- Security Warning -->
                     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; border-radius: 6px; margin: 30px 0;">
                       <p style="margin: 0; font-size: 15px; color: #856404; font-weight: 600;">
-                        ⚠️ CHANGE YOUR PASSWORD IMMEDIATELY AFTER FIRST LOGIN
+                        CHANGE YOUR PASSWORD IMMEDIATELY AFTER FIRST LOGIN
                       </p>
                     </div>
                     
@@ -121,12 +121,12 @@ export function adminWelcomeEmailTemplate(data: {
                     
                     <!-- Help Section -->
                     <p style="margin: 30px 0 0 0; font-size: 14px; color: #666666; line-height: 1.6;">
-                      Need help? Contact your system administrator or IT support.
+                      Need help? Contact your system administrator or IT support at support@raverpay.com.
                     </p>
                     
                     <p style="margin: 15px 0 0 0; font-size: 14px; color: #666666;">
                       Best regards,<br>
-                      <strong>The RaverPay Team</strong>
+                     
                     </p>
                   </td>
                 </tr>
@@ -134,17 +134,14 @@ export function adminWelcomeEmailTemplate(data: {
                 <!-- Footer -->
                 <tr>
                   <td style="background: #f8f9fa; padding: 30px; text-align: center; border-radius: 0 0 12px 12px; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0 0 15px 0; color: #666666; font-size: 14px; font-weight: 600;">
-                      RaverPay Admin Dashboard
-                    </p>
                     <p style="margin: 0 0 10px 0; color: #999999; font-size: 14px;">
-                      <strong>RaverPay</strong>
+                      <strong>Raverpay</strong>
                     </p>
                     <p style="margin: 0 0 15px 0; color: #999999; font-size: 12px;">
                       Lagos, Nigeria
                     </p>
                     <p style="margin: 0; color: #cccccc; font-size: 11px;">
-                      © ${new Date().getFullYear()} RaverPay. All rights reserved.
+                      © ${new Date().getFullYear()} Raverpay. All rights reserved.
                     </p>
                   </td>
                 </tr>

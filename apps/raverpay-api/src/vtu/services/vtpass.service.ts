@@ -2,6 +2,17 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
+// Custom exception to carry VTpass error details
+export class VTPassException extends BadRequestException {
+  constructor(
+    message: string,
+    public readonly vtpassCode?: string,
+    public readonly vtpassResponseDescription?: string,
+  ) {
+    super(message);
+  }
+}
+
 interface VTPassConfig {
   apiKey: string;
   secretKey: string;
@@ -121,6 +132,59 @@ export class VTPassService {
     };
   }
 
+  /**
+   * Maps VTpass response codes to user-friendly error messages
+   * Based on VTpass API documentation
+   */
+  private getVTPassErrorMessage(
+    code: string,
+    responseDescription: string,
+  ): string {
+    const codeMap: Record<string, string> = {
+      '000': 'Transaction processed successfully',
+      '001': 'Transaction query',
+      '010': 'Variation code does not exist',
+      '011': 'Invalid arguments',
+      '012': 'Product does not exist',
+      '013': 'Below minimum amount allowed',
+      '014': 'Request ID already exists',
+      '015': 'Invalid request ID',
+      '016': 'Transaction failed',
+      '017': 'Above maximum amount allowed',
+      '018': 'Low wallet balance on provider account',
+      '019': 'Likely duplicate transaction',
+      '020': 'Biller confirmed',
+      '021': 'Account locked',
+      '022': 'Account suspended',
+      '023': 'API access not enabled for user',
+      '024': 'Account inactive',
+      '025': 'Recipient bank invalid',
+      '026': 'Recipient account could not be verified',
+      '027': 'IP not whitelisted, contact support',
+      '028': 'Product is not whitelisted on your account',
+      '030': 'Biller not reachable at this time',
+      '031': 'Below minimum quantity allowed',
+      '032': 'Above minimum quantity allowed',
+      '034': 'Service suspended',
+      '035': 'Service inactive',
+      '040': 'Transaction reversal',
+      '044': 'Transaction resolved',
+      '083': 'System error',
+      '085': 'Improper request ID format',
+      '087': 'Invalid credentials',
+      '089': 'Request is processing, please wait',
+      '091': 'Transaction not processed',
+      '099': 'Transaction is processing',
+    };
+
+    // Return mapped message if available, otherwise use response description
+    return (
+      codeMap[code] ||
+      responseDescription ||
+      `VTPass API error (Code: ${code})`
+    );
+  }
+
   private async makeRequest<T>(
     endpoint: string,
     method: 'GET' | 'POST' = 'GET',
@@ -142,9 +206,18 @@ export class VTPassService {
       // Check for success: POST endpoints use 'code', GET endpoints use 'response_description'
       const statusCode = result.code || result.response_description;
       if (statusCode !== '000') {
-        this.logger.error(`[VTPass] API error: ${result.response_description}`);
-        throw new BadRequestException(
+        const errorCode = result.code || statusCode;
+        const errorMessage = this.getVTPassErrorMessage(
+          errorCode,
           result.response_description || 'VTPass API error',
+        );
+        this.logger.error(
+          `[VTPass] API error (Code: ${errorCode}): ${errorMessage}`,
+        );
+        throw new VTPassException(
+          errorMessage,
+          errorCode,
+          result.response_description,
         );
       }
 
@@ -297,11 +370,26 @@ export class VTPassService {
       },
     );
 
+    // Determine status based on transaction status
+    // When code is "000", check transactions.status:
+    // - "delivered" → success
+    // - "initiated" or "pending" → pending (should requery)
+    // - Otherwise → failed
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: data.reference,
       productName: response.content.transactions.product_name,
@@ -339,11 +427,22 @@ export class VTPassService {
       },
     );
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: data.reference,
       productName: response.content.transactions.product_name,
@@ -409,11 +508,22 @@ export class VTPassService {
       payload,
     );
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: data.reference,
       productName: response.content.transactions.product_name,
@@ -440,11 +550,22 @@ export class VTPassService {
       },
     );
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: data.reference,
       productName: response.content.transactions.product_name,
@@ -479,11 +600,22 @@ export class VTPassService {
       },
     );
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: data.reference,
       productName: response.content.transactions.product_name,
@@ -515,11 +647,22 @@ export class VTPassService {
       },
     );
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       amount: response.content.transactions.amount,
     };
@@ -618,11 +761,22 @@ export class VTPassService {
       },
     );
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: data.reference,
       productName: response.content.transactions.product_name,
@@ -684,11 +838,22 @@ export class VTPassService {
     const pinMatch = exchangeRef.match(/Pin\s*:\s*(\d+)/i);
     const extractedPin = pinMatch ? pinMatch[1] : exchangeRef;
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: extractedPin, // Extracted PIN
       productName: response.content.transactions.product_name,
@@ -726,11 +891,22 @@ export class VTPassService {
     const tokens = (response as any).tokens || [];
     const firstToken = tokens.length > 0 ? tokens[0] : null;
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: firstToken, // First token for quick access
       productName: response.content.transactions.product_name,
@@ -769,11 +945,22 @@ export class VTPassService {
     const serializedCards =
       cards.length > 0 ? JSON.stringify(cards) : undefined;
 
+    // Determine status based on transaction status
+    const transactionStatus = response.content.transactions.status;
+    let status: 'success' | 'pending' | 'failed';
+    if (transactionStatus === 'delivered') {
+      status = 'success';
+    } else if (
+      transactionStatus === 'initiated' ||
+      transactionStatus === 'pending'
+    ) {
+      status = 'pending';
+    } else {
+      status = 'failed';
+    }
+
     return {
-      status:
-        response.content.transactions.status === 'delivered'
-          ? 'success'
-          : 'failed',
+      status,
       transactionId: response.content.transactions.transactionId,
       token: serializedCards, // Serialized cards array
       productName: response.content.transactions.product_name,

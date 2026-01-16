@@ -56,7 +56,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDate } from '@/lib/utils';
+import { useReAuth } from '@/components/security/re-auth-modal';
 
 const adminRoles: UserRole[] = ['ADMIN', 'SUPER_ADMIN', 'SUPPORT'];
 
@@ -94,6 +96,7 @@ export default function AdminsPage() {
   const [loadingIpWhitelist, setLoadingIpWhitelist] = useState(false);
   const queryClient = useQueryClient();
   const { canManageAdmins } = usePermissions();
+  const { requireReAuth, ReAuthModal } = useReAuth();
 
   const { data: adminsData, isLoading } = useQuery({
     queryKey: ['admins', page, debouncedSearch, roleFilter],
@@ -126,7 +129,22 @@ export default function AdminsPage() {
       });
       toast.success('Admin created successfully!');
     },
-    onError: (error: AxiosError<{ message: string }>) => {
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: CreateAdminDto,
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          createMutation.mutate(variables);
+        });
+        return;
+      }
       const message = error.response?.data?.message || 'Failed to create admin';
       toast.error(message);
     },
@@ -141,7 +159,22 @@ export default function AdminsPage() {
       setSelectedAdmin(null);
       toast.success('Admin updated successfully!');
     },
-    onError: (error: AxiosError<{ message: string }>) => {
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: { adminId: string; data: UpdateAdminDto },
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          updateMutation.mutate(variables);
+        });
+        return;
+      }
       const message = error.response?.data?.message || 'Failed to update admin';
       toast.error(message);
     },
@@ -153,7 +186,19 @@ export default function AdminsPage() {
       queryClient.invalidateQueries({ queryKey: ['admins'] });
       toast.success('Admin deleted successfully!');
     },
-    onError: (error: AxiosError<{ message: string }>) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, adminId: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          deleteMutation.mutate(adminId);
+        });
+        return;
+      }
       const message = error.response?.data?.message || 'Failed to delete admin';
       toast.error(message);
     },
@@ -314,87 +359,94 @@ export default function AdminsPage() {
               Add Admin
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Admin</DialogTitle>
               <DialogDescription>Add a new administrator to the platform.</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    value={createForm.firstName}
-                    onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
-                    placeholder="John"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    value={createForm.lastName}
-                    onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={createForm.email}
-                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                  placeholder="admin@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={createForm.phone}
-                  onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
-                  placeholder="+234..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={createForm.password}
-                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  placeholder="Enter password"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
-                <Select
-                  value={createForm.role}
-                  onValueChange={(value) =>
-                    setCreateForm({ ...createForm, role: value as UserRole })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {adminRoles.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Basic Information</TabsTrigger>
+                <TabsTrigger value="security">Security & IP</TabsTrigger>
+                <TabsTrigger value="email">Email Options</TabsTrigger>
+              </TabsList>
 
-              {/* Security & Provisioning Section */}
-              <div className="border-t pt-4 mt-4 space-y-4">
-                <div className="flex items-center gap-2">
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input
+                      id="firstName"
+                      value={createForm.firstName}
+                      onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
+                      placeholder="John"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input
+                      id="lastName"
+                      value={createForm.lastName}
+                      onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
+                      placeholder="Doe"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={createForm.email}
+                    onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                    placeholder="admin@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={createForm.phone}
+                    onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                    placeholder="+234..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={createForm.password}
+                    onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                    placeholder="Enter password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role *</Label>
+                  <Select
+                    value={createForm.role}
+                    onValueChange={(value) =>
+                      setCreateForm({ ...createForm, role: value as UserRole })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {adminRoles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="security" className="space-y-4 mt-4">
+                <div className="flex items-center gap-2 mb-4">
                   <Shield className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="font-semibold text-sm">Security & Provisioning</h3>
+                  <h3 className="font-semibold text-sm">Security & IP Whitelist</h3>
                 </div>
 
                 {/* IP Whitelist */}
@@ -427,6 +479,36 @@ export default function AdminsPage() {
                     </Label>
                   </div>
                 )}
+
+                {/* Security Warnings */}
+                {createForm.skipIpWhitelist && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Security Warning</AlertTitle>
+                    <AlertDescription>
+                      Temporary IP whitelist access expires in 24 hours. Ensure the admin&apos;s IP
+                      is permanently whitelisted before expiration.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {!createForm.initialIpAddress && (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>IP Whitelist Required</AlertTitle>
+                    <AlertDescription>
+                      Admin users must have their IP address whitelisted to access the system. You
+                      can add it now or provision it later using the provisioning endpoint.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </TabsContent>
+
+              <TabsContent value="email" className="space-y-4 mt-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-semibold text-sm">Email Configuration</h3>
+                </div>
 
                 {/* Personal Email */}
                 <div className="space-y-2">
@@ -474,29 +556,6 @@ export default function AdminsPage() {
                   </div>
                 </div>
 
-                {/* Security Warnings */}
-                {createForm.skipIpWhitelist && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Security Warning</AlertTitle>
-                    <AlertDescription>
-                      Temporary IP whitelist access expires in 24 hours. Ensure the admin&apos;s IP
-                      is permanently whitelisted before expiration.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {!createForm.initialIpAddress && (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>IP Whitelist Required</AlertTitle>
-                    <AlertDescription>
-                      Admin users must have their IP address whitelisted to access the system. You
-                      can add it now or provision it later using the provisioning endpoint.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
                 {createForm.sendMfaSetup && (
                   <Alert>
                     <Info className="h-4 w-4" />
@@ -507,8 +566,8 @@ export default function AdminsPage() {
                     </AlertDescription>
                   </Alert>
                 )}
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
@@ -687,60 +746,66 @@ export default function AdminsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Admin</DialogTitle>
             <DialogDescription>Update admin user information and permissions.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="editFirstName">First Name</Label>
-                <Input
-                  id="editFirstName"
-                  value={editForm.firstName}
-                  onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="editLastName">Last Name</Label>
-                <Input
-                  id="editLastName"
-                  value={editForm.lastName}
-                  onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editPhone">Phone</Label>
-              <Input
-                id="editPhone"
-                value={editForm.phone}
-                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editRole">Role</Label>
-              <Select
-                value={editForm.role}
-                onValueChange={(value) => setEditForm({ ...editForm, role: value as UserRole })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {adminRoles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="basic">Basic Information</TabsTrigger>
+              <TabsTrigger value="security">Security Settings</TabsTrigger>
+            </TabsList>
 
-            {/* Security & IP Whitelist Section */}
-            <div className="border-t pt-4 mt-4 space-y-4">
-              <div className="flex items-center gap-2">
+            <TabsContent value="basic" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editFirstName">First Name</Label>
+                  <Input
+                    id="editFirstName"
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editLastName">Last Name</Label>
+                  <Input
+                    id="editLastName"
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editPhone">Phone</Label>
+                <Input
+                  id="editPhone"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editRole">Role</Label>
+                <Select
+                  value={editForm.role}
+                  onValueChange={(value) => setEditForm({ ...editForm, role: value as UserRole })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {adminRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="security" className="space-y-4 mt-4">
+              <div className="flex items-center gap-2 mb-4">
                 <Shield className="h-4 w-4 text-muted-foreground" />
                 <h3 className="font-semibold text-sm">Security Settings</h3>
               </div>
@@ -862,8 +927,8 @@ export default function AdminsPage() {
                   </>
                 )}
               </div>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
               Cancel
@@ -874,6 +939,7 @@ export default function AdminsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {ReAuthModal}
     </div>
   );
 }
