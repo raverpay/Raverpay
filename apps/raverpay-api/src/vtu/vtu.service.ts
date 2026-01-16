@@ -571,7 +571,8 @@ export class VTUService {
         // Extract VTpass error details
         let vtpassErrorCode: string | undefined;
         let vtpassErrorMessage: string | undefined;
-        let errorMessage = 'Failed to process airtime purchase. Your wallet has been refunded.';
+        let errorMessage =
+          'Failed to process airtime purchase. Your wallet has been refunded.';
 
         if (error instanceof VTPassException) {
           vtpassErrorCode = error.vtpassCode;
@@ -608,7 +609,11 @@ export class VTUService {
         }
 
         // Refund immediately with error details
-        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
+        await this.refundFailedOrder(
+          order.id,
+          vtpassErrorCode,
+          vtpassErrorMessage,
+        );
 
         throw new BadRequestException(errorMessage);
       }
@@ -685,9 +690,7 @@ export class VTUService {
           order.id,
           '016',
           'VTPass API returned failure status',
-        ).catch((error) =>
-          this.logger.error('Failed to refund order', error),
-        );
+        ).catch((error) => this.logger.error('Failed to refund order', error));
 
         // Reverse cashback redemption if any
         if (cashbackRedeemed > 0) {
@@ -838,9 +841,10 @@ export class VTUService {
         );
       } else {
         // Get VTpass error details from order providerResponse if available
-        const providerResponse = order.providerResponse as
-          | Record<string, unknown>
-          | null;
+        const providerResponse = order.providerResponse as Record<
+          string,
+          unknown
+        > | null;
         const vtpassErrorCode =
           (providerResponse?.vtpassErrorCode as string) || '016';
         const vtpassErrorMessage =
@@ -1136,7 +1140,8 @@ export class VTUService {
         // Extract VTpass error details
         let vtpassErrorCode: string | undefined;
         let vtpassErrorMessage: string | undefined;
-        let errorMessage = 'Failed to process data purchase. Your wallet has been refunded.';
+        let errorMessage =
+          'Failed to process data purchase. Your wallet has been refunded.';
 
         if (error instanceof VTPassException) {
           vtpassErrorCode = error.vtpassCode;
@@ -1173,7 +1178,11 @@ export class VTUService {
         }
 
         // Refund immediately with error details
-        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
+        await this.refundFailedOrder(
+          order.id,
+          vtpassErrorCode,
+          vtpassErrorMessage,
+        );
 
         throw new BadRequestException(errorMessage);
       }
@@ -1251,9 +1260,7 @@ export class VTUService {
           order.id,
           '016',
           'VTPass API returned failure status',
-        ).catch((error) =>
-          this.logger.error('Failed to refund order', error),
-        );
+        ).catch((error) => this.logger.error('Failed to refund order', error));
 
         // Reverse cashback redemption if any
         if (cashbackRedeemed > 0) {
@@ -1541,7 +1548,8 @@ export class VTUService {
         // Extract VTpass error details
         let vtpassErrorCode: string | undefined;
         let vtpassErrorMessage: string | undefined;
-        let errorMessage = 'Failed to process cable TV payment. Your wallet has been refunded.';
+        let errorMessage =
+          'Failed to process cable TV payment. Your wallet has been refunded.';
 
         if (error instanceof VTPassException) {
           vtpassErrorCode = error.vtpassCode;
@@ -1567,7 +1575,11 @@ export class VTUService {
         });
 
         // Refund immediately with error details
-        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
+        await this.refundFailedOrder(
+          order.id,
+          vtpassErrorCode,
+          vtpassErrorMessage,
+        );
 
         throw new BadRequestException(errorMessage);
       }
@@ -2063,7 +2075,8 @@ export class VTUService {
         // Extract VTpass error details
         let vtpassErrorCode: string | undefined;
         let vtpassErrorMessage: string | undefined;
-        let errorMessage = 'Failed to process electricity payment. Your wallet has been refunded.';
+        let errorMessage =
+          'Failed to process electricity payment. Your wallet has been refunded.';
 
         if (error instanceof VTPassException) {
           vtpassErrorCode = error.vtpassCode;
@@ -2089,7 +2102,11 @@ export class VTUService {
         });
 
         // Refund immediately with error details
-        await this.refundFailedOrder(order.id, vtpassErrorCode, vtpassErrorMessage);
+        await this.refundFailedOrder(
+          order.id,
+          vtpassErrorCode,
+          vtpassErrorMessage,
+        );
 
         throw new BadRequestException(errorMessage);
       }
@@ -2190,9 +2207,7 @@ export class VTUService {
           order.id,
           '016',
           'VTPass API returned failure status',
-        ).catch((error) =>
-          this.logger.error('Failed to refund order', error),
-        );
+        ).catch((error) => this.logger.error('Failed to refund order', error));
       }
 
       // 12a. Increment daily spending limit asynchronously

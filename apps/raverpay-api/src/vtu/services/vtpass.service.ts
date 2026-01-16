@@ -179,9 +179,7 @@ export class VTPassService {
 
     // Return mapped message if available, otherwise use response description
     return (
-      codeMap[code] ||
-      responseDescription ||
-      `VTPass API error (Code: ${code})`
+      codeMap[code] || responseDescription || `VTPass API error (Code: ${code})`
     );
   }
 

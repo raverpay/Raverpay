@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -158,6 +159,11 @@ export class AdminAuthService {
       }
 
       // Determine if secret is encrypted (MFA enabled) or temporary (pre-provisioned)
+      // We already checked hasMfaSecret above, so twoFactorSecret is guaranteed to be non-null here
+      if (!user.twoFactorSecret) {
+        throw new BadRequestException('MFA secret not found');
+      }
+
       let secret: string;
       let isTemporarySecret = false;
 
@@ -181,16 +187,16 @@ export class AdminAuthService {
             token: dto.mfaCode,
             window: 1, // Allow 30 seconds clock drift
           });
-          
+
           // speakeasy.totp.verify returns true/false/null/undefined
           // ONLY accept explicit true - anything else is invalid
           isValidTotp = verifyResult === true;
-          
+
           // Log verification attempt for debugging (use warn level so it's visible)
           this.logger.warn(
             `[MFA VERIFICATION] user=${user.id}, email=${user.email}, code=${dto.mfaCode}, secretLength=${secret.length}, verifyResult=${verifyResult}, isValidTotp=${isValidTotp}, isTemporarySecret=${isTemporarySecret}`,
           );
-          
+
           // Additional safety check: if verifyResult is not explicitly true, ensure isValidTotp is false
           if (verifyResult !== true) {
             isValidTotp = false;
@@ -232,10 +238,11 @@ export class AdminAuthService {
       }
 
       // CRITICAL: Always check if MFA verification passed before allowing password change
+      // CRITICAL CHECK: Ensure verification actually passed
       if (!isValidTotp && !isValidBackup) {
         // MFA verification failed - DO NOT allow password change
-        this.logger.warn(
-          `MFA verification failed for password change: user=${user.id}, email=${user.email}, codeLength=${dto.mfaCode.length}, isTemporarySecret=${isTemporarySecret}`,
+        this.logger.error(
+          `[MFA VERIFICATION FAILED] user=${user.id}, email=${user.email}, code=${dto.mfaCode}, codeLength=${dto.mfaCode.length}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}, isTemporarySecret=${isTemporarySecret}, secretExists=${!!secret}`,
         );
 
         // Increment failed attempts
@@ -295,13 +302,22 @@ export class AdminAuthService {
       if (!isValidTotp && !isValidBackup) {
         // This should never happen if the code above is correct, but add defensive check
         this.logger.error(
-          `CRITICAL: MFA verification check passed but both isValidTotp and isValidBackup are false! user=${user.id}`,
+          `[CRITICAL ERROR] MFA verification check passed but both isValidTotp and isValidBackup are false! user=${user.id}, email=${user.email}, code=${dto.mfaCode}`,
         );
         throw new UnauthorizedException('MFA verification failed');
       }
 
-      this.logger.log(
-        `MFA verification successful for password change: user=${user.id}, email=${user.email}, method=${isValidTotp ? 'TOTP' : 'BACKUP'}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}`,
+      // Additional safety: Explicitly verify the boolean values
+      const verificationPassed = isValidTotp === true || isValidBackup === true;
+      if (!verificationPassed) {
+        this.logger.error(
+          `[CRITICAL ERROR] MFA verification did not pass! isValidTotp=${isValidTotp} (type: ${typeof isValidTotp}), isValidBackup=${isValidBackup} (type: ${typeof isValidBackup})`,
+        );
+        throw new UnauthorizedException('MFA verification failed');
+      }
+
+      this.logger.warn(
+        `[MFA VERIFICATION SUCCESS] user=${user.id}, email=${user.email}, method=${isValidTotp ? 'TOTP' : 'BACKUP'}, isValidTotp=${isValidTotp}, isValidBackup=${isValidBackup}, code=${dto.mfaCode}`,
       );
 
       // MFA verification successful!
@@ -428,9 +444,7 @@ export class AdminAuthService {
         lastPasswordChange: new Date(),
         // Don't reset mfaFailedAttempts here - it's handled in MFA verification section
         // Only reset if MFA was not required (no secret exists)
-        ...(needsMfaVerification
-          ? {}
-          : { mfaFailedAttempts: 0 }), // Reset if no MFA was required
+        ...(needsMfaVerification ? {} : { mfaFailedAttempts: 0 }), // Reset if no MFA was required
       },
     });
 
@@ -467,13 +481,27 @@ export class AdminAuthService {
       deviceId = deviceInfo.deviceId;
     }
 
+    // Fetch updated user from database to ensure we return the latest data
+    // (password change and MFA status updates)
+    const updatedUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+    });
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found after password change');
+    }
+
     // Generate access and refresh tokens
-    const tokens = await this.generateTokens(user, deviceInfo, ipAddress);
+    const tokens = await this.generateTokens(
+      updatedUser,
+      deviceInfo,
+      ipAddress,
+    );
 
     // Generate re-auth token for admin users
     const reAuthToken = this.jwtService.sign(
       {
-        sub: user.id,
+        sub: updatedUser.id,
         purpose: 'reauth',
       },
       { expiresIn: '15m' },
@@ -481,7 +509,7 @@ export class AdminAuthService {
 
     // Update last login
     await this.prisma.user.update({
-      where: { id: user.id },
+      where: { id: updatedUser.id },
       data: {
         lastLoginAt: new Date(),
         lastSuccessfulLoginIp: ipAddress,
@@ -490,7 +518,7 @@ export class AdminAuthService {
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = updatedUser;
 
     return {
       user: userWithoutPassword,

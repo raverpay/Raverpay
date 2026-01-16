@@ -173,12 +173,14 @@ export function ReAuthModal({
               {title}
             </DialogTitle>
             <DialogDescription>
-              {description ||
-                'Enter your MFA code to continue with this sensitive operation'}
+              {description || 'Enter your MFA code to continue with this sensitive operation'}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleMfaSubmit((data) => verifyMfaMutation.mutate(data.mfaCode))} className="space-y-4">
+          <form
+            onSubmit={handleMfaSubmit((data) => verifyMfaMutation.mutate(data.mfaCode))}
+            className="space-y-4"
+          >
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -247,7 +249,10 @@ export function ReAuthModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handlePasswordSubmit((data) => verifyPasswordMutation.mutate(data.password))} className="space-y-4">
+        <form
+          onSubmit={handlePasswordSubmit((data) => verifyPasswordMutation.mutate(data.password))}
+          className="space-y-4"
+        >
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>

@@ -76,14 +76,14 @@ apiClient.interceptors.response.use(
     // Handle 428 Precondition Required (Password Change or Re-Auth)
     if (error.response?.status === 428) {
       const errorData = error.response.data as { error?: string; mustChangePassword?: boolean };
-      
+
       // Password change required - handled by auth provider or login page
       if (errorData.error === 'PasswordChangeRequired' || errorData.mustChangePassword) {
         // Don't reject - let the component handle it
         // The auth provider or login page will show the password change modal
         return Promise.reject(error);
       }
-      
+
       // Re-authentication required - handled by component using ReAuthModal
       if (errorData.error === 'ReAuthenticationRequired') {
         // Don't reject - let the component handle it

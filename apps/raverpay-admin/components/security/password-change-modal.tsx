@@ -104,7 +104,7 @@ export function PasswordChangeModal({
     onSuccess: (data) => {
       // Update auth store with new tokens
       setAuth(data.user, data.accessToken, data.refreshToken);
-      
+
       // Store re-auth token if provided
       if (data.reAuthToken && typeof window !== 'undefined') {
         window.__reAuthToken = data.reAuthToken;
@@ -115,7 +115,7 @@ export function PasswordChangeModal({
       toast.success('Password changed successfully!', {
         description: 'You can now access the admin dashboard',
       });
-      
+
       if (onSuccess) {
         onSuccess();
       } else {
@@ -223,8 +223,7 @@ export function PasswordChangeModal({
               <p className="text-sm text-destructive">{errors.newPassword.message}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters with uppercase, lowercase, number, and special
-              character
+              Must be at least 8 characters with uppercase, lowercase, number, and special character
             </p>
           </div>
 
@@ -293,4 +292,3 @@ export function PasswordChangeModal({
     </Dialog>
   );
 }
-

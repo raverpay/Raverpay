@@ -31,7 +31,8 @@ export class ChangePasswordDto {
   confirmPassword: string;
 
   @ApiProperty({
-    description: 'MFA code (TOTP) or backup code. Required if MFA secret exists.',
+    description:
+      'MFA code (TOTP) or backup code. Required if MFA secret exists.',
     example: '123456',
     required: false,
   })
