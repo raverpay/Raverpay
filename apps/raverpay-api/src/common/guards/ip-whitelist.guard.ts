@@ -126,6 +126,16 @@ export class IpWhitelistGuard implements CanActivate {
     clientIp: string,
     userId: string,
   ): Promise<boolean> {
+    // Trim IP address to handle any whitespace
+    const trimmedIp = clientIp?.trim();
+
+    if (!trimmedIp || trimmedIp === 'unknown') {
+      this.logger.warn(
+        `IP whitelist check skipped: invalid IP address "${clientIp}" for user ${userId}`,
+      );
+      return false;
+    }
+
     // Check grace period first (for new admins)
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -159,40 +169,95 @@ export class IpWhitelistGuard implements CanActivate {
       },
     });
 
+    // Log whitelist entries being checked (for debugging)
+    if (whitelistEntries.length > 0) {
+      this.logger.debug(
+        `Checking IP ${trimmedIp} against ${whitelistEntries.length} whitelist entries for user ${userId}`,
+      );
+    } else {
+      this.logger.warn(
+        `No active whitelist entries found for user ${userId}. IP ${trimmedIp} will be blocked.`,
+      );
+    }
+
     // Check each entry
     for (const entry of whitelistEntries) {
-      if (this.matchesIpOrCidr(clientIp, entry.ipAddress)) {
+      const trimmedEntry = entry.ipAddress?.trim();
+      if (this.matchesIpOrCidr(trimmedIp, trimmedEntry)) {
+        this.logger.debug(
+          `IP ${trimmedIp} matched whitelist entry: ${trimmedEntry} (ID: ${entry.id})`,
+        );
         return true;
       }
     }
+
+    // Log which entries were checked (for debugging CIDR issues)
+    const entryList = whitelistEntries.map((e) => e.ipAddress).join(', ');
+    this.logger.debug(
+      `IP ${trimmedIp} did not match any whitelist entries: [${entryList}]`,
+    );
 
     return false;
   }
 
   private matchesIpOrCidr(clientIp: string, whitelistEntry: string): boolean {
+    if (!clientIp || !whitelistEntry) {
+      return false;
+    }
+
+    // Trim both IPs to handle any whitespace
+    const trimmedClientIp = clientIp.trim();
+    const trimmedEntry = whitelistEntry.trim();
+
     // Check if exact match
-    if (clientIp === whitelistEntry) {
+    if (trimmedClientIp === trimmedEntry) {
       return true;
     }
 
     // Check if CIDR notation
-    if (whitelistEntry.includes('/')) {
+    if (trimmedEntry.includes('/')) {
       try {
         // IPv4 CIDR check
-        if (isIPv4(clientIp)) {
-          const networkAddress = new Address4(whitelistEntry);
-          const clientAddress = new Address4(clientIp);
-          return clientAddress.isInSubnet(networkAddress);
+        if (isIPv4(trimmedClientIp)) {
+          const networkAddress = new Address4(trimmedEntry);
+          const clientAddress = new Address4(trimmedClientIp);
+          const isMatch = clientAddress.isInSubnet(networkAddress);
+
+          // Log CIDR matching for debugging
+          if (isMatch) {
+            this.logger.debug(
+              `CIDR match: ${trimmedClientIp} is in subnet ${trimmedEntry}`,
+            );
+          }
+
+          return isMatch;
         }
 
         // IPv6 CIDR check
-        if (isIPv6(clientIp)) {
-          const networkAddress = new Address6(whitelistEntry);
-          const clientAddress = new Address6(clientIp);
-          return clientAddress.isInSubnet(networkAddress);
+        if (isIPv6(trimmedClientIp)) {
+          const networkAddress = new Address6(trimmedEntry);
+          const clientAddress = new Address6(trimmedClientIp);
+          const isMatch = clientAddress.isInSubnet(networkAddress);
+
+          // Log CIDR matching for debugging
+          if (isMatch) {
+            this.logger.debug(
+              `CIDR match: ${trimmedClientIp} is in subnet ${trimmedEntry}`,
+            );
+          }
+
+          return isMatch;
         }
+
+        // If IP is not valid IPv4 or IPv6, log warning
+        this.logger.warn(
+          `IP address ${trimmedClientIp} is not a valid IPv4 or IPv6 address`,
+        );
       } catch (error) {
-        this.logger.error(`Invalid CIDR notation: ${whitelistEntry}`, error);
+        this.logger.error(
+          `Invalid CIDR notation or IP address. Entry: ${trimmedEntry}, Client IP: ${trimmedClientIp}`,
+          error,
+        );
         return false;
       }
     }

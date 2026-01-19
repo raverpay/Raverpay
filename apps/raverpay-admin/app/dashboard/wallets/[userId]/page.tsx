@@ -14,9 +14,11 @@ import {
   TrendingDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 
 import { walletsApi } from '@/lib/api/wallets';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { transactionsApi } from '@/lib/api/transactions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +48,7 @@ export default function WalletDetailPage({ params }: { params: Promise<{ userId:
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [lockReason, setLockReason] = useState('');
   const [unlockReason, setUnlockReason] = useState('');
   const [adjustAmount, setAdjustAmount] = useState('');
@@ -76,7 +79,19 @@ export default function WalletDetailPage({ params }: { params: Promise<{ userId:
       toast.success('Wallet locked successfully');
       setLockReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          lockMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to lock wallet', {
         description: getApiErrorMessage(error, 'Unable to lock wallet'),
       });
@@ -91,7 +106,19 @@ export default function WalletDetailPage({ params }: { params: Promise<{ userId:
       toast.success('Wallet unlocked successfully');
       setUnlockReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          unlockMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to unlock wallet', {
         description: getApiErrorMessage(error, 'Unable to unlock wallet'),
       });
@@ -116,7 +143,22 @@ export default function WalletDetailPage({ params }: { params: Promise<{ userId:
       setAdjustAmount('');
       setAdjustReason('');
     },
-    onError: (error: unknown) => {
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: { amount: number; type: 'credit' | 'debit'; reason: string },
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          adjustMutation.mutate(variables);
+        });
+        return;
+      }
       toast.error('Failed to adjust wallet balance', {
         description: getApiErrorMessage(error, 'Unable to adjust wallet balance'),
       });
@@ -129,7 +171,19 @@ export default function WalletDetailPage({ params }: { params: Promise<{ userId:
       queryClient.invalidateQueries({ queryKey: ['wallet', resolvedParams.userId] });
       toast.success('Spending limits reset successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          resetLimitsMutation.mutate();
+        });
+        return;
+      }
       toast.error('Failed to reset limits', {
         description: getApiErrorMessage(error, 'Unable to reset limits'),
       });
@@ -541,6 +595,9 @@ export default function WalletDetailPage({ params }: { params: Promise<{ userId:
           </CardContent>
         </Card>
       )}
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

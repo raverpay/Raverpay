@@ -5,9 +5,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Snowflake, Unlock, XCircle, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 
 import { virtualAccountsApi } from '@/lib/api/virtual-accounts';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +27,7 @@ export default function VirtualAccountDetailPage({
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [freezeReason, setFreezeReason] = useState('');
   const [closeReason, setCloseReason] = useState('');
 
@@ -41,7 +44,19 @@ export default function VirtualAccountDetailPage({
       toast.success('Virtual account frozen successfully');
       setFreezeReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          freezeMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to freeze account', {
         description: getApiErrorMessage(error, 'Unable to freeze account'),
       });
@@ -55,7 +70,19 @@ export default function VirtualAccountDetailPage({
       queryClient.invalidateQueries({ queryKey: ['virtual-accounts'] });
       toast.success('Virtual account unfrozen successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          unfreezeMutation.mutate();
+        });
+        return;
+      }
       toast.error('Failed to unfreeze account', {
         description: getApiErrorMessage(error, 'Unable to unfreeze account'),
       });
@@ -70,7 +97,19 @@ export default function VirtualAccountDetailPage({
       toast.success('Virtual account closed successfully');
       setCloseReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          closeMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to close account', {
         description: getApiErrorMessage(error, 'Unable to close account'),
       });
@@ -350,6 +389,9 @@ export default function VirtualAccountDetailPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

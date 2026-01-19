@@ -192,8 +192,21 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
-  async refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refreshTokens(dto.refreshToken);
+  async refresh(@Body() dto: RefreshTokenDto, @Req() req: Request) {
+    // Extract IP address and user agent for session tracking
+    const ipAddress =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      (req.headers['x-real-ip'] as string) ||
+      req.ip ||
+      req.socket?.remoteAddress ||
+      'unknown';
+    const userAgent = req.headers['user-agent'] || undefined;
+
+    return this.authService.refreshTokens(
+      dto.refreshToken,
+      ipAddress,
+      userAgent,
+    );
   }
 
   /**

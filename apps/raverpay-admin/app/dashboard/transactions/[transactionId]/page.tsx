@@ -5,9 +5,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, RotateCcw, Undo2, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 
 import { transactionsApi } from '@/lib/api/transactions';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -25,6 +27,7 @@ export default function TransactionDetailPage({
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [reverseReason, setReverseReason] = useState('');
   const [showReverseConfirm, setShowReverseConfirm] = useState(false);
   const [showRetryConfirm, setShowRetryConfirm] = useState(false);
@@ -42,7 +45,19 @@ export default function TransactionDetailPage({
       toast.success('Transaction reversed successfully');
       setReverseReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          reverseMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to reverse transaction', {
         description: getApiErrorMessage(error, 'Unable to reverse transaction'),
       });
@@ -55,7 +70,19 @@ export default function TransactionDetailPage({
       queryClient.invalidateQueries({ queryKey: ['transaction', resolvedParams.transactionId] });
       toast.success('Transaction retry initiated');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          retryMutation.mutate();
+        });
+        return;
+      }
       toast.error('Failed to retry transaction', {
         description: getApiErrorMessage(error, 'Unable to retry transaction'),
       });
@@ -350,6 +377,9 @@ export default function TransactionDetailPage({
           setShowRetryConfirm(false);
         }}
       />
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

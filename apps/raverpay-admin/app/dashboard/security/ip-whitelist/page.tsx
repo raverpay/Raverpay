@@ -22,9 +22,7 @@ import {
 } from 'lucide-react';
 
 import { securityApi, type IpWhitelistEntry } from '@/lib/api/security';
-import { MfaVerifyModal } from '@/components/security/mfa-verify-modal';
-import { useQuery as useMfaQuery } from '@tanstack/react-query';
-import { authApi } from '@/lib/api/auth';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -82,6 +80,7 @@ type UpdateIpFormData = z.infer<typeof updateIpSchema>;
 
 export default function IpWhitelistPage() {
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -91,8 +90,6 @@ export default function IpWhitelistPage() {
   const [deleteEntry, setDeleteEntry] = useState<IpWhitelistEntry | null>(null);
   const [currentIp, setCurrentIp] = useState<string | null>(null);
   const [copiedIp, setCopiedIp] = useState(false);
-  const [showMfaVerifyModal, setShowMfaVerifyModal] = useState(false);
-  const [pendingIpData, setPendingIpData] = useState<CreateIpFormData | null>(null);
 
   const createForm = useForm<CreateIpFormData>({
     resolver: zodResolver(createIpSchema),
@@ -151,12 +148,6 @@ export default function IpWhitelistPage() {
     }
   }, [currentIpData]);
 
-  // Check MFA status
-  const { data: mfaStatus } = useMfaQuery({
-    queryKey: ['mfa-status'],
-    queryFn: authApi.getMfaStatus,
-  });
-
   const handleUseCurrentIp = () => {
     if (currentIp && currentIp !== 'unknown') {
       setCreateValue('ipAddress', currentIp);
@@ -183,7 +174,19 @@ export default function IpWhitelistPage() {
         description: 'The IP address has been added to the whitelist',
       });
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, variables) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          addIpMutation.mutate(variables);
+        });
+        return;
+      }
       const errorMessage =
         (error.response?.data as { message?: string })?.message || 'Failed to add IP address';
       toast.error('Add Failed', {
@@ -203,7 +206,22 @@ export default function IpWhitelistPage() {
         description: 'The IP whitelist entry has been updated',
       });
     },
-    onError: (error: AxiosError) => {
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: { id: string; data: UpdateIpFormData },
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          updateIpMutation.mutate(variables);
+        });
+        return;
+      }
       const errorMessage =
         (error.response?.data as { message?: string })?.message || 'Failed to update IP whitelist';
       toast.error('Update Failed', {
@@ -221,7 +239,19 @@ export default function IpWhitelistPage() {
         description: 'The IP address has been removed from the whitelist',
       });
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, id: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          deleteIpMutation.mutate(id);
+        });
+        return;
+      }
       const errorMessage =
         (error.response?.data as { message?: string })?.message || 'Failed to remove IP address';
       toast.error('Delete Failed', {
@@ -231,25 +261,7 @@ export default function IpWhitelistPage() {
   });
 
   const onCreateSubmit = (data: CreateIpFormData) => {
-    // If MFA is enabled, require MFA verification before adding IP
-    if (mfaStatus?.mfaEnabled) {
-      setPendingIpData(data);
-      setShowAddDialog(false);
-      setShowMfaVerifyModal(true);
-    } else {
-      addIpMutation.mutate(data);
-    }
-  };
-
-  const handleMfaVerified = (code: string) => {
-    console.log('code', code);
-    if (pendingIpData) {
-      // For now, proceed with adding IP after MFA verification
-      // In a real implementation, you'd send the MFA code to the backend
-      addIpMutation.mutate(pendingIpData);
-      setPendingIpData(null);
-      setShowMfaVerifyModal(false);
-    }
+    addIpMutation.mutate(data);
   };
 
   const onUpdateSubmit = (data: UpdateIpFormData) => {
@@ -655,14 +667,8 @@ export default function IpWhitelistPage() {
         }}
       />
 
-      {/* MFA Verification Modal */}
-      <MfaVerifyModal
-        open={showMfaVerifyModal}
-        onOpenChange={setShowMfaVerifyModal}
-        onSuccess={handleMfaVerified}
-        title="MFA Verification Required"
-        description="Enter your 6-digit code from your authenticator app to add IP address to whitelist"
-      />
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

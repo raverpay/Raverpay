@@ -3,6 +3,7 @@ import { AppConfigService } from './app-config.service';
 import { UpdateRatingConfigDto } from './dto/update-rating-config.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { ReAuthGuard } from '../common/guards/re-auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
@@ -30,12 +31,13 @@ export class AppConfigController {
    * PATCH /admin/app-config/rating-prompt
    */
   @Patch('admin/rating-prompt')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, ReAuthGuard)
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Update Rating Config',
-    description: 'Update rating configuration (Admin only)',
+    description:
+      'Update rating configuration (Admin only). Requires re-authentication for this sensitive operation.',
   })
   @ApiBody({ type: UpdateRatingConfigDto })
   async updateRatingConfig(@Body() updateDto: UpdateRatingConfigDto) {

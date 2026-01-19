@@ -5,9 +5,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, XCircle, User, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 
 import { kycApi } from '@/lib/api/kyc';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +22,7 @@ export default function KYCDetailPage({ params }: { params: Promise<{ userId: st
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [bvnRejectReason, setBvnRejectReason] = useState('');
   const [ninRejectReason, setNinRejectReason] = useState('');
 
@@ -35,7 +38,19 @@ export default function KYCDetailPage({ params }: { params: Promise<{ userId: st
       queryClient.invalidateQueries({ queryKey: ['kyc'] });
       toast.success('BVN verification approved successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          approveBvnMutation.mutate();
+        });
+        return;
+      }
       toast.error('Failed to approve BVN', {
         description: getApiErrorMessage(error, 'Unable to approve BVN'),
       });
@@ -50,7 +65,19 @@ export default function KYCDetailPage({ params }: { params: Promise<{ userId: st
       toast.success('BVN verification rejected');
       setBvnRejectReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          rejectBvnMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to reject BVN', {
         description: getApiErrorMessage(error, 'Unable to reject BVN'),
       });
@@ -64,7 +91,19 @@ export default function KYCDetailPage({ params }: { params: Promise<{ userId: st
       queryClient.invalidateQueries({ queryKey: ['kyc'] });
       toast.success('NIN verification approved successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          approveNinMutation.mutate();
+        });
+        return;
+      }
       toast.error('Failed to approve NIN', {
         description: getApiErrorMessage(error, 'Unable to approve NIN'),
       });
@@ -79,7 +118,19 @@ export default function KYCDetailPage({ params }: { params: Promise<{ userId: st
       toast.success('NIN verification rejected');
       setNinRejectReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          rejectNinMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to reject NIN', {
         description: getApiErrorMessage(error, 'Unable to reject NIN'),
       });
@@ -399,6 +450,9 @@ export default function KYCDetailPage({ params }: { params: Promise<{ userId: st
           </CardContent>
         </Card>
       )}
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

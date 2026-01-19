@@ -5,8 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle, XCircle, User, Calendar, FileText } from 'lucide-react';
+import { AxiosError } from 'axios';
 
 import { deletionsApi } from '@/lib/api/deletions';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { usePermissions } from '@/lib/permissions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,6 +47,7 @@ export default function DeletionDetailPage({ params }: { params: Promise<{ reque
   const router = useRouter();
   const queryClient = useQueryClient();
   const { canApproveDeletions } = usePermissions();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
@@ -61,6 +64,21 @@ export default function DeletionDetailPage({ params }: { params: Promise<{ reque
       queryClient.invalidateQueries({ queryKey: ['deletions'] });
       setApproveDialogOpen(false);
     },
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          approveMutation.mutate();
+        });
+        return;
+      }
+      // Handle other errors if needed
+    },
   });
 
   const rejectMutation = useMutation({
@@ -70,6 +88,21 @@ export default function DeletionDetailPage({ params }: { params: Promise<{ reque
       queryClient.invalidateQueries({ queryKey: ['deletions'] });
       setRejectDialogOpen(false);
       setRejectionReason('');
+    },
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          rejectMutation.mutate(reason);
+        });
+        return;
+      }
+      // Handle other errors if needed
     },
   });
 
@@ -334,6 +367,9 @@ export default function DeletionDetailPage({ params }: { params: Promise<{ reque
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

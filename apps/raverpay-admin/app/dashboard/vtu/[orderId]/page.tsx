@@ -14,9 +14,11 @@ import {
   Gift,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 
 import { vtuApi } from '@/lib/api/vtu';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -77,6 +79,7 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [refundReason, setRefundReason] = useState('');
 
   const { data: response, isLoading } = useQuery<VTUOrderResponse>({
@@ -103,7 +106,19 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
       toast.success('Order refunded successfully');
       setRefundReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          refundMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to refund order', {
         description: getApiErrorMessage(error, 'Unable to refund order'),
       });
@@ -116,7 +131,19 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
       queryClient.invalidateQueries({ queryKey: ['vtu-order', resolvedParams.orderId] });
       toast.success('Order retry initiated');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          retryMutation.mutate();
+        });
+        return;
+      }
       toast.error('Failed to retry order', {
         description: getApiErrorMessage(error, 'Unable to retry order'),
       });
@@ -514,6 +541,9 @@ export default function VTUDetailPage({ params }: { params: Promise<{ orderId: s
           </CardContent>
         </Card>
       )}
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

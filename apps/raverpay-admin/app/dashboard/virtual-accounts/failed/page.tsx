@@ -5,8 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import Link from 'next/link';
 import { Search, AlertCircle, User, Phone, Mail, Plus, Loader2, CheckCircle2 } from 'lucide-react';
+import { AxiosError } from 'axios';
 
 import { virtualAccountsApi, FailedDVAUser } from '@/lib/api/virtual-accounts';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -47,6 +49,7 @@ export default function FailedDVACreationsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [preferredBank, setPreferredBank] = useState<string>('wema-bank');
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
 
   const { data, isPending: isLoading } = useQuery({
     queryKey: ['failed-dva-creations', page, debouncedSearch],
@@ -68,11 +71,23 @@ export default function FailedDVACreationsPage() {
       queryClient.invalidateQueries({ queryKey: ['failed-dva-creations'] });
       queryClient.invalidateQueries({ queryKey: ['virtual-accounts'] });
     },
-    onError: (error: unknown) => {
-      toast.error(
-        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to create virtual account',
-      );
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: { userId: string; bank?: string },
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          createDVAMutation.mutate(variables);
+        });
+        return;
+      }
+      toast.error(error.response?.data?.message || 'Failed to create virtual account');
     },
   });
 
@@ -349,6 +364,9 @@ export default function FailedDVACreationsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

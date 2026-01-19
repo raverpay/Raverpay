@@ -98,6 +98,8 @@ export default function AdminsPage() {
   const { canManageAdmins } = usePermissions();
   const { requireReAuth, ReAuthModal } = useReAuth();
 
+  console.log('editform', editForm);
+
   const { data: adminsData, isLoading } = useQuery({
     queryKey: ['admins', page, debouncedSearch, roleFilter],
     queryFn: () =>
@@ -265,6 +267,7 @@ export default function AdminsPage() {
     role: UserRole;
     twoFactorEnabled?: boolean;
   }) => {
+    console.log('admin', admin);
     setSelectedAdmin(admin.id);
     setEditForm({
       firstName: admin.firstName,
@@ -304,22 +307,27 @@ export default function AdminsPage() {
       return;
     }
 
-    // Basic IP validation
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    if (!ipRegex.test(newIpAddress.trim())) {
-      toast.error('Please enter a valid IP address');
+    // IP validation - supports IPv4, IPv6, and CIDR notation
+    const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/;
+    const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}(\/\d{1,3})?$/;
+    const trimmedIp = newIpAddress.trim();
+
+    if (!ipv4Regex.test(trimmedIp) && !ipv6Regex.test(trimmedIp)) {
+      toast.error(
+        'Please enter a valid IP address or CIDR notation (e.g., 192.168.1.1 or 192.168.1.0/24)',
+      );
       return;
     }
 
     const currentIps = editForm.ipAddresses || [];
-    if (currentIps.includes(newIpAddress.trim())) {
+    if (currentIps.includes(trimmedIp)) {
       toast.error('This IP address is already in the list');
       return;
     }
 
     setEditForm({
       ...editForm,
-      ipAddresses: [...currentIps, newIpAddress.trim()],
+      ipAddresses: [...currentIps, trimmedIp],
     });
     setNewIpAddress('');
   };
@@ -700,6 +708,7 @@ export default function AdminsPage() {
                                   lastName: admin.lastName,
                                   phone: admin.phone,
                                   role: admin.role,
+                                  twoFactorEnabled: admin.twoFactorEnabled,
                                 })
                               }
                             >

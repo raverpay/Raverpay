@@ -5,8 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Ban, CheckCircle, Shield, Lock, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 import { usersApi } from '@/lib/api/users';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge, KYCBadge, RoleBadge } from '@/components/ui/status-badge';
@@ -18,6 +20,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['user', resolvedParams.userId],
@@ -31,7 +34,22 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
       queryClient.invalidateQueries({ queryKey: ['user', resolvedParams.userId] });
       toast.success('User status updated successfully');
     },
-    onError: (error: unknown) => {
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: { status: string; reason?: string },
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          updateStatusMutation.mutate(variables);
+        });
+        return;
+      }
       toast.error('Failed to update status', {
         description: getApiErrorMessage(error, 'Unable to update status'),
       });
@@ -45,7 +63,22 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
       queryClient.invalidateQueries({ queryKey: ['user', resolvedParams.userId] });
       toast.success('KYC tier updated successfully');
     },
-    onError: (error: unknown) => {
+    onError: (
+      error: AxiosError<{ message?: string; error?: string }>,
+      variables: { tier: string; notes?: string },
+    ) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          updateKYCMutation.mutate(variables);
+        });
+        return;
+      }
       toast.error('Failed to update KYC tier', {
         description: getApiErrorMessage(error, 'Unable to update KYC tier'),
       });
@@ -58,7 +91,19 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
       queryClient.invalidateQueries({ queryKey: ['user', resolvedParams.userId] });
       toast.success('User role updated successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, role: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          updateRoleMutation.mutate(role);
+        });
+        return;
+      }
       toast.error('Failed to update role', {
         description: getApiErrorMessage(error, 'Unable to update role'),
       });
@@ -71,7 +116,19 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
       queryClient.invalidateQueries({ queryKey: ['user', resolvedParams.userId] });
       toast.success('Account locked successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason?: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          lockAccountMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to lock account', {
         description: getApiErrorMessage(error, 'Unable to lock account'),
       });
@@ -84,7 +141,19 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
       queryClient.invalidateQueries({ queryKey: ['user', resolvedParams.userId] });
       toast.success('Account unlocked successfully');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason?: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          unlockAccountMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to unlock account', {
         description: getApiErrorMessage(error, 'Unable to unlock account'),
       });
@@ -417,6 +486,9 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
           </div>
         </CardContent>
       </Card>
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

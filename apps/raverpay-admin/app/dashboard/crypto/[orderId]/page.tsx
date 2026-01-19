@@ -5,10 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, XCircle, User, Bitcoin } from 'lucide-react';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 import Image from 'next/image';
 
 import { cryptoApi } from '@/lib/api/crypto';
+import { useReAuth } from '@/components/security/re-auth-modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -21,6 +23,7 @@ export default function CryptoDetailPage({ params }: { params: Promise<{ orderId
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { requireReAuth, ReAuthModal } = useReAuth();
   const [approvalAmount, setApprovalAmount] = useState('');
   const [rejectReason, setRejectReason] = useState('');
 
@@ -37,7 +40,19 @@ export default function CryptoDetailPage({ params }: { params: Promise<{ orderId
       toast.success('Crypto order approved successfully');
       setApprovalAmount('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, amount: number) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          approveMutation.mutate(amount);
+        });
+        return;
+      }
       toast.error('Failed to approve order', {
         description: getApiErrorMessage(error, 'Unable to approve order'),
       });
@@ -52,7 +67,19 @@ export default function CryptoDetailPage({ params }: { params: Promise<{ orderId
       toast.success('Crypto order rejected');
       setRejectReason('');
     },
-    onError: (error: unknown) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>, reason: string) => {
+      // Check if re-authentication is required
+      if (
+        error.response?.status === 428 &&
+        error.response?.data?.error === 'ReAuthenticationRequired'
+      ) {
+        // Trigger re-auth modal, then retry the operation
+        requireReAuth(() => {
+          // After successful re-auth, retry the operation
+          rejectMutation.mutate(reason);
+        });
+        return;
+      }
       toast.error('Failed to reject order', {
         description: getApiErrorMessage(error, 'Unable to reject order'),
       });
@@ -333,6 +360,9 @@ export default function CryptoDetailPage({ params }: { params: Promise<{ orderId
           </CardContent>
         </Card>
       )}
+
+      {/* Re-Auth Modal */}
+      {ReAuthModal}
     </div>
   );
 }

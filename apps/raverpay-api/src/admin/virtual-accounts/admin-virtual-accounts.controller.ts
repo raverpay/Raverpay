@@ -21,6 +21,7 @@ import {
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { ReAuthGuard } from '../../common/guards/re-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AdminVirtualAccountsService } from './admin-virtual-accounts.service';
 
@@ -110,7 +111,10 @@ export class AdminVirtualAccountsController {
     return this.adminVirtualAccountsService.getDVACreationStatus(userId);
   }
 
-  @ApiOperation({ summary: 'Manually create DVA for a user' })
+  @ApiOperation({
+    summary: 'Manually create DVA for a user',
+    description: 'Requires re-authentication for this sensitive operation',
+  })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiBody({
     schema: {
@@ -118,6 +122,7 @@ export class AdminVirtualAccountsController {
       properties: { preferred_bank: { type: 'string' } },
     },
   })
+  @UseGuards(ReAuthGuard)
   @Post(':userId/create')
   async createDVAForUser(
     @Request() req,
@@ -138,11 +143,15 @@ export class AdminVirtualAccountsController {
     return this.adminVirtualAccountsService.getByUserId(userId);
   }
 
-  @ApiOperation({ summary: 'Deactivate virtual account' })
+  @ApiOperation({
+    summary: 'Deactivate virtual account',
+    description: 'Requires re-authentication for this sensitive operation',
+  })
   @ApiParam({ name: 'accountId', description: 'Account ID' })
   @ApiBody({
     schema: { type: 'object', properties: { reason: { type: 'string' } } },
   })
+  @UseGuards(ReAuthGuard)
   @Patch(':accountId/deactivate')
   async deactivate(
     @Request() req,
@@ -156,8 +165,12 @@ export class AdminVirtualAccountsController {
     );
   }
 
-  @ApiOperation({ summary: 'Reactivate virtual account' })
+  @ApiOperation({
+    summary: 'Reactivate virtual account',
+    description: 'Requires re-authentication for this sensitive operation',
+  })
   @ApiParam({ name: 'accountId', description: 'Account ID' })
+  @UseGuards(ReAuthGuard)
   @Patch(':accountId/reactivate')
   async reactivate(@Request() req, @Param('accountId') accountId: string) {
     return this.adminVirtualAccountsService.reactivate(req.user.id, accountId);
