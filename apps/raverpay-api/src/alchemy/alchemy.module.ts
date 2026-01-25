@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AlchemyKeyEncryptionService } from './encryption/alchemy-key-encryption.service';
 import { AlchemyConfigService } from './config/alchemy-config.service';
 import { AlchemyWalletGenerationService } from './wallets/alchemy-wallet-generation.service';
+import { AlchemySmartAccountService } from './wallets/alchemy-smart-account.service';
 import { AlchemyTransactionService } from './transactions/alchemy-transaction.service';
 import { AlchemyWebhookService } from './webhooks/alchemy-webhook.service';
 import { AlchemyWebhookController } from './webhooks/alchemy-webhook.controller';
@@ -32,6 +33,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
     // Wallet Services
     AlchemyWalletGenerationService,
+    AlchemySmartAccountService,
 
     // Transaction Services
     AlchemyTransactionService,
@@ -47,6 +49,7 @@ import { PrismaService } from '../prisma/prisma.service';
     AlchemyKeyEncryptionService,
     AlchemyConfigService,
     AlchemyWalletGenerationService,
+    AlchemySmartAccountService,
     AlchemyTransactionService,
     AlchemyWebhookService,
   ],

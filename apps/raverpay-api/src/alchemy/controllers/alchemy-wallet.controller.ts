@@ -21,6 +21,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { AlchemyWalletGenerationService } from '../wallets/alchemy-wallet-generation.service';
+import { AlchemySmartAccountService } from '../wallets/alchemy-smart-account.service';
 import { CreateWalletDto, UpdateWalletNameDto } from './dto/alchemy.dto';
 
 /**
@@ -38,6 +39,7 @@ export class AlchemyWalletController {
 
   constructor(
     private readonly walletService: AlchemyWalletGenerationService,
+    private readonly smartAccountService: AlchemySmartAccountService,
   ) {}
 
   /**
@@ -355,6 +357,199 @@ export class AlchemyWalletController {
     } catch (error) {
       this.logger.error(
         `Error marking wallet compromised: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * SMART ACCOUNT ENDPOINTS (Account Abstraction)
+   * ═══════════════════════════════════════════════════════════════
+   */
+
+  /**
+   * Create a Smart Account (Account Abstraction)
+   */
+  @Post('smart-account')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a Smart Contract Account with gas sponsorship' })
+  @ApiResponse({
+    status: 201,
+    description: 'Smart Account created successfully',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'wallet-smart-123',
+          address: '0x8a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
+          blockchain: 'BASE',
+          network: 'sepolia',
+          accountType: 'SMART_CONTRACT',
+          name: 'My Smart Account',
+          isGasSponsored: true,
+          gasPolicyId: 'policy-xyz',
+          createdAt: '2026-01-25T13:00:00.000Z',
+          features: {
+            gasSponsorship: true,
+            batchTransactions: true,
+            sessionKeys: true,
+            socialRecovery: false,
+          },
+        },
+      },
+    },
+  })
+  async createSmartAccount(
+    @Body() dto: CreateWalletDto,
+    @Request() req: any,
+  ) {
+    try {
+      const userId = req.user?.userId || 'mock-user-id';
+
+      const smartAccount = await this.smartAccountService.createSmartAccount({
+        userId,
+        blockchain: dto.blockchain,
+        network: dto.network,
+        name: dto.name,
+      });
+
+      this.logger.log(
+        `User ${userId} created Smart Account ${smartAccount.id} with gas sponsorship!`,
+      );
+
+      return {
+        success: true,
+        data: smartAccount,
+        message: 'Smart Account created with gas sponsorship enabled!',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error creating Smart Account: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get all Smart Accounts for user
+   */
+  @Get('smart-accounts')
+  @ApiOperation({ summary: 'Get all Smart Accounts for authenticated user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Smart Accounts retrieved successfully',
+  })
+  async getSmartAccounts(@Request() req: any) {
+    try {
+      const userId = req.user?.userId || 'mock-user-id';
+
+      const accounts = await this.smartAccountService.getUserSmartAccounts(
+        userId,
+      );
+
+      return {
+        success: true,
+        data: accounts,
+        count: accounts.length,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error getting Smart Accounts: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Check gas sponsorship status
+   */
+  @Get(':walletId/gas-sponsorship')
+  @ApiOperation({ summary: 'Check gas sponsorship status for Smart Account' })
+  @ApiParam({ name: 'walletId', description: 'Smart Account wallet ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gas sponsorship status retrieved',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          isEnabled: true,
+          policyId: 'policy-xyz',
+          dailyLimit: 'Unlimited',
+          currentUsage: '$5.23',
+          remainingToday: 'Unlimited',
+          message: 'Gas fees are sponsored - users transact for free!',
+        },
+      },
+    },
+  })
+  async checkGasSponsorship(
+    @Param('walletId') walletId: string,
+    @Request() req: any,
+  ) {
+    try {
+      const userId = req.user?.userId || 'mock-user-id';
+
+      const status = await this.smartAccountService.checkGasSponsorship(
+        walletId,
+        userId,
+      );
+
+      return {
+        success: true,
+        data: status,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error checking gas sponsorship: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Upgrade EOA to Smart Account
+   */
+  @Post(':walletId/upgrade-to-smart-account')
+  @ApiOperation({
+    summary: 'Upgrade existing EOA wallet to Smart Account',
+    description:
+      'Creates a new Smart Account while keeping the original EOA wallet active',
+  })
+  @ApiParam({ name: 'walletId', description: 'EOA Wallet ID to upgrade' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully upgraded to Smart Account',
+  })
+  async upgradeToSmartAccount(
+    @Param('walletId') walletId: string,
+    @Request() req: any,
+  ) {
+    try {
+      const userId = req.user?.userId || 'mock-user-id';
+
+      const result = await this.smartAccountService.upgradeToSmartAccount(
+        walletId,
+        userId,
+      );
+
+      this.logger.log(
+        `User ${userId} upgraded EOA ${walletId} to Smart Account ${result.newWallet.id}`,
+      );
+
+      return {
+        success: true,
+        data: result,
+        message: 'Successfully upgraded to Smart Account with gas sponsorship!',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error upgrading to Smart Account: ${error.message}`,
         error.stack,
       );
       throw error;
