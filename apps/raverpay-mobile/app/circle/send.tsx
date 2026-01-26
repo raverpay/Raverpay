@@ -58,7 +58,7 @@ export default function CircleSendScreen() {
   const insets = useSafeAreaInsets();
   const { data: wallets, isLoading: isLoadingWallets } = useCircleWallets();
   const { data: chainsData } = useCircleChains();
-  const { selectedWallet, setSelectedWallet, getUsdcBalance } = useCircleStore();
+  const { selectedWallet, setSelectedWallet, getUsdcBalance, getWalletBalance } = useCircleStore();
   const { mutateAsync: transfer, isPending: isTransferring } = useTransferUsdc();
   const { mutateAsync: estimateFee } = useEstimateFee();
   const { mutateAsync: validateAddress } = useValidateAddress();
@@ -77,6 +77,18 @@ export default function CircleSendScreen() {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showWalletPicker, setShowWalletPicker] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<any>(null);
+
+  // Available tokens for selected wallet
+  const walletBalances = selectedWallet ? getWalletBalance(selectedWallet.id) : [];
+
+  // Set default token (USDC) when wallet changes or balances load
+  useEffect(() => {
+    if (walletBalances.length > 0 && !selectedToken) {
+      const usdc = walletBalances.find((b) => b.token.symbol === 'USDC');
+      setSelectedToken(usdc || walletBalances[0]);
+    }
+  }, [selectedWallet, walletBalances, selectedToken]);
 
   // Service fee state
   const [serviceFee, setServiceFee] = useState(0);
@@ -288,7 +300,7 @@ export default function CircleSendScreen() {
     };
   }, [usePaymasterGas, amount, destinationAddress, selectedWallet, addressValid]);
 
-  const currentBalance = selectedWallet ? getUsdcBalance(selectedWallet.id) : '0';
+  const currentBalance = selectedToken ? selectedToken.amount : '0';
 
   const handleMaxAmount = () => {
     setAmount(currentBalance);
@@ -374,6 +386,7 @@ export default function CircleSendScreen() {
             destinationAddress,
             amount,
             feeLevel,
+            tokenId: selectedToken?.token?.id,
             memo: memo || undefined,
           });
           console.log('[RegularFlow] Got challengeId:', txResult.challengeId);
@@ -467,6 +480,10 @@ export default function CircleSendScreen() {
           amount,
           feeLevel,
           memo: memo || undefined,
+          tokenId: selectedToken?.token?.isNative ? selectedToken.token.id : undefined,
+          tokenAddress: !selectedToken?.token?.isNative && selectedToken?.token?.symbol !== 'USDC' 
+            ? selectedToken.token.tokenAddress 
+            : undefined,
         });
         setShowPinModal(false);
 
@@ -540,7 +557,7 @@ export default function CircleSendScreen() {
       className="flex-1 bg-gray-50 dark:bg-gray-900"
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <ScreenHeader title="Send USDC" subtitleText="Transfer to any address" />
+      <ScreenHeader title="Send Assets" subtitleText="Transfer tokens to any address" />
 
       <ScrollView
         className="flex-1 p-4"
@@ -577,6 +594,42 @@ export default function CircleSendScreen() {
             ))}
           </Card>
         )}
+
+        {/* Token Selection */}
+        <Text variant="bodyMedium" weight="semibold" className="mb-2 mt-4 dark:text-white">
+          Asset to Send
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+          {walletBalances.map((balance) => (
+            <TouchableOpacity
+              key={balance.token.id}
+              onPress={() => setSelectedToken(balance)}
+              className={`mr-3 px-4 py-3 rounded-2xl border ${
+                selectedToken?.token.id === balance.token.id
+                  ? 'border-[#2775CA] bg-[#2775CA]/10'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+              }`}
+            >
+              <View className="flex-row items-center">
+                <View className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${
+                  balance.token.symbol === 'USDC' ? 'bg-[#2775CA]' : 'bg-gray-200 dark:bg-gray-700'
+                }`}>
+                  <Text className="text-white font-bold text-xs" style={{ color: balance.token.symbol === 'USDC' ? 'white' : (isDark ? 'white' : 'black') }}>
+                    {balance.token.symbol === 'USDC' ? '$' : balance.token.symbol[0]}
+                  </Text>
+                </View>
+                <View>
+                  <Text variant="caption" weight="bold" className={selectedToken?.token.id === balance.token.id ? 'text-[#2775CA]' : 'dark:text-white'}>
+                    {balance.token.symbol}
+                  </Text>
+                  <Text variant="caption" color="tertiary">
+                    {parseFloat(balance.amount).toFixed(balance.token.symbol === 'USDC' ? 2 : 4)}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         {/* Destination Address */}
         <Card variant="elevated" className="p-4 mb-4">
@@ -624,9 +677,11 @@ export default function CircleSendScreen() {
             </TouchableOpacity>
           </View>
           <View className="flex-row items-center">
-            <Text variant="h4" className="mr-2 dark:text-white">
-              $
-            </Text>
+            {selectedToken?.token.symbol === 'USDC' && (
+              <Text variant="h4" className="mr-2 dark:text-white">
+                $
+              </Text>
+            )}
             <Input
               value={amount}
               onChangeText={setAmount}
@@ -635,7 +690,7 @@ export default function CircleSendScreen() {
               className="flex-1 text-2xl font-bold"
             />
             <Text variant="bodyMedium" color="secondary" className="ml-2">
-              USDC
+              {selectedToken?.token.symbol || 'USDC'}
             </Text>
           </View>
           {totalAmount > parseFloat(currentBalance) && (
@@ -778,7 +833,7 @@ export default function CircleSendScreen() {
                 Total
               </Text>
               <Text variant="bodyMedium" weight="bold" className="dark:text-white">
-                ${totalAmount.toFixed(6)} USDC
+                {selectedToken?.token.symbol === 'USDC' ? '$' : ''}{totalAmount.toFixed(selectedToken?.token.symbol === 'USDC' ? 6 : 4)} {selectedToken?.token.symbol}
               </Text>
             </View>
           </Card>

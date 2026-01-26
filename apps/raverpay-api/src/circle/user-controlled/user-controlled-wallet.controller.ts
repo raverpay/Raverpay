@@ -361,6 +361,7 @@ export class UserControlledWalletController {
       amount: string;
       feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
       memo?: string;
+      tokenId?: string;
     },
   ) {
     // Get the Circle user for this wallet
@@ -399,9 +400,9 @@ export class UserControlledWalletController {
       'ARB-SEPOLIA': '2e0e3072-4f9e-5750-abed-e346acce2a18', // USDC on ARB-SEPOLIA
     };
 
-    const tokenId = usdcTokenIds[wallet.blockchain];
+    const tokenId = dto.tokenId || usdcTokenIds[wallet.blockchain];
     if (!tokenId) {
-      throw new Error(`USDC not supported on ${wallet.blockchain}`);
+      throw new Error(`Token or network not supported on ${wallet.blockchain}`);
     }
 
     // Circle User Control Wallet API expects Major Units (e.g. "0.1" for 0.1 USDC), not atomic units

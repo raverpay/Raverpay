@@ -198,6 +198,8 @@ export interface TransferUsdcRequest {
   amount: string;
   feeLevel?: CircleFeeLevel;
   memo?: string;
+  tokenId?: string;
+  tokenAddress?: string;
 }
 
 export interface CCTPTransferRequest {

@@ -338,6 +338,7 @@ class UserControlledWalletService {
     amount: string;
     feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
     memo?: string;
+    tokenId?: string;
   }): Promise<{
     challengeId: string;
     userToken: string;

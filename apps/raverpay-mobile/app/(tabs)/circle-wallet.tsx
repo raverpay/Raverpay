@@ -31,6 +31,7 @@ export default function CircleWalletScreen() {
     selectedWallet,
     setSelectedWallet,
     getUsdcBalance,
+    getNativeBalance,
     getTotalUsdcBalance,
     cleanupBalances,
   } = useCircleStore();
@@ -195,6 +196,14 @@ export default function CircleWalletScreen() {
               <Text variant="h2" weight="bold">
                 ${selectedWallet ? getUsdcBalance(selectedWallet.id) : totalBalance}
               </Text>
+              {selectedWallet && (
+                <View className="flex-row items-center mt-1">
+                  <Text variant="caption" className="opacity-70">
+                    {getNativeBalance(selectedWallet.id)?.amount || '0.00'}{' '}
+                    {getNativeBalance(selectedWallet.id)?.symbol || ''}
+                  </Text>
+                </View>
+              )}
               {/* <Text variant="caption" className="opacity-70 mt-1">
             USDC
           </Text> */}
@@ -452,9 +461,17 @@ export default function CircleWalletScreen() {
                           </Text>
 
                           {/* Balance */}
-                          <Text variant="body" weight="semibold" className="text-[#2775CA]">
-                            ${balance} USDC
-                          </Text>
+                          <View className="flex-row justify-between items-center">
+                            <Text variant="body" weight="semibold" className="text-[#2775CA]">
+                              ${balance} USDC
+                            </Text>
+                            {getNativeBalance(wallet.id) && (
+                              <Text variant="caption" color="secondary">
+                                {getNativeBalance(wallet.id)?.amount}{' '}
+                                {getNativeBalance(wallet.id)?.symbol}
+                              </Text>
+                            )}
+                          </View>
                         </View>
 
                         {/* Selected indicator */}
