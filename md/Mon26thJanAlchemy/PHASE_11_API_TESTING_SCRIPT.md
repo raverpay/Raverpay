@@ -27,6 +27,7 @@ curl -X GET \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -54,6 +55,7 @@ curl -X POST \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -89,6 +91,7 @@ curl -X POST \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -124,6 +127,7 @@ curl -X GET \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -222,6 +226,7 @@ curl -X POST \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -304,6 +309,7 @@ curl -X GET \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -381,6 +387,7 @@ curl -X GET \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -416,7 +423,7 @@ curl -X POST \
 ### **Test 23: Mark Wallet Compromised**
 
 ```bash
-# Replace {WALLET_ID} with actual wallet ID  
+# Replace {WALLET_ID} with actual wallet ID
 curl -X POST \
   'https://hydrometeorological-unjudicial-jeffie.ngrok-free.dev/api/alchemy/wallets/{WALLET_ID}/compromised' \
   -H 'Accept: application/json'
@@ -437,47 +444,51 @@ curl -X DELETE \
 
 ## 📝 **Test Results Template**
 
-| Test # | Endpoint | Status | Response Time | Notes |
-|--------|----------|--------|---------------|-------|
-| 1 | Health Check | ⏸️ | - | - |
-| 2 | Create EOA Wallet | ⏸️ | - | - |
-| 3 | Create Smart Account | ⏸️ | - | - |
-| 4 | List Wallets | ⏸️ | - | - |
-| 5 | Get Wallet by ID | ⏸️ | - | - |
-| 6 | Get by Network | ⏸️ | - | - |
-| 7 | Update Name | ⏸️ | - | - |
-| 8 | List Smart Accounts | ⏸️ | - | - |
-| 9 | Check Gas Sponsorship | ⏸️ | - | - |
-| 10 | Upgrade to Smart | ⏸️ | - | - |
-| 11 | Get Balance | ⏸️ | - | - |
-| 12 | Send USDC | ⏸️ | - | Needs testnet tokens |
-| 13 | Transaction History | ⏸️ | - | - |
-| 14 | Get by Reference | ⏸️ | - | - |
-| 15 | Webhook Stats | ⏸️ | - | - |
-| 16 | Platform Stats | ⏸️ | - | - |
-| 17 | Gas Analytics | ⏸️ | - | - |
-| 18 | Recent Transactions | ⏸️ | - | - |
-| 19 | Network Stats | ⏸️ | - | - |
-| 20 | Security Alerts | ⏸️ | - | - |
-| 21 | System Health | ⏸️ | - | - |
-| 22 | Lock Wallet | ⏸️ | - | - |
-| 23 | Mark Compromised | ⏸️ | - | - |
-| 24 | Deactivate Wallet | ⏸️ | - | - |
+| Test # | Endpoint              | Status | Response Time | Notes                |
+| ------ | --------------------- | ------ | ------------- | -------------------- |
+| 1      | Health Check          | ⏸️     | -             | -                    |
+| 2      | Create EOA Wallet     | ⏸️     | -             | -                    |
+| 3      | Create Smart Account  | ⏸️     | -             | -                    |
+| 4      | List Wallets          | ⏸️     | -             | -                    |
+| 5      | Get Wallet by ID      | ⏸️     | -             | -                    |
+| 6      | Get by Network        | ⏸️     | -             | -                    |
+| 7      | Update Name           | ⏸️     | -             | -                    |
+| 8      | List Smart Accounts   | ⏸️     | -             | -                    |
+| 9      | Check Gas Sponsorship | ⏸️     | -             | -                    |
+| 10     | Upgrade to Smart      | ⏸️     | -             | -                    |
+| 11     | Get Balance           | ⏸️     | -             | -                    |
+| 12     | Send USDC             | ⏸️     | -             | Needs testnet tokens |
+| 13     | Transaction History   | ⏸️     | -             | -                    |
+| 14     | Get by Reference      | ⏸️     | -             | -                    |
+| 15     | Webhook Stats         | ⏸️     | -             | -                    |
+| 16     | Platform Stats        | ⏸️     | -             | -                    |
+| 17     | Gas Analytics         | ⏸️     | -             | -                    |
+| 18     | Recent Transactions   | ⏸️     | -             | -                    |
+| 19     | Network Stats         | ⏸️     | -             | -                    |
+| 20     | Security Alerts       | ⏸️     | -             | -                    |
+| 21     | System Health         | ⏸️     | -             | -                    |
+| 22     | Lock Wallet           | ⏸️     | -             | -                    |
+| 23     | Mark Compromised      | ⏸️     | -             | -                    |
+| 24     | Deactivate Wallet     | ⏸️     | -             | -                    |
 
 ---
 
 ## 🐛 **Common Issues & Solutions**
 
 ### **Issue**: "Cannot GET /api/alchemy/..."
+
 **Solution**: Check if AlchemyModule is registered in app.module.ts
 
 ### **Issue**: "Internal Server Error"
+
 **Solution**: Check server logs, verify database connection
 
 ### **Issue**: "Invalid network"
+
 **Solution**: Use BASE/sepolia, POLYGON/amoy, or ARBITRUM/sepolia
 
 ### **Issue**: "Insufficient funds" (for transactions)
+
 **Solution**: Get testnet USDC from faucet
 
 ---

@@ -481,9 +481,10 @@ export default function CircleSendScreen() {
           feeLevel,
           memo: memo || undefined,
           tokenId: selectedToken?.token?.isNative ? selectedToken.token.id : undefined,
-          tokenAddress: !selectedToken?.token?.isNative && selectedToken?.token?.symbol !== 'USDC' 
-            ? selectedToken.token.tokenAddress 
-            : undefined,
+          tokenAddress:
+            !selectedToken?.token?.isNative && selectedToken?.token?.symbol !== 'USDC'
+              ? selectedToken.token.tokenAddress
+              : undefined,
         });
         setShowPinModal(false);
 
@@ -611,15 +612,32 @@ export default function CircleSendScreen() {
               }`}
             >
               <View className="flex-row items-center">
-                <View className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${
-                  balance.token.symbol === 'USDC' ? 'bg-[#2775CA]' : 'bg-gray-200 dark:bg-gray-700'
-                }`}>
-                  <Text className="text-white font-bold text-xs" style={{ color: balance.token.symbol === 'USDC' ? 'white' : (isDark ? 'white' : 'black') }}>
+                <View
+                  className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${
+                    balance.token.symbol === 'USDC'
+                      ? 'bg-[#2775CA]'
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                >
+                  <Text
+                    className="text-white font-bold text-xs"
+                    style={{
+                      color: balance.token.symbol === 'USDC' ? 'white' : isDark ? 'white' : 'black',
+                    }}
+                  >
                     {balance.token.symbol === 'USDC' ? '$' : balance.token.symbol[0]}
                   </Text>
                 </View>
                 <View>
-                  <Text variant="caption" weight="bold" className={selectedToken?.token.id === balance.token.id ? 'text-[#2775CA]' : 'dark:text-white'}>
+                  <Text
+                    variant="caption"
+                    weight="bold"
+                    className={
+                      selectedToken?.token.id === balance.token.id
+                        ? 'text-[#2775CA]'
+                        : 'dark:text-white'
+                    }
+                  >
                     {balance.token.symbol}
                   </Text>
                   <Text variant="caption" color="tertiary">
@@ -833,7 +851,9 @@ export default function CircleSendScreen() {
                 Total
               </Text>
               <Text variant="bodyMedium" weight="bold" className="dark:text-white">
-                {selectedToken?.token.symbol === 'USDC' ? '$' : ''}{totalAmount.toFixed(selectedToken?.token.symbol === 'USDC' ? 6 : 4)} {selectedToken?.token.symbol}
+                {selectedToken?.token.symbol === 'USDC' ? '$' : ''}
+                {totalAmount.toFixed(selectedToken?.token.symbol === 'USDC' ? 6 : 4)}{' '}
+                {selectedToken?.token.symbol}
               </Text>
             </View>
           </Card>

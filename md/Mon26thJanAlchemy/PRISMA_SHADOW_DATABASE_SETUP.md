@@ -1,4 +1,5 @@
 # Prisma Shadow Database Configuration Guide
+
 ## Fixing the Root Cause of Prisma Migrate Issues
 
 **Date**: January 25, 2026  
@@ -10,6 +11,7 @@
 ## The Problem
 
 You've been experiencing this error:
+
 ```
 Error: P3006
 Migration failed to apply cleanly to the shadow database.
@@ -29,7 +31,7 @@ According to Prisma's official documentation:
 
 ### How It Works:
 
-1. **Detect Schema Drift**: 
+1. **Detect Schema Drift**:
    - Creates fresh shadow database
    - Replays all migrations
    - Compares to your dev database
@@ -92,7 +94,8 @@ SHADOW_DATABASE_URL="postgresql://postgres.oeanyukxcphqjrsljhqq:NApEwzJ1AloIApJs
 SHADOW_DATABASE_URL="postgresql://postgres.oeanyukxcphqjrsljhqq:NApEwzJ1AloIApJs@aws-1-eu-north-1.pooler.supabase.com:5432/postgres?schema=shadow"
 ```
 
-**⚠️ CRITICAL**: 
+**⚠️ CRITICAL**:
+
 - **DO NOT** use the same URL as `DATABASE_URL`
 - This would delete all your data!
 
@@ -128,6 +131,7 @@ pnpm prisma migrate dev --name test_shadow_db
 ```
 
 If successful, **delete the test migration**:
+
 ```bash
 rm -rf prisma/migrations/*_test_shadow_db
 ```
@@ -137,6 +141,7 @@ rm -rf prisma/migrations/*_test_shadow_db
 ## Benefits of Fixing This
 
 ### Before (Manual SQL Workaround):
+
 - ❌ Can't use `prisma migrate dev`
 - ❌ No automatic schema drift detection
 - ❌ Manual SQL scripts required
@@ -145,6 +150,7 @@ rm -rf prisma/migrations/*_test_shadow_db
 - ❌ Risk of data loss from unvalidated migrations
 
 ### After (Proper Prisma Migrations):
+
 - ✅ Can use `pnpm prisma migrate dev`
 - ✅ Automatic schema drift detection
 - ✅ Prisma generates safe SQL automatically
@@ -158,6 +164,7 @@ rm -rf prisma/migrations/*_test_shadow_db
 ## Migration Workflow Comparison
 
 ### Current Workflow (Manual):
+
 ```bash
 # 1. Update schema.prisma
 # 2. Generate Prisma client
@@ -174,6 +181,7 @@ pnpm prisma generate
 ```
 
 ### New Workflow (With Shadow DB):
+
 ```bash
 # 1. Update schema.prisma
 
@@ -197,11 +205,13 @@ pnpm prisma migrate dev --name add_new_feature
 Use a **schema** instead:
 
 1. **Create shadow schema**:
+
    ```sql
    CREATE SCHEMA IF NOT EXISTS shadow;
    ```
 
 2. **Shadow database URL**:
+
    ```bash
    SHADOW_DATABASE_URL="postgresql://...postgres?schema=shadow"
    ```
@@ -214,6 +224,7 @@ Use a **schema** instead:
 ### Permissions Required:
 
 Your database user needs:
+
 ```sql
 -- Check if you have schema creation permission
 SELECT has_schema_privilege('postgres', 'shadow', 'CREATE');
@@ -235,6 +246,7 @@ If you **can't** get these permissions, continue with manual SQL migrations (cur
 **Benefits**: Clean development workflow
 
 #### Tasks:
+
 - [ ] 1. Create shadow database/schema in Supabase
 - [ ] 2. Add `SHADOW_DATABASE_URL` to .env
 - [ ] 3. Add `shadowDatabaseUrl` to schema.prisma
@@ -242,6 +254,7 @@ If you **can't** get these permissions, continue with manual SQL migrations (cur
 - [ ] 5. Update team documentation
 
 #### Files to Modify:
+
 - `apps/raverpay-api/.env` (add `SHADOW_DATABASE_URL`)
 - `apps/raverpay-api/prisma/schema.prisma` (add `shadowDatabaseUrl`)
 
@@ -250,29 +263,38 @@ If you **can't** get these permissions, continue with manual SQL migrations (cur
 ## When to Do This?
 
 ### Option A: Now (Before Phase 2)
-**Pros**: 
+
+**Pros**:
+
 - Clean workflow for all future migrations
 - Easier for team collaboration
 
-**Cons**: 
+**Cons**:
+
 - Takes 30 minutes
 - Delays Phase 2
 
 ### Option B: Later (After Phase 10)
-**Pros**: 
+
+**Pros**:
+
 - Don't disrupt current momentum
 - Manual migrations work fine for now
 
-**Cons**: 
+**Cons**:
+
 - Continue with workaround workflow
 - Need to track manual SQL scripts
 
 ### Option C: Never (Keep Manual Migrations)
-**Pros**: 
+
+**Pros**:
+
 - No setup needed
 - Current workflow documented
 
-**Cons**: 
+**Cons**:
+
 - Missing Prisma's safety features
 - More manual work
 
@@ -283,12 +305,14 @@ If you **can't** get these permissions, continue with manual SQL migrations (cur
 **Do this LATER** (after Phase 10 or when you have downtime):
 
 **Reasoning**:
+
 1. Current manual SQL approach works
 2. You have a documented workaround
 3. Focus on getting Alchemy features working first
 4. This is a "nice to have" improvement, not critical
 
 **Add it to backlog** as:
+
 - "Improvement: Configure Prisma shadow database for proper migrations"
 - Priority: Low (quality of life improvement)
 - Estimated time: 30 minutes
@@ -298,26 +322,31 @@ If you **can't** get these permissions, continue with manual SQL migrations (cur
 ## Quick Reference Commands
 
 ### Check if shadow DB is configured:
+
 ```bash
 grep "shadowDatabaseUrl" apps/raverpay-api/prisma/schema.prisma
 ```
 
 ### Test shadow DB configuration:
+
 ```bash
 cd apps/raverpay-api
 pnpm prisma migrate dev --create-only --name test_shadow
 ```
 
 ### If it works:
+
 ```
 ✔ Shadow database created
 ✔ Migration generated
 ```
 
 ### If it fails:
+
 ```
 Error: Can't create shadow database
 ```
+
 → Need to configure manually
 
 ---

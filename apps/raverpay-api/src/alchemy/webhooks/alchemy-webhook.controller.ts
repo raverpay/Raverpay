@@ -11,7 +11,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AlchemyWebhookService } from './alchemy-webhook.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -85,8 +90,11 @@ export class AlchemyWebhookController {
         message: 'Webhook processed',
       };
     } catch (error) {
-      this.logger.error(`Error processing webhook: ${error.message}`, error.stack);
-      
+      this.logger.error(
+        `Error processing webhook: ${error.message}`,
+        error.stack,
+      );
+
       // Return 200 anyway to prevent Alchemy from retrying
       // We'll handle errors internally
       return {
@@ -105,7 +113,10 @@ export class AlchemyWebhookController {
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get webhook statistics' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   async getStats() {
     const stats = await this.webhookService.getWebhookStats();
     return {

@@ -1,4 +1,5 @@
 # Alchemy Production Migration Plan - Part 2
+
 ## Continuation: Webhooks, Admin Dashboard, Mobile, Testing & Deployment
 
 ---
@@ -19,72 +20,68 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AlchemyWebhookService {
   private readonly logger = new Logger(AlchemyWebhookService.name);
-  
+
   constructor(
     private prisma: PrismaService,
     private notificationService: NotificationDispatcherService,
     private configService: ConfigService,
   ) {}
-  
+
   /**
    * Verify webhook signature from Alchemy
    */
-  verifyWebhookSignature(
-    payload: string,
-    signature: string,
-  ): boolean {
+  verifyWebhookSignature(payload: string, signature: string): boolean {
     const signingSecret = this.configService.get('ALCHEMY_WEBHOOK_SIGNING_SECRET');
-    
+
     const expectedSignature = crypto
       .createHmac('sha256', signingSecret)
       .update(payload)
       .digest('hex');
-    
+
     return signature === expectedSignature;
   }
-  
+
   /**
    * Handle Address Activity webhook
    */
   async handleAddressActivity(payload: any) {
-    this.logger.log(`Received Address Activity webhook for ${payload.event.activity.length} activities`);
-    
+    this.logger.log(
+      `Received Address Activity webhook for ${payload.event.activity.length} activities`,
+    );
+
     for (const activity of payload.event.activity) {
       await this.processActivity(activity);
     }
   }
-  
+
   /**
    * Process a single activity (transaction)
    */
   private async processActivity(activity: any) {
     const { fromAddress, toAddress, value, asset, hash, blockNum, category } = activity;
-    
+
     // Find wallet by address
     const wallet = await this.prisma.alchemyWallet.findFirst({
       where: {
-        OR: [
-          { address: fromAddress.toLowerCase() },
-          { address: toAddress.toLowerCase() },
-        ],
+        OR: [{ address: fromAddress.toLowerCase() }, { address: toAddress.toLowerCase() }],
       },
       include: { user: true },
     });
-    
+
     if (!wallet) {
       this.logger.warn(`No wallet found for activity: ${hash}`);
       return;
     }
-    
+
     // Determine transaction type
     const isOutgoing = fromAddress.toLowerCase() === wallet.address.toLowerCase();
     const type = isOutgoing ? 'SEND' : 'RECEIVE';
-    
+
     // Check if transaction already exists
     const existing = await this.prisma.alchemyTransaction.findUnique({
       where: { transactionHash: hash },
     });
-    
+
     if (existing) {
       // Update transaction status
       await this.prisma.alchemyTransaction.update({
@@ -96,12 +93,12 @@ export class AlchemyWebhookService {
           completedAt: new Date(),
         },
       });
-      
+
       this.logger.log(`Updated existing transaction ${existing.id} to CONFIRMED`);
     } else {
       // Create new transaction (incoming transaction not initiated by us)
       const reference = `ALCHEMY-WEBHOOK-${Date.now()}-${hash.slice(0, 8)}`;
-      
+
       const transaction = await this.prisma.alchemyTransaction.create({
         data: {
           reference,
@@ -121,14 +118,14 @@ export class AlchemyWebhookService {
           completedAt: new Date(),
         },
       });
-      
+
       this.logger.log(`Created new ${type} transaction ${transaction.id} from webhook`);
     }
-    
+
     // Send notification to user
     await this.sendTransactionNotification(wallet.userId, type, value, hash);
   }
-  
+
   /**
    * Send notification to user about transaction
    */
@@ -138,10 +135,8 @@ export class AlchemyWebhookService {
     amount: string,
     txHash: string,
   ) {
-    const message = type === 'RECEIVE'
-      ? `You received ${amount} USDC`
-      : `You sent ${amount} USDC`;
-    
+    const message = type === 'RECEIVE' ? `You received ${amount} USDC` : `You sent ${amount} USDC`;
+
     await this.notificationService.dispatchNotification({
       userId,
       eventType: type === 'RECEIVE' ? 'USDC_RECEIVED' : 'USDC_SENT',
@@ -171,9 +166,9 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @Controller('webhooks/alchemy')
 export class AlchemyWebhookController {
   private readonly logger = new Logger(AlchemyWebhookController.name);
-  
+
   constructor(private webhookService: AlchemyWebhookService) {}
-  
+
   @Post('address-activity')
   @ApiOperation({ summary: 'Receive Alchemy Address Activity webhooks' })
   async handleAddressActivity(
@@ -181,29 +176,26 @@ export class AlchemyWebhookController {
     @Headers('x-alchemy-signature') signature: string,
   ) {
     this.logger.log('Received Address Activity webhook');
-    
+
     // Verify signature
     const payloadString = JSON.stringify(payload);
     const isValid = this.webhookService.verifyWebhookSignature(payloadString, signature);
-    
+
     if (!isValid) {
       this.logger.error('Invalid webhook signature');
       throw new HttpException('Invalid signature', HttpStatus.UNAUTHORIZED);
     }
-    
+
     // Process webhook
     try {
       await this.webhookService.handleAddressActivity(payload);
       return { success: true };
     } catch (error) {
       this.logger.error(`Error processing webhook: ${error.message}`);
-      throw new HttpException(
-        'Error processing webhook',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Error processing webhook', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
   @Post('mined-transactions')
   @ApiOperation({ summary: 'Receive Alchemy Mined Transaction webhooks' })
   async handleMinedTransaction(
@@ -211,26 +203,23 @@ export class AlchemyWebhookController {
     @Headers('x-alchemy-signature') signature: string,
   ) {
     this.logger.log('Received Mined Transaction webhook');
-    
+
     // Verify signature
     const payloadString = JSON.stringify(payload);
     const isValid = this.webhookService.verifyWebhookSignature(payloadString, signature);
-    
+
     if (!isValid) {
       this.logger.error('Invalid webhook signature');
       throw new HttpException('Invalid signature', HttpStatus.UNAUTHORIZED);
     }
-    
+
     // Process webhook (similar to address activity)
     try {
       await this.webhookService.handleAddressActivity(payload);
       return { success: true };
     } catch (error) {
       this.logger.error(`Error processing webhook: ${error.message}`);
-      throw new HttpException(
-        'Error processing webhook',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Error processing webhook', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
@@ -247,12 +236,10 @@ export class AlchemyWebhookController {
    - See wallet balances
    - View transaction history
    - Manually trigger key rotation
-   
 2. **Gas Spending Monitoring**
    - Daily/monthly gas spending by user
    - Gas policy usage
    - Alerts for high spending
-   
 3. **Transaction Monitoring**
    - Real-time transaction feed
    - Failed transaction alerts
@@ -277,7 +264,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 @Controller('admin/alchemy')
 export class AdminAlchemyController {
   constructor(private prisma: PrismaService) {}
-  
+
   @Get('wallets')
   @ApiOperation({ summary: 'Get all Alchemy wallets' })
   async getAllWallets(
@@ -286,7 +273,7 @@ export class AdminAlchemyController {
     @Query('blockchain') blockchain?: string,
   ) {
     const skip = (page - 1) * limit;
-    
+
     const wallets = await this.prisma.alchemyWallet.findMany({
       where: blockchain ? { blockchain } : {},
       include: {
@@ -303,11 +290,11 @@ export class AdminAlchemyController {
       take: limit,
       orderBy: { createdAt: 'desc' },
     });
-    
+
     const total = await this.prisma.alchemyWallet.count({
       where: blockchain ? { blockchain } : {},
     });
-    
+
     return {
       wallets,
       pagination: {
@@ -318,7 +305,7 @@ export class AdminAlchemyController {
       },
     };
   }
-  
+
   @Get('wallets/:id')
   @ApiOperation({ summary: 'Get wallet details' })
   async getWalletDetails(@Param('id') id: string) {
@@ -339,10 +326,10 @@ export class AdminAlchemyController {
         },
       },
     });
-    
+
     return wallet;
   }
-  
+
   @Get('transactions')
   @ApiOperation({ summary: 'Get all Alchemy transactions' })
   async getAllTransactions(
@@ -351,7 +338,7 @@ export class AdminAlchemyController {
     @Query('state') state?: string,
   ) {
     const skip = (page - 1) * limit;
-    
+
     const transactions = await this.prisma.alchemyTransaction.findMany({
       where: state ? { state: state as any } : {},
       include: {
@@ -375,11 +362,11 @@ export class AdminAlchemyController {
       take: limit,
       orderBy: { createdAt: 'desc' },
     });
-    
+
     const total = await this.prisma.alchemyTransaction.count({
       where: state ? { state: state as any } : {},
     });
-    
+
     return {
       transactions,
       pagination: {
@@ -390,13 +377,10 @@ export class AdminAlchemyController {
       },
     };
   }
-  
+
   @Get('gas-spending')
   @ApiOperation({ summary: 'Get gas spending analytics' })
-  async getGasSpending(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-  ) {
+  async getGasSpending(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
     const spending = await this.prisma.alchemyGasSpending.findMany({
       where: {
         date: {
@@ -406,18 +390,12 @@ export class AdminAlchemyController {
       },
       orderBy: { date: 'desc' },
     });
-    
+
     // Aggregate total spending
-    const totalGasUsd = spending.reduce(
-      (sum, record) => sum + parseFloat(record.totalGasUsd),
-      0,
-    );
-    
-    const totalTransactions = spending.reduce(
-      (sum, record) => sum + record.transactionCount,
-      0,
-    );
-    
+    const totalGasUsd = spending.reduce((sum, record) => sum + parseFloat(record.totalGasUsd), 0);
+
+    const totalTransactions = spending.reduce((sum, record) => sum + record.transactionCount, 0);
+
     return {
       spending,
       summary: {
@@ -473,18 +451,15 @@ import { API_BASE_URL } from '../config';
 
 export class AlchemyService {
   private apiUrl = `${API_BASE_URL}/alchemy`;
-  
+
   /**
    * Create Alchemy wallet for user
    */
-  async createWallet(params: {
-    blockchain: string;
-    network: string;
-  }) {
+  async createWallet(params: { blockchain: string; network: string }) {
     const response = await axios.post(`${this.apiUrl}/wallets`, params);
     return response.data;
   }
-  
+
   /**
    * Get wallet by ID
    */
@@ -492,18 +467,17 @@ export class AlchemyService {
     const response = await axios.get(`${this.apiUrl}/wallets/${walletId}`);
     return response.data;
   }
-  
+
   /**
    * Get wallet balance
    */
   async getBalance(walletId: string, tokenAddress: string) {
-    const response = await axios.get(
-      `${this.apiUrl}/wallets/${walletId}/balance`,
-      { params: { tokenAddress } }
-    );
+    const response = await axios.get(`${this.apiUrl}/wallets/${walletId}/balance`, {
+      params: { tokenAddress },
+    });
     return response.data;
   }
-  
+
   /**
    * Send USDC
    */
@@ -513,31 +487,23 @@ export class AlchemyService {
     amount: string;
     tokenAddress: string;
   }) {
-    const response = await axios.post(
-      `${this.apiUrl}/transactions/send`,
-      params
-    );
+    const response = await axios.post(`${this.apiUrl}/transactions/send`, params);
     return response.data;
   }
-  
+
   /**
    * Get transaction history
    */
   async getTransactionHistory(walletId: string) {
-    const response = await axios.get(
-      `${this.apiUrl}/transactions`,
-      { params: { walletId } }
-    );
+    const response = await axios.get(`${this.apiUrl}/transactions`, { params: { walletId } });
     return response.data;
   }
-  
+
   /**
    * Get transaction by ID
    */
   async getTransaction(transactionId: string) {
-    const response = await axios.get(
-      `${this.apiUrl}/transactions/${transactionId}`
-    );
+    const response = await axios.get(`${this.apiUrl}/transactions/${transactionId}`);
     return response.data;
   }
 }
@@ -552,6 +518,7 @@ export class AlchemyService {
 #### 1. Private Key Security
 
 **Environment Variables**:
+
 ```bash
 # NEVER commit these to git
 ALCHEMY_ENCRYPTION_MASTER_KEY=<generate strong 64-char hex key>
@@ -559,11 +526,13 @@ ALCHEMY_BACKUP_ENCRYPTION_KEY=<for key rotation>
 ```
 
 **Generate Master Key**:
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 **Key Rotation Strategy**:
+
 - Rotate master key every 90 days
 - Keep old key for 30 days (to decrypt old data)
 - Re-encrypt all wallets with new key
@@ -584,7 +553,7 @@ export class AlchemyTransactionService {
       resourceId: walletId,
       severity: 'HIGH',
     });
-    
+
     return this.encryptionService.decryptPrivateKey(...);
   }
 }
@@ -623,18 +592,18 @@ async sendTransaction(
 ) {
   // Require 2FA for transactions > $1000
   const amountUsd = await this.getAmountInUsd(dto.amount);
-  
+
   if (amountUsd > 1000 && !dto.mfaCode) {
     throw new BadRequestException('2FA required for large transactions');
   }
-  
+
   if (dto.mfaCode) {
     const isValid = await this.mfaService.verifyCode(user.id, dto.mfaCode);
     if (!isValid) {
       throw new UnauthorizedException('Invalid 2FA code');
     }
   }
-  
+
   // Proceed with transaction
 }
 ```
@@ -647,26 +616,26 @@ async sendTransaction(dto: SendTransactionDto) {
   if (!ethers.isAddress(dto.destinationAddress)) {
     throw new BadRequestException('Invalid destination address');
   }
-  
+
   // 2. Check balance
   const balance = await this.getBalance(...);
   if (BigInt(balance) < BigInt(dto.amount)) {
     throw new BadRequestException('Insufficient balance');
   }
-  
+
   // 3. Check daily limit
   const dailySpent = await this.getDailySpent(user.id);
   if (dailySpent + amountUsd > user.dailyLimit) {
     throw new BadRequestException('Daily limit exceeded');
   }
-  
+
   // 4. Check for suspicious patterns
   const isSuspicious = await this.checkSuspiciousActivity(user.id, dto);
   if (isSuspicious) {
     await this.alertSecurityTeam(user.id, dto);
     throw new BadRequestException('Transaction blocked for security review');
   }
-  
+
   // Proceed
 }
 ```
@@ -683,13 +652,13 @@ describe('AlchemyKeyEncryptionService', () => {
   it('should encrypt and decrypt private key', () => {
     const privateKey = '0x1234567890abcdef...';
     const userId = 'user-123';
-    
+
     const encrypted = service.encryptPrivateKey(privateKey, userId);
     const decrypted = service.decryptPrivateKey(encrypted, userId);
-    
+
     expect(decrypted).toBe(privateKey);
   });
-  
+
   it('should fail decryption with wrong userId', () => {
     const encrypted = service.encryptPrivateKey('0x123...', 'user-1');
     expect(() => {
@@ -702,7 +671,7 @@ describe('AlchemyKeyEncryptionService', () => {
 describe('AlchemyWalletGenerationService', () => {
   it('should generate valid EOA wallet', async () => {
     const wallet = await service.generateEOAWallet('user-123', 'POLYGON', 'mainnet');
-    
+
     expect(wallet.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     expect(wallet.blockchain).toBe('POLYGON');
   });
@@ -720,7 +689,7 @@ describe('AlchemyTransactionService', () => {
       blockchain: 'POLYGON',
       network: 'mainnet',
     });
-    
+
     expect(result.transactionHash).toBeDefined();
     expect(result.status).toBe('SUBMITTED');
   });
@@ -757,6 +726,7 @@ Test on **Base Sepolia testnet**:
 ### Phase 3: Security Audit (Week 8)
 
 **External Security Audit Checklist**:
+
 - [ ] Private key encryption reviewed
 - [ ] Key storage and access controls reviewed
 - [ ] Transaction signing process reviewed
@@ -767,6 +737,7 @@ Test on **Base Sepolia testnet**:
 - [ ] Penetration testing completed
 
 **Tools to Use**:
+
 - Slither (Solidity static analysis) - if using custom smart contracts
 - MythX (Smart contract security)
 - Manual code review by security expert
@@ -787,6 +758,7 @@ ALCHEMY_PROD_GAS_POLICY_ID=<Dev Gas Policy>
 ```
 
 **Testing Checklist**:
+
 - [ ] Create 10 test wallets
 - [ ] Send 50 test transactions
 - [ ] Verify all webhooks processed
@@ -800,38 +772,42 @@ ALCHEMY_PROD_GAS_POLICY_ID=<Dev Gas Policy>
 **Objective**: Launch to 1% of users on mainnet
 
 **Strategy**:
+
 - Select 50-100 beta users
 - Offer incentive for early adoption
 - Monitor closely for 1 week
 
 **Feature Flag**:
+
 ```typescript
 // In user service
 async canUseAlchemy(userId: string): Promise<boolean> {
   // Check if user is in beta group
   const user = await this.prisma.user.findUnique({ where: { id: userId } });
-  
+
   // 1% rollout: user ID hash mod 100 < 1
   const hashValue = parseInt(createHash('md5').update(userId).digest('hex').slice(0, 8), 16);
   const rolloutPercentage = 1;
-  
+
   return (hashValue % 100) < rolloutPercentage;
 }
 ```
 
 **Monitoring**:
+
 - Alert on any transaction failures
 - Monitor gas spending
 - Track user feedback
 - Compare costs with Circle
 
-### Phase  3: Gradual Rollout (Week 11-13)
+### Phase 3: Gradual Rollout (Week 11-13)
 
 **Week 11**: 10% of users  
 **Week 12**: 50% of users  
 **Week 13**: 100% of users
 
 **Rollback Plan**:
+
 - Keep Circle integration active
 - If issues detected, reduce rollout percentage
 - Document issues and fixes
@@ -876,13 +852,13 @@ async checkAlchemyHealth() {
   if (failureRate > 0.05) { // > 5%
     await this.alertSecurityTeam('High Alchemy transaction failure rate');
   }
-  
+
   // Alert 2: Gas spending spike
   const dailyGas = await this.getDailyGasSpending();
   if (dailyGas > DAILY_GAS_THRESHOLD) {
     await this.alertFinanceTeam('Alchemy gas spending threshold exceeded');
   }
-  
+
   // Alert 3: Webhook delays
   const webhookDelay = await this.getAverageWebhookDelay('1h');
   if (webhookDelay > 60000) { // > 1 minute
@@ -898,17 +874,20 @@ async checkAlchemyHealth() {
 ### Estimated Monthly Costs
 
 **Alchemy Pricing** (as of 2026):
+
 - RPC calls: Included in free tier up to 300M compute units/month
 - Gas Manager: Pay-as-you-go (actual gas cost + small markup)
 - Account Kit: Free
 - Transfers API: Included
 
 **Example Monthly Cost** (10,000 active users):
+
 - RPC calls: $0 (under free tier)
 - Gas sponsorship: ~$0.01 per transaction × 50,000 transactions = $500
 - **Total**: ~$500/month
 
 **Comparison with Circle**:
+
 - Circle: ~$1,500/month for same volume
 - **Savings**: ~$1,000/month (67% cheaper)
 
@@ -917,19 +896,15 @@ async checkAlchemyHealth() {
 1. **Internal Transfers**
    - Skip blockchain for internal transfers
    - Save 100% gas on internal transfers
-   
 2. **Batch Transactions**
    - Batch multiple transfers into one transaction
    - Save gas fees
-   
 3. **Gas Price Optimization**
    - Monitor gas prices
    - Process non-urgent transactions during low gas periods
-   
 4. **Gas Policy Tuning**
    - Set appropriate spending limits
    - Reject spam/abuse transactions
-   
 5. **Network Selection**
    - Use cheapest network (Base or Polygon)
    - Avoid Ethereum mainnet unless necessary
@@ -940,18 +915,19 @@ async checkAlchemyHealth() {
 
 ### Risk Matrix
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| Private key breach | Low | Critical | Strong encryption, HSM, audit logs |
-| Transaction failures | Medium | High | Retry logic, monitoring, Circle fallback |
-| Gas cost spike | Medium | Medium | Spending limits, alerts, policy  tuning |
-| Alchemy downtime | Low | High | Retry logic, multiple RPC providers, Circle fallback |
-| Regulatory issues | Low | High | Legal review, compliance documentation |
-| User error (wrong address) | High | Low | Address validation, confirmation prompts |
+| Risk                       | Probability | Impact   | Mitigation                                           |
+| -------------------------- | ----------- | -------- | ---------------------------------------------------- |
+| Private key breach         | Low         | Critical | Strong encryption, HSM, audit logs                   |
+| Transaction failures       | Medium      | High     | Retry logic, monitoring, Circle fallback             |
+| Gas cost spike             | Medium      | Medium   | Spending limits, alerts, policy tuning               |
+| Alchemy downtime           | Low         | High     | Retry logic, multiple RPC providers, Circle fallback |
+| Regulatory issues          | Low         | High     | Legal review, compliance documentation               |
+| User error (wrong address) | High        | Low      | Address validation, confirmation prompts             |
 
 ### Disaster Recovery Plan
 
 **Scenario 1: Alchemy Service Outage**
+
 1. Detect via health checks
 2. Switch to Circle for new transactions
 3. Queue Alchemy transactions for retry
@@ -959,6 +935,7 @@ async checkAlchemyHealth() {
 5. Resume when Alchemy recovers
 
 **Scenario 2: Private Key Compromise Detected**
+
 1. Immediately disable affected wallets
 2. Transfer funds to new secure wallets
 3. Notify affected users
@@ -966,6 +943,7 @@ async checkAlchemyHealth() {
 5. Implement additional security measures
 
 **Scenario 3: Gas Cost Spike**
+
 1. Auto-disable gas sponsorship if daily limit exceeded
 2. Require users to fund gas manually
 3. Alert finance team
@@ -1051,6 +1029,7 @@ Before starting implementation, decide on:
 8. **Start with Phase 1** (Infrastructure & Security)
 
 **DO NOT START CODING** until:
+
 - [ ] Security infrastructure is designed
 - [ ] Legal/compliance approves
 - [ ] Team is trained on Web3 concepts
@@ -1061,16 +1040,19 @@ Before starting implementation, decide on:
 ## Contact & Resources
 
 **Alchemy Documentation**:
+
 - Account Kit: https://accountkit.alchemy.com/
 - Gas Manager: https://docs.alchemy.com/reference/gas-manager-api
 - Webhooks: https://docs.alchemy.com/docs/alchemy-notify
 - Transfers API: https://docs.alchemy.com/reference/transfers-api
 
 **Security Resources**:
+
 - OWASP Top 10: https://owasp.org/www-project-top-ten/
 - Web3 Security: https://consensys.github.io/smart-contract-best-practices/
 
 **Support**:
+
 - Alchemy Discord: https://www.alchemy.com/discord
 - Alchemy Support: support@alchemy.com
 

@@ -375,7 +375,9 @@ export class AlchemyWalletController {
    */
   @Post('smart-account')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a Smart Contract Account with gas sponsorship' })
+  @ApiOperation({
+    summary: 'Create a Smart Contract Account with gas sponsorship',
+  })
   @ApiResponse({
     status: 201,
     description: 'Smart Account created successfully',
@@ -402,10 +404,7 @@ export class AlchemyWalletController {
       },
     },
   })
-  async createSmartAccount(
-    @Body() dto: CreateWalletDto,
-    @Request() req: any,
-  ) {
+  async createSmartAccount(@Body() dto: CreateWalletDto, @Request() req: any) {
     try {
       const userId = req.user?.id || 'mock-user-id';
 
@@ -447,9 +446,8 @@ export class AlchemyWalletController {
     try {
       const userId = req.user?.id || 'mock-user-id';
 
-      const accounts = await this.smartAccountService.getUserSmartAccounts(
-        userId,
-      );
+      const accounts =
+        await this.smartAccountService.getUserSmartAccounts(userId);
 
       return {
         success: true,

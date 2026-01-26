@@ -38,9 +38,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 export class AlchemyTransactionController {
   private readonly logger = new Logger(AlchemyTransactionController.name);
 
-  constructor(
-    private readonly transactionService: AlchemyTransactionService,
-  ) {}
+  constructor(private readonly transactionService: AlchemyTransactionService) {}
 
   /**
    * Send tokens (USDC/USDT)
@@ -91,10 +89,7 @@ export class AlchemyTransactionController {
         message: 'Transaction submitted successfully',
       };
     } catch (error) {
-      this.logger.error(
-        `Error sending tokens: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error sending tokens: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -202,13 +197,12 @@ export class AlchemyTransactionController {
     try {
       const userId = req.user?.id || 'mock-user-id';
 
-      const transactions =
-        await this.transactionService.getTransactionHistory({
-          userId,
-          walletId,
-          limit,
-          offset,
-        });
+      const transactions = await this.transactionService.getTransactionHistory({
+        userId,
+        walletId,
+        limit,
+        offset,
+      });
 
       return {
         success: true,

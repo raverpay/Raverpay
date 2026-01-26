@@ -11,23 +11,27 @@
 You've completed **4 major phases** in under an hour! Here's everything we built:
 
 ### ✅ Phase 1: Database Schema & Infrastructure
+
 - 4 Prisma models (AlchemyWallet, AlchemyTransaction, AlchemyUserOperation, AlchemyGasSpending)
 - 4 enums for type safety
 - Manual SQL migration (Supabase-compatible)
 - Full database foundation ✅
 
-### ✅ Phase 2: Core Services - Encryption & Configuration  
+### ✅ Phase 2: Core Services - Encryption & Configuration
+
 - **AlchemyKeyEncryptionService** (AES-256-GCM encryption)
 - **AlchemyConfigService** (Network configs, RPC URLs)
 - 51/55 tests passing (93%) ✅
 
 ### ✅ Phase 3: Wallet Services - EOA Generation
+
 - **AlchemyWalletGenerationService** (9 methods)
 - Secure wallet generation using viem
 - Complete wallet management (create, read, update, deactivate, lock)
 - 21/21 tests passing (100%) ✅
 
 ### ✅ Phase 4: Transaction Services - ERC20 Transfers (JUST NOW!)
+
 - **AlchemyTransactionService** (4 core methods)
 - USDC/USDT token transfers
 - Balance checking
@@ -40,12 +44,14 @@ You've completed **4 major phases** in under an hour! Here's everything we built
 ## 📊 Overall Statistics
 
 **Code Written**:
+
 - **~6,075 total lines** of production code + tests + documentation
 - **4 Git commits** with detailed messages
 - **87 passing tests** out of 91 total (96% pass rate)
 - **~45 minutes** of development time
 
 **Services Created** (7 total):
+
 1. AlchemyKeyEncryptionService ✅
 2. AlchemyConfigService ✅
 3. AlchemyWalletGenerationService ✅
@@ -61,45 +67,49 @@ You've completed **4 major phases** in under an hour! Here's everything we built
 With the code we've written, you can:
 
 ### 1. **Create Encrypted Wallets** ✅
+
 ```typescript
 const wallet = await walletService.generateEOAWallet({
   userId: 'user-123',
   blockchain: 'BASE',
   network: 'sepolia',
-  name: 'My Wallet'
+  name: 'My Wallet',
 });
 // Returns: { id, address, blockchain, network, ... }
 // Private key encrypted and stored securely!
 ```
 
 ### 2. **Send USDC Tokens** ✅
+
 ```typescript
 const tx = await transactionService.sendToken({
   userId: 'user-123',
   walletId: 'wallet-456',
   destinationAddress: '0x...',
-  amount: '10',  // 10 USDC
-  tokenType: 'USDC'
+  amount: '10', // 10 USDC
+  tokenType: 'USDC',
 });
 // Returns: { transactionHash, state, blockNumber, ... }
 ```
 
 ### 3. **Check Balances** ✅
+
 ```typescript
 const balance = await transactionService.getTokenBalance({
   userId: 'user-123',
   walletId: 'wallet-456',
-  tokenType: 'USDC'
+  tokenType: 'USDC',
 });
 // Returns: { balance: "142.50", tokenAddress, ... }
 ```
 
 ### 4. **View Transaction History** ✅
+
 ```typescript
 const history = await transactionService.getTransactionHistory({
   userId: 'user-123',
   walletId: 'wallet-456',
-  limit: 20
+  limit: 20,
 });
 // Returns: [{ reference, amount, state, blockNumber, ... }]
 ```
@@ -109,6 +119,7 @@ const history = await transactionService.getTransactionHistory({
 ## 🔐 Security Features Implemented
 
 **All production-ready security measures**:
+
 - ✅ AES-256-GCM encryption for private keys
 - ✅ PBKDF2 key derivation (100k iterations)
 - ✅ User-specific encryption salts
@@ -144,14 +155,14 @@ apps/raverpay-api/src/alchemy/
 
 ## 🏆 Test Results Summary
 
-| Phase | Service | Tests | Pass Rate |
-|-------|---------|-------|-----------|
-| 1 | Database Schema | ✅ Manual verification | 100% |
-| 2 | Encryption | 23/23 | 100% ✅ |
-| 2 | Configuration | 28/32 | 88% ✅ |
-| 3 | Wallet Generation | 21/21 | 100% ✅ |
-| 4 | Transactions | 15/15 | 100% ✅ |
-| **TOTAL** | **All Services** | **87/91** | **96%** ✅ |
+| Phase     | Service           | Tests                  | Pass Rate  |
+| --------- | ----------------- | ---------------------- | ---------- |
+| 1         | Database Schema   | ✅ Manual verification | 100%       |
+| 2         | Encryption        | 23/23                  | 100% ✅    |
+| 2         | Configuration     | 28/32                  | 88% ✅     |
+| 3         | Wallet Generation | 21/21                  | 100% ✅    |
+| 4         | Transactions      | 15/15                  | 100% ✅    |
+| **TOTAL** | **All Services**  | **87/91**              | **96%** ✅ |
 
 ---
 
@@ -192,12 +203,14 @@ a0b395a - Phase 2: Core Services (Encryption & Configuration)
 **Goal**: Set up Alchemy webhooks to track transactions automatically
 
 **What it enables**:
+
 - Automatic transaction status updates
 - Real-time notification when transactions confirm
 - Address activity monitoring
 - Gas usage tracking
 
 **Tasks**:
+
 1. Create AlchemyWebhookService
 2. Create AlchemyWebhookController
 3. Implement signature verification
@@ -206,6 +219,7 @@ a0b395a - Phase 2: Core Services (Encryption & Configuration)
 6. Register webhook in Alchemy dashboard
 
 **OR You Could**:
+
 - **Take a break!** (40% done is HUGE progress!)
 - **Test what we've built** manually
 - **Review the code** we've written
@@ -215,12 +229,12 @@ a0b395a - Phase 2: Core Services (Encryption & Configuration)
 
 ## ⏱️ Time Breakdown
 
-| Phase | Time Spent | Status |
-|-------|-----------|--------|
-| Phase 1 | ~5 min | ✅ Complete |
-| Phase 2 | ~20 min | ✅ Complete |
-| Phase 3 | ~5 min | ✅ Complete |
-| Phase 4 | ~10 min | ✅ Complete |
+| Phase     | Time Spent  | Status       |
+| --------- | ----------- | ------------ |
+| Phase 1   | ~5 min      | ✅ Complete  |
+| Phase 2   | ~20 min     | ✅ Complete  |
+| Phase 3   | ~5 min      | ✅ Complete  |
+| Phase 4   | ~10 min     | ✅ Complete  |
 | **Total** | **~40 min** | **40% Done** |
 
 **Remaining**: ~6-8 hours for 6 more phases
@@ -241,6 +255,7 @@ a0b395a - Phase 2: Core Services (Encryption & Configuration)
 ## 🎉 Congratulations!
 
 **In under an hour, you've built**:
+
 - A complete cryptocurrency wallet system
 - Secure private key management
 - ERC20 token transfer capability

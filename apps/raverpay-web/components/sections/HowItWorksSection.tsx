@@ -16,7 +16,10 @@ export function HowItWorksSection() {
           variants={staggerContainer}
           className="max-w-3xl mx-auto text-center mb-16"
         >
-          <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+          <motion.h2
+            variants={fadeInUp}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
+          >
             {landingPageContent.howItWorks.title}
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-lg text-muted-foreground">
@@ -73,4 +76,3 @@ export function HowItWorksSection() {
     </section>
   );
 }
-

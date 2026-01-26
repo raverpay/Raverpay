@@ -185,9 +185,7 @@ export class AlchemyKeyEncryptionService {
       // Return new encrypted value
       const result = `${iv.toString('base64')}:${tag.toString('base64')}:${encrypted}`;
 
-      this.logger.log(
-        `Rotated encryption for user ${userId} private key`,
-      );
+      this.logger.log(`Rotated encryption for user ${userId} private key`);
       return result;
     } catch (error) {
       this.logger.error(

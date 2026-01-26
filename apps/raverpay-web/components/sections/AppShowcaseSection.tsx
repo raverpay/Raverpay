@@ -38,9 +38,7 @@ export function AppShowcaseSection() {
                 </Button>
               ) : (
                 <Button asChild size="lg" variant="outline" disabled>
-                  <a href="#">
-                    {landingPageContent.appShowcase.comingSoon}
-                  </a>
+                  <a href="#">{landingPageContent.appShowcase.comingSoon}</a>
                 </Button>
               )}
 
@@ -52,9 +50,7 @@ export function AppShowcaseSection() {
                 </Button>
               ) : (
                 <Button asChild size="lg" variant="outline" disabled>
-                  <a href="#">
-                    {landingPageContent.appShowcase.comingSoon}
-                  </a>
+                  <a href="#">{landingPageContent.appShowcase.comingSoon}</a>
                 </Button>
               )}
             </div>
@@ -102,4 +98,3 @@ export function AppShowcaseSection() {
     </section>
   );
 }
-

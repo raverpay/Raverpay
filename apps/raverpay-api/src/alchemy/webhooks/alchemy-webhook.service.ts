@@ -52,11 +52,16 @@ export class AlchemyWebhookService {
       hmac.update(body);
       const expectedSignature = hmac.digest('hex');
 
-      // Compare signatures (constant-time comparison to prevent timing attacks)
-      const isValid = crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expectedSignature),
-      );
+      const sigBuffer = Buffer.from(signature);
+      const expectedBuffer = Buffer.from(expectedSignature);
+
+      if (sigBuffer.length !== expectedBuffer.length) {
+        this.logger.error('Signature length mismatch');
+        return false;
+      }
+
+      // Compare signatures (constant-time comparison)
+      const isValid = crypto.timingSafeEqual(sigBuffer, expectedBuffer);
 
       if (!isValid) {
         this.logger.error('Invalid webhook signature detected!');
@@ -125,11 +130,17 @@ export class AlchemyWebhookService {
     const confirmations = transaction.confirmations + 1;
 
     // Update state based on confirmations
-    if (confirmations >= 1 && transaction.state === AlchemyTransactionState.SUBMITTED) {
+    if (
+      confirmations >= 1 &&
+      transaction.state === AlchemyTransactionState.SUBMITTED
+    ) {
       newState = AlchemyTransactionState.CONFIRMED;
     }
 
-    if (confirmations >= 3 && transaction.state === AlchemyTransactionState.CONFIRMED) {
+    if (
+      confirmations >= 3 &&
+      transaction.state === AlchemyTransactionState.CONFIRMED
+    ) {
       newState = AlchemyTransactionState.COMPLETED;
     }
 
@@ -205,9 +216,7 @@ export class AlchemyWebhookService {
         });
       }
 
-      this.logger.debug(
-        `Tracked gas spending for user ${transaction.userId}`,
-      );
+      this.logger.debug(`Tracked gas spending for user ${transaction.userId}`);
     } catch (error) {
       this.logger.error('Error tracking gas spending', error.stack);
     }

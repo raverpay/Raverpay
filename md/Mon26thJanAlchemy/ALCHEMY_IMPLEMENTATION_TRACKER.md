@@ -9,11 +9,13 @@
 ## Implementation Phases
 
 ### Phase 1: Database Schema & Infrastructure ✅ COMPLETE
+
 **Goal**: Set up database models and core infrastructure  
 **Duration**: Day 1  
 **Completed**: 2026-01-25
 
 #### Tasks:
+
 - [x] 1.1 Add Alchemy models to Prisma schema
 - [x] 1.2 Run database migration (manual SQL)
 - [x] 1.3 Verify tables created
@@ -21,14 +23,16 @@
 - [x] 1.5 Verify TypeScript compilation
 
 **Files Created/Modified**:
+
 - ✅ `apps/raverpay-api/prisma/schema.prisma` (added 4 models + 4 enums + User relations)
 - ✅ `apps/raverpay-api/prisma/migrations/add_alchemy_models.sql` (manual migration)
 
 **Verification**:
+
 ```bash
 # All 4 tables created successfully
 ✅ alchemy_wallets
-✅ alchemy_transactions  
+✅ alchemy_transactions
 ✅ alchemy_user_operations
 ✅ alchemy_gas_spending
 
@@ -39,19 +43,23 @@
 ---
 
 ### Phase 0.5: Configure Shadow Database (OPTIONAL) ⏸️ BACKLOG
+
 **Goal**: Fix Prisma migrate issues by configuring shadow database  
 **Duration**: 30 minutes  
 **Priority**: Medium (Quality of Life improvement)  
 **Recommendation**: Do this later, after Phase 10
 
 #### Why This Matters:
+
 Currently using manual SQL migrations as a workaround because Supabase doesn't allow Prisma to auto-create shadow databases. Configuring a permanent shadow database enables:
+
 - ✅ Proper `prisma migrate dev` workflow
 - ✅ Automatic schema drift detection
 - ✅ Data loss warnings before applying migrations
 - ✅ Better team collaboration
 
 #### Tasks:
+
 - [ ] 0.5.1 Create shadow database/schema in Supabase
 - [ ] 0.5.2 Add `SHADOW_DATABASE_URL` to .env
 - [ ] 0.5.3 Add `shadowDatabaseUrl` to datasource in schema.prisma
@@ -59,6 +67,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 0.5.5 Update team documentation
 
 **Files to Modify**:
+
 - `apps/raverpay-api/.env` (add `SHADOW_DATABASE_URL`)
 - `apps/raverpay-api/prisma/schema.prisma` (add `shadowDatabaseUrl` field)
 
@@ -69,10 +78,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 2: Core Services - Encryption & Configuration ⏸️ PENDING
+
 **Goal**: Set up encryption and configuration services  
 **Duration**: Day 1-2
 
 #### Tasks:
+
 - [ ] 2.1 Create AlchemyKeyEncryptionService
 - [ ] 2.2 Create AlchemyConfigService
 - [ ] 2.3 Add unit tests for encryption
@@ -80,6 +91,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 2.5 Test network configuration retrieval
 
 **Files to Create**:
+
 - `apps/raverpay-api/src/alchemy/encryption/alchemy-key-encryption.service.ts`
 - `apps/raverpay-api/src/alchemy/encryption/alchemy-key-encryption.service.spec.ts`
 - `apps/raverpay-api/src/alchemy/config/alchemy-config.service.ts`
@@ -88,10 +100,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 3: Wallet Services - EOA Generation ⏸️ PENDING
+
 **Goal**: Implement basic EOA wallet generation for testing  
 **Duration**: Day 2
 
 #### Tasks:
+
 - [ ] 3.1 Create AlchemyWalletGenerationService
 - [ ] 3.2 Implement generateEOAWallet method
 - [ ] 3.3 Implement getDecryptedPrivateKey method (internal use only)
@@ -99,16 +113,19 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 3.5 Test wallet generation on testnet
 
 **Files to Create**:
+
 - `apps/raverpay-api/src/alchemy/wallets/alchemy-wallet-generation.service.ts`
 - `apps/raverpay-api/src/alchemy/wallets/alchemy-wallet-generation.service.spec.ts`
 
 ---
 
 ### Phase 4: Transaction Services - Basic Transfers ⏸️ PENDING
+
 **Goal**: Implement USDC/USDT transfers using EOA  
 **Duration**: Day 2-3
 
 #### Tasks:
+
 - [ ] 4.1 Create AlchemyTransactionService
 - [ ] 4.2 Implement sendToken method (EOA-based)
 - [ ] 4.3 Implement getTokenBalance method
@@ -117,16 +134,19 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 4.6 Test on testnet (Base Sepolia)
 
 **Files to Create**:
+
 - `apps/raverpay-api/src/alchemy/transactions/alchemy-transaction.service.ts`
 - `apps/raverpay-api/src/alchemy/transactions/alchemy-transaction.service.spec.ts`
 
 ---
 
 ### Phase 5: Webhook Integration ⏸️ PENDING
+
 **Goal**: Set up webhook handlers for transaction updates  
 **Duration**: Day 3
 
 #### Tasks:
+
 - [ ] 5.1 Create AlchemyWebhookService
 - [ ] 5.2 Create AlchemyWebhookController
 - [ ] 5.3 Implement signature verification
@@ -135,6 +155,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 5.6 Register webhook on Alchemy dashboard
 
 **Files to Create**:
+
 - `apps/raverpay-api/src/alchemy/webhooks/alchemy-webhook.service.ts`
 - `apps/raverpay-api/src/alchemy/webhooks/alchemy-webhook.controller.ts`
 - `apps/raverpay-api/src/alchemy/webhooks/dto/webhook.dto.ts`
@@ -142,10 +163,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 6: Module Setup & Controller ⏸️ PENDING
+
 **Goal**: Wire everything together in a module with API endpoints  
 **Duration**: Day 3-4
 
 #### Tasks:
+
 - [ ] 6.1 Create AlchemyModule
 - [ ] 6.2 Create AlchemyController (main endpoints)
 - [ ] 6.3 Add Swagger documentation
@@ -154,6 +177,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 6.6 Add authentication guards
 
 **Files to Create**:
+
 - `apps/raverpay-api/src/alchemy/alchemy.module.ts`
 - `apps/raverpay-api/src/alchemy/alchemy.controller.ts`
 - `apps/raverpay-api/src/alchemy/dto/*.dto.ts` (various DTOs)
@@ -161,10 +185,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 7: Smart Account Integration (Production-Ready) ⏸️ PENDING
+
 **Goal**: Implement gas-sponsored Smart Accounts  
 **Duration**: Day 4-5
 
 #### Tasks:
+
 - [ ] 7.1 Install Alchemy SDK (`@alchemy/aa-sdk`)
 - [ ] 7.2 Implement generateSmartAccount method
 - [ ] 7.3 Implement sendUSDCWithSmartAccount method
@@ -173,6 +199,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 7.6 Add fallback to EOA if Smart Account fails
 
 **Files to Modify**:
+
 - `apps/raverpay-api/package.json` (add SDK)
 - `apps/raverpay-api/src/alchemy/wallets/alchemy-wallet-generation.service.ts`
 - `apps/raverpay-api/src/alchemy/transactions/alchemy-transaction.service.ts`
@@ -180,10 +207,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 8: Admin Dashboard Integration ⏸️ PENDING
+
 **Goal**: Add admin endpoints and UI for monitoring  
 **Duration**: Day 5-6
 
 #### Tasks:
+
 - [ ] 8.1 Create AdminAlchemyController (API)
 - [ ] 8.2 Implement wallet listing endpoint
 - [ ] 8.3 Implement transaction monitoring endpoint
@@ -192,6 +221,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 - [ ] 8.6 Test admin dashboard
 
 **Files to Create**:
+
 - `apps/raverpay-api/src/admin/alchemy/admin-alchemy.controller.ts`
 - `apps/raverpay-admin/app/alchemy/wallets/page.tsx`
 - `apps/raverpay-admin/app/alchemy/transactions/page.tsx`
@@ -200,10 +230,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 9: Testing & Validation ⏸️ PENDING
+
 **Goal**: Comprehensive testing on testnet  
 **Duration**: Day 6-7
 
 #### Tasks:
+
 - [ ] 9.1 Create 5 test wallets
 - [ ] 9.2 Send 10 test transactions
 - [ ] 9.3 Verify webhooks received
@@ -215,10 +247,12 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ---
 
 ### Phase 10: Documentation & Deployment Prep ⏸️ PENDING
+
 **Goal**: Prepare for production deployment  
 **Duration**: Day 7
 
 #### Tasks:
+
 - [ ] 10.1 Update API documentation
 - [ ] 10.2 Create deployment runbook
 - [ ] 10.3 Set up monitoring and alerts
@@ -233,16 +267,19 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ### Phase 1: Database Schema & Infrastructure
 
 **What we're doing now**:
+
 1. Adding Alchemy models to Prisma schema
 2. Running database migration
 3. Verifying everything compiles
 
 **Dependencies**:
+
 - ✅ Environment variables added (encryption key, gas policy)
 - ✅ Branch created (`feature/alchemy-integration`)
 - ⏳ Prisma schema changes
 
 **Next Steps**:
+
 1. Add models to `schema.prisma`
 2. Run migration
 3. Generate Prisma client
@@ -253,6 +290,7 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ## Environment Variables Checklist
 
 **Development (.env)**:
+
 - [x] `ALCHEMY_DEV_API_KEY` - Set
 - [x] `ALCHEMY_DEV_BASE_SEPOLIA_RPC` - Set
 - [x] `ALCHEMY_DEV_POLYGON_AMOY_RPC` - Set
@@ -266,11 +304,13 @@ Currently using manual SQL migrations as a workaround because Supabase doesn't a
 ## Dependencies to Install (Later Phases)
 
 **Phase 7 (Smart Accounts)**:
+
 ```bash
 pnpm install @alchemy/aa-sdk @alchemy/aa-core @alchemy/aa-accounts
 ```
 
 **Already Installed**:
+
 - ✅ `viem` (v2.21.27) - In raverpay-admin
 - ✅ `ethers` (need to verify version in raverpay-api)
 
@@ -279,37 +319,44 @@ pnpm install @alchemy/aa-sdk @alchemy/aa-core @alchemy/aa-accounts
 ## Testing Checklist (Per Phase)
 
 **After Phase 1**:
+
 - [ ] Tables exist in database
 - [ ] Prisma client generates without errors
 - [ ] TypeScript compiles with no errors
 
 **After Phase 2**:
+
 - [ ] Can encrypt a private key
 - [ ] Can decrypt it back
 - [ ] Can get network config for Base Sepolia
 
 **After Phase 3**:
+
 - [ ] Can generate EOA wallet
 - [ ] Wallet saved to database
 - [ ] Can retrieve wallet from database
 
 **After Phase 4**:
+
 - [ ] Can check USDC balance
 - [ ] Can send USDC (testnet)
 - [ ] Transaction saved to database
 
 **After Phase 5**:
+
 - [ ] Webhook endpoint responds
 - [ ] Signature verification works
 - [ ] Transaction status updates on webhook
 
 **After Phase 6**:
+
 - [ ] All API endpoints documented
 - [ ] Swagger UI works
 - [ ] Can create wallet via API
 - [ ] Can send transaction via API
 
 **After Phase 7**:
+
 - [ ] Smart Account wallet created
 - [ ] Gas is sponsored (check dashboard)
 - [ ] User doesn't need POL/ETH
@@ -319,24 +366,24 @@ pnpm install @alchemy/aa-sdk @alchemy/aa-core @alchemy/aa-accounts
 
 ## Risk Tracking
 
-| Risk | Mitigation | Status |
-|------|------------|--------|
-| Private key encryption fails | Use tested MfaEncryptionUtil pattern | ✅ Mitigated |
-| Prisma migration fails | Use manual SQL workaround | ✅ Plan ready |
-| Gas Manager not working | Keep EOA fallback | ⏸️ Pending Phase 7 |
-| Smart Account SDK issues | Test early, have support contact | ⏸️ Pending Phase 7 |
-| Webhook signature mismatch | Test with Alchemy examples | ⏸️ Pending Phase 5 |
+| Risk                         | Mitigation                           | Status             |
+| ---------------------------- | ------------------------------------ | ------------------ |
+| Private key encryption fails | Use tested MfaEncryptionUtil pattern | ✅ Mitigated       |
+| Prisma migration fails       | Use manual SQL workaround            | ✅ Plan ready      |
+| Gas Manager not working      | Keep EOA fallback                    | ⏸️ Pending Phase 7 |
+| Smart Account SDK issues     | Test early, have support contact     | ⏸️ Pending Phase 7 |
+| Webhook signature mismatch   | Test with Alchemy examples           | ⏸️ Pending Phase 5 |
 
 ---
 
 ## Decision Log
 
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-01-25 | Use pnpm not npm | Project standard |
+| Date       | Decision                            | Rationale                            |
+| ---------- | ----------------------------------- | ------------------------------------ |
+| 2026-01-25 | Use pnpm not npm                    | Project standard                     |
 | 2026-01-25 | Start with EOA, then Smart Accounts | Learn basics first, production later |
-| 2026-01-25 | Use Polygon Amoy testnet | Mumbai deprecated |
-| 2026-01-25 | Phased implementation | Systematic, trackable progress |
+| 2026-01-25 | Use Polygon Amoy testnet            | Mumbai deprecated                    |
+| 2026-01-25 | Phased implementation               | Systematic, trackable progress       |
 
 ---
 
@@ -360,6 +407,7 @@ pnpm install @alchemy/aa-sdk @alchemy/aa-core @alchemy/aa-accounts
 ## Notes & Issues
 
 ### 2026-01-25 - 12:05 PM
+
 - ✅ **Phase 1 COMPLETE**: Database schema & infrastructure
 - ✅ Created 4 Alchemy tables successfully using manual SQL migration
 - ✅ Prisma client regenerated - all types available
@@ -369,6 +417,7 @@ pnpm install @alchemy/aa-sdk @alchemy/aa-core @alchemy/aa-accounts
 - ⏭️ **Next**: Starting Phase 2 - Core Services (Encryption & Configuration)
 
 ### 2026-01-25 - 11:59 AM
+
 - ✅ Created branch `feature/alchemy-integration`
 - ✅ Added encryption master key to .env
 - ✅ Added gas policy ID to .env

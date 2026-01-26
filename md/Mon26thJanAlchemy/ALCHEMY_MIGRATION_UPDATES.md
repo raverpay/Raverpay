@@ -61,11 +61,13 @@ ALCHEMY_ENCRYPTION_MASTER_KEY=<generate_with_command_below>
 ```
 
 **Generate Encryption Master Key**:
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 **Test RPC Endpoints** (you already did this):
+
 ```bash
 # Base Sepolia - Working ✅
 curl https://base-sepolia.g.alchemy.com/v2/dgVBg25vMTIXti8IBCV-0 \
@@ -130,7 +132,7 @@ getNetworkConfig(blockchain: string, network: string): AlchemyNetworkConfig {
       usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       isTestnet: false,
     },
-    
+
     // TESTNET NETWORKS
     'BASE-sepolia': {
       rpcUrl: this.getRpcUrl('BASE', 'sepolia'),
@@ -160,14 +162,14 @@ getNetworkConfig(blockchain: string, network: string): AlchemyNetworkConfig {
       isTestnet: true,
     },
   };
-  
+
   const key = `${blockchain}-${network}`;
   const config = configs[key];
-  
+
   if (!config) {
     throw new Error(`Network config not found for ${key}`);
   }
-  
+
   return config;
 }
 
@@ -202,6 +204,7 @@ ALCHEMY_DEV_GAS_POLICY_ID=your_auto_created_policy_id_here
 ```
 
 **Note**: The auto-created policy likely has default settings. You may want to customize:
+
 - Spending limits
 - Allowed networks
 - Custom rules (webhook for approval logic)
@@ -414,7 +417,7 @@ ALTER TABLE alchemy_wallets
     ADD CONSTRAINT IF NOT EXISTS alchemy_wallets_address_key UNIQUE (address);
 
 ALTER TABLE alchemy_wallets
-    ADD CONSTRAINT IF NOT EXISTS alchemy_wallets_userId_blockchain_network_key 
+    ADD CONSTRAINT IF NOT EXISTS alchemy_wallets_userId_blockchain_network_key
     UNIQUE ("userId", blockchain, network);
 
 -- AlchemyTransaction unique constraints
@@ -430,7 +433,7 @@ BEGIN
         ALTER TABLE alchemy_transactions
             ADD CONSTRAINT alchemy_transactions_transactionHash_key UNIQUE ("transactionHash");
     END IF;
-    
+
     IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'alchemy_transactions_userOperationHash_key'
     ) THEN
@@ -441,12 +444,12 @@ END $$;
 
 -- AlchemyUserOperation unique constraints
 ALTER TABLE alchemy_user_operations
-    ADD CONSTRAINT IF NOT EXISTS alchemy_user_operations_userOperationHash_key 
+    ADD CONSTRAINT IF NOT EXISTS alchemy_user_operations_userOperationHash_key
     UNIQUE ("userOperationHash");
 
 -- AlchemyGasSpending unique constraints
 ALTER TABLE alchemy_gas_spending
-    ADD CONSTRAINT IF NOT EXISTS alchemy_gas_spending_userId_walletAddress_date_key 
+    ADD CONSTRAINT IF NOT EXISTS alchemy_gas_spending_userId_walletAddress_date_key
     UNIQUE ("userId", "walletAddress", date);
 
 -- ================================
@@ -510,12 +513,12 @@ ALTER TABLE alchemy_user_operations
 -- ================================
 
 -- List all Alchemy tables
-SELECT tablename FROM pg_tables 
-WHERE schemaname = 'public' AND tablename LIKE 'alchemy%' 
+SELECT tablename FROM pg_tables
+WHERE schemaname = 'public' AND tablename LIKE 'alchemy%'
 ORDER BY tablename;
 
 -- Count rows (should all be 0 initially)
-SELECT 
+SELECT
     'alchemy_wallets' as table_name, COUNT(*) as row_count FROM alchemy_wallets
 UNION ALL
 SELECT 'alchemy_transactions', COUNT(*) FROM alchemy_transactions
@@ -536,18 +539,22 @@ SELECT 'alchemy_gas_spending', COUNT(*) FROM alchemy_gas_spending;
 ### Detailed Explanation
 
 #### EOA (Externally Owned Account)
+
 **What it is**: Traditional wallet (like MetaMask)
+
 - Has a private key
 - User signs every transaction
 - **User must have native token (POL, ETH) for gas**
 - Direct blockchain interaction
 
 **Pros**:
+
 - ✅ Simpler to implement
 - ✅ Works immediately (no SDK integration)
 - ✅ Standard Ethereum wallet
 
 **Cons**:
+
 - ❌ **User must fund wallet with POL/ETH for gas fees**
 - ❌ **Poor UX for non-crypto users**
 - ❌ No gas sponsorship possible
@@ -555,6 +562,7 @@ SELECT 'alchemy_gas_spending', COUNT(*) FROM alchemy_gas_spending;
 - ❌ No social recovery
 
 **User Experience with EOA**:
+
 ```
 1. User wants to send 10 USDC
 2. System: "Error: You need 0.01 POL for gas fees"
@@ -564,18 +572,22 @@ SELECT 'alchemy_gas_spending', COUNT(*) FROM alchemy_gas_spending;
    - Transfer POL to wallet
    - THEN send USDC
 ```
+
 **Result**: **Terrible UX for non-crypto users** ❌
 
 ---
 
 #### Smart Account (Account Abstraction)
+
 **What it is**: Smart contract wallet (ERC-4337)
+
 - Still has a "signer" (private key)
 - But transactions go through a smart contract
 - **Alchemy Gas Manager sponsors gas**
 - Bundler submits transactions
 
 **Pros**:
+
 - ✅ **Gas sponsorship** - users don't need POL/ETH
 - ✅ **Better UX** - just sign and go
 - ✅ Batch transactions (save gas)
@@ -583,16 +595,19 @@ SELECT 'alchemy_gas_spending', COUNT(*) FROM alchemy_gas_spending;
 - ✅ Programmable logic
 
 **Cons**:
+
 - ❌ More complex to implement
 - ❌ Requires Alchemy Account Kit SDK
 - ❌ Slightly more code
 
 **User Experience with Smart Account**:
+
 ```
 1. User wants to send 10 USDC
 2. User confirms transaction
 3. Done! (Alchemy sponsors gas)
 ```
+
 **Result**: **Great UX** ✅
 
 ---
@@ -612,6 +627,7 @@ But it's **NOT optional for production** - it's **critical for good UX**.
 ### Recommended Approach
 
 #### Phase 1: Start with EOA (Testing)
+
 ```typescript
 // Simple implementation - for testing only
 async generateEOAWallet(userId: string) {
@@ -622,6 +638,7 @@ async generateEOAWallet(userId: string) {
 ```
 
 **Use for**:
+
 - ✅ Initial testing
 - ✅ Understanding the flow
 - ✅ Testnet development
@@ -633,12 +650,14 @@ async generateEOAWallet(userId: string) {
 #### Phase 2: Implement Smart Accounts (Production)
 
 **Installation**:
+
 ```bash
 cd apps/raverpay-api
 pnpm install @alchemy/aa-sdk @alchemy/aa-core @alchemy/aa-accounts viem@^2.21.27
 ```
 
 **Implementation**:
+
 ```typescript
 import { createModularAccountAlchemyClient } from '@alchemy/aa-alchemy';
 import { LocalAccountSigner, sepolia } from '@alchemy/aa-core';
@@ -648,12 +667,12 @@ async generateSmartAccount(userId: string, blockchain: string, network: string) 
   // 1. Generate signer (this is still a private key, but it controls the smart account)
   const privateKey = generatePrivateKey();
   const signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
-  
+
   // 2. Get network config
   const networkConfig = this.configService.getNetworkConfig(blockchain, network);
   const alchemyApiKey = this.configService.getApiKey('dev');
   const gasPolicyId = this.configService.getGasPolicyId('dev');
-  
+
   // 3. Create smart account client
   const client = await createModularAccountAlchemyClient({
     apiKey: alchemyApiKey,
@@ -663,13 +682,13 @@ async generateSmartAccount(userId: string, blockchain: string, network: string) 
       policyId: gasPolicyId, // Your Gas Manager policy
     },
   });
-  
+
   // 4. Get smart account address
   const smartAccountAddress = await client.getAddress();
-  
+
   // 5. Encrypt and store signer's private key
   const encryptedPrivateKey = this.encryptionService.encryptPrivateKey(privateKey, userId);
-  
+
   // 6. Save to database
   const wallet = await this.prisma.alchemyWallet.create({
     data: {
@@ -683,7 +702,7 @@ async generateSmartAccount(userId: string, blockchain: string, network: string) 
       gasPolicyId,
     },
   });
-  
+
   return {
     walletId: wallet.id,
     address: smartAccountAddress,
@@ -701,10 +720,10 @@ async sendUSDCWithSmartAccount(params: {
   const wallet = await this.prisma.alchemyWallet.findUnique({
     where: { id: params.walletId },
   });
-  
+
   const privateKey = await this.decryptPrivateKey(wallet.encryptedPrivateKey, params.userId);
   const signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
-  
+
   // 2. Create client
   const client = await createModularAccountAlchemyClient({
     apiKey: this.configService.getApiKey('dev'),
@@ -714,13 +733,13 @@ async sendUSDCWithSmartAccount(params: {
       policyId: wallet.gasPolicyId,
     },
   });
-  
+
   // 3. Create USDC transfer call
   const usdcContract = {
     address: params.tokenAddress,
     abi: ['function transfer(address to, uint256 amount)'],
   };
-  
+
   // 4. Send transaction (gas is sponsored!)
   const userOpResult = await client.sendUserOperation({
     uo: {
@@ -732,12 +751,12 @@ async sendUSDCWithSmartAccount(params: {
       }),
     },
   });
-  
+
   // 5. Wait for transaction to be mined
   const txHash = await client.waitForUserOperationTransaction({
     hash: userOpResult.hash,
   });
-  
+
   return {
     userOperationHash: userOpResult.hash,
     transactionHash: txHash,
@@ -746,6 +765,7 @@ async sendUSDCWithSmartAccount(params: {
 ```
 
 **Use for**:
+
 - ✅ Production
 - ✅ Better user experience
 - ✅ Gas sponsorship
@@ -756,6 +776,7 @@ async sendUSDCWithSmartAccount(params: {
 ### Why Smart Accounts Are Critical for RaverPay
 
 RaverPay is a **fintech app for non-crypto users**. Your users:
+
 - Don't know what "gas fees" are
 - Don't want to buy POL/ETH
 - Just want to send money like Venmo/CashApp
@@ -768,6 +789,7 @@ RaverPay is a **fintech app for non-crypto users**. Your users:
 ## Implementation Priority
 
 ### Phase 1: MVP (Weeks 1-4)
+
 - ✅ Database schema
 - ✅ Encryption infrastructure
 - ✅ **EOA wallets** (for testing)
@@ -777,6 +799,7 @@ RaverPay is a **fintech app for non-crypto users**. Your users:
 **Result**: Working but not production-ready
 
 ### Phase 2: Production (Weeks 5-8)
+
 - ✅ **Smart Account integration** (THE CRITICAL PIECE)
 - ✅ Gas Manager configuration
 - ✅ Admin dashboard

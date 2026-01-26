@@ -17,7 +17,10 @@ export function SecuritySection() {
           variants={staggerContainer}
           className="max-w-3xl mx-auto text-center mb-16"
         >
-          <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+          <motion.h2
+            variants={fadeInUp}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
+          >
             {landingPageContent.security.title}
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-lg text-muted-foreground">
@@ -46,9 +49,7 @@ export function SecuritySection() {
                       <IconComponent className="w-6 h-6 text-primary" />
                     </div>
                     <CardTitle className="text-xl mb-2">{feature.title}</CardTitle>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
+                    <CardDescription className="text-base">{feature.description}</CardDescription>
                   </CardHeader>
                 </Card>
               </motion.div>
@@ -59,4 +60,3 @@ export function SecuritySection() {
     </section>
   );
 }
-

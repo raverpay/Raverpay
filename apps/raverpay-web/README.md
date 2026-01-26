@@ -58,4 +58,3 @@ All text content is centralized in `content/landing-page-content.ts`. Update thi
 - Glassmorphism effects
 - SEO optimized
 - Accessibility compliant (WCAG 2.1 AA)
-

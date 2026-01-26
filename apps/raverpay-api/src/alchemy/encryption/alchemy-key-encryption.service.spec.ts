@@ -188,7 +188,9 @@ describe('AlchemyKeyEncryptionService', () => {
       // Mock ConfigService to return undefined
       jest.spyOn(configService, 'get').mockReturnValue(undefined);
 
-      expect(() => service.encryptPrivateKey(testPrivateKey, testUserId)).toThrow(
+      expect(() =>
+        service.encryptPrivateKey(testPrivateKey, testUserId),
+      ).toThrow(
         'ALCHEMY_ENCRYPTION_MASTER_KEY environment variable is required',
       );
     });
@@ -197,9 +199,9 @@ describe('AlchemyKeyEncryptionService', () => {
       // Mock ConfigService to return short key
       jest.spyOn(configService, 'get').mockReturnValue('short');
 
-      expect(() => service.encryptPrivateKey(testPrivateKey, testUserId)).toThrow(
-        'ALCHEMY_ENCRYPTION_MASTER_KEY is too weak',
-      );
+      expect(() =>
+        service.encryptPrivateKey(testPrivateKey, testUserId),
+      ).toThrow('ALCHEMY_ENCRYPTION_MASTER_KEY is too weak');
     });
   });
 

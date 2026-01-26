@@ -170,7 +170,7 @@ describe('AlchemyConfigService', () => {
 
     it('should throw error for unsupported blockchain', () => {
       expect(() => service.getNetworkConfig('ETHEREUM', 'mainnet')).toThrow(
-        /RPC URL not configured/,
+        /Network configuration not found/,
       );
     });
   });

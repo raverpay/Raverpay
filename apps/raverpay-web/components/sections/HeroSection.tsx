@@ -76,18 +76,13 @@ export function HeroSection() {
           </motion.div>
 
           {/* Hero Visual Placeholder */}
-          <motion.div
-            variants={fadeInUp}
-            className="mt-16 relative"
-          >
+          <motion.div variants={fadeInUp} className="mt-16 relative">
             <div className="relative w-full max-w-3xl mx-auto aspect-video rounded-2xl glass-strong border border-primary/20 overflow-hidden">
               {/* Placeholder for hero visual - can be replaced with actual image/mockup */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-muted-foreground text-center p-8">
                   <p className="text-lg mb-2">Hero Visual Placeholder</p>
-                  <p className="text-sm">
-                    3D card mockup or animated illustration will go here
-                  </p>
+                  <p className="text-sm">3D card mockup or animated illustration will go here</p>
                 </div>
               </div>
             </div>
@@ -97,4 +92,3 @@ export function HeroSection() {
     </section>
   );
 }
-

@@ -282,4 +282,3 @@ export const landingPageContent = {
     copyright: `Copyright © ${new Date().getFullYear()} RaverPay Financial Technology Limited. All Rights Reserved.`,
   },
 } as const;
-

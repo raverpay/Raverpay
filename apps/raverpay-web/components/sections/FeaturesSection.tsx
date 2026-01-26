@@ -24,10 +24,7 @@ export function FeaturesSection() {
           >
             {landingPageContent.features.title}
           </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="text-lg text-muted-foreground"
-          >
+          <motion.p variants={fadeInUp} className="text-lg text-muted-foreground">
             {landingPageContent.features.subtitle}
           </motion.p>
         </motion.div>
@@ -53,9 +50,7 @@ export function FeaturesSection() {
                       <IconComponent className="w-6 h-6 text-primary" />
                     </div>
                     <CardTitle className="text-xl mb-2">{feature.title}</CardTitle>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
+                    <CardDescription className="text-base">{feature.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <a
@@ -75,4 +70,3 @@ export function FeaturesSection() {
     </section>
   );
 }
-

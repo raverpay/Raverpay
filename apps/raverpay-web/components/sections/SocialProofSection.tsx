@@ -17,9 +17,7 @@ export function SocialProofSection() {
               transition={{ delay: index * 0.1 }}
               className="flex flex-col items-center gap-2 min-w-[120px]"
             >
-              <div className="text-2xl md:text-3xl font-bold text-gradient">
-                {stat.label}
-              </div>
+              <div className="text-2xl md:text-3xl font-bold text-gradient">{stat.label}</div>
             </motion.div>
           ))}
         </div>
@@ -27,4 +25,3 @@ export function SocialProofSection() {
     </section>
   );
 }
-

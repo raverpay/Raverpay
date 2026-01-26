@@ -128,22 +128,22 @@ describe('AlchemyWebhookService', () => {
     it('should process address activity webhook', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'findUnique')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
-      jest
-        .spyOn(prismaService.alchemyTransaction, 'update')
-        .mockResolvedValue({
-          ...mockTransaction,
-          confirmations: 1,
-          state: AlchemyTransactionState.CONFIRMED,
-        });
+      jest.spyOn(prismaService.alchemyTransaction, 'update').mockResolvedValue({
+        ...mockTransaction,
+        confirmations: 1,
+        state: AlchemyTransactionState.CONFIRMED,
+      } as any);
 
       await service.processAddressActivity(mockPayload);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyTransaction.findUnique).toHaveBeenCalledWith({
         where: { transactionHash: '0xabcdef123456' },
       });
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyTransaction.update).toHaveBeenCalled();
     });
 
@@ -158,7 +158,7 @@ describe('AlchemyWebhookService', () => {
     it('should handle transaction not found', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'findUnique')
-        .mockResolvedValue(null);
+        .mockResolvedValue(null as any);
 
       await expect(
         service.processAddressActivity(mockPayload),
@@ -168,20 +168,17 @@ describe('AlchemyWebhookService', () => {
     it('should update transaction state based on confirmations', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'findUnique')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
-      jest
-        .spyOn(prismaService.alchemyTransaction, 'update')
-        .mockResolvedValue({
-          ...mockTransaction,
-          confirmations: 1,
-        });
+      jest.spyOn(prismaService.alchemyTransaction, 'update').mockResolvedValue({
+        ...mockTransaction,
+        confirmations: 1,
+      } as any);
 
       await service.processAddressActivity(mockPayload);
 
-      const updateCall = (
-        prismaService.alchemyTransaction.update as jest.Mock
-      ).mock.calls[0][0];
+      const updateCall = (prismaService.alchemyTransaction.update as jest.Mock)
+        .mock.calls[0][0];
 
       expect(updateCall.data.confirmations).toBe(1);
       expect(updateCall.data.state).toBe(AlchemyTransactionState.CONFIRMED);
@@ -196,21 +193,18 @@ describe('AlchemyWebhookService', () => {
 
       jest
         .spyOn(prismaService.alchemyTransaction, 'findUnique')
-        .mockResolvedValue(confirmedTx);
+        .mockResolvedValue(confirmedTx as any);
 
-      jest
-        .spyOn(prismaService.alchemyTransaction, 'update')
-        .mockResolvedValue({
-          ...confirmedTx,
-          confirmations: 3,
-          state: AlchemyTransactionState.COMPLETED,
-        });
+      jest.spyOn(prismaService.alchemyTransaction, 'update').mockResolvedValue({
+        ...confirmedTx,
+        confirmations: 3,
+        state: AlchemyTransactionState.COMPLETED,
+      } as any);
 
       await service.processAddressActivity(mockPayload);
 
-      const updateCall = (
-        prismaService.alchemyTransaction.update as jest.Mock
-      ).mock.calls[0][0];
+      const updateCall = (prismaService.alchemyTransaction.update as jest.Mock)
+        .mock.calls[0][0];
 
       expect(updateCall.data.confirmations).toBe(3);
       expect(updateCall.data.state).toBe(AlchemyTransactionState.COMPLETED);

@@ -97,22 +97,25 @@ export class CircleTransactionService {
 
     // Get token address/ID
     const usdcTokenAddress = this.config.getUsdcTokenAddress(wallet.blockchain);
-    
+
     // Determine which token to use
     // If tokenId is provided, we use it (highest priority)
     // If customTokenAddress is provided, we use it
     // Otherwise default to USDC
-    let activeTokenAddress = customTokenAddress || (tokenId ? undefined : usdcTokenAddress);
-    
+    const activeTokenAddress =
+      customTokenAddress || (tokenId ? undefined : usdcTokenAddress);
+
     if (!tokenId && !activeTokenAddress) {
       throw new BadRequestException(
         `Token not specified and USDC not supported on ${wallet.blockchain}`,
       );
     }
 
-    // Skip balance check and fee for native/other tokens for now if tokenId is provided 
+    // Skip balance check and fee for native/other tokens for now if tokenId is provided
     // to keep it simple for gas funding
-    const isUsdc = !tokenId && (!activeTokenAddress || activeTokenAddress === usdcTokenAddress);
+    const isUsdc =
+      !tokenId &&
+      (!activeTokenAddress || activeTokenAddress === usdcTokenAddress);
 
     if (isUsdc) {
       // Check balance (must have amount + fee)

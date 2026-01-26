@@ -12,14 +12,20 @@ import {
 jest.mock('viem', () => ({
   createPublicClient: jest.fn(() => ({
     readContract: jest.fn(),
-    waitForTransactionReceipt: jest.fn(),
+    waitForTransactionReceipt: jest.fn().mockResolvedValue({
+      status: 'success',
+      blockNumber: BigInt(12345),
+      transactionHash: '0xmockhash',
+    }),
   })),
   createWalletClient: jest.fn(() => ({
     writeContract: jest.fn(),
   })),
   http: jest.fn(),
   parseUnits: jest.fn((amount: string) => BigInt(amount) * BigInt(1000000)),
-  formatUnits: jest.fn((amount: bigint) => (Number(amount) / 1000000).toString()),
+  formatUnits: jest.fn((amount: bigint) =>
+    (Number(amount) / 1000000).toString(),
+  ),
 }));
 
 jest.mock('viem/accounts', () => ({
@@ -154,19 +160,22 @@ describe('AlchemyTransactionService', () => {
     it('should verify wallet ownership', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'create')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
-      await service.sendToken({
-        userId: mockUserId,
-        walletId: mockWalletId,
-        destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD',
-        amount: '10',
-        tokenType: 'USDC',
-      }).catch(() => {
-        // Expected to fail in test due to mocked viem
-      });
+      await service
+        .sendToken({
+          userId: mockUserId,
+          walletId: mockWalletId,
+          destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD',
+          amount: '10',
+          tokenType: 'USDC',
+        })
+        .catch(() => {
+          // Expected to fail in test due to mocked viem
+        });
 
       // Verify getWallet was called with correct parameters
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(walletService.getWallet).toHaveBeenCalledWith(
         mockWalletId,
         mockUserId,
@@ -176,19 +185,22 @@ describe('AlchemyTransactionService', () => {
     it('should decrypt private key for signing', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'create')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
-      await service.sendToken({
-        userId: mockUserId,
-        walletId: mockWalletId,
-        destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD',
-        amount: '10',
-        tokenType: 'USDC',
-      }).catch(() => {
-        // Expected to fail in test due to mocked viem
-      });
+      await service
+        .sendToken({
+          userId: mockUserId,
+          walletId: mockWalletId,
+          destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD',
+          amount: '10',
+          tokenType: 'USDC',
+        })
+        .catch(() => {
+          // Expected to fail in test due to mocked viem
+        });
 
       // Verify private key was decrypted
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(walletService.getDecryptedPrivateKey).toHaveBeenCalledWith(
         mockWalletId,
         mockUserId,
@@ -198,18 +210,21 @@ describe('AlchemyTransactionService', () => {
     it('should create transaction record with PENDING state', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'create')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
-      await service.sendToken({
-        userId: mockUserId,
-        walletId: mockWalletId,
-        destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD',
-        amount: '10',
-        tokenType: 'USDC',
-      }).catch(() => {
-        // Expected to fail in test due to mocked viem
-      });
+      await service
+        .sendToken({
+          userId: mockUserId,
+          walletId: mockWalletId,
+          destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD',
+          amount: '10',
+          tokenType: 'USDC',
+        })
+        .catch(() => {
+          // Expected to fail in test due to mocked viem
+        });
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyTransaction.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId: mockUserId,
@@ -224,17 +239,19 @@ describe('AlchemyTransactionService', () => {
     it('should normalize destination address to lowercase', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'create')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
-      await service.sendToken({
-        userId: mockUserId,
-        walletId: mockWalletId,
-        destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD', // Uppercase
-        amount: '10',
-        tokenType: 'USDC',
-      }).catch(() => {
-        // Expected to fail
-      });
+      await service
+        .sendToken({
+          userId: mockUserId,
+          walletId: mockWalletId,
+          destinationAddress: '0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD', // Uppercase
+          amount: '10',
+          tokenType: 'USDC',
+        })
+        .catch(() => {
+          // Expected to fail
+        });
 
       const createCall = (prismaService.alchemyTransaction.create as jest.Mock)
         .mock.calls[0][0];
@@ -268,6 +285,7 @@ describe('AlchemyTransactionService', () => {
       expect(result.tokenAddress).toBe(mockNetworkConfig.usdcAddress);
 
       // Verify wallet ownership was checked
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(walletService.getWallet).toHaveBeenCalledWith(
         mockWalletId,
         mockUserId,
@@ -299,7 +317,7 @@ describe('AlchemyTransactionService', () => {
 
       jest
         .spyOn(prismaService.alchemyTransaction, 'findMany')
-        .mockResolvedValue(mockTxs);
+        .mockResolvedValue(mockTxs as any);
 
       const result = await service.getTransactionHistory({
         userId: mockUserId,
@@ -310,6 +328,7 @@ describe('AlchemyTransactionService', () => {
       expect(result[0].id).toBe(mockTransaction.id);
       expect(result[0].reference).toBe(mockTransaction.reference);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyTransaction.findMany).toHaveBeenCalledWith({
         where: { walletId: mockWalletId },
         orderBy: { createdAt: 'desc' },
@@ -330,6 +349,7 @@ describe('AlchemyTransactionService', () => {
         offset: 20,
       });
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyTransaction.findMany).toHaveBeenCalledWith({
         where: { walletId: mockWalletId },
         orderBy: { createdAt: 'desc' },
@@ -348,6 +368,7 @@ describe('AlchemyTransactionService', () => {
         walletId: mockWalletId,
       });
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(walletService.getWallet).toHaveBeenCalledWith(
         mockWalletId,
         mockUserId,
@@ -359,7 +380,7 @@ describe('AlchemyTransactionService', () => {
     it('should get transaction by reference', async () => {
       jest
         .spyOn(prismaService.alchemyTransaction, 'findUnique')
-        .mockResolvedValue(mockTransaction);
+        .mockResolvedValue(mockTransaction as any);
 
       const result = await service.getTransactionByReference(
         mockUserId,
@@ -381,10 +402,12 @@ describe('AlchemyTransactionService', () => {
     });
 
     it('should throw error if user does not own transaction', async () => {
-      jest.spyOn(prismaService.alchemyTransaction, 'findUnique').mockResolvedValue({
-        ...mockTransaction,
-        userId: 'different-user',
-      });
+      jest
+        .spyOn(prismaService.alchemyTransaction, 'findUnique')
+        .mockResolvedValue({
+          ...mockTransaction,
+          userId: 'different-user',
+        } as any);
 
       await expect(
         service.getTransactionByReference(mockUserId, 'ALY-12345-abc'),

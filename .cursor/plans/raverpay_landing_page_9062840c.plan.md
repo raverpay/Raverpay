@@ -61,7 +61,7 @@ todos:
     dependencies:
       - setup-shadcn
   - id: add-animations
-    content: "Implement Framer Motion animations: scroll-triggered fade-ins, counter animations, hover effects, and floating elements"
+    content: 'Implement Framer Motion animations: scroll-triggered fade-ins, counter animations, hover effects, and floating elements'
     status: completed
     dependencies:
       - create-hero-section
@@ -394,8 +394,6 @@ apps/raverpay-web/
 ├── postcss.config.mjs
 └── components.json
 ```
-
-
 
 ## Dependencies Summary
 

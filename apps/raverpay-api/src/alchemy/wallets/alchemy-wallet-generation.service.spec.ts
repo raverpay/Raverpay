@@ -89,12 +89,12 @@ describe('AlchemyWalletGenerationService', () => {
       // Mock: No existing wallet
       jest
         .spyOn(prismaService.alchemyWallet, 'findUnique')
-        .mockResolvedValue(null);
+        .mockResolvedValue(null as any);
 
       // Mock: Wallet creation succeeds
       jest
         .spyOn(prismaService.alchemyWallet, 'create')
-        .mockResolvedValue(mockWallet);
+        .mockResolvedValue(mockWallet as any);
 
       const result = await service.generateEOAWallet({
         userId: mockUserId,
@@ -115,12 +115,14 @@ describe('AlchemyWalletGenerationService', () => {
       expect(result).not.toHaveProperty('encryptedPrivateKey');
 
       // Verify encryption was called
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(encryptionService.encryptPrivateKey).toHaveBeenCalledWith(
         expect.any(String), // private key
         mockUserId,
       );
 
       // Verify wallet was created in database
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyWallet.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId: mockUserId,
@@ -138,12 +140,10 @@ describe('AlchemyWalletGenerationService', () => {
         .spyOn(prismaService.alchemyWallet, 'findUnique')
         .mockResolvedValue(null);
 
-      jest
-        .spyOn(prismaService.alchemyWallet, 'create')
-        .mockResolvedValue({
-          ...mockWallet,
-          name: 'My Custom Wallet',
-        });
+      jest.spyOn(prismaService.alchemyWallet, 'create').mockResolvedValue({
+        ...mockWallet,
+        name: 'My Custom Wallet',
+      } as any);
 
       const result = await service.generateEOAWallet({
         userId: mockUserId,
@@ -154,6 +154,7 @@ describe('AlchemyWalletGenerationService', () => {
 
       expect(result.name).toBe('My Custom Wallet');
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyWallet.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           name: 'My Custom Wallet',
@@ -177,7 +178,7 @@ describe('AlchemyWalletGenerationService', () => {
       // Mock: Existing wallet found
       jest
         .spyOn(prismaService.alchemyWallet, 'findUnique')
-        .mockResolvedValue(mockWallet);
+        .mockResolvedValue(mockWallet as any);
 
       await expect(
         service.generateEOAWallet({
@@ -195,10 +196,10 @@ describe('AlchemyWalletGenerationService', () => {
 
       jest
         .spyOn(prismaService.alchemyWallet, 'create')
-        .mockImplementation(async (args: any) => ({
+        .mockImplementation((async (args: any) => ({
           ...mockWallet,
           address: args.data.address,
-        }));
+        })) as any);
 
       await service.generateEOAWallet({
         userId: mockUserId,
@@ -219,7 +220,7 @@ describe('AlchemyWalletGenerationService', () => {
     it('should get wallet by ID', async () => {
       jest
         .spyOn(prismaService.alchemyWallet, 'findUnique')
-        .mockResolvedValue(mockWallet);
+        .mockResolvedValue(mockWallet as any);
 
       const result = await service.getWallet(mockWalletId, mockUserId);
 
@@ -234,7 +235,7 @@ describe('AlchemyWalletGenerationService', () => {
     it('should throw error if wallet not found', async () => {
       jest
         .spyOn(prismaService.alchemyWallet, 'findUnique')
-        .mockResolvedValue(null);
+        .mockResolvedValue(null as any);
 
       await expect(service.getWallet(mockWalletId, mockUserId)).rejects.toThrow(
         'Wallet not found',
@@ -245,11 +246,11 @@ describe('AlchemyWalletGenerationService', () => {
       jest.spyOn(prismaService.alchemyWallet, 'findUnique').mockResolvedValue({
         ...mockWallet,
         userId: 'different-user',
-      });
+      } as any);
 
-      await expect(
-        service.getWallet(mockWalletId, mockUserId),
-      ).rejects.toThrow('Access denied');
+      await expect(service.getWallet(mockWalletId, mockUserId)).rejects.toThrow(
+        'Access denied',
+      );
     });
   });
 
@@ -277,9 +278,7 @@ describe('AlchemyWalletGenerationService', () => {
     });
 
     it('should return empty array if user has no wallets', async () => {
-      jest
-        .spyOn(prismaService.alchemyWallet, 'findMany')
-        .mockResolvedValue([]);
+      jest.spyOn(prismaService.alchemyWallet, 'findMany').mockResolvedValue([]);
 
       const result = await service.getUserWallets(mockUserId);
 
@@ -333,6 +332,7 @@ describe('AlchemyWalletGenerationService', () => {
       expect(result).toBe(mockPrivateKey);
 
       // Verify decryption was called
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(encryptionService.decryptPrivateKey).toHaveBeenCalledWith(
         mockEncryptedKey,
         mockUserId,
@@ -391,6 +391,7 @@ describe('AlchemyWalletGenerationService', () => {
 
       expect(result.name).toBe('New Name');
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyWallet.update).toHaveBeenCalledWith({
         where: { id: mockWalletId },
         data: { name: 'New Name' },
@@ -413,6 +414,7 @@ describe('AlchemyWalletGenerationService', () => {
 
       expect(result.state).toBe(AlchemyWalletState.INACTIVE);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.alchemyWallet.update).toHaveBeenCalledWith({
         where: { id: mockWalletId },
         data: { state: AlchemyWalletState.INACTIVE },

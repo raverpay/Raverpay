@@ -25,6 +25,7 @@
 ## 🎯 **Overview**
 
 Complete Alchemy integration providing:
+
 - **Dual Wallet System**: EOA + Smart Contract Accounts
 - **Gas Sponsorship**: Free transactions for users via Alchemy Gas Manager
 - **Multi-Blockchain**: Polygon, Arbitrum, Base (testnets + mainnets)
@@ -37,6 +38,7 @@ Complete Alchemy integration providing:
 ## ✨ **Features**
 
 ### **Wallet Management**
+
 - ✅ EOA (Externally Owned Account) wallets
 - ✅ Smart Contract Account wallets (Account Abstraction)
 - ✅ Encrypted private key storage (AES-256-GCM)
@@ -45,6 +47,7 @@ Complete Alchemy integration providing:
 - ✅ Migration helper (upgrade EOA → Smart Account)
 
 ### **Transaction Services**
+
 - ✅ USDC/USDT token transfers
 - ✅ Real-time balance checking
 - ✅ Transaction history with pagination
@@ -53,6 +56,7 @@ Complete Alchemy integration providing:
 - ✅ Automatic transaction updates via webhooks
 
 ### **Security**
+
 - ✅ AES-256-GCM encryption
 - ✅ PBKDF2 key derivation (100k iterations)
 - ✅ HMAC-SHA256 webhook verification
@@ -61,6 +65,7 @@ Complete Alchemy integration providing:
 - ✅ Security alerts
 
 ### **Admin Features**
+
 - ✅ Platform-wide statistics
 - ✅ Gas spending analytics
 - ✅ User management
@@ -157,6 +162,7 @@ curl -X POST http://localhost:3000/api/alchemy/wallets \
 ### **Wallet Endpoints** (11 total)
 
 #### Create EOA Wallet
+
 ```http
 POST /api/alchemy/wallets
 Content-Type: application/json
@@ -169,6 +175,7 @@ Content-Type: application/json
 ```
 
 #### Create Smart Account
+
 ```http
 POST /api/alchemy/wallets/smart-account
 Content-Type: application/json
@@ -181,21 +188,25 @@ Content-Type: application/json
 ```
 
 #### List All Wallets
+
 ```http
 GET /api/alchemy/wallets
 ```
 
 #### Get Wallet by ID
+
 ```http
 GET /api/alchemy/wallets/:walletId
 ```
 
 #### Get Wallet by Network
+
 ```http
 GET /api/alchemy/wallets/by-network/:blockchain/:network
 ```
 
 #### Update Wallet Name
+
 ```http
 PATCH /api/alchemy/wallets/:walletId/name
 Content-Type: application/json
@@ -206,31 +217,37 @@ Content-Type: application/json
 ```
 
 #### Deactivate Wallet
+
 ```http
 DELETE /api/alchemy/wallets/:walletId
 ```
 
 #### Lock Wallet
+
 ```http
 POST /api/alchemy/wallets/:walletId/lock
 ```
 
 #### Mark Wallet Compromised
+
 ```http
 POST /api/alchemy/wallets/:walletId/compromised
 ```
 
 #### List Smart Accounts
+
 ```http
 GET /api/alchemy/wallets/smart-accounts
 ```
 
 #### Check Gas Sponsorship
+
 ```http
 GET /api/alchemy/wallets/:walletId/gas-sponsorship
 ```
 
 #### Upgrade to Smart Account
+
 ```http
 POST /api/alchemy/wallets/:walletId/upgrade-to-smart-account
 ```
@@ -240,6 +257,7 @@ POST /api/alchemy/wallets/:walletId/upgrade-to-smart-account
 ### **Transaction Endpoints** (4 total)
 
 #### Send Tokens (USDC/USDT)
+
 ```http
 POST /api/alchemy/transactions/send
 Content-Type: application/json
@@ -253,6 +271,7 @@ Content-Type: application/json
 ```
 
 #### Get Token Balance
+
 ```http
 POST /api/alchemy/transactions/balance
 Content-Type: application/json
@@ -264,11 +283,13 @@ Content-Type: application/json
 ```
 
 #### Get Transaction History
+
 ```http
 GET /api/alchemy/transactions/history/:walletId?limit=50&offset=0
 ```
 
 #### Get Transaction by Reference
+
 ```http
 GET /api/alchemy/transactions/reference/:reference
 ```
@@ -278,6 +299,7 @@ GET /api/alchemy/transactions/reference/:reference
 ### **Webhook Endpoints** (3 total)
 
 #### Receive Alchemy Webhooks
+
 ```http
 POST /alchemy/webhooks
 X-Alchemy-Signature: <hmac-signature>
@@ -291,11 +313,13 @@ Content-Type: application/json
 ```
 
 #### Get Webhook Stats
+
 ```http
 GET /alchemy/webhooks/stats
 ```
 
 #### Health Check
+
 ```http
 GET /alchemy/webhooks/health
 ```
@@ -307,36 +331,43 @@ GET /alchemy/webhooks/health
 ⚠️ **Require Admin Authentication**
 
 #### Platform Statistics
+
 ```http
 GET /api/alchemy/admin/stats/platform
 ```
 
 #### Gas Analytics
+
 ```http
 GET /api/alchemy/admin/stats/gas?startDate=2026-01-01&blockchain=BASE
 ```
 
 #### Recent Transactions
+
 ```http
 GET /api/alchemy/admin/transactions?limit=50&offset=0&state=COMPLETED
 ```
 
 #### User Overview
+
 ```http
 GET /api/alchemy/admin/users/:userId
 ```
 
 #### Network Statistics
+
 ```http
 GET /api/alchemy/admin/stats/networks
 ```
 
 #### Security Alerts
+
 ```http
 GET /api/alchemy/admin/security/alerts?limit=50&daysBack=7
 ```
 
 #### System Health
+
 ```http
 GET /api/alchemy/admin/health
 ```
@@ -371,7 +402,7 @@ ALCHEMY_WEBHOOK_SIGNING_SECRET="your-webhook-signing-secret"
 
 # Optional - Production (when ready)
 ALCHEMY_PROD_BASE_MAINNET_RPC="https://base-mainnet.g.alchemy.com/v2/YOUR_KEY"
-ALCHEMY_PROD_POLYGON_MAINNET_RPC="https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY"  
+ALCHEMY_PROD_POLYGON_MAINNET_RPC="https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY"
 ALCHEMY_PROD_ARBITRUM_MAINNET_RPC="https://arb-mainnet.g.alchemy.com/v2/YOUR_KEY"
 ALCHEMY_PROD_GAS_POLICY_ID="your-prod-gas-policy-id"
 ```
@@ -398,12 +429,13 @@ psql $DATABASE_URL < apps/raverpay-api/prisma/migrations/alchemy_integration.sql
 ### **2. Verify Tables**
 
 ```sql
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = 'public' 
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public'
 AND table_name LIKE 'Alchemy%';
 ```
 
 Expected tables:
+
 - `AlchemyWallet`
 - `AlchemyTransaction`
 - `AlchemyUserOperation`
@@ -429,6 +461,7 @@ pnpm test alchemy-webhook.service.spec.ts
 ### **Manual API Testing**
 
 #### 1. Create a Wallet
+
 ```bash
 curl -X POST http://localhost:3000/api/alchemy/wallets \
   -H "Content-Type: application/json" \
@@ -436,6 +469,7 @@ curl -X POST http://localhost:3000/api/alchemy/wallets \
 ```
 
 #### 2. Check Balance (requires testnet USDC)
+
 ```bash
 curl -X POST http://localhost:3000/api/alchemy/transactions/balance \
   -H "Content-Type: application/json" \
@@ -443,6 +477,7 @@ curl -X POST http://localhost:3000/api/alchemy/transactions/balance \
 ```
 
 #### 3. Send USDC (requires testnet USDC)
+
 ```bash
 curl -X POST http://localhost:3000/api/alchemy/transactions/send \
   -H "Content-Type: application/json" \
@@ -518,6 +553,7 @@ pnpm start:prod
 ## 🔐 **Security**
 
 ### **Encryption**
+
 - **Algorithm**: AES-256-GCM (authenticated encryption)
 - **Key Derivation**: PBKDF2 with 100,000 iterations
 - **Salt**: User-specific (`alchemy:{userId}`)
@@ -525,11 +561,13 @@ pnpm start:prod
 - **Auth Tag**: 16 bytes for tamper detection
 
 ### **Webhook Security**
+
 - **Signature Verification**: HMAC-SHA256
 - **Timing-Safe Comparison**: Prevents timing attacks
 - **Replay Protection**: Idempotent processing
 
 ### **Best Practices**
+
 1. **Never log private keys**
 2. **Audit all key access** (logs in place)
 3. **Rotate master key** periodically
@@ -544,16 +582,19 @@ pnpm start:prod
 ## 📊 **Monitoring**
 
 ### **Health Check Endpoint**
+
 ```http
 GET /api/alchemy/admin/health
 ```
 
 **Status Indicators**:
+
 - `healthy`: All systems normal
 - `warning`: Performance degradation
 - `critical`: Immediate attention required
 
 ### **Key Metrics to Monitor**:
+
 1. Transaction success rate (should be > 95%)
 2. Pending transaction count (should be < 100)
 3. Failed transactions last 24h (should be < 50)
@@ -575,6 +616,7 @@ GET /api/alchemy/admin/health
 ## 🎉 **Summary**
 
 **You now have a production-ready Alchemy integration with**:
+
 - ✅ 26 REST API endpoints
 - ✅ 10 services
 - ✅ 4 controllers

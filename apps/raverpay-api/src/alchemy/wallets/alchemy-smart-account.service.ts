@@ -80,7 +80,7 @@ export class AlchemySmartAccountService {
 
     // 4. Generate owner key (this controls the smart account)
     const ownerPrivateKey = generatePrivateKey();
-    const ownerAccount = privateKeyToAccount(ownerPrivateKey as `0x${string}`);
+    const ownerAccount = privateKeyToAccount(ownerPrivateKey);
 
     this.logger.debug(
       `Generated owner account: ${ownerAccount.address} for user ${userId}`,
@@ -168,7 +168,7 @@ export class AlchemySmartAccountService {
     }
 
     if (wallet.accountType !== AlchemyAccountType.SMART_CONTRACT) {
-      throw new Error('This wallet is not a Smart Account (it\'s an EOA)');
+      throw new Error("This wallet is not a Smart Account (it's an EOA)");
     }
 
     return {

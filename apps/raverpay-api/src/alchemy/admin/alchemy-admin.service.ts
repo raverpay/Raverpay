@@ -85,16 +85,15 @@ export class AlchemyAdminService {
         total: totalTransactions,
         completed: completedTransactions,
         failed: failedTransactions,
-        pending:
-          totalTransactions - completedTransactions - failedTransactions,
+        pending: totalTransactions - completedTransactions - failedTransactions,
         successRate: `${successRate}%`,
       },
       users: {
         total: totalUsers.length,
         withWallets: totalUsers.length,
-        averageWalletsPerUser: (totalWallets / (totalUsers.length || 1)).toFixed(
-          2,
-        ),
+        averageWalletsPerUser: (
+          totalWallets / (totalUsers.length || 1)
+        ).toFixed(2),
       },
     };
   }
@@ -284,8 +283,9 @@ export class AlchemyAdminService {
       })),
       summary: {
         totalWallets: wallets.length,
-        eoaWallets: wallets.filter((w) => w.accountType === AlchemyAccountType.EOA)
-          .length,
+        eoaWallets: wallets.filter(
+          (w) => w.accountType === AlchemyAccountType.EOA,
+        ).length,
         smartAccounts: wallets.filter(
           (w) => w.accountType === AlchemyAccountType.SMART_CONTRACT,
         ).length,
@@ -406,7 +406,8 @@ export class AlchemyAdminService {
         blockchain: w.blockchain,
         network: w.network,
         updatedAt: w.updatedAt,
-        severity: w.state === AlchemyWalletState.COMPROMISED ? 'HIGH' : 'MEDIUM',
+        severity:
+          w.state === AlchemyWalletState.COMPROMISED ? 'HIGH' : 'MEDIUM',
       })),
       failedTransactions: failedTransactions.map((tx) => ({
         id: tx.id,
@@ -424,8 +425,7 @@ export class AlchemyAdminService {
           (w) => w.state === AlchemyWalletState.LOCKED,
         ).length,
         failedTransactions: failedTransactions.length,
-        totalAlerts:
-          compromisedWallets.length + failedTransactions.length,
+        totalAlerts: compromisedWallets.length + failedTransactions.length,
       },
     };
   }

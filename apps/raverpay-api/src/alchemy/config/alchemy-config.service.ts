@@ -121,15 +121,12 @@ export class AlchemyConfigService {
    * @param network - Network name
    * @returns Network configuration object
    */
-  getNetworkConfig(
-    blockchain: string,
-    network: string,
-  ): AlchemyNetworkConfig {
+  getNetworkConfig(blockchain: string, network: string): AlchemyNetworkConfig {
     // DEBUG: Log inputs
     this.logger.log(
       `getNetworkConfig called with blockchain='${blockchain}', network='${network}'`,
     );
-    
+
     const key = `${blockchain}-${network}`;
     this.logger.log(`Built key: '${key}'`);
 
