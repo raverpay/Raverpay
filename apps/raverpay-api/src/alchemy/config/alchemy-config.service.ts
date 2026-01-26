@@ -125,15 +125,20 @@ export class AlchemyConfigService {
     blockchain: string,
     network: string,
   ): AlchemyNetworkConfig {
+    // DEBUG: Log inputs
+    this.logger.log(
+      `getNetworkConfig called with blockchain='${blockchain}', network='${network}'`,
+    );
+    
     const key = `${blockchain}-${network}`;
+    this.logger.log(`Built key: '${key}'`);
 
-    // Network configurations
-    const configs: Record<string, AlchemyNetworkConfig> = {
+    // Network configurations (WITHOUT rpcUrl to avoid eager evaluation)
+    const configs: Record<string, Omit<AlchemyNetworkConfig, 'rpcUrl'>> = {
       // ============================================
       // PRODUCTION NETWORKS
       // ============================================
       'POLYGON-mainnet': {
-        rpcUrl: this.getRpcUrl('POLYGON', 'mainnet'),
         blockchain: 'POLYGON',
         network: 'mainnet',
         chainId: 137,
@@ -144,7 +149,6 @@ export class AlchemyConfigService {
         blockExplorerUrl: 'https://polygonscan.com',
       },
       'ARBITRUM-mainnet': {
-        rpcUrl: this.getRpcUrl('ARBITRUM', 'mainnet'),
         blockchain: 'ARBITRUM',
         network: 'mainnet',
         chainId: 42161,
@@ -155,7 +159,6 @@ export class AlchemyConfigService {
         blockExplorerUrl: 'https://arbiscan.io',
       },
       'BASE-mainnet': {
-        rpcUrl: this.getRpcUrl('BASE', 'mainnet'),
         blockchain: 'BASE',
         network: 'mainnet',
         chainId: 8453,
@@ -169,7 +172,6 @@ export class AlchemyConfigService {
       // TESTNET NETWORKS
       // ============================================
       'BASE-sepolia': {
-        rpcUrl: this.getRpcUrl('BASE', 'sepolia'),
         blockchain: 'BASE',
         network: 'sepolia',
         chainId: 84532,
@@ -179,7 +181,6 @@ export class AlchemyConfigService {
         blockExplorerUrl: 'https://sepolia.basescan.org',
       },
       'POLYGON-amoy': {
-        rpcUrl: this.getRpcUrl('POLYGON', 'amoy'),
         blockchain: 'POLYGON',
         network: 'amoy',
         chainId: 80002,
@@ -189,7 +190,6 @@ export class AlchemyConfigService {
         blockExplorerUrl: 'https://amoy.polygonscan.com',
       },
       'ARBITRUM-sepolia': {
-        rpcUrl: this.getRpcUrl('ARBITRUM', 'sepolia'),
         blockchain: 'ARBITRUM',
         network: 'sepolia',
         chainId: 421614,
@@ -200,16 +200,24 @@ export class AlchemyConfigService {
       },
     };
 
-    const config = configs[key];
+    const configBase = configs[key];
 
-    if (!config) {
+    if (!configBase) {
       this.logger.error(`Network config not found for ${key}`);
+      this.logger.error(`Available keys: ${Object.keys(configs).join(', ')}`);
       throw new Error(
         `Network configuration not found for ${blockchain}-${network}`,
       );
     }
 
-    return config;
+    // NOW get the RPC URL (lazy evaluation - only for the selected network)
+    const rpcUrl = this.getRpcUrl(blockchain, network);
+
+    // Return complete config with rpcUrl
+    return {
+      ...configBase,
+      rpcUrl,
+    };
   }
 
   /**

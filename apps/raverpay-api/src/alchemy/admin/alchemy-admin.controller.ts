@@ -29,7 +29,7 @@ import { AlchemyTransactionState } from '@prisma/client';
  * Uncomment @UseGuards(AdminAuthGuard) in production
  */
 @ApiTags('Alchemy Admin')
-@Controller('api/alchemy/admin')
+@Controller('alchemy/admin')
 // @UseGuards(AdminAuthGuard) // Uncomment in production!
 @ApiBearerAuth()
 export class AlchemyAdminController {

@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { AlchemyTransactionService } from '../transactions/alchemy-transaction.service';
 import { SendTokenDto, GetBalanceDto } from './dto/alchemy.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 /**
  * Alchemy Transaction Controller
@@ -31,8 +32,8 @@ import { SendTokenDto, GetBalanceDto } from './dto/alchemy.dto';
  * All endpoints require authentication
  */
 @ApiTags('Alchemy Transactions')
-@Controller('api/alchemy/transactions')
-// @UseGuards(JwtAuthGuard) // Uncomment when ready to add auth
+@Controller('alchemy/transactions')
+@UseGuards(JwtAuthGuard) // Authentication enabled
 @ApiBearerAuth()
 export class AlchemyTransactionController {
   private readonly logger = new Logger(AlchemyTransactionController.name);
@@ -70,7 +71,7 @@ export class AlchemyTransactionController {
   @ApiResponse({ status: 403, description: 'Access denied' })
   async sendToken(@Body() dto: SendTokenDto, @Request() req: any) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const transaction = await this.transactionService.sendToken({
         userId,
@@ -126,7 +127,7 @@ export class AlchemyTransactionController {
   @ApiResponse({ status: 403, description: 'Access denied' })
   async getBalance(@Body() dto: GetBalanceDto, @Request() req: any) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const balance = await this.transactionService.getTokenBalance({
         userId,
@@ -199,7 +200,7 @@ export class AlchemyTransactionController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const transactions =
         await this.transactionService.getTransactionHistory({
@@ -245,7 +246,7 @@ export class AlchemyTransactionController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const transaction =
         await this.transactionService.getTransactionByReference(

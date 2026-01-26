@@ -23,6 +23,7 @@ import {
 import { AlchemyWalletGenerationService } from '../wallets/alchemy-wallet-generation.service';
 import { AlchemySmartAccountService } from '../wallets/alchemy-smart-account.service';
 import { CreateWalletDto, UpdateWalletNameDto } from './dto/alchemy.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 /**
  * Alchemy Wallet Controller
@@ -31,8 +32,8 @@ import { CreateWalletDto, UpdateWalletNameDto } from './dto/alchemy.dto';
  * All endpoints require authentication
  */
 @ApiTags('Alchemy Wallets')
-@Controller('api/alchemy/wallets')
-// @UseGuards(JwtAuthGuard) // Uncomment when ready to add auth
+@Controller('alchemy/wallets')
+@UseGuards(JwtAuthGuard) // Authentication enabled
 @ApiBearerAuth()
 export class AlchemyWalletController {
   private readonly logger = new Logger(AlchemyWalletController.name);
@@ -73,7 +74,7 @@ export class AlchemyWalletController {
     try {
       // In production, get userId from JWT token
       // For now, using a mock userId
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.generateEOAWallet({
         userId,
@@ -126,7 +127,7 @@ export class AlchemyWalletController {
   })
   async getWallets(@Request() req: any) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallets = await this.walletService.getUserWallets(userId);
 
@@ -155,7 +156,7 @@ export class AlchemyWalletController {
   @ApiResponse({ status: 403, description: 'Access denied' })
   async getWallet(@Param('walletId') walletId: string, @Request() req: any) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.getWallet(walletId, userId);
 
@@ -187,7 +188,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.getWalletByNetwork(
         userId,
@@ -232,7 +233,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.updateWalletName(
         walletId,
@@ -271,7 +272,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.deactivateWallet(
         walletId,
@@ -306,7 +307,7 @@ export class AlchemyWalletController {
   })
   async lockWallet(@Param('walletId') walletId: string, @Request() req: any) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.lockWallet(walletId, userId);
 
@@ -338,7 +339,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const wallet = await this.walletService.markWalletCompromised(
         walletId,
@@ -406,7 +407,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const smartAccount = await this.smartAccountService.createSmartAccount({
         userId,
@@ -444,7 +445,7 @@ export class AlchemyWalletController {
   })
   async getSmartAccounts(@Request() req: any) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const accounts = await this.smartAccountService.getUserSmartAccounts(
         userId,
@@ -492,7 +493,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const status = await this.smartAccountService.checkGasSponsorship(
         walletId,
@@ -531,7 +532,7 @@ export class AlchemyWalletController {
     @Request() req: any,
   ) {
     try {
-      const userId = req.user?.userId || 'mock-user-id';
+      const userId = req.user?.id || 'mock-user-id';
 
       const result = await this.smartAccountService.upgradeToSmartAccount(
         walletId,

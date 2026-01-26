@@ -254,6 +254,11 @@ export class AlchemyTransactionService {
     // 1. Get wallet and verify ownership
     const wallet = await this.walletService.getWallet(walletId, userId);
 
+    // DEBUG: Log wallet details
+    this.logger.debug(
+      `Getting balance for wallet: ${walletId}, blockchain: ${wallet.blockchain}, network: ${wallet.network}`,
+    );
+
     // 2. Get network configuration
     const networkConfig = this.configService.getNetworkConfig(
       wallet.blockchain,
@@ -405,3 +410,4 @@ export class AlchemyTransactionService {
     } as const;
   }
 }
+
