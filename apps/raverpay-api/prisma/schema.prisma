@@ -1923,6 +1923,7 @@ model AlchemyWallet {
   userId                String
   address               String                 @unique
   encryptedPrivateKey   String                 // AES-256-GCM encrypted private key
+  encryptedMnemonic     String?                // AES-256-GCM encrypted BIP-39 mnemonic (12 words) - nullable for existing wallets
   blockchain            String                 // POLYGON, ARBITRUM, BASE
   network               String                 // mainnet, testnet
   accountType           AlchemyAccountType     @default(SMART_CONTRACT)

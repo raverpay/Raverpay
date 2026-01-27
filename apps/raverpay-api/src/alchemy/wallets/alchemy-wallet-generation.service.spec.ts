@@ -24,6 +24,7 @@ describe('AlchemyWalletGenerationService', () => {
     userId: mockUserId,
     address: mockAddress,
     encryptedPrivateKey: mockEncryptedKey,
+    encryptedMnemonic: null, // Required field in Prisma schema
     blockchain: 'BASE',
     network: 'sepolia',
     accountType: AlchemyAccountType.EOA,

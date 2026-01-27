@@ -4,58 +4,58 @@ overview: Complete all critical backend APIs for Alchemy EOA wallet mobile app i
 todos:
   - id: db-schema
     content: Add encryptedMnemonic field to AlchemyWallet model in Prisma schema
-    status: pending
+    status: completed
   - id: migration
     content: Create and run database migration for encryptedMnemonic field
-    status: pending
+    status: completed
   - id: mnemonic-encryption
     content: Add encryptMnemonic and decryptMnemonic methods to AlchemyKeyEncryptionService
-    status: pending
+    status: completed
   - id: seed-generation
     content: Modify generateEOAWallet to generate and store BIP-39 mnemonic
-    status: pending
+    status: completed
   - id: export-dto
     content: Create ExportSeedPhraseDto with PIN field
-    status: pending
+    status: completed
   - id: export-service
     content: Add exportSeedPhrase method to AlchemyWalletGenerationService
-    status: pending
+    status: completed
   - id: export-endpoint
     content: Add POST /alchemy/wallets/:walletId/export-seed endpoint with PIN verification
-    status: pending
+    status: completed
   - id: import-dto
     content: Create ImportWalletDto supporting seed phrase and private key methods
-    status: pending
+    status: completed
   - id: import-service
     content: Add importWallet method with seed phrase and private key validation
-    status: pending
+    status: completed
   - id: import-endpoint
     content: Add POST /alchemy/wallets/import endpoint
-    status: pending
+    status: completed
   - id: native-balance-service
     content: Add getNativeTokenBalance method to AlchemyTransactionService
-    status: pending
+    status: completed
   - id: native-balance-endpoint
     content: Add GET /alchemy/transactions/balance/native/:walletId endpoint
-    status: pending
+    status: completed
   - id: send-native-dto
     content: Create SendNativeTokenDto
-    status: pending
+    status: completed
   - id: send-native-service
     content: Add sendNativeToken method to AlchemyTransactionService
-    status: pending
+    status: completed
   - id: send-native-endpoint
     content: Add POST /alchemy/transactions/send-native endpoint
-    status: pending
+    status: completed
   - id: gas-price-service
     content: Add getGasPrice method to AlchemyTransactionService
-    status: pending
+    status: completed
   - id: gas-price-endpoint
     content: Add GET /alchemy/transactions/gas-price/:blockchain/:network endpoint
-    status: pending
+    status: completed
   - id: update-wallet-response
     content: Update getWallet to include hasSeedPhrase boolean flag
-    status: pending
+    status: completed
   - id: unit-tests
     content: Write unit tests for all new functionality
     status: pending

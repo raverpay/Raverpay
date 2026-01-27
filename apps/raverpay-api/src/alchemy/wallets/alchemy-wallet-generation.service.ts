@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import {
+  generatePrivateKey,
+  privateKeyToAccount,
+  generateMnemonic,
+  mnemonicToAccount,
+  english,
+} from 'viem/accounts';
 import { AlchemyKeyEncryptionService } from '../encryption/alchemy-key-encryption.service';
 import { AlchemyConfigService } from '../config/alchemy-config.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -82,20 +88,33 @@ export class AlchemyWalletGenerationService {
       );
     }
 
-    // 3. Generate random private key using viem
-    const privateKey = generatePrivateKey();
+    // 3. Generate BIP-39 mnemonic (12-word seed phrase)
+    const mnemonic = generateMnemonic(english);
 
-    // 4. Derive Ethereum address from private key
-    const account = privateKeyToAccount(privateKey);
+    // 4. Derive account from mnemonic
+    const account = mnemonicToAccount(mnemonic);
     const address = account.address;
+
+    // 5. Extract private key from HD key
+    const hdKey = account.getHdKey();
+    const privateKeyBuffer = hdKey.privateKey;
+    if (!privateKeyBuffer) {
+      throw new Error('Failed to derive private key from mnemonic');
+    }
+    const privateKey = `0x${Buffer.from(privateKeyBuffer).toString('hex')}`;
 
     this.logger.debug(
       `Generated EOA with address: ${address} for user ${userId}`,
     );
 
-    // 5. Encrypt private key before storing
+    // 5. Encrypt private key and mnemonic before storing
     const encryptedPrivateKey = this.encryptionService.encryptPrivateKey(
       privateKey,
+      userId,
+    );
+
+    const encryptedMnemonic = this.encryptionService.encryptMnemonic(
+      mnemonic,
       userId,
     );
 
@@ -105,6 +124,7 @@ export class AlchemyWalletGenerationService {
         userId,
         address: address.toLowerCase(), // Normalize to lowercase
         encryptedPrivateKey,
+        encryptedMnemonic,
         blockchain,
         network,
         accountType: AlchemyAccountType.EOA,
@@ -118,7 +138,7 @@ export class AlchemyWalletGenerationService {
       `Created Alchemy EOA wallet ${wallet.id} for user ${userId}`,
     );
 
-    // 7. Return wallet info (WITHOUT private key!)
+    // 7. Return wallet info (WITHOUT private key or mnemonic!)
     return {
       id: wallet.id,
       address: wallet.address,
@@ -127,6 +147,7 @@ export class AlchemyWalletGenerationService {
       accountType: wallet.accountType,
       name: wallet.name,
       isGasSponsored: wallet.isGasSponsored,
+      hasSeedPhrase: true, // Always true for newly created wallets
       createdAt: wallet.createdAt,
     };
   }
@@ -180,7 +201,7 @@ export class AlchemyWalletGenerationService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Return without private keys
+    // Return without private keys or mnemonics (security)
     return wallets.map((wallet) => ({
       id: wallet.id,
       address: wallet.address,
@@ -190,6 +211,7 @@ export class AlchemyWalletGenerationService {
       state: wallet.state,
       name: wallet.name,
       isGasSponsored: wallet.isGasSponsored,
+      hasSeedPhrase: !!wallet.encryptedMnemonic, // Boolean flag only
       createdAt: wallet.createdAt,
       updatedAt: wallet.updatedAt,
     }));
@@ -221,7 +243,7 @@ export class AlchemyWalletGenerationService {
       return null;
     }
 
-    // Return without private key
+    // Return without private key or mnemonic (security)
     return {
       id: wallet.id,
       address: wallet.address,
@@ -231,8 +253,206 @@ export class AlchemyWalletGenerationService {
       state: wallet.state,
       name: wallet.name,
       isGasSponsored: wallet.isGasSponsored,
+      hasSeedPhrase: !!wallet.encryptedMnemonic, // Boolean flag only
       createdAt: wallet.createdAt,
       updatedAt: wallet.updatedAt,
+    };
+  }
+
+  /**
+   * Export seed phrase (requires PIN verification in controller)
+   * @param walletId - Wallet ID
+   * @param userId - User ID (for ownership verification)
+   * @returns Decrypted mnemonic (12-word phrase)
+   */
+  async exportSeedPhrase(walletId: string, userId: string): Promise<string> {
+    // 1. Verify wallet ownership (use existing getWallet method)
+    const wallet = await this.prisma.alchemyWallet.findUnique({
+      where: { id: walletId },
+    });
+
+    if (!wallet) {
+      throw new Error('Wallet not found');
+    }
+
+    // Verify ownership
+    if (wallet.userId !== userId) {
+      this.logger.warn(
+        `Access denied: User ${userId} attempted to export seed phrase for wallet ${walletId} owned by ${wallet.userId}`,
+      );
+      throw new Error('Access denied: You do not own this wallet');
+    }
+
+    // 2. Check wallet type (EOA only)
+    if (wallet.accountType !== AlchemyAccountType.EOA) {
+      throw new Error('Seed phrase export only available for EOA wallets');
+    }
+
+    // 3. Check if mnemonic exists
+    if (!wallet.encryptedMnemonic) {
+      throw new Error('Seed phrase not available for this wallet');
+    }
+
+    // 4. Decrypt mnemonic
+    const mnemonic = this.encryptionService.decryptMnemonic(
+      wallet.encryptedMnemonic,
+      userId,
+    );
+
+    // 5. Audit log (security event)
+    this.logger.warn(
+      `⚠️ SEED PHRASE EXPORT: User ${userId} exported seed phrase for wallet ${walletId}`,
+    );
+
+    return mnemonic;
+  }
+
+  /**
+   * Import existing wallet via seed phrase or private key
+   * @param params - Import parameters
+   * @returns Created wallet info (without private key or mnemonic)
+   */
+  async importWallet(params: {
+    userId: string;
+    method: 'SEED_PHRASE' | 'PRIVATE_KEY';
+    seedPhrase?: string;
+    privateKey?: string;
+    blockchain: string;
+    network: string;
+    name?: string;
+  }) {
+    const {
+      userId,
+      method,
+      seedPhrase,
+      privateKey,
+      blockchain,
+      network,
+      name,
+    } = params;
+
+    this.logger.log(
+      `Importing wallet for user ${userId} via ${method} on ${blockchain}-${network}`,
+    );
+
+    // 1. Validate network
+    if (!this.configService.isValidNetwork(blockchain, network)) {
+      throw new Error(`Invalid network: ${blockchain}-${network}`);
+    }
+
+    // 2. Check for existing wallet
+    const existingWallet = await this.prisma.alchemyWallet.findUnique({
+      where: {
+        userId_blockchain_network: { userId, blockchain, network },
+      },
+    });
+
+    if (existingWallet) {
+      throw new Error(
+        `Wallet already exists on ${blockchain}-${network}. Wallet ID: ${existingWallet.id}`,
+      );
+    }
+
+    let derivedPrivateKey: string;
+    let derivedMnemonic: string | undefined;
+    let address: string;
+
+    // 3. Derive private key and address based on method
+    if (method === 'SEED_PHRASE') {
+      if (!seedPhrase) {
+        throw new Error('Seed phrase is required');
+      }
+
+      // Validate seed phrase format (12 words)
+      const words = seedPhrase.trim().split(/\s+/);
+      if (words.length !== 12) {
+        throw new Error('Seed phrase must be 12 words');
+      }
+
+      // Validate mnemonic by attempting to derive account
+      // mnemonicToAccount will throw if mnemonic is invalid
+      let account;
+      try {
+        account = mnemonicToAccount(seedPhrase);
+      } catch (error) {
+        throw new Error(
+          'Invalid seed phrase. Please check your words and try again.',
+        );
+      }
+      address = account.address;
+
+      // Extract private key from HD key
+      const hdKey = account.getHdKey();
+      const privateKeyBuffer = hdKey.privateKey;
+      if (!privateKeyBuffer) {
+        throw new Error('Failed to derive private key from seed phrase');
+      }
+      derivedPrivateKey = `0x${Buffer.from(privateKeyBuffer).toString('hex')}`;
+      derivedMnemonic = seedPhrase; // Store original mnemonic
+    } else {
+      // PRIVATE_KEY method
+      if (!privateKey) {
+        throw new Error('Private key is required');
+      }
+
+      // Validate private key format
+      if (!privateKey.match(/^0x[a-fA-F0-9]{64}$/)) {
+        throw new Error('Invalid private key format');
+      }
+
+      const account = privateKeyToAccount(privateKey as `0x${string}`);
+      address = account.address;
+      derivedPrivateKey = privateKey;
+      // No mnemonic for private key imports
+    }
+
+    // 4. Check if address already exists (different user)
+    const existingAddress = await this.prisma.alchemyWallet.findUnique({
+      where: { address: address.toLowerCase() },
+    });
+
+    if (existingAddress) {
+      throw new Error('Wallet address already exists in system');
+    }
+
+    // 5. Encrypt private key and mnemonic
+    const encryptedPrivateKey = this.encryptionService.encryptPrivateKey(
+      derivedPrivateKey,
+      userId,
+    );
+
+    const encryptedMnemonic = derivedMnemonic
+      ? this.encryptionService.encryptMnemonic(derivedMnemonic, userId)
+      : null;
+
+    // 6. Create wallet
+    const wallet = await this.prisma.alchemyWallet.create({
+      data: {
+        userId,
+        address: address.toLowerCase(),
+        encryptedPrivateKey,
+        encryptedMnemonic,
+        blockchain,
+        network,
+        accountType: AlchemyAccountType.EOA,
+        state: AlchemyWalletState.ACTIVE,
+        name: name || `Imported ${blockchain} ${network} Wallet`,
+        isGasSponsored: false,
+      },
+    });
+
+    this.logger.log(`Imported wallet ${wallet.id} for user ${userId}`);
+
+    return {
+      id: wallet.id,
+      address: wallet.address,
+      blockchain: wallet.blockchain,
+      network: wallet.network,
+      accountType: wallet.accountType,
+      name: wallet.name,
+      isGasSponsored: wallet.isGasSponsored,
+      hasSeedPhrase: !!wallet.encryptedMnemonic,
+      createdAt: wallet.createdAt,
     };
   }
 
@@ -323,6 +543,7 @@ export class AlchemyWalletGenerationService {
       state: updated.state,
       name: updated.name,
       isGasSponsored: updated.isGasSponsored,
+      hasSeedPhrase: !!updated.encryptedMnemonic, // Boolean flag only
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     };

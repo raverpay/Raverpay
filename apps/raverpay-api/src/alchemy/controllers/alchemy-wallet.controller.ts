@@ -22,8 +22,14 @@ import {
 } from '@nestjs/swagger';
 import { AlchemyWalletGenerationService } from '../wallets/alchemy-wallet-generation.service';
 import { AlchemySmartAccountService } from '../wallets/alchemy-smart-account.service';
-import { CreateWalletDto, UpdateWalletNameDto } from './dto/alchemy.dto';
+import {
+  CreateWalletDto,
+  UpdateWalletNameDto,
+  ExportSeedPhraseDto,
+  ImportWalletDto,
+} from './dto/alchemy.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { UsersService } from '../../users/users.service';
 
 /**
  * Alchemy Wallet Controller
@@ -41,6 +47,7 @@ export class AlchemyWalletController {
   constructor(
     private readonly walletService: AlchemyWalletGenerationService,
     private readonly smartAccountService: AlchemySmartAccountService,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -549,6 +556,130 @@ export class AlchemyWalletController {
     } catch (error) {
       this.logger.error(
         `Error upgrading to Smart Account: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Export seed phrase (requires PIN verification)
+   */
+  @Post(':walletId/export-seed')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Export seed phrase (requires PIN verification)' })
+  @ApiParam({ name: 'walletId', description: 'Wallet ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Seed phrase exported successfully',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          mnemonic: 'word1 word2 word3 ... word12',
+          warning:
+            'Never share your seed phrase. Anyone with these words can access your wallet.',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 403, description: 'PIN verification failed' })
+  @ApiResponse({ status: 404, description: 'Wallet not found' })
+  async exportSeedPhrase(
+    @Param('walletId') walletId: string,
+    @Body() dto: ExportSeedPhraseDto,
+    @Request() req: any,
+  ) {
+    try {
+      const userId = req.user?.id || 'mock-user-id';
+
+      // 1. Verify PIN
+      await this.usersService.verifyPin(userId, dto.pin);
+
+      // 2. Export seed phrase
+      const mnemonic = await this.walletService.exportSeedPhrase(
+        walletId,
+        userId,
+      );
+
+      this.logger.log(
+        `User ${userId} exported seed phrase for wallet ${walletId}`,
+      );
+
+      return {
+        success: true,
+        data: {
+          mnemonic, // 12-word phrase
+          warning:
+            'Never share your seed phrase. Anyone with these words can access your wallet.',
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error exporting seed phrase: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Import existing wallet via seed phrase or private key
+   */
+  @Post('import')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Import existing wallet via seed phrase or private key',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Wallet imported successfully',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'wallet-imported-123',
+          address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+          blockchain: 'BASE',
+          network: 'sepolia',
+          accountType: 'EOA',
+          name: 'Imported Base sepolia Wallet',
+          isGasSponsored: false,
+          hasSeedPhrase: true,
+          createdAt: '2026-01-27T12:00:00.000Z',
+        },
+        message: 'Wallet imported successfully',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request' })
+  @ApiResponse({ status: 409, description: 'Wallet already exists' })
+  async importWallet(@Body() dto: ImportWalletDto, @Request() req: any) {
+    try {
+      const userId = req.user?.id || 'mock-user-id';
+
+      const wallet = await this.walletService.importWallet({
+        userId,
+        method: dto.method,
+        seedPhrase: dto.seedPhrase,
+        privateKey: dto.privateKey,
+        blockchain: dto.blockchain,
+        network: dto.network,
+        name: dto.name,
+      });
+
+      this.logger.log(
+        `User ${userId} imported wallet ${wallet.id} via ${dto.method}`,
+      );
+
+      return {
+        success: true,
+        data: wallet,
+        message: 'Wallet imported successfully',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error importing wallet: ${error.message}`,
         error.stack,
       );
       throw error;

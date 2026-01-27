@@ -394,6 +394,250 @@ export class AlchemyTransactionService {
   }
 
   /**
+   * Get native token balance for a wallet (ETH/MATIC/ARB)
+   *
+   * @param params - Balance query parameters
+   * @returns Native token balance
+   */
+  async getNativeTokenBalance(params: { userId: string; walletId: string }) {
+    const { userId, walletId } = params;
+
+    // 1. Get wallet and verify ownership
+    const wallet = await this.walletService.getWallet(walletId, userId);
+
+    // 2. Get network configuration
+    const networkConfig = this.configService.getNetworkConfig(
+      wallet.blockchain,
+      wallet.network,
+    );
+
+    // 3. Create public client
+    const chain = this.getChainConfig(networkConfig.chainId);
+    const publicClient = createPublicClient({
+      chain,
+      transport: http(networkConfig.rpcUrl),
+    });
+
+    // 4. Get native token balance
+    const balance = await publicClient.getBalance({
+      address: wallet.address as Address,
+    });
+
+    // 5. Format balance (native tokens use 18 decimals)
+    const formattedBalance = formatUnits(balance, 18);
+
+    return {
+      walletId: wallet.id,
+      address: wallet.address,
+      tokenType: networkConfig.nativeToken, // ETH, MATIC, ARB
+      tokenAddress: null, // Native token has no contract address
+      balance: formattedBalance,
+      balanceRaw: balance.toString(),
+      blockchain: wallet.blockchain,
+      network: wallet.network,
+    };
+  }
+
+  /**
+   * Send native token (ETH/MATIC/ARB) to an address
+   *
+   * @param params - Transaction parameters
+   * @returns Transaction details
+   */
+  async sendNativeToken(params: {
+    userId: string;
+    walletId: string;
+    destinationAddress: string;
+    amount: string; // Amount in native token units (e.g., "0.1" for 0.1 ETH)
+  }) {
+    const { userId, walletId, destinationAddress, amount } = params;
+
+    this.logger.log(
+      `Sending ${amount} native token from wallet ${walletId} to ${destinationAddress}`,
+    );
+
+    // 1. Get wallet and verify ownership
+    const wallet = await this.walletService.getWallet(walletId, userId);
+
+    // 2. Validate destination address
+    if (!destinationAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+      throw new Error('Invalid destination address format');
+    }
+
+    // 3. Get network configuration
+    const networkConfig = this.configService.getNetworkConfig(
+      wallet.blockchain,
+      wallet.network,
+    );
+
+    // 4. Get decrypted private key
+    const privateKey = await this.walletService.getDecryptedPrivateKey(
+      walletId,
+      userId,
+    );
+
+    // 5. Create transaction reference
+    const reference = `ALY-NATIVE-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+    // 6. Create database transaction record (PENDING state)
+    const txRecord = await this.prisma.alchemyTransaction.create({
+      data: {
+        reference,
+        userId,
+        walletId,
+        type: AlchemyTransactionType.SEND,
+        state: AlchemyTransactionState.PENDING,
+        sourceAddress: wallet.address,
+        destinationAddress: destinationAddress.toLowerCase(),
+        tokenAddress: null, // Native token has no contract address
+        blockchain: wallet.blockchain,
+        network: wallet.network,
+        amount: parseUnits(amount, 18).toString(), // Native tokens use 18 decimals
+        amountFormatted: `${amount} ${networkConfig.nativeToken}`,
+      },
+    });
+
+    try {
+      // 7. Create viem clients
+      const chain = this.getChainConfig(networkConfig.chainId);
+      const account = privateKeyToAccount(privateKey as `0x${string}`);
+
+      const publicClient = createPublicClient({
+        chain,
+        transport: http(networkConfig.rpcUrl),
+      });
+
+      const walletClient = createWalletClient({
+        account,
+        chain,
+        transport: http(networkConfig.rpcUrl),
+      });
+
+      // 8. Prepare transaction
+      const amountInWei = parseUnits(amount, 18);
+
+      // 9. Send native token transaction
+      this.logger.debug(
+        `Submitting native token transaction to blockchain for ${reference}`,
+      );
+
+      const hash = await walletClient.sendTransaction({
+        to: destinationAddress as Address,
+        value: amountInWei,
+      });
+
+      this.logger.log(`Native token transaction submitted: ${hash}`);
+
+      // 10. Update transaction record with hash
+      await this.prisma.alchemyTransaction.update({
+        where: { id: txRecord.id },
+        data: {
+          transactionHash: hash,
+          state: AlchemyTransactionState.SUBMITTED,
+        },
+      });
+
+      // 11. Wait for transaction receipt
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      });
+
+      this.logger.log(
+        `Native token transaction confirmed in block ${receipt.blockNumber}: ${hash}`,
+      );
+
+      // 12. Update transaction record with confirmation
+      const finalTx = await this.prisma.alchemyTransaction.update({
+        where: { id: txRecord.id },
+        data: {
+          state:
+            receipt.status === 'success'
+              ? AlchemyTransactionState.COMPLETED
+              : AlchemyTransactionState.FAILED,
+          blockNumber: receipt.blockNumber,
+          blockHash: receipt.blockHash,
+          gasUsed: receipt.gasUsed.toString(),
+          confirmations: 1,
+          completedAt: receipt.status === 'success' ? new Date() : undefined,
+          failedAt: receipt.status === 'success' ? undefined : new Date(),
+          errorMessage:
+            receipt.status === 'success' ? undefined : 'Transaction reverted',
+        },
+      });
+
+      return {
+        id: finalTx.id,
+        reference: finalTx.reference,
+        transactionHash: finalTx.transactionHash,
+        state: finalTx.state,
+        amount: finalTx.amountFormatted,
+        destinationAddress: finalTx.destinationAddress,
+        blockNumber: finalTx.blockNumber?.toString(),
+        completedAt: finalTx.completedAt,
+      };
+    } catch (error) {
+      // Update transaction as failed
+      await this.prisma.alchemyTransaction.update({
+        where: { id: txRecord.id },
+        data: {
+          state: AlchemyTransactionState.FAILED,
+          errorMessage: error.message,
+          failedAt: new Date(),
+        },
+      });
+
+      this.logger.error(
+        `Native token transaction failed for ${reference}: ${error.message}`,
+        error.stack,
+      );
+
+      throw new Error(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get gas price for a network
+   *
+   * @param params - Gas price query parameters
+   * @returns Gas price information
+   */
+  async getGasPrice(params: { blockchain: string; network: string }) {
+    const { blockchain, network } = params;
+
+    // 1. Get network configuration
+    const networkConfig = this.configService.getNetworkConfig(
+      blockchain,
+      network,
+    );
+
+    // 2. Create public client
+    const chain = this.getChainConfig(networkConfig.chainId);
+    const publicClient = createPublicClient({
+      chain,
+      transport: http(networkConfig.rpcUrl),
+    });
+
+    // 3. Get gas price (or use fee data for EIP-1559)
+    const feeData = await publicClient.estimateFeesPerGas();
+
+    // 4. Format gas prices (values are already bigint from estimateFeesPerGas)
+    return {
+      blockchain,
+      network,
+      gasPrice: feeData.gasPrice
+        ? formatUnits(feeData.gasPrice, 9) // 9 decimals for gwei
+        : null,
+      maxFeePerGas: feeData.maxFeePerGas
+        ? formatUnits(feeData.maxFeePerGas, 9) // 9 decimals for gwei
+        : null,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
+        ? formatUnits(feeData.maxPriorityFeePerGas, 9) // 9 decimals for gwei
+        : null,
+      nativeToken: networkConfig.nativeToken,
+    };
+  }
+
+  /**
    * Get chain configuration for viem
    * @private
    */

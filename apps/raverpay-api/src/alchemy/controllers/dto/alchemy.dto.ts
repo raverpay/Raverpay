@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  Length,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -106,4 +112,92 @@ export class GetBalanceDto {
   @IsNotEmpty()
   @IsEnum(['USDC', 'USDT'])
   tokenType: 'USDC' | 'USDT';
+}
+
+/**
+ * Export Seed Phrase DTO
+ */
+export class ExportSeedPhraseDto {
+  @ApiProperty({
+    description: 'Transaction PIN for verification',
+    example: '1234',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Length(4, 6)
+  pin: string;
+}
+
+/**
+ * Import Wallet DTO
+ */
+export class ImportWalletDto {
+  @ApiProperty({
+    description: 'Import method',
+    enum: ['SEED_PHRASE', 'PRIVATE_KEY'],
+  })
+  @IsEnum(['SEED_PHRASE', 'PRIVATE_KEY'])
+  method: 'SEED_PHRASE' | 'PRIVATE_KEY';
+
+  @ApiProperty({
+    description: '12-word seed phrase (space-separated)',
+    example: 'word1 word2 ... word12',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  seedPhrase?: string;
+
+  @ApiProperty({
+    description: 'Private key (hex format)',
+    example: '0x123abc...',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  privateKey?: string;
+
+  @ApiProperty({
+    description: 'Blockchain',
+    enum: ['POLYGON', 'ARBITRUM', 'BASE'],
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(['POLYGON', 'ARBITRUM', 'BASE'])
+  blockchain: string;
+
+  @ApiProperty({
+    description: 'Network',
+    enum: ['mainnet', 'sepolia', 'amoy'],
+  })
+  @IsString()
+  @IsNotEmpty()
+  network: string;
+
+  @ApiPropertyOptional({
+    description: 'Wallet name',
+  })
+  @IsString()
+  @IsOptional()
+  name?: string;
+}
+
+/**
+ * Send Native Token DTO
+ */
+export class SendNativeTokenDto {
+  @ApiProperty({ description: 'Wallet ID' })
+  @IsString()
+  @IsNotEmpty()
+  walletId: string;
+
+  @ApiProperty({ description: 'Destination address' })
+  @IsString()
+  @IsNotEmpty()
+  destinationAddress: string;
+
+  @ApiProperty({ description: 'Amount in native token units' })
+  @IsString()
+  @IsNotEmpty()
+  amount: string;
 }

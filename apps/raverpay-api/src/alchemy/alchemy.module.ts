@@ -9,6 +9,7 @@ import { AlchemyWebhookController } from './webhooks/alchemy-webhook.controller'
 import { AlchemyWalletController } from './controllers/alchemy-wallet.controller';
 import { AlchemyTransactionController } from './controllers/alchemy-transaction.controller';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsersModule } from '../users/users.module';
 
 /**
  * Alchemy Integration Module
@@ -21,6 +22,7 @@ import { PrismaService } from '../prisma/prisma.service';
  * - Multi-blockchain support (Polygon, Arbitrum, Base)
  */
 @Module({
+  imports: [UsersModule], // Import UsersModule to use UsersService
   controllers: [
     AlchemyWalletController,
     AlchemyTransactionController,

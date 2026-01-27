@@ -267,4 +267,28 @@ export class AlchemyKeyEncryptionService {
       'sha512',
     );
   }
+
+  /**
+   * Encrypt a mnemonic (seed phrase) using user-specific encryption
+   * Reuses the same encryption logic as private keys since format is identical
+   * @param mnemonic - 12-word BIP-39 mnemonic phrase
+   * @param userId - User ID (used as part of key derivation for additional security)
+   * @returns Encrypted mnemonic string (format: iv:tag:encrypted)
+   */
+  encryptMnemonic(mnemonic: string, userId: string): string {
+    // Reuse private key encryption logic since format is identical
+    return this.encryptPrivateKey(mnemonic, userId);
+  }
+
+  /**
+   * Decrypt a mnemonic (seed phrase)
+   * Reuses the same decryption logic as private keys since format is identical
+   * @param encryptedMnemonic - Encrypted mnemonic string (format: iv:tag:encrypted)
+   * @param userId - User ID (must match the one used during encryption)
+   * @returns Decrypted mnemonic (12-word phrase)
+   */
+  decryptMnemonic(encryptedMnemonic: string, userId: string): string {
+    // Reuse private key decryption logic since format is identical
+    return this.decryptPrivateKey(encryptedMnemonic, userId);
+  }
 }
