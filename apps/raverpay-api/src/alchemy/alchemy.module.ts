@@ -8,8 +8,6 @@ import { AlchemyWebhookService } from './webhooks/alchemy-webhook.service';
 import { AlchemyWebhookController } from './webhooks/alchemy-webhook.controller';
 import { AlchemyWalletController } from './controllers/alchemy-wallet.controller';
 import { AlchemyTransactionController } from './controllers/alchemy-transaction.controller';
-import { AlchemyAdminService } from './admin/alchemy-admin.service';
-import { AlchemyAdminController } from './admin/alchemy-admin.controller';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -27,7 +25,6 @@ import { PrismaService } from '../prisma/prisma.service';
     AlchemyWalletController,
     AlchemyTransactionController,
     AlchemyWebhookController,
-    AlchemyAdminController,
   ],
   providers: [
     // Core Services
@@ -44,9 +41,6 @@ import { PrismaService } from '../prisma/prisma.service';
     // Webhook Services
     AlchemyWebhookService,
 
-    // Admin Services
-    AlchemyAdminService,
-
     // Prisma (if not global)
     PrismaService,
   ],
@@ -58,7 +52,6 @@ import { PrismaService } from '../prisma/prisma.service';
     AlchemySmartAccountService,
     AlchemyTransactionService,
     AlchemyWebhookService,
-    AlchemyAdminService,
   ],
 })
 export class AlchemyModule {}

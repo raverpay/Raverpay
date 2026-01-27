@@ -19,8 +19,8 @@ const CONFIG = {
   BASE_URL: 'https://hydrometeorological-unjudicial-jeffie.ngrok-free.dev/api',
 
   // Login credentials
-  EMAIL: 'codeswithjoseph@gmail.com',
-  PASSWORD: '6thbornR%',
+  EMAIL: 'test.user1@raverpay.com',
+  PASSWORD: 'TestPass123!',
 
   // Withdrawal destination
   BANK_CODE: '50515', // MoniePoint bank code

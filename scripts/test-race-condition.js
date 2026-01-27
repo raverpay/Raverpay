@@ -22,8 +22,8 @@ const http = require('http');
 
 // Configuration
 const API_URL = process.env.API_URL || 'https://f1fe04b25cdc.ngrok-free.app';
-const EMAIL = process.env.EMAIL || 'codeswithjoseph@gmail.com';
-const PASSWORD = process.env.PASSWORD || '6thbornR%';
+const EMAIL = process.env.EMAIL || 'test.user1@raverpay.com';
+const PASSWORD = process.env.PASSWORD || 'TestPass123!';
 const PIN = process.env.PIN || null; // Required for P2P transfers
 const RECIPIENT_TAG = process.env.RECIPIENT_TAG || 'joestacks';
 const CONCURRENT_REQUESTS = parseInt(process.env.CONCURRENT_REQUESTS || '10', 10);

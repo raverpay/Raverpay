@@ -25,8 +25,8 @@ const crypto = require('crypto');
 
 // Configuration
 const API_URL = process.env.API_URL || 'http://localhost:3001';
-const EMAIL = process.env.EMAIL || 'codeswithjoseph@gmail.com';
-const PASSWORD = process.env.PASSWORD || '6thbornR%';
+const EMAIL = process.env.EMAIL || 'test.user1@raverpay.com';
+const PASSWORD = process.env.PASSWORD || 'TestPass123!';
 const RECIPIENT_TAG = process.env.RECIPIENT_TAG || 'joestacks';
 const AMOUNT = parseFloat(process.env.AMOUNT) || 100;
 const PIN = process.env.PIN || '9406';

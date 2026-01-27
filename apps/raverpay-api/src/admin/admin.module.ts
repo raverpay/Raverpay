@@ -43,6 +43,8 @@ import { AdminSecurityService } from './security/admin-security.service';
 import { AdminAuthController } from './auth/admin-auth.controller';
 import { AdminAuthService } from './auth/admin-auth.service';
 import { AdminAuthModule } from './auth/admin-auth.module';
+import { AdminAlchemyController } from './alchemy/admin-alchemy.controller';
+import { AdminAlchemyService } from './alchemy/admin-alchemy.service';
 import { HierarchyService } from '../common/services/hierarchy.service';
 import { AccountLockingService } from '../common/services/account-locking.service';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -54,6 +56,7 @@ import { PaymentsModule } from '../payments/payments.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
 import { WalletModule } from '../wallet/wallet.module';
 import { CircleModule } from '../circle/circle.module';
+import { AlchemyModule } from '../alchemy/alchemy.module';
 import { SupportAdminController } from '../support/support-admin.controller';
 import { EmailModule } from '../services/email/email.module';
 import { AuthModule } from '../auth/auth.module';
@@ -70,6 +73,7 @@ import { DeviceModule } from '../device/device.module';
     WebhooksModule,
     WalletModule,
     CircleModule,
+    AlchemyModule,
     AdminAuthModule,
     EmailModule,
     AuthModule,
@@ -93,6 +97,7 @@ import { DeviceModule } from '../device/device.module';
     AdminAdminsController,
     // AdminVenlyWalletsController, // COMMENTED OUT (not using Venly anymore, using Circle)
     AdminCircleController,
+    AdminAlchemyController,
     AdminEmailsController,
     RateLimitsController,
     SupportAdminController,
@@ -117,6 +122,7 @@ import { DeviceModule } from '../device/device.module';
     AdminAdminsService,
     // AdminVenlyWalletsService, // COMMENTED OUT (not using Venly anymore, using Circle)
     AdminCircleService,
+    AdminAlchemyService,
     AdminEmailsService,
     RateLimitsService,
     AdminSecurityService,

@@ -27,8 +27,8 @@ This guide provides step-by-step instructions for testing the Circle USDC wallet
 ### 🔑 Required Information
 
 - **Test User Credentials**:
-  - Email: `codeswithjoseph@gmail.com`
-  - Password: `6thbornR%`
+  - Email: `test.user1@raverpay.com`
+  - Password: `TestPass123!`
 
 - **Test Wallet Created**:
   - Address: `0x69476b0a0cb611faf8e9be80274b3b6ce63f54f4`

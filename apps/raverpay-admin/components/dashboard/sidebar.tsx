@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
+  Zap,
 } from 'lucide-react';
 
 interface NavItem {
@@ -97,6 +98,12 @@ const navigation: NavItem[] = [
     name: 'Circle USDC',
     href: '/dashboard/circle-wallets',
     icon: CircleDollarSign,
+    roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
+  },
+  {
+    name: 'Alchemy',
+    href: '/dashboard/alchemy',
+    icon: Zap,
     roles: ['SUPER_ADMIN', 'ADMIN', 'SUPPORT'],
   },
   {

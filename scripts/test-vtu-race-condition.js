@@ -24,8 +24,8 @@ const http = require('http');
 
 // Configuration
 const API_URL = process.env.API_URL || 'http://localhost:3001';
-const EMAIL = process.env.EMAIL || 'codeswithjoseph@gmail.com';
-const PASSWORD = process.env.PASSWORD || '6thbornR%';
+const EMAIL = process.env.EMAIL || 'test.user1@raverpay.com';
+const PASSWORD = process.env.PASSWORD || 'TestPass123!';
 const PIN = process.env.PIN || '9406';
 const PHONE = process.env.PHONE || '08011111111';
 const NETWORK = process.env.NETWORK || 'MTN';

@@ -3,8 +3,8 @@ import * as crypto from 'crypto';
 
 // CONFIGURATION
 const API_URL = 'http://localhost:3001/api';
-const EMAIL = 'codeswithjoseph@gmail.com';
-const PASSWORD = '6thbornR%';
+const EMAIL = 'test.user1@raverpay.com';
+const PASSWORD = 'TestPass123!';
 
 // ENDPOINTS TO TEST
 const WITHDRAW_ENDPOINT = '/transactions/withdraw';
